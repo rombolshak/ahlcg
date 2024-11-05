@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {NgOptimizedImage} from '@angular/common';
+import {PlayerCard} from '../models/player-card';
 
 @Component({
   selector: 'ah-player-card',
@@ -12,5 +13,5 @@ import {NgOptimizedImage} from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerCardComponent {
-
+  @Input() card: PlayerCard | undefined;
 }
