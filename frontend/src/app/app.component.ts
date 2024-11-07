@@ -29,7 +29,7 @@ export class AppComponent {
       { key: 'Tome', displayValue: 'Книга' },
       { key: 'Science', displayValue: 'Наука' }
     ],
-    slots: [CardSlot.Hand],
+    slot: CardSlot.Hand,
     abilities: [
       {
         type: CardAbilityType.Reaction,

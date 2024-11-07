@@ -2,13 +2,13 @@
   [height]="cardHeight"
   [width]="cardWidth"
   class="-z-10 rounded-xl"
-  [ngSrc]="'/assets/images/card-templates/Asset-' + CardClass[card().class] + '.png'"
+  [ngSrc]="imagesService.getTemplate(card().type, card().class)"
 />
 <img
   [height]="illustrationHeight"
   [width]="cardWidth"
   class="absolute top-7 -z-20"
-  [ngSrc]="'/assets/images/illustrations/' + card().collection.set + '/' + card().collection.index + '.webp'"
+  [ngSrc]="imagesService.getIllustration(card().collection)"
 />
 <div
   class="text-outline absolute left-5 top-3 w-9 text-center font-teutonic text-3xl text-white"
@@ -25,10 +25,10 @@
 <div class="absolute top-20">
   @for (skill of card().skills; track $index) {
     <div class="relative">
-      <img [ngSrc]="'/assets/images/card-overlays/SkillBox-' + CardClass[card().class] + '.png'" width="54"
+      <img [ngSrc]="imagesService.getOverlay(CreateOverlay.skillBox(card().class))" width="54"
            height="43" />
       <img
-        [ngSrc]="'/assets/images/card-overlays/SkillIcon-' + SkillType[skill] + '.png'" width="24" height="24"
+        [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill))" width="24" height="24"
         class="absolute left-3 top-2"
       />
     </div>
@@ -50,7 +50,7 @@
   }
 </div>
 <img
-  [ngSrc]="'/assets/images/card-overlays/Slot-' + SlotType[card().slots[0]] + '.png'"
+  [ngSrc]="imagesService.getOverlay(CreateOverlay.cardSlot(card().slot))"
   width="62" height="62"
   class="absolute bottom-4 right-3"
 />
@@ -62,7 +62,7 @@
   <span class="absolute left-0 top-0 w-full text-center">&copy; {{ card().copyright.ffg }}</span>
   <span class="absolute right-6 top-0">
     <img
-      [ngSrc]="'/assets/images/set-icons/' + card().collection.set + '.png'"
+      [ngSrc]="imagesService.getSetIcon(card().collection.set)"
       width="12"
       height="12"
       class="inline text-white invert"

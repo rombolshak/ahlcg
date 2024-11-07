@@ -14,14 +14,14 @@ const card: PlayerCard = {
   type: PlayerCardType.Asset,
   class: CardClass.Seeker,
   cost: 1,
-  title: 'Исследовательские заметки',
-  skills: [SkillType.Intellect, SkillType.Intellect],
+  title: 'card-title',
+  skills: [SkillType.Intellect, SkillType.Willpower],
   traits: [
     { key: 'Item', displayValue: 'Вещь' },
     { key: 'Tome', displayValue: 'Книга' },
     { key: 'Science', displayValue: 'Наука' }
   ],
-  slots: [CardSlot.Hand],
+  slot: CardSlot.Hand,
   abilities: [
     {
       type: CardAbilityType.Reaction,

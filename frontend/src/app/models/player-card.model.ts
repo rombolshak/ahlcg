@@ -1,34 +1,35 @@
 ﻿export enum PlayerCardType {
-  Asset,
-  Skill,
-  Event,
+  Asset = 'Asset',
+  Skill = 'Skill',
+  Event = 'Event',
 }
 
 export enum CardClass {
-  Neutral,
-  Guardian,
-  Seeker,
-  Rogue,
-  Survivor,
-  Mystic,
+  Neutral = 'Neutral',
+  Guardian = 'Guardian',
+  Seeker = 'Seeker',
+  Rogue = 'Rogue',
+  Survivor = 'Survivor',
+  Mystic = 'Mystic',
 }
 
 export enum SkillType {
-  Willpower,
-  Intellect,
-  Combat,
-  Agility,
+  Willpower = 'Willpower',
+  Intellect = 'Intellect',
+  Combat = 'Combat',
+  Agility = 'Agility',
+  Wild = 'Wild',
 }
 
 export enum CardSlot {
-  Accessory,
-  Body,
-  Ally,
-  Hand,
-  TwoHand,
-  Arcane,
-  TwoArcane,
-  Taro,
+  Accessory = 'Accessory',
+  Body = 'Body',
+  Ally = 'Ally',
+  Hand = 'Hand',
+  TwoHands = 'TwoHands',
+  Arcane = 'Arcane',
+  TwoArcane = 'TwoArcane',
+  Tarot = 'Tarot',
 }
 
 export interface CardTrait {
@@ -48,6 +49,11 @@ export interface CardAbility {
   text: string;
 }
 
+export interface CollectionInfo {
+  set: string;
+  index: string;
+}
+
 export interface PlayerCard {
   type: PlayerCardType;
   cost: number;
@@ -56,13 +62,11 @@ export interface PlayerCard {
   skills: SkillType[];
   traits: CardTrait[];
   abilities: CardAbility[];
-  slots: CardSlot[];
+  slot: CardSlot;
+  additionalSlot?: CardSlot;
   copyright: {
     illustrator: string;
     ffg: string;
   },
-  collection: {
-    set: string;
-    index: string;
-  }
+  collection: CollectionInfo
 }
