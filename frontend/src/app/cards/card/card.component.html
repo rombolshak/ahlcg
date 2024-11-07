@@ -1,0 +1,22 @@
+﻿<div class="group [perspective:1000px] w-card h-card"
+     (click)="showBack = !showBack">
+  <div
+    class="relative transition-transform duration-700 [transform-style:preserve-3d]"
+    [@flip]="showBack ? 'back' : 'front'">
+    <div class="absolute [backface-visibility:hidden]">
+      @switch (front().cardType) {
+        @case (CardType.Player) {
+          @let playerCard = front() | as: PlayerCardBase ;
+          @switch (playerCard.playerCardType) {
+            @case (PlayerCardType.Asset) {
+              <ah-asset-card [card]="playerCard | as: AssetCard"></ah-asset-card>
+            }
+          }
+        }
+      }
+    </div>
+    <div class="absolute [backface-visibility:hidden] [transform:rotateY(180deg)]">
+      <ah-player-back-card></ah-player-back-card>
+    </div>
+  </div>
+</div>

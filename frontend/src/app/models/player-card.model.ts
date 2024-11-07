@@ -1,16 +1,20 @@
-﻿export enum PlayerCardType {
+﻿import { CardBase, CardType } from './card-base.model';
+
+export enum PlayerCardType {
   Asset = 'Asset',
   Skill = 'Skill',
   Event = 'Event',
 }
 
-export enum CardClass {
+export enum PlayerCardClass {
   Neutral = 'Neutral',
   Guardian = 'Guardian',
   Seeker = 'Seeker',
   Rogue = 'Rogue',
   Survivor = 'Survivor',
   Mystic = 'Mystic',
+  Weakness = 'Weakness',
+  BasicWeakness = 'BasicWeakness',
 }
 
 export enum SkillType {
@@ -21,7 +25,7 @@ export enum SkillType {
   Wild = 'Wild',
 }
 
-export enum CardSlot {
+export enum AssetSlot {
   Accessory = 'Accessory',
   Body = 'Body',
   Ally = 'Ally',
@@ -32,41 +36,32 @@ export enum CardSlot {
   Tarot = 'Tarot',
 }
 
-export interface CardTrait {
+interface CardTrait {
   key: string;
   displayValue: string;
 }
 
-export enum CardAbilityType {
-  Permanent,
-  Action,
-  Reaction,
-  FreeAction,
-}
-
-export interface CardAbility {
-  type: CardAbilityType;
-  text: string;
-}
-
-export interface CollectionInfo {
-  set: string;
-  index: string;
-}
-
-export interface PlayerCard {
-  type: PlayerCardType;
-  cost: number;
-  title: string;
-  class: CardClass;
+export interface PlayerCardBase extends CardBase {
+  cardType: CardType.Player;
+  playerCardType: PlayerCardType;
+  class: PlayerCardClass;
   skills: SkillType[];
   traits: CardTrait[];
-  abilities: CardAbility[];
-  slot: CardSlot;
-  additionalSlot?: CardSlot;
-  copyright: {
-    illustrator: string;
-    ffg: string;
-  },
-  collection: CollectionInfo
+}
+
+type WithCost = { cost: number }
+
+export type AssetCard = PlayerCardBase & WithCost & {
+  playerCardType: PlayerCardType.Asset;
+  abilities: string[];
+  slot?: AssetSlot;
+  additionalSlot?: AssetSlot;
+}
+
+export type EventCard = PlayerCardBase & WithCost & {
+  playerCardType: PlayerCardType.Event;
+}
+
+export type SkillCard = PlayerCardBase & {
+  playerCardType: PlayerCardType.Skill;
 }

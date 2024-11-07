@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { CreateOverlay, ImagesUrlService } from './images-url.service';
-import { CardClass, CardSlot, PlayerCardType, SkillType } from '../models/player-card.model';
+import { PlayerCardClass, AssetSlot, PlayerCardType, SkillType } from '../models/player-card.model';
 
 describe('ImagesUrlService', () => {
   let service: ImagesUrlService;
@@ -16,14 +16,14 @@ describe('ImagesUrlService', () => {
   });
 
   it('should generate card template url', () => {
-    expect(service.getTemplate(PlayerCardType.Asset, CardClass.Guardian)).toEqual(`/assets/images/card-templates/Asset-Guardian.png`);
-    expect(service.getTemplate(PlayerCardType.Skill, CardClass.Mystic)).toEqual(`/assets/images/card-templates/Skill-Mystic.png`);
-    expect(service.getTemplate(PlayerCardType.Event, CardClass.Neutral)).toEqual(`/assets/images/card-templates/Event-Neutral.png`);
+    expect(service.getTemplate(PlayerCardType.Asset, PlayerCardClass.Guardian)).toEqual(`/assets/images/card-templates/Asset-Guardian.png`);
+    expect(service.getTemplate(PlayerCardType.Skill, PlayerCardClass.Mystic)).toEqual(`/assets/images/card-templates/Skill-Mystic.png`);
+    expect(service.getTemplate(PlayerCardType.Event, PlayerCardClass.Neutral)).toEqual(`/assets/images/card-templates/Event-Neutral.png`);
   });
 
   it('should generate card overlays url', () => {
-    expect(service.getOverlay(CreateOverlay.skillBox(CardClass.Guardian))).toEqual(`/assets/images/card-overlays/SkillBox-Guardian.png`);
-    expect(service.getOverlay(CreateOverlay.cardSlot(CardSlot.Ally))).toEqual(`/assets/images/card-overlays/Slot-Ally.png`);
+    expect(service.getOverlay(CreateOverlay.skillBox(PlayerCardClass.Guardian))).toEqual(`/assets/images/card-overlays/SkillBox-Guardian.png`);
+    expect(service.getOverlay(CreateOverlay.cardSlot(AssetSlot.Ally))).toEqual(`/assets/images/card-overlays/Slot-Ally.png`);
     expect(service.getOverlay(CreateOverlay.skillIcon(SkillType.Agility))).toEqual(`/assets/images/card-overlays/SkillIcon-Agility.png`);
   });
 

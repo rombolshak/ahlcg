@@ -1,26 +1,23 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { PlayerCardComponent } from './player-card/player-card.component';
-import {
-  CardAbilityType,
-  CardClass,
-  CardSlot,
-  PlayerCard,
-  PlayerCardType,
-  SkillType
-} from './models/player-card.model';
+import { AssetCard, AssetSlot, PlayerCardClass, PlayerCardType, SkillType } from './models/player-card.model';
+import { AssetCardComponent } from './cards/asset-card/asset-card.component';
+import { PlayerBackCardComponent } from './cards/player-back-card/player-back-card.component';
+import { CardBack, CardType } from './models/card-base.model';
+import { CardComponent } from './cards/card/card.component';
 
 @Component({
   selector: 'ah-root',
   standalone: true,
-  imports: [RouterOutlet, PlayerCardComponent],
+  imports: [RouterOutlet, AssetCardComponent, PlayerBackCardComponent, CardComponent],
   template:
-    '<ah-player-card [card]="card"></ah-player-card>'
+    '<ah-card [front]="card" [back]="back"></ah-card>'
 })
 export class AppComponent {
-  card: PlayerCard = {
-    type: PlayerCardType.Asset,
-    class: CardClass.Neutral,
+  card: AssetCard = {
+    cardType: CardType.Player,
+    playerCardType: PlayerCardType.Asset,
+    class: PlayerCardClass.Neutral,
     cost: 1,
     title: 'Исследовательские заметки',
     skills: [SkillType.Intellect, SkillType.Intellect],
@@ -29,24 +26,19 @@ export class AppComponent {
       { key: 'Tome', displayValue: 'Книга' },
       { key: 'Science', displayValue: 'Наука' }
     ],
-    slot: CardSlot.Hand,
+    slot: AssetSlot.Hand,
     abilities: [
-      {
-        type: CardAbilityType.Reaction,
-        text: '#r#: After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.'
-      },
-      {
-        type: CardAbilityType.Action,
-        text: '#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.'
-      }
+      '#r#: After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.',
+      '#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.'
     ],
-    collection: {
+    setInfo: {
       set: '09',
       index: '045'
     },
     copyright: {
-      illustrator: 'Illus. Pixoloid Studious',
+      illustrator: 'Pixoloid Studious',
       ffg: '2022 FFG'
     }
   };
+  back = { backType: CardBack.Player };
 }
