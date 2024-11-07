@@ -8,7 +8,7 @@ import {
   PlayerCard,
   PlayerCardType,
   SkillType
-} from './models/player-card';
+} from './models/player-card.model';
 
 @Component({
   selector: 'ah-root',

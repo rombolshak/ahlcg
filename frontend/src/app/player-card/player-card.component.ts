@@ -4,7 +4,7 @@ import {
   input
 } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import { CardClass, CardSlot, PlayerCard, SkillType } from '../models/player-card';
+import { CardClass, CardSlot, PlayerCard, SkillType } from '../models/player-card.model';
 import { WithAhSymbolsPipe } from '../pipes/with-ah-symbols.pipe';
 import { TrimStartPipe } from '../pipes/trim-start.pipe';
 
