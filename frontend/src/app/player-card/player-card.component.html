@@ -1,24 +1,69 @@
-﻿<img ngSrc="/assets/images/AHLCG-Asset-K.png" fill class="-z-10  rounded-xl" />
-<img src="/assets/images/09045.jpg" class="-z-20 absolute top-7"  />
-<div class="text-white w-6 text-center text-3xl absolute top-2.5 left-6 font-teutonic text-outline">1</div>
-<p class="text-center w-full absolute top-3 font-conkordia text-2xl">
+﻿<img
+  [height]="cardHeight"
+  [width]="cardWidth"
+  class="-z-10 rounded-xl"
+  ngSrc="/assets/images/AHLCG-Asset-K.png"
+/>
+<img
+  [height]="illustrationHeight"
+  [width]="cardWidth"
+  class="absolute top-7 -z-20"
+  ngSrc="/assets/images/09045.webp"
+/>
+<div
+  class="text-outline absolute left-6 top-2.5 w-6 text-center font-teutonic text-3xl text-white"
+>
+  2
+</div>
+<p class="absolute top-3 w-full text-center font-conkordia text-2xl">
   Research Notes
 </p>
-<p class="absolute text-[11px] bold uppercase top-[3.85rem] left-5 font-arno">Актив</p>
+<p class="bold absolute left-5 top-[3.85rem] font-arno text-[11px] uppercase">
+  Актив
+</p>
 <div class="absolute top-20">
-  <img src="/assets/images/AHLCG-SkillBox-K.png" class="relative">
-  <img src="/assets/images/AHLCG-SkillIcon-I.png" class="absolute top-2 left-3">
+  <img src="/assets/images/AHLCG-SkillBox-K.png" class="relative" />
+  <img
+    src="/assets/images/AHLCG-SkillIcon-I.png"
+    class="absolute left-3 top-2"
+  />
 </div>
 
-<div class="absolute top-80 w-full leading-4 pl-5 pr-9 font-arno" style="font-size: 18px;">
-  <p class="text-center mb-1 italic font-arno-bold"><span>Item. </span><span>Tome. </span><span>Science. </span></p>
-  <p class="mb-1"><span class="font-ah-symbol text-base/4">r </span> After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.</p>
-  <p><span class="font-ah-symbol text-base/4">n</span>: Test <span class="font-ah-symbol text-base/4">i</span>(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.</p>
+<div
+  class="absolute top-80 w-full pl-5 pr-9 font-arno leading-4"
+  style="font-size: 18px"
+>
+  <p class="mb-1 text-center font-arno-bold italic">
+    <span>Item. </span><span>Tome. </span><span>Science. </span>
+  </p>
+  <p class="mb-1">
+    <span class="font-ah-symbol text-base/4">r </span> After a player card
+    ability places 1 or more of your clues on your location: Place that many
+    resources on Research Notes, as evidence.
+  </p>
+  <p>
+    <span class="font-ah-symbol text-base/4">n</span>: Test
+    <span class="font-ah-symbol text-base/4">i</span>(0). For each point you
+    succeed by, you may spend 1 evidence to discover 1 clue at your location.
+  </p>
 </div>
-<img src="/assets/images/AHLCG-Slot-1 Hand.png" class="absolute bottom-4 right-3" />
+<img
+  src="/assets/images/AHLCG-Slot-1 Hand.png"
+  class="absolute bottom-4 right-3"
+/>
 
-<div class="absolute bottom-1 w-full h-3 flex justify-between text-[0.5rem] font-sans text-white">
-  <span class="absolute top-0 left-6">Illus. Pixoloid Studious</span>
-  <span class="absolute top-0 left-0 w-full text-center">&copy; 2022 FFG</span>
-  <span class="absolute top-0 right-6"><img src="/assets/images/AHLCG-TheScarletKeysInv.png" width="10" height="10" class="inline text-white invert" />  45</span>
+<div
+  class="absolute bottom-1 flex h-3 w-full justify-between font-sans text-[0.5rem] text-white"
+>
+  <span class="absolute left-6 top-0">Illus. Pixoloid Studious</span>
+  <span class="absolute left-0 top-0 w-full text-center">&copy; 2022 FFG</span>
+  <span class="absolute right-6 top-0">
+    <img
+      src="/assets/images/AHLCG-TheScarletKeysInv.png"
+      width="10"
+      height="10"
+      class="inline text-white invert"
+    />
+    45
+  </span>
 </div>

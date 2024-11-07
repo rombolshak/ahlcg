@@ -1,7 +1,7 @@
 ﻿export enum PlayerCardType {
   Asset,
   Skill,
-  Event
+  Event,
 }
 
 export enum CardClass {
@@ -10,18 +10,17 @@ export enum CardClass {
   Seeker,
   Rogue,
   Survivor,
-  Mystic
+  Mystic,
 }
 
 export enum SkillType {
   Willpower,
   Intellect,
   Combat,
-  Agility
+  Agility,
 }
 
-export enum CardSlot
-{
+export enum CardSlot {
   Accessory,
   Body,
   Ally,
@@ -29,7 +28,7 @@ export enum CardSlot
   TwoHand,
   Arcane,
   TwoArcane,
-  Taro
+  Taro,
 }
 
 export interface CardTrait {
@@ -41,7 +40,7 @@ export enum CardAbilityType {
   Permanent,
   Action,
   Reaction,
-  FreeAction
+  FreeAction,
 }
 
 export interface CardAbility {
