@@ -49,7 +49,6 @@ export interface CardAbility {
 }
 
 export interface PlayerCard {
-  id: string;
   type: PlayerCardType;
   cost: number;
   title: string;
@@ -58,4 +57,12 @@ export interface PlayerCard {
   traits: CardTrait[];
   abilities: CardAbility[];
   slots: CardSlot[];
+  copyright: {
+    illustrator: string;
+    ffg: string;
+  },
+  collection: {
+    set: string;
+    index: string;
+  }
 }

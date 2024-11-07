@@ -2,31 +2,37 @@
   [height]="cardHeight"
   [width]="cardWidth"
   class="-z-10 rounded-xl"
-  ngSrc="/assets/images/AHLCG-Asset-K.png"
+  [ngSrc]="'/assets/images/card-templates/Asset-' + CardClass[card().class] + '.png'"
 />
 <img
   [height]="illustrationHeight"
   [width]="cardWidth"
   class="absolute top-7 -z-20"
-  ngSrc="/assets/images/09045.webp"
+  [ngSrc]="'/assets/images/illustrations/' + card().collection.set + '/' + card().collection.index + '.webp'"
 />
 <div
-  class="text-outline absolute left-6 top-2.5 w-6 text-center font-teutonic text-3xl text-white"
+  class="text-outline absolute left-5 top-3 w-9 text-center font-teutonic text-3xl text-white"
 >
-  2
+  {{ card().cost }}
 </div>
 <p class="absolute top-3 w-full text-center font-conkordia text-2xl">
-  Research Notes
+  {{ card().title }}
 </p>
 <p class="bold absolute left-5 top-[3.85rem] font-arno text-[11px] uppercase">
-  Актив
+  {{ card().type }}
 </p>
+
 <div class="absolute top-20">
-  <img src="/assets/images/AHLCG-SkillBox-K.png" class="relative" />
-  <img
-    src="/assets/images/AHLCG-SkillIcon-I.png"
-    class="absolute left-3 top-2"
-  />
+  @for (skill of card().skills; track $index) {
+    <div class="relative">
+      <img [ngSrc]="'/assets/images/card-overlays/SkillBox-' + CardClass[card().class] + '.png'" width="54"
+           height="43" />
+      <img
+        [ngSrc]="'/assets/images/card-overlays/SkillIcon-' + SkillType[skill] + '.png'" width="24" height="24"
+        class="absolute left-3 top-2"
+      />
+    </div>
+  }
 </div>
 
 <div
@@ -34,36 +40,33 @@
   style="font-size: 18px"
 >
   <p class="mb-1 text-center font-arno-bold italic">
-    <span>Item. </span><span>Tome. </span><span>Science. </span>
+    @for (trait of card().traits; track $index) {
+      <span>{{ trait.displayValue }}. </span>
+    }
   </p>
-  <p class="mb-1">
-    <span class="font-ah-symbol text-base/4">r </span> After a player card
-    ability places 1 or more of your clues on your location: Place that many
-    resources on Research Notes, as evidence.
-  </p>
-  <p>
-    <span class="font-ah-symbol text-base/4">n</span>: Test
-    <span class="font-ah-symbol text-base/4">i</span>(0). For each point you
-    succeed by, you may spend 1 evidence to discover 1 clue at your location.
-  </p>
+
+  @for (ability of card().abilities; track $index) {
+    <p class="mb-1" [innerHtml]="ability.text | withAhSymbols"></p>
+  }
 </div>
 <img
-  src="/assets/images/AHLCG-Slot-1 Hand.png"
+  [ngSrc]="'/assets/images/card-overlays/Slot-' + SlotType[card().slots[0]] + '.png'"
+  width="62" height="62"
   class="absolute bottom-4 right-3"
 />
 
 <div
   class="absolute bottom-1 flex h-3 w-full justify-between font-sans text-[0.5rem] text-white"
 >
-  <span class="absolute left-6 top-0">Illus. Pixoloid Studious</span>
-  <span class="absolute left-0 top-0 w-full text-center">&copy; 2022 FFG</span>
+  <span class="absolute left-6 top-0">{{ card().copyright.illustrator }}</span>
+  <span class="absolute left-0 top-0 w-full text-center">&copy; {{ card().copyright.ffg }}</span>
   <span class="absolute right-6 top-0">
     <img
-      src="/assets/images/AHLCG-TheScarletKeysInv.png"
-      width="10"
-      height="10"
+      [ngSrc]="'/assets/images/set-icons/' + card().collection.set + '.png'"
+      width="12"
+      height="12"
       class="inline text-white invert"
     />
-    45
+    {{ card().collection.index | trimStart: '0' }}
   </span>
 </div>
