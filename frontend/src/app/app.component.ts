@@ -20,7 +20,7 @@ import {
 export class AppComponent {
   card: PlayerCard = {
     type: PlayerCardType.Asset,
-    class: CardClass.Seeker,
+    class: CardClass.Neutral,
     cost: 1,
     title: 'Исследовательские заметки',
     skills: [SkillType.Intellect, SkillType.Intellect],
