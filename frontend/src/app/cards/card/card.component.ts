@@ -19,9 +19,10 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('flip', [
-      state('front', style({ transform: 'rotateY(0)' })),
-      state('back', style({ transform: 'rotateY(180deg)' })),
-      transition('* => *', [animate('0.75s')])
+      state('back', style({ transform: 'rotateY(0)' })),
+      state('front', style({ transform: 'rotateY(180deg)' })),
+      transition('* => back', [animate('0.75s')]),
+      transition('* => front', [animate('0.75s', style({ transform: 'rotateY(-180deg)' }))])
     ])
   ]
 })

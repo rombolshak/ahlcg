@@ -3,7 +3,11 @@
   <div
     class="relative transition-transform duration-700 [transform-style:preserve-3d]"
     [@flip]="showBack ? 'back' : 'front'">
+
     <div class="absolute [backface-visibility:hidden]">
+      <ah-player-back-card></ah-player-back-card>
+    </div>
+    <div class="absolute [backface-visibility:hidden] [transform:rotateY(180deg)]">
       @switch (front().cardType) {
         @case (CardType.Player) {
           @let playerCard = front() | as: PlayerCardBase ;
@@ -14,9 +18,6 @@
           }
         }
       }
-    </div>
-    <div class="absolute [backface-visibility:hidden] [transform:rotateY(180deg)]">
-      <ah-player-back-card></ah-player-back-card>
     </div>
   </div>
 </div>

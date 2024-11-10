@@ -12,7 +12,7 @@ import { cardHeight, cardWidth } from '../constants';
   template: `<img [ngSrc]="imagesService.getTemplate('Back', 'Player')"
                   [height]="cardHeight"
                   [width]="cardWidth"
-                  class="-z-10 rounded-xl" />"`,
+                  class="-z-10 rounded-xl" />`,
   styles: `:host {
   @apply relative block w-card h-card;
   }`,
