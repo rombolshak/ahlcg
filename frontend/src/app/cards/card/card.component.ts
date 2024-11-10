@@ -27,10 +27,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   ]
 })
 export class CardComponent {
-  front = input.required<CardBase>();
-  back = input.required<{ backType: CardBack } | CardBase>();
-
-  showBack = true;
+  card = input.required<CardBase>();
 
   protected readonly PlayerCardBase!: PlayerCardBase;
   protected readonly AssetCard!: AssetCard;

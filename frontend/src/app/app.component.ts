@@ -2,16 +2,15 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AssetCard, AssetSlot, PlayerCardClass, PlayerCardType, SkillType } from './models/player-card.model';
 import { AssetCardComponent } from './cards/asset-card/asset-card.component';
-import { PlayerBackCardComponent } from './cards/player-back-card/player-back-card.component';
-import { CardBack, CardType } from './models/card-base.model';
+import { CardType } from './models/card-base.model';
 import { CardComponent } from './cards/card/card.component';
 
 @Component({
   selector: 'ah-root',
   standalone: true,
-  imports: [RouterOutlet, AssetCardComponent, PlayerBackCardComponent, CardComponent],
+  imports: [RouterOutlet, AssetCardComponent, CardComponent],
   template:
-    '<ah-card [front]="card" [back]="back"></ah-card>'
+    '<ah-card [card]="card"></ah-card>'
 })
 export class AppComponent {
   card: AssetCard = {
@@ -40,5 +39,4 @@ export class AppComponent {
       ffg: '2022 FFG'
     }
   };
-  back = { backType: CardBack.Player };
 }

@@ -2,10 +2,6 @@
   Player = 'player'
 }
 
-export enum CardBack {
-  Player = 'player',
-}
-
 export interface CardBase {
   cardType: CardType;
   title: string;
