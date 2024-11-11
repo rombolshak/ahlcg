@@ -47,13 +47,13 @@ export interface PlayerCardBase extends CardBase {
   class: PlayerCardClass;
   skills: SkillType[];
   traits: CardTrait[];
+  abilities: string[];
 }
 
-type WithCost = { cost: number }
+export type WithCost = { cost: number }
 
 export type AssetCard = PlayerCardBase & WithCost & {
   playerCardType: PlayerCardType.Asset;
-  abilities: string[];
   slot?: AssetSlot;
   additionalSlot?: AssetSlot;
 }

@@ -6,6 +6,7 @@ export interface CardBase {
   cardType: CardType;
   title: string;
   subtitle?: string;
+  flavor?: string;
   copyright: {
     illustrator: string;
     ffg: string;

@@ -11,6 +11,10 @@ module.exports = {
       height: {
         "card": "525px"
       },
+      fontSize: {
+        "xxs": "0.5rem",
+        "m": "18px"
+      },
       fontFamily: {
         "conkordia": ["Conkordia"],
         "teutonic": ["Teutonic"],

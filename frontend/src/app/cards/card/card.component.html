@@ -1,12 +1,13 @@
-﻿<div class="absolute [backface-visibility:hidden] [transform:rotateY(180deg)]">
-  @switch (card().cardType) {
-    @case (CardType.Player) {
-      @let playerCard = card() | as: PlayerCardBase ;
-      @switch (playerCard.playerCardType) {
-        @case (PlayerCardType.Asset) {
-          <ah-asset-card [card]="playerCard | as: AssetCard"></ah-asset-card>
-        }
+﻿@switch (card().cardType) {
+  @case (CardType.Player) {
+    @let playerCard = card() | as: PlayerCardBase ;
+    @switch (playerCard.playerCardType) {
+      @case (PlayerCardType.Asset) {
+        <ah-asset-card [card]="playerCard | as: AssetCard"></ah-asset-card>
+      }
+      @case (PlayerCardType.Event) {
+        <ah-event-card [card]="playerCard | as: EventCard"></ah-event-card>
       }
     }
   }
-</div>
+}

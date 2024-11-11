@@ -8,7 +8,6 @@ import { WithAhSymbolsPipe } from '../../pipes/with-ah-symbols.pipe';
 import { TrimStartPipe } from '../../pipes/trim-start.pipe';
 import { ImagesUrlService, CreateOverlay } from '../../services/images-url.service';
 import { AssetCard } from '../../models/player-card.model';
-import { cardHeight, cardWidth } from '../constants';
 
 @Component({
   selector: 'ah-asset-card',
@@ -31,6 +30,6 @@ export class AssetCardComponent {
   illustrationHeight = 273;
 
   protected readonly CreateOverlay = CreateOverlay;
-  protected readonly cardWidth = cardWidth;
-  protected readonly cardHeight = cardHeight;
+  protected readonly cardWidth = 375;
+  protected readonly cardHeight = 575;
 }
