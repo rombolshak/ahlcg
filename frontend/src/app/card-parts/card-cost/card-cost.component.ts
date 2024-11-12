@@ -7,7 +7,7 @@ import { WithCost } from '../../models/player-card.model';
   imports: [],
   template: `{{ card().cost }}`,
   styles: `:host {
-  @apply text-outline w-9 text-center font-teutonic text-3xl text-white;
+  @apply absolute left-5 top-3 text-outline w-9 text-center font-teutonic text-3xl text-white;
   }`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })

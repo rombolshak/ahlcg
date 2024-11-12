@@ -41,6 +41,10 @@ interface CardTrait {
   displayValue: string;
 }
 
+interface DisplayOptions {
+  textSize: 's' | 'm';
+}
+
 export interface PlayerCardBase extends CardBase {
   cardType: CardType.Player;
   playerCardType: PlayerCardType;
@@ -48,6 +52,7 @@ export interface PlayerCardBase extends CardBase {
   skills: SkillType[];
   traits: CardTrait[];
   abilities: string[];
+  displayOptions: DisplayOptions;
 }
 
 export type WithCost = { cost: number }

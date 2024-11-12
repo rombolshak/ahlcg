@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, input } from '@angular/core';
 import { PlayerCardBase } from '../../models/player-card.model';
 
 @Component({
@@ -6,14 +6,18 @@ import { PlayerCardBase } from '../../models/player-card.model';
   standalone: true,
   imports: [],
   template: `
-    @for (trait of card().traits; track $index) {
-      <span>{{ trait.displayValue }}. </span>
-    }
+    <p [class.text-sm]="card().displayOptions.textSize == 's'"
+       [class.mb-0.5]="card().displayOptions.textSize == 's'"
+       [class.mb-1]="card().displayOptions.textSize == 'm'">
+      @for (trait of card().traits; track $index) {
+        <span [class.text-sm]="card().displayOptions.textSize == 's'">{{ trait.displayValue }}. </span>
+      }
+    </p>
   `,
   styles: `:host {
-  @apply block mb-1 text-center font-arno-bold italic text-base;
+  @apply block text-center font-arno-bold italic;
   }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class CardTraitsComponent {
   card = input.required<PlayerCardBase>();

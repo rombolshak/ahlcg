@@ -21,11 +21,11 @@ import { CardSkillsComponent } from '../card-skills/card-skills.component';
     <img
       [height]="illustrationHeight"
       [width]="cardWidth"
-      class="absolute -top-5 -z-20"
+      class="absolute -top-8 -z-20"
       [ngSrc]="imagesService.getIllustration(card().setInfo)"
     />
 
-    <p class="bold absolute left-5 top-[3.95rem] w-9 text-center font-arno text-[10px] uppercase">
+    <p class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px] uppercase">
       {{ card().playerCardType }}
     </p>
 

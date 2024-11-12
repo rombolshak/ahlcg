@@ -10,7 +10,9 @@ import { PlayerCardBase } from '../../models/player-card.model';
   ],
   template: `
     @for (ability of card().abilities; track $index) {
-      <p class="mb-1 text-m" [innerHtml]="ability | withAhSymbols"></p>
+      <p class="mb-1 whitespace-pre-wrap"
+         [class.text-m]="card().displayOptions.textSize == 'm'"
+         [innerHtml]="ability | withAhSymbols"></p>
     }`,
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush

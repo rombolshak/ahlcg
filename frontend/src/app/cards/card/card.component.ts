@@ -5,6 +5,7 @@ import { AsPipe } from '../../pipes/as.pipe';
 import { AssetCardComponent } from '../asset-card/asset-card.component';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { EventCardComponent } from '../event-card/event-card.component';
+import { SkillCardComponent } from '../skill-card/skill-card.component';
 
 @Component({
   selector: 'ah-card',
@@ -12,7 +13,8 @@ import { EventCardComponent } from '../event-card/event-card.component';
   imports: [
     AsPipe,
     AssetCardComponent,
-    EventCardComponent
+    EventCardComponent,
+    SkillCardComponent
   ],
   templateUrl: './card.component.html',
   styles: ``,

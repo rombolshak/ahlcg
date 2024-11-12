@@ -7,7 +7,7 @@ import { CardBase } from '../../models/card-base.model';
   imports: [],
   template: `{{ card().title }}`,
   styles: `:host {
-  @apply w-full text-center font-conkordia text-2xl;
+  @apply w-full px-20 font-conkordia text-2xl;
   }`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })

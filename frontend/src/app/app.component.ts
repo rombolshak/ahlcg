@@ -6,6 +6,7 @@ import {
   EventCard,
   PlayerCardClass,
   PlayerCardType,
+  SkillCard,
   SkillType
 } from './models/player-card.model';
 import { AssetCardComponent } from './cards/asset-card/asset-card.component';
@@ -17,10 +18,15 @@ import { CardComponent } from './cards/card/card.component';
   standalone: true,
   imports: [RouterOutlet, AssetCardComponent, CardComponent],
   template:
-    '<ah-card [card]="card"></ah-card>'
+    '<ah-card [card]="cardE"></ah-card>' +
+    '<ah-card [card]="cardA"></ah-card>' +
+    '<ah-card [card]="cardS"></ah-card>',
+  styles: `:host {
+  @apply flex;
+  }`
 })
 export class AppComponent {
-  card: EventCard = {
+  cardE: EventCard = {
     cardType: CardType.Player,
     playerCardType: PlayerCardType.Event,
     class: PlayerCardClass.Seeker,
@@ -39,7 +45,59 @@ export class AppComponent {
     },
     copyright: {
       illustrator: 'Robert Laskey',
-      ffg: '2016 FFG'
-    }
+      ffg: '2016'
+    },
+    displayOptions: { textSize: 'm' }
+  };
+
+  cardA: AssetCard = {
+    cardType: CardType.Player,
+    playerCardType: PlayerCardType.Asset,
+    class: PlayerCardClass.Seeker,
+    cost: 1,
+    title: 'Исследовательские заметки',
+    skills: [SkillType.Intellect, SkillType.Intellect],
+    traits: [
+      { key: 'Item', displayValue: 'Вещь' },
+      { key: 'Tome', displayValue: 'Книга' },
+      { key: 'Science', displayValue: 'Наука' }
+    ],
+    slot: AssetSlot.Hand,
+    abilities: [
+      '#r#: After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.',
+      '#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.'
+    ],
+    setInfo: {
+      set: '09',
+      index: '045'
+    },
+    copyright: {
+      illustrator: 'Pixoloid Studious',
+      ffg: '2022'
+    },
+    displayOptions: { textSize: 'm' }
+  };
+
+  cardS: SkillCard = {
+    cardType: CardType.Player,
+    playerCardType: PlayerCardType.Skill,
+    class: PlayerCardClass.Mystic,
+    title: 'Обречённый на проклятья',
+    skills: [SkillType.Wild],
+    traits: [
+      { key: 'Innate', displayValue: 'Врождённый' },
+      { key: 'Cursed', displayValue: 'Проклятый' }
+    ],
+    abilities: ['Когда вы добавляете эту карту к проверке, добавьте в мешок хаоса до 3 жетонов #Z#.\n В этой проверке считайте модификатор каждого вытянутого жетона #Z# равным 0.'],
+    flavor: 'Не всякий скиталец — потерянный',
+    setInfo: {
+      set: '10',
+      index: '095'
+    },
+    copyright: {
+      illustrator: 'David Hovey',
+      ffg: '2024'
+    },
+    displayOptions: { textSize: 's' }
   };
 }

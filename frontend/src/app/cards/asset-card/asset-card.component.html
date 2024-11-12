@@ -1,53 +1,10 @@
-﻿<img
-  [height]="cardHeight"
-  [width]="cardWidth"
-  class="-z-10 rounded-xl"
-  [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
-/>
-<img
-  [height]="illustrationHeight"
-  [width]="cardWidth"
-  class="absolute top-7 -z-20"
-  [ngSrc]="imagesService.getIllustration(card().setInfo)"
-/>
-<div
-  class="text-outline absolute left-5 top-3 w-9 text-center font-teutonic text-3xl text-white"
->
-  {{ card().cost }}
-</div>
-<p class="absolute top-3 w-full text-center font-conkordia text-2xl">
-  {{ card().title }}
-</p>
-<p class="bold absolute left-5 top-[3.85rem] font-arno text-[11px] uppercase">
-  {{ card().playerCardType }}
-</p>
+﻿<ah-card-player-base [card]="card()"></ah-card-player-base>
+<ah-card-cost [card]="card()"></ah-card-cost>
+<ah-card-title [card]="card()" class="absolute top-3"></ah-card-title>
 
-<div class="absolute top-20">
-  @for (skill of card().skills; track $index) {
-    <div class="relative">
-      <img [ngSrc]="imagesService.getOverlay(CreateOverlay.skillBox(card().class))" width="54"
-           height="43" />
-      <img
-        [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill))" width="24" height="24"
-        class="absolute left-3 top-2"
-      />
-    </div>
-  }
-</div>
-
-<div
-  class="absolute top-80 w-full pl-5 pr-9 font-arno leading-4"
-  style="font-size: 18px"
->
-  <p class="mb-1 text-center font-arno-bold italic">
-    @for (trait of card().traits; track $index) {
-      <span>{{ trait.displayValue }}. </span>
-    }
-  </p>
-
-  @for (ability of card().abilities; track $index) {
-    <p class="mb-1" [innerHtml]="ability | withAhSymbols"></p>
-  }
+<div class="absolute top-80 w-full pl-5 pr-9 font-arno leading-4">
+  <ah-card-traits [card]="card()"></ah-card-traits>
+  <ah-card-abilities [card]="card()"></ah-card-abilities>
 </div>
 
 @if (card().slot) {
@@ -66,18 +23,4 @@
   </div>
 }
 
-<div
-  class="absolute bottom-1 flex h-3 w-full justify-between font-sans text-[0.5rem] text-white"
->
-  <span class="absolute left-6 top-0">Illus. {{ card().copyright.illustrator }}</span>
-  <span class="absolute left-0 top-0 w-full text-center">&copy; {{ card().copyright.ffg }}</span>
-  <span class="absolute right-6 top-0">
-    <img
-      [ngSrc]="imagesService.getSetIcon(card().setInfo.set)"
-      width="12"
-      height="12"
-      class="inline text-white invert"
-    />
-    {{ card().setInfo.index | trimStart: '0' }}
-  </span>
-</div>
+<ah-card-copyright [card]="card()"></ah-card-copyright>
