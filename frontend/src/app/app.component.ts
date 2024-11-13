@@ -13,16 +13,15 @@ import { AssetCardComponent } from './cards/asset-card/asset-card.component';
 import { CardType } from './models/card-base.model';
 import { CardComponent } from './cards/card/card.component';
 import { NgOptimizedImage } from '@angular/common';
+import { CardsHandComponent } from './cards-hand/cards-hand.component';
 
 @Component({
   selector: 'ah-root',
   standalone: true,
-  imports: [RouterOutlet, AssetCardComponent, CardComponent, NgOptimizedImage],
+  imports: [RouterOutlet, AssetCardComponent, CardComponent, NgOptimizedImage, CardsHandComponent],
   template:
     '<img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />' +
-    '<ah-card [card]="cardE"></ah-card>' +
-    '<ah-card [card]="cardA"></ah-card>' +
-    '<ah-card [card]="cardS"></ah-card>',
+    '<ah-cards-hand [cards]="[cardE, cardA, cardS]" class="w-3/5"></ah-cards-hand>',
   styles: `:host {
   @apply flex w-screen h-screen overflow-hidden;
   }`

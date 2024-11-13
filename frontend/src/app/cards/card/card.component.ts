@@ -3,7 +3,6 @@ import { CardBase, CardType } from '../../models/card-base.model';
 import { PlayerCardBase, PlayerCardType, AssetCard, EventCard, SkillCard } from '../../models/player-card.model';
 import { AsPipe } from '../../pipes/as.pipe';
 import { AssetCardComponent } from '../asset-card/asset-card.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { EventCardComponent } from '../event-card/event-card.component';
 import { SkillCardComponent } from '../skill-card/skill-card.component';
 
@@ -17,16 +16,10 @@ import { SkillCardComponent } from '../skill-card/skill-card.component';
     SkillCardComponent
   ],
   templateUrl: './card.component.html',
-  styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('flip', [
-      state('back', style({ transform: 'rotateY(0)' })),
-      state('front', style({ transform: 'rotateY(180deg)' })),
-      transition('* => back', [animate('0.75s')]),
-      transition('* => front', [animate('0.75s', style({ transform: 'rotateY(-180deg)' }))])
-    ])
-  ]
+  styles: `:host {
+  @apply overflow-hidden;
+  }`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CardComponent {
   card = input.required<CardBase>();
