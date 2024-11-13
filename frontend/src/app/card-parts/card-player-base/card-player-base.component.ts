@@ -7,16 +7,14 @@ import { CardSkillsComponent } from '../card-skills/card-skills.component';
 @Component({
   selector: 'ah-card-player-base',
   standalone: true,
-  imports: [
-    NgOptimizedImage,
-    CardSkillsComponent
-  ],
+  imports: [NgOptimizedImage, CardSkillsComponent],
   template: `
     <img
       [height]="cardHeight"
       [width]="cardWidth"
       class="-z-10 rounded-xl"
       [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
+      priority
     />
     <img
       [height]="illustrationHeight"
@@ -25,18 +23,19 @@ import { CardSkillsComponent } from '../card-skills/card-skills.component';
       [ngSrc]="imagesService.getIllustration(card().setInfo)"
     />
 
-    <p class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px] uppercase">
+    <p
+      class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px] uppercase"
+    >
       {{ card().playerCardType }}
     </p>
 
     <ah-card-skills [card]="card()" class="absolute top-20"></ah-card-skills>
   `,
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardPlayerBaseComponent {
-  constructor(protected readonly imagesService: ImagesUrlService) {
-  }
+  constructor(protected readonly imagesService: ImagesUrlService) {}
 
   card = input.required<PlayerCardBase>();
 

@@ -5,14 +5,14 @@ import { CardComponent } from '../cards/card/card.component';
 @Component({
   selector: 'ah-cards-hand',
   standalone: true,
-  imports: [
-    CardComponent
-  ],
+  imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
-  styles: `:host {
-  @apply flex flex-row;
-  }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styles: `
+    :host {
+      @apply relative block;
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardsHandComponent {
   cards = input.required<PlayerCardBase[]>();

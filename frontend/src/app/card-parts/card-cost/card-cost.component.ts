@@ -6,10 +6,12 @@ import { WithCost } from '../../models/player-card.model';
   standalone: true,
   imports: [],
   template: `{{ card().cost }}`,
-  styles: `:host {
-  @apply absolute left-5 top-3 text-outline w-9 text-center font-teutonic text-3xl text-white;
-  }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styles: `
+    :host {
+      @apply text-outline absolute left-5 top-3 w-9 text-center font-teutonic text-3xl text-white;
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardCostComponent {
   card = input.required<WithCost>();

@@ -1,6 +1,6 @@
 ﻿@switch (card().cardType) {
   @case (CardType.Player) {
-    @let playerCard = card() | as: PlayerCardBase ;
+    @let playerCard = card() | as: PlayerCardBase;
     @switch (playerCard.playerCardType) {
       @case (PlayerCardType.Asset) {
         <ah-asset-card [card]="playerCard | as: AssetCard"></ah-asset-card>
