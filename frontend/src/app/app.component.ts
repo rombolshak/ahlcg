@@ -12,17 +12,19 @@ import {
 import { AssetCardComponent } from './cards/asset-card/asset-card.component';
 import { CardType } from './models/card-base.model';
 import { CardComponent } from './cards/card/card.component';
+import { NgOptimizedImage } from '@angular/common';
 
 @Component({
   selector: 'ah-root',
   standalone: true,
-  imports: [RouterOutlet, AssetCardComponent, CardComponent],
+  imports: [RouterOutlet, AssetCardComponent, CardComponent, NgOptimizedImage],
   template:
+    '<img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />' +
     '<ah-card [card]="cardE"></ah-card>' +
     '<ah-card [card]="cardA"></ah-card>' +
     '<ah-card [card]="cardS"></ah-card>',
   styles: `:host {
-  @apply flex;
+  @apply flex w-screen h-screen overflow-hidden;
   }`
 })
 export class AppComponent {
