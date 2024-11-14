@@ -4,7 +4,7 @@ import { CardAbilitiesComponent } from '../../card-parts/card-abilities/card-abi
 import { CardCopyrightComponent } from '../../card-parts/card-copyright/card-copyright.component';
 import { CardCostComponent } from '../../card-parts/card-cost/card-cost.component';
 import { CardFlavorComponent } from '../../card-parts/card-flavor/card-flavor.component';
-import { CardPlayerBaseComponent } from '../../card-parts/card-player-base/card-player-base.component';
+import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
 import { CardTitleComponent } from '../../card-parts/card-title/card-title.component';
 import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.component';
 
@@ -16,16 +16,14 @@ import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.co
     CardCopyrightComponent,
     CardCostComponent,
     CardFlavorComponent,
-    CardPlayerBaseComponent,
+    PlayerCardComponent,
     CardTitleComponent,
-    CardTraitsComponent
+    CardTraitsComponent,
   ],
   templateUrl: './skill-card.component.html',
-  styles: `:host {
-  @apply relative block w-card h-card;
-  }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkillCardComponent {
   card = input.required<SkillCard>();
+  size = input<'s' | 'm' | 'l'>('m');
 }

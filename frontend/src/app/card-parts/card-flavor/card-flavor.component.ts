@@ -5,11 +5,12 @@ import { CardBase } from '../../models/card-base.model';
   selector: 'ah-card-flavor',
   standalone: true,
   imports: [],
-  template: `{{ card().flavor }}`,
-  styles: `:host {
-  @apply w-full px-12 text-center font-arno italic text-sm leading-3 whitespace-pre-wrap;
-  }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  template: `<p
+    class="w-full whitespace-pre-wrap px-12 text-center font-arno text-sm italic leading-3"
+  >
+    {{ card().flavor }}
+  </p>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardFlavorComponent {
   card = input.required<CardBase>();

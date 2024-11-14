@@ -10,7 +10,7 @@ import { CardAbilitiesComponent } from '../../card-parts/card-abilities/card-abi
 import { CardTitleComponent } from '../../card-parts/card-title/card-title.component';
 import { CardSkillsComponent } from '../../card-parts/card-skills/card-skills.component';
 import { CardCostComponent } from '../../card-parts/card-cost/card-cost.component';
-import { CardPlayerBaseComponent } from '../../card-parts/card-player-base/card-player-base.component';
+import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
 
 @Component({
   selector: 'ah-event-card',
@@ -26,15 +26,12 @@ import { CardPlayerBaseComponent } from '../../card-parts/card-player-base/card-
     CardTitleComponent,
     CardSkillsComponent,
     CardCostComponent,
-    CardPlayerBaseComponent
+    PlayerCardComponent,
   ],
   templateUrl: './event-card.component.html',
-  styles: `:host {
-  @apply relative block w-card h-card;
-  }`,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardComponent {
-
   card = input.required<EventCard>();
+  size = input<'s' | 'm' | 'l'>('m');
 }

@@ -27,7 +27,7 @@ import { CardsHandComponent } from './cards-hand/cards-hand.component';
   ],
   template:
     '<img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />' +
-    '<ah-cards-hand [cards]="[cardE, cardA, cardS]" class="w-3/5 justify-self-center"></ah-cards-hand>',
+    '<ah-cards-hand [cards]="[cardE, cardA, cardS]" class="w-4/5 justify-self-center"></ah-cards-hand>',
   styles: `
     :host {
       @apply grid h-screen w-screen overflow-hidden;

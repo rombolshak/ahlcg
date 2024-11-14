@@ -26,6 +26,7 @@ import { SkillCardComponent } from '../skill-card/skill-card.component';
 })
 export class CardComponent {
   card = input.required<CardBase>();
+  size = input<'s' | 'm' | 'l'>('m');
 
   protected readonly PlayerCardBase!: PlayerCardBase;
   protected readonly AssetCard!: AssetCard;

@@ -1,3 +1,5 @@
-﻿@for (card of cards(); track card.title) {
-  <ah-card [card]="card"></ah-card>
-}
+﻿<div class="flex">
+  @for (card of cards(); track card.title) {
+    <ah-card [card]="card" size="l"></ah-card>
+  }
+</div>

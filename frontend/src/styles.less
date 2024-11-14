@@ -3,17 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  .text-outline {
-    text-shadow:
-      0 1px 1px #000,
-      0 -1px 1px #000,
-      -1px 0 1px #000,
-      1px 0 1px #000,
-      1px 1px 1px #000,
-      1px -1px 1px #000,
-      -1px 1px 1px #000,
-      -1px -1px 1px #000;
-  }
 
   @font-face {
     font-family: "AHSymbol";
@@ -69,5 +58,18 @@
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/Teutonic.ttf") format("opentype");
+  }
+}
+
+@layer utilities {
+  .text-outline {
+    text-shadow: 0 1px 1px #000,
+      0 -1px 1px #000,
+    -1px 0 1px #000,
+    1px 0 1px #000,
+    1px 1px 1px #000,
+      1px -1px 1px #000,
+    -1px 1px 1px #000,
+      -1px -1px 1px #000;
   }
 }

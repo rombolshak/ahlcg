@@ -7,11 +7,6 @@ import { CardComponent } from '../cards/card/card.component';
   standalone: true,
   imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
-  styles: `
-    :host {
-      @apply relative block;
-    }
-  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardsHandComponent {

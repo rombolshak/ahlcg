@@ -3,13 +3,22 @@
     @let playerCard = card() | as: PlayerCardBase;
     @switch (playerCard.playerCardType) {
       @case (PlayerCardType.Asset) {
-        <ah-asset-card [card]="playerCard | as: AssetCard"></ah-asset-card>
+        <ah-asset-card
+          [card]="playerCard | as: AssetCard"
+          [size]="size()"
+        ></ah-asset-card>
       }
       @case (PlayerCardType.Event) {
-        <ah-event-card [card]="playerCard | as: EventCard"></ah-event-card>
+        <ah-event-card
+          [card]="playerCard | as: EventCard"
+          [size]="size()"
+        ></ah-event-card>
       }
       @case (PlayerCardType.Skill) {
-        <ah-skill-card [card]="playerCard | as: SkillCard"></ah-skill-card>
+        <ah-skill-card
+          [card]="playerCard | as: SkillCard"
+          [size]="size()"
+        ></ah-skill-card>
       }
     }
   }
