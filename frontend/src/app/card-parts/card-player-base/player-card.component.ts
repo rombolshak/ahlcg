@@ -22,7 +22,15 @@ export class PlayerCardComponent {
   card = input.required<PlayerCardBase>();
   size = input<'s' | 'm' | 'l'>('m');
 
-  cardWidth = 375;
-  cardHeight = 575;
-  illustrationHeight = 273;
+  cardWidths = {
+    s: 125,
+    m: 250,
+    l: 375,
+  };
+
+  cardHeights = {
+    s: 192,
+    m: 383,
+    l: 575,
+  };
 }

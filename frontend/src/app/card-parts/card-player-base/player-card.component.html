@@ -1,24 +1,28 @@
 ﻿<div
   [attr.data-size]="size()"
-  class="data-[size=l]:w-card-large data-[size=l]:h-card-large group relative block *:w-full"
+  class="data-[size=l]:w-card-large data-[size=l]:h-card-large
+    data-[size=m]:w-card-medium data-[size=s]:w-card-small
+    data-[size=m]:h-card-medium data-[size=s]:h-card-small group relative block
+    *:w-full"
 >
   <img
-    [height]="cardHeight"
-    [width]="cardWidth"
+    [height]="cardHeights[size()]"
+    [width]="cardWidths[size()]"
     class="-z-10 rounded-xl"
     [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
     priority
   />
   <img
-    [height]="illustrationHeight"
-    [width]="cardWidth"
-    class="absolute -top-8 -z-20"
+    [height]="cardWidths[size()]"
+    [width]="cardWidths[size()]"
+    class="absolute top-0 -z-20"
     [ngSrc]="imagesService.getIllustration(card().setInfo)"
   />
 
   <div>
     <span
-      class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px] uppercase"
+      class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px]
+        uppercase"
     >
       {{ card().playerCardType }}
     </span>
