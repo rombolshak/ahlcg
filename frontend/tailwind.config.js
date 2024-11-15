@@ -5,12 +5,12 @@ module.exports = {
     extend: {
       width: {
         "card-large": "375px",
-        "card-small": "125px",
+        "card-small": "160px",
         "card-medium": "250px",
       },
       height: {
         "card-large": "525px",
-        "card-small": "175px",
+        "card-small": "224px",
         "card-medium": "350px",
       },
       fontSize: {

@@ -35,11 +35,11 @@ export class AssetCardComponent {
   constructor(public imagesService: ImagesUrlService) {}
 
   card = input.required<AssetCard>();
-  size = input<'s' | 'm' | 'l'>('m');
-
-  illustrationHeight = 273;
+  slotSizes = {
+    l: 64,
+    m: 43,
+    s: 21,
+  };
 
   protected readonly CreateOverlay = CreateOverlay;
-  protected readonly cardWidth = 375;
-  protected readonly cardHeight = 575;
 }

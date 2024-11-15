@@ -1,34 +1,43 @@
 ﻿<div
-  [attr.data-size]="size()"
+  [attr.data-size]="card().displayOptions.cardSize"
   class="data-[size=l]:w-card-large data-[size=l]:h-card-large
     data-[size=m]:w-card-medium data-[size=s]:w-card-small
     data-[size=m]:h-card-medium data-[size=s]:h-card-small group relative block
     *:w-full"
 >
   <img
-    [height]="cardHeights[size()]"
-    [width]="cardWidths[size()]"
+    [height]="cardHeights[card().displayOptions.cardSize]"
+    [width]="cardWidths[card().displayOptions.cardSize]"
     class="-z-10 rounded-xl"
     [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
     priority
   />
   <img
-    [height]="cardWidths[size()]"
-    [width]="cardWidths[size()]"
+    [height]="cardWidths[card().displayOptions.cardSize]"
+    [width]="cardWidths[card().displayOptions.cardSize]"
     class="absolute top-0 -z-20"
     [ngSrc]="imagesService.getIllustration(card().setInfo)"
   />
 
   <div>
     <span
-      class="bold absolute left-5 top-[3.8rem] w-9 text-center font-arno text-[12px]
-        uppercase"
+      class="absolute group-data-[size=l]:left-[21px] group-data-[size=l]:top-[60px]
+        group-data-[size=l]:w-9 group-data-[size=l]:text-[12px]
+        group-data-[size=m]:left-[14px] group-data-[size=m]:top-[40px]
+        group-data-[size=m]:w-6 group-data-[size=m]:text-[8px]
+        group-data-[size=s]:left-[7px] group-data-[size=s]:top-[20px]
+        group-data-[size=s]:w-3 group-data-[size=s]:text-[4px] bold uppercase
+        text-center font-arno"
     >
       {{ card().playerCardType }}
     </span>
   </div>
 
-  <ah-card-skills [card]="card()" class="absolute top-20"></ah-card-skills>
+  <ah-card-skills
+    [card]="card()"
+    class="absolute group-data-[size=l]:top-[81px] group-data-[size=m]:top-[54px]
+      group-data-[size=s]:top-[27px]"
+  ></ah-card-skills>
 
   <ng-content></ng-content>
 </div>

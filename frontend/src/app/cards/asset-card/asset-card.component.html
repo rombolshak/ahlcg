@@ -1,18 +1,33 @@
-﻿<ah-player-card [card]="card()" [size]="size()">
+﻿<ah-player-card [card]="card()">
   <ah-card-cost [card]="card()"></ah-card-cost>
-  <ah-card-title [card]="card()" class="absolute top-3"></ah-card-title>
+  <ah-card-title
+    [card]="card()"
+    class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
+      group-data-[size=s]:top-0.5"
+  ></ah-card-title>
 
-  <div class="absolute top-80 pl-5 pr-9 font-arno leading-4">
+  <div
+    class="absolute group-data-[size=l]:top-[20rem] group-data-[size=l]:pl-[21px]
+      group-data-[size=l]:pr-[36px] group-data-[size=m]:top-[13.25rem]
+      group-data-[size=m]:pl-[14px] group-data-[size=m]:pr-[24px]
+      group-data-[size=s]:top-[6rem] group-data-[size=s]:pl-[7px]
+      group-data-[size=s]:pr-[12px]"
+  >
     <ah-card-traits [card]="card()"></ah-card-traits>
     <ah-card-abilities [card]="card()"></ah-card-abilities>
   </div>
 
   @if (card().slot) {
-    <div class="absolute bottom-4 right-3 flex flex-row-reverse">
+    <div
+      class="flex flex-row-reverse absolute group-data-[size=l]:bottom-[15px]
+        group-data-[size=l]:right-[12px] group-data-[size=m]:bottom-[10px]
+        group-data-[size=m]:right-[8px] group-data-[size=s]:bottom-[5px]
+        group-data-[size=s]:right-[4px]"
+    >
       <img
         [ngSrc]="imagesService.getOverlay(CreateOverlay.cardSlot(card().slot!))"
-        width="62"
-        height="62"
+        [width]="slotSizes[card().displayOptions.cardSize]"
+        [height]="slotSizes[card().displayOptions.cardSize]"
       />
 
       @if (card().additionalSlot) {
@@ -22,8 +37,8 @@
               CreateOverlay.cardSlot(card().additionalSlot!)
             )
           "
-          width="62"
-          height="62"
+          [width]="slotSizes[card().displayOptions.cardSize]"
+          [height]="slotSizes[card().displayOptions.cardSize]"
         />
       }
     </div>

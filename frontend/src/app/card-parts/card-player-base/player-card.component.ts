@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from '../../services/images-url.service';
 import { PlayerCardBase } from '../../models/player-card.model';
@@ -20,17 +15,16 @@ export class PlayerCardComponent {
   constructor(protected readonly imagesService: ImagesUrlService) {}
 
   card = input.required<PlayerCardBase>();
-  size = input<'s' | 'm' | 'l'>('m');
 
   cardWidths = {
-    s: 125,
+    s: 160,
     m: 250,
     l: 375,
   };
 
   cardHeights = {
-    s: 192,
-    m: 383,
-    l: 575,
+    s: 224,
+    m: 350,
+    l: 525,
   };
 }

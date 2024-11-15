@@ -33,5 +33,4 @@ import { PlayerCardComponent } from '../../card-parts/card-player-base/player-ca
 })
 export class EventCardComponent {
   card = input.required<EventCard>();
-  size = input<'s' | 'm' | 'l'>('m');
 }

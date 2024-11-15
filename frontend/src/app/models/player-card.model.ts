@@ -43,6 +43,7 @@ interface CardTrait {
 
 interface DisplayOptions {
   textSize: 's' | 'm';
+  cardSize: 's' | 'm' | 'l';
 }
 
 export interface PlayerCardBase extends CardBase {
@@ -55,18 +56,20 @@ export interface PlayerCardBase extends CardBase {
   displayOptions: DisplayOptions;
 }
 
-export type WithCost = { cost: number }
+export type WithCost = { cost: number };
 
-export type AssetCard = PlayerCardBase & WithCost & {
-  playerCardType: PlayerCardType.Asset;
-  slot?: AssetSlot;
-  additionalSlot?: AssetSlot;
-}
+export type AssetCard = PlayerCardBase &
+  WithCost & {
+    playerCardType: PlayerCardType.Asset;
+    slot?: AssetSlot;
+    additionalSlot?: AssetSlot;
+  };
 
-export type EventCard = PlayerCardBase & WithCost & {
-  playerCardType: PlayerCardType.Event;
-}
+export type EventCard = PlayerCardBase &
+  WithCost & {
+    playerCardType: PlayerCardType.Event;
+  };
 
 export type SkillCard = PlayerCardBase & {
   playerCardType: PlayerCardType.Skill;
-}
+};

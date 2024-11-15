@@ -25,5 +25,4 @@ import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.co
 })
 export class SkillCardComponent {
   card = input.required<SkillCard>();
-  size = input<'s' | 'm' | 'l'>('m');
 }

@@ -1,11 +1,21 @@
-﻿<ah-player-card [card]="card()" [size]="size()">
-  <ah-card-title [card]="card()" class="absolute top-3"></ah-card-title>
+﻿<ah-player-card [card]="card()">
+  <ah-card-title
+    [card]="card()"
+    class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
+      group-data-[size=s]:top-0.5"
+  ></ah-card-title>
 
-  <div class="absolute top-[22rem] pl-14 pr-8 font-arno leading-4">
+  <div
+    class="absolute group-data-[size=l]:top-[22rem] group-data-[size=l]:pl-14
+      group-data-[size=l]:pr-8 group-data-[size=m]:top-[14.75rem]
+      group-data-[size=m]:pl-10 group-data-[size=m]:pr-6
+      group-data-[size=s]:top-[7rem] group-data-[size=s]:pl-14
+      group-data-[size=s]:pr-8 font-arno leading-4"
+  >
     <ah-card-traits [card]="card()"></ah-card-traits>
     <ah-card-abilities [card]="card()"></ah-card-abilities>
   </div>
 
-  <ah-card-flavor [card]="card()" class="absolute bottom-12"></ah-card-flavor>
+  <ah-card-flavor [card]="card()"></ah-card-flavor>
   <ah-card-copyright [card]="card()"></ah-card-copyright>
 </ah-player-card>
