@@ -3,15 +3,15 @@
   <ah-card-title
     [card]="card()"
     class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
-      group-data-[size=s]:top-0.5"
+      group-data-[size=s]:top-[7px]"
   ></ah-card-title>
 
   <div
     class="absolute group-data-[size=l]:top-[20rem] group-data-[size=l]:pl-[21px]
       group-data-[size=l]:pr-[36px] group-data-[size=m]:top-[13.25rem]
       group-data-[size=m]:pl-[14px] group-data-[size=m]:pr-[24px]
-      group-data-[size=s]:top-[6rem] group-data-[size=s]:pl-[7px]
-      group-data-[size=s]:pr-[12px]"
+      group-data-[size=s]:top-[8.5rem] group-data-[size=s]:pl-[7px]
+      group-data-[size=s]:pr-[10px]"
   >
     <ah-card-traits [card]="card()"></ah-card-traits>
     <ah-card-abilities [card]="card()"></ah-card-abilities>
@@ -21,8 +21,8 @@
     <div
       class="flex flex-row-reverse absolute group-data-[size=l]:bottom-[15px]
         group-data-[size=l]:right-[12px] group-data-[size=m]:bottom-[10px]
-        group-data-[size=m]:right-[8px] group-data-[size=s]:bottom-[5px]
-        group-data-[size=s]:right-[4px]"
+        group-data-[size=m]:right-[8px] group-data-[size=s]:bottom-[8px]
+        group-data-[size=s]:right-[6px]"
     >
       <img
         [ngSrc]="imagesService.getOverlay(CreateOverlay.cardSlot(card().slot!))"

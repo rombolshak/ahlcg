@@ -27,7 +27,7 @@ import { PlayerCardBase } from '../../models/player-card.model';
           class="absolute
           group-data-[size=l]:left-3 group-data-[size=l]:top-[9px]
           group-data-[size=m]:left-2 group-data-[size=m]:top-[5px]
-          group-data-[size=s]:left-1 group-data-[size=s]:top-[2px]"
+          group-data-[size=s]:left-1.5 group-data-[size=s]:top-[4px]"
         />
       </div>
     }
@@ -43,12 +43,12 @@ export class CardSkillsComponent {
   skillBox = {
     l: { w: 54, h: 42 },
     m: { w: 36, h: 28 },
-    s: { w: 18, h: 14 },
+    s: { w: 24, h: 19 },
   };
   skillIcon = {
     l: 24,
     m: 16,
-    s: 8,
+    s: 11,
   };
   protected readonly CreateOverlay = CreateOverlay;
 }

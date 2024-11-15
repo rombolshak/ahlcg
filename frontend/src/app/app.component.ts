@@ -87,7 +87,7 @@ export class AppComponent {
       illustrator: 'Pixoloid Studious',
       ffg: '2022',
     },
-    displayOptions: { textSize: 'm', cardSize: 'm' },
+    displayOptions: { textSize: 'm', cardSize: 's' },
   };
 
   cardS: SkillCard = {
@@ -112,6 +112,6 @@ export class AppComponent {
       illustrator: 'David Hovey',
       ffg: '2024',
     },
-    displayOptions: { textSize: 's', cardSize: 'l' },
+    displayOptions: { textSize: 's', cardSize: 's' },
   };
 }

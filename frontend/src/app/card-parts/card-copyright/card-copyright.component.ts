@@ -11,15 +11,18 @@ import { PlayerCardBase } from '../../models/player-card.model';
   imports: [NgOptimizedImage, TrimStartPipe],
   template: `
     <div
-      class="absolute bottom-px h-3 w-full font-sans text-white group-data-[size=l]:text-[9px] group-data-[size=m]:text-[6px] group-data-[size=s]:text[3px]"
+      class="absolute bottom-px h-3 w-full font-sans text-white group-data-[size=l]:text-[9px] group-data-[size=m]:text-[6px] group-data-[size=s]:text-[4px]"
     >
-      <span class="absolute left-6 bottom-0"
+      <span
+        class="absolute group-data-[size=l]:left-6 group-data-[size=m]:left-5 group-data-[size=s]:left-3 bottom-0"
         >Illus. {{ card().copyright.illustrator }}</span
       >
       <span class="absolute left-0 bottom-0 w-full text-center"
         >&copy; {{ card().copyright.ffg }} FFG</span
       >
-      <span class="absolute right-6 bottom-0">
+      <span
+        class="absolute group-data-[size=l]:right-6 group-data-[size=m]:right-5 group-data-[size=s]:right-3 bottom-0"
+      >
         <img
           [ngSrc]="imagesService.getSetIcon(card().setInfo.set)"
           [width]="iconSize[card().displayOptions.cardSize]"
