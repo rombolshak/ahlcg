@@ -17,6 +17,9 @@ module.exports = {
         xxs: "0.5rem",
         m: "18px",
       },
+      gridTemplateColumns: {
+        16: "repeat(16, minmax(0, 1fr))",
+      },
       fontFamily: {
         conkordia: ["Conkordia"],
         teutonic: ["Teutonic"],

@@ -17,11 +17,7 @@ import { SkillCardComponent } from '../skill-card/skill-card.component';
   standalone: true,
   imports: [AsPipe, AssetCardComponent, EventCardComponent, SkillCardComponent],
   templateUrl: './card.component.html',
-  styles: `
-    :host {
-      @apply overflow-hidden;
-    }
-  `,
+  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {

@@ -1,5 +1,11 @@
-﻿<div class="flex">
+﻿<div class="flex" [style.--card-offset]="cardOffset">
   @for (card of cards(); track card.title) {
-    <ah-card [card]="card" size="m"></ah-card>
+    <ah-card
+      [card]="card"
+      class="mr-[var(--card-offset)] last-of-type:mr-0 z-[var(--data-index)] hover:z-50
+        hover:scale-150 hover:-translate-y-[11.5rem] hover:mr-0 origin-bottom
+        transition-[margin,translate,transform]"
+      [attr.data-index]="$index"
+    ></ah-card>
   }
 </div>

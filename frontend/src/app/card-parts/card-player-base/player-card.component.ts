@@ -16,15 +16,18 @@ export class PlayerCardComponent {
 
   card = input.required<PlayerCardBase>();
 
-  cardWidths = {
+  static cardWidths = {
     s: 160,
     m: 250,
     l: 375,
   };
 
-  cardHeights = {
+  static cardHeights = {
     s: 224,
     m: 350,
     l: 525,
   };
+
+  cardWidths = PlayerCardComponent.cardWidths;
+  cardHeights = PlayerCardComponent.cardHeights;
 }

@@ -3,7 +3,7 @@
   class="data-[size=l]:w-card-large data-[size=l]:h-card-large
     data-[size=m]:w-card-medium data-[size=s]:w-card-small
     data-[size=m]:h-card-medium data-[size=s]:h-card-small group relative block
-    *:w-full"
+    *:w-full outline-2 outline outline-sky-500 rounded-xl"
 >
   <img
     [height]="cardHeights[card().displayOptions.cardSize]"
@@ -15,7 +15,7 @@
   <img
     [height]="cardWidths[card().displayOptions.cardSize]"
     [width]="cardWidths[card().displayOptions.cardSize]"
-    class="absolute top-0 -z-20"
+    class="absolute top-0 -z-20 rounded-xl"
     [ngSrc]="imagesService.getIllustration(card().setInfo)"
   />
 

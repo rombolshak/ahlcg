@@ -27,10 +27,10 @@ import { CardsHandComponent } from './cards-hand/cards-hand.component';
   ],
   template:
     '<img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />' +
-    '<ah-cards-hand [cards]="[cardE, cardA, cardS]" class="w-4/5 justify-self-center"></ah-cards-hand>',
+    '<ah-cards-hand [cards]="[cardE, cardA, cardS, cardE, cardA, cardS, cardE, cardA, cardS,cardE, cardA, cardS]" class="col-start-4 col-span-10 row-start-9"></ah-cards-hand>',
   styles: `
     :host {
-      @apply grid h-screen w-screen overflow-hidden;
+      @apply grid grid-cols-16 grid-rows-9 h-screen w-screen;
     }
   `,
 })
