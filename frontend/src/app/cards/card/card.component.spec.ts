@@ -10,14 +10,12 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CardComponent, NoopAnimationsModule]
-    })
-      .compileComponents();
+      imports: [CardComponent, NoopAnimationsModule],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CardComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('front', {} as CardBase);
-    fixture.componentRef.setInput('back', {} as CardBase);
+    fixture.componentRef.setInput('card', {} as CardBase);
     fixture.detectChanges();
   });
 

@@ -2,8 +2,9 @@
   @for (card of cards(); track card.title) {
     <ah-card
       [card]="card"
-      class="mr-[var(--card-offset)] last-of-type:mr-0 z-[var(--data-index)] hover:z-50
-        hover:scale-150 hover:-translate-y-[11.5rem] hover:mr-0 origin-bottom
+      [style.z-index]="$index"
+      class="mr-[var(--card-offset)] last-of-type:mr-0 hover:z-50 hover:scale-150
+        hover:-translate-y-[11.5rem] hover:mr-0 origin-bottom
         transition-[margin,translate,transform]"
       [attr.data-index]="$index"
     ></ah-card>

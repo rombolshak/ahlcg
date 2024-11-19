@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardAbilitiesComponent } from './card-abilities.component';
+import { cardA } from '../../models/test/test-cards';
+import { By } from '@angular/platform-browser';
 
 describe('CardAbilityComponent', () => {
   let component: CardAbilitiesComponent;
@@ -8,16 +10,22 @@ describe('CardAbilityComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CardAbilitiesComponent]
-    })
-      .compileComponents();
+      imports: [CardAbilitiesComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CardAbilitiesComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('card', cardA);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should print abilities', () => {
+    expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(
+      cardA.abilities.length,
+    );
   });
 });

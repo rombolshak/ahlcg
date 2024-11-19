@@ -10,10 +10,10 @@ describe('WithAhSymbolsPipe', () => {
           provide: DomSanitizer,
           useValue: {
             sanitize: (x: string) => x,
-            bypassSecurityTrustHtml: (x: string) => x
-          }
-        }
-      ]
+            bypassSecurityTrustHtml: (x: string) => x,
+          },
+        },
+      ],
     }).compileComponents();
   });
 
@@ -24,12 +24,16 @@ describe('WithAhSymbolsPipe', () => {
 
   it('replaces symbol if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
-    expect(pipe.transform('ab#c#de')).toEqual('ab<span class="font-ah-symbol text-base/4">c</span>de');
+    expect(pipe.transform('ab#c#de')).toEqual(
+      'ab<span class="font-ah-symbol">c</span>de',
+    );
   });
 
   it('replaces two symbols if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
-    expect(pipe.transform('ab#cc#de')).toEqual('ab<span class="font-ah-symbol text-base/4">cc</span>de');
+    expect(pipe.transform('ab#cc#de')).toEqual(
+      'ab<span class="font-ah-symbol">cc</span>de',
+    );
   });
 
   it('doesnt replace symbol if not needed', () => {

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EventCardComponent } from './event-card.component';
+import { cardA, cardE } from '../../models/test/test-cards';
 
 describe('EventCardComponent', () => {
   let component: EventCardComponent;
@@ -8,12 +9,12 @@ describe('EventCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EventCardComponent]
-    })
-    .compileComponents();
+      imports: [EventCardComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EventCardComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('card', cardE);
     fixture.detectChanges();
   });
 
