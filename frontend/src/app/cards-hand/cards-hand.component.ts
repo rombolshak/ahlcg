@@ -2,10 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   input,
-  OnInit,
   output,
 } from '@angular/core';
 import { CardComponent } from '../cards/card/card.component';
@@ -37,13 +35,13 @@ import {
       state(
         'normal',
         style({
-          'margin-right': 'var(--card-offset)',
+          width: 'var(--card-offset)',
         }),
       ),
       state(
         'focused',
         style({
-          'margin-right': 0,
+          width: '160px',
           'z-index': 50,
           scale: '150%',
           transform: 'translateY(-8rem)',
@@ -53,6 +51,7 @@ import {
       transition(':enter', [
         style({
           opacity: 0,
+          width: 0,
           scale: 2.25,
           transform: 'translate(10rem, -10rem)',
         }),
@@ -61,6 +60,7 @@ import {
             '0.5s ease-out',
             style({
               opacity: 1,
+              width: 'var(--card-offset)',
               transform: 'translate(-5vh, -10rem)',
             }),
           ),
@@ -70,7 +70,11 @@ import {
       transition(':leave', [
         animate(
           '0.25s ease-in',
-          style({ opacity: 0, transform: 'translate(0vh, -10rem)' }),
+          style({
+            opacity: 0,
+            transform: 'translate(-10vh, -10rem)',
+            width: 0,
+          }),
         ),
       ]),
     ]),
@@ -84,7 +88,7 @@ export class CardsHandComponent {
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
   focusedCardId?: number;
-  cardOffset = computed(() => `-${this.calcOffsetFrom(this.cards())}px`);
+  cardOffset = computed(() => `${this.calcOffsetFrom(this.cards())}px`);
   cardWidth = PlayerCardComponent.cardWidths['s'];
 
   private calcOffsetFrom(cards: Card[]) {
@@ -99,6 +103,6 @@ export class CardsHandComponent {
       this.cardWidth * 0.8,
     );
 
-    return value;
+    return this.cardWidth - value;
   }
 }
