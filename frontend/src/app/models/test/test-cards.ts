@@ -8,6 +8,9 @@
   SkillType,
 } from '../player-card.model';
 import { CardType } from '../card-info.model';
+import { DisplayOptions } from '../display.options';
+
+export const displayOption: DisplayOptions = { cardSize: 'm', textSize: 'm' };
 
 export const cardE: EventCard = {
   id: '1',

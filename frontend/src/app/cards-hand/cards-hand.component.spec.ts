@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardsHandComponent } from './cards-hand.component';
 import { cardA, cardE, cardS } from '../models/test/test-cards';
 import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('CardsHandComponent', () => {
   let component: CardsHandComponent;
@@ -10,12 +11,25 @@ describe('CardsHandComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CardsHandComponent],
+      imports: [CardsHandComponent, NoopAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardsHandComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('cards', [cardA, cardS, cardE]);
+    fixture.componentRef.setInput('cards', [
+      {
+        id: 1,
+        cardInfo: cardA,
+      },
+      {
+        id: 2,
+        cardInfo: cardS,
+      },
+      {
+        id: 13,
+        cardInfo: cardE,
+      },
+    ]);
     fixture.detectChanges();
   });
 
