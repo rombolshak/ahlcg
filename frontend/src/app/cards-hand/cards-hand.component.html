@@ -1,9 +1,9 @@
-﻿<div class="flex" [style.--card-offset]="cardOffset()">
+﻿<div class="flex transition-all" [style.--card-offset]="cardOffset()">
   @for (card of cards(); track card.id) {
     <ah-card
       [card]="card.cardInfo"
       [displayOptions]="cardDisplayOptions"
-      class="mr-[var(--card-offset)] last-of-type:mr-0 origin-bottom relative isolate"
+      class="origin-bottom isolate last-of-type:!mr-0"
       [attr.data-index]="$index"
       (click)="cardSelected.emit(card)"
       [@cardState]="card.id === focusedCardId ? 'focused' : 'normal'"

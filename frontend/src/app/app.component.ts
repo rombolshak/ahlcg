@@ -16,7 +16,7 @@ import { CardInfo } from './models/card-info.model';
     <ah-cards-hand
       [cards]="cards()"
       (cardSelected)="removeCard($event.id)"
-      class="col-start-4 col-span-10 row-start-9"
+      class="col-start-3 col-span-12 row-start-9"
     ></ah-cards-hand>
   `,
   styles: `

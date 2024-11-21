@@ -8,13 +8,13 @@ import {
   OnInit,
   output,
 } from '@angular/core';
-import { PlayerCardBase } from '../models/player-card.model';
 import { CardComponent } from '../cards/card/card.component';
 import { PlayerCardComponent } from '../card-parts/card-player-base/player-card.component';
 import { Card } from '../models/card.model';
 import { DisplayOptions } from '../models/display.options';
 import {
   animate,
+  sequence,
   state,
   style,
   transition,
@@ -34,7 +34,12 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('cardState', [
-      state('normal', style({})),
+      state(
+        'normal',
+        style({
+          'margin-right': 'var(--card-offset)',
+        }),
+      ),
       state(
         'focused',
         style({
@@ -45,6 +50,29 @@ import {
         }),
       ),
       transition('normal <=> focused', [animate('0.2s ease-in-out')]),
+      transition(':enter', [
+        style({
+          opacity: 0,
+          scale: 2.25,
+          transform: 'translate(10rem, -10rem)',
+        }),
+        sequence([
+          animate(
+            '0.5s ease-out',
+            style({
+              opacity: 1,
+              transform: 'translate(-5vh, -10rem)',
+            }),
+          ),
+          animate('0.5s 0.25s ease-in-out'),
+        ]),
+      ]),
+      transition(':leave', [
+        animate(
+          '0.25s ease-in',
+          style({ opacity: 0, transform: 'translate(0vh, -10rem)' }),
+        ),
+      ]),
     ]),
   ],
 })
@@ -56,21 +84,21 @@ export class CardsHandComponent {
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
   focusedCardId?: number;
-  cardOffset = computed(() => this.calcOffsetFrom(this.cards()));
+  cardOffset = computed(() => `-${this.calcOffsetFrom(this.cards())}px`);
+  cardWidth = PlayerCardComponent.cardWidths['s'];
 
   private calcOffsetFrom(cards: Card[]) {
     if (cards.length == 0) return;
-    const cardWidth = PlayerCardComponent.cardWidths['s'];
     const value = Math.min(
       Math.max(
-        (cardWidth * cards.length -
+        (this.cardWidth * cards.length -
           this.element.nativeElement.getBoundingClientRect().width) /
           (cards.length - 1),
-        cardWidth * 0.2,
+        this.cardWidth * 0.4,
       ),
-      cardWidth * 0.8,
+      this.cardWidth * 0.8,
     );
 
-    return `${-value}px`;
+    return value;
   }
 }
