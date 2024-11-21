@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardBase } from '../../models/card-base.model';
+import { CardInfo } from '../../models/card-info.model';
 
 @Component({
   selector: 'ah-card-flavor',
@@ -16,5 +16,5 @@ import { CardBase } from '../../models/card-base.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardFlavorComponent {
-  card = input.required<CardBase>();
+  card = input.required<CardInfo>();
 }

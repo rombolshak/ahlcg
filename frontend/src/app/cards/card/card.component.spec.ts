@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CardBase } from '../../models/card-base.model';
+import { CardInfo } from '../../models/card-info.model';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -15,7 +15,7 @@ describe('CardComponent', () => {
 
     fixture = TestBed.createComponent(CardComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', {} as CardBase);
+    fixture.componentRef.setInput('card', {} as CardInfo);
     fixture.detectChanges();
   });
 

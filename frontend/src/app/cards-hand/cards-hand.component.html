@@ -1,12 +1,14 @@
-﻿<div class="flex" [style.--card-offset]="cardOffset">
-  @for (card of cards(); track card.title) {
+﻿<div class="flex" [style.--card-offset]="cardOffset()">
+  @for (card of cards(); track card.id) {
     <ah-card
-      [card]="card"
-      [style.z-index]="$index"
-      class="mr-[var(--card-offset)] last-of-type:mr-0 hover:z-50 hover:scale-150
-        hover:-translate-y-[11.5rem] hover:mr-0 origin-bottom
-        transition-[margin,translate,transform]"
+      [card]="card.cardInfo"
+      [displayOptions]="cardDisplayOptions"
+      class="mr-[var(--card-offset)] last-of-type:mr-0 origin-bottom relative isolate"
       [attr.data-index]="$index"
+      (click)="cardSelected.emit(card)"
+      [@cardState]="card.id === focusedCardId ? 'focused' : 'normal'"
+      (mouseenter)="focusedCardId = card.id"
+      (mouseleave)="focusedCardId = undefined"
     ></ah-card>
   }
 </div>

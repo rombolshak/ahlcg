@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardBase, CardType } from '../../models/card-base.model';
+import { CardInfo, CardType } from '../../models/card-info.model';
 import {
   PlayerCardBase,
   PlayerCardType,
@@ -11,17 +11,26 @@ import { AsPipe } from '../../pipes/as.pipe';
 import { AssetCardComponent } from '../asset-card/asset-card.component';
 import { EventCardComponent } from '../event-card/event-card.component';
 import { SkillCardComponent } from '../skill-card/skill-card.component';
+import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-card',
   standalone: true,
-  imports: [AsPipe, AssetCardComponent, EventCardComponent, SkillCardComponent],
+  imports: [
+    AsPipe,
+    AssetCardComponent,
+    EventCardComponent,
+    SkillCardComponent,
+    PlayerCardComponent,
+  ],
   templateUrl: './card.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {
-  card = input.required<CardBase>();
+  card = input.required<CardInfo>();
+  displayOptions = input.required<DisplayOptions>();
 
   protected readonly PlayerCardBase!: PlayerCardBase;
   protected readonly AssetCard!: AssetCard;

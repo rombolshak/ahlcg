@@ -1,4 +1,4 @@
-﻿<ah-player-card [card]="card()">
+﻿<ah-player-card [card]="card()" [displayOptions]="displayOptions()">
   <ah-card-cost [card]="card()"></ah-card-cost>
   <ah-card-title
     [card]="card()"
@@ -13,8 +13,14 @@
       group-data-[size=s]:top-[8.5rem] group-data-[size=s]:pl-[7px]
       group-data-[size=s]:pr-[10px]"
   >
-    <ah-card-traits [card]="card()"></ah-card-traits>
-    <ah-card-abilities [card]="card()"></ah-card-abilities>
+    <ah-card-traits
+      [card]="card()"
+      [displayOptions]="displayOptions()"
+    ></ah-card-traits>
+    <ah-card-abilities
+      [card]="card()"
+      [displayOptions]="displayOptions()"
+    ></ah-card-abilities>
   </div>
 
   @if (card().slot) {
@@ -26,8 +32,8 @@
     >
       <img
         [ngSrc]="imagesService.getOverlay(CreateOverlay.cardSlot(card().slot!))"
-        [width]="slotSizes[card().displayOptions.cardSize]"
-        [height]="slotSizes[card().displayOptions.cardSize]"
+        [width]="slotSizes[displayOptions().cardSize]"
+        [height]="slotSizes[displayOptions().cardSize]"
       />
 
       @if (card().additionalSlot) {
@@ -37,12 +43,15 @@
               CreateOverlay.cardSlot(card().additionalSlot!)
             )
           "
-          [width]="slotSizes[card().displayOptions.cardSize]"
-          [height]="slotSizes[card().displayOptions.cardSize]"
+          [width]="slotSizes[displayOptions().cardSize]"
+          [height]="slotSizes[displayOptions().cardSize]"
         />
       }
     </div>
   }
 
-  <ah-card-copyright [card]="card()"></ah-card-copyright>
+  <ah-card-copyright
+    [card]="card()"
+    [displayOptions]="displayOptions()"
+  ></ah-card-copyright>
 </ah-player-card>

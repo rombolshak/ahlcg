@@ -1,8 +1,9 @@
 ﻿export enum CardType {
-  Player = 'player'
+  Player = 'player',
 }
 
-export interface CardBase {
+export interface CardInfo {
+  id: string;
   cardType: CardType;
   title: string;
   subtitle?: string;
@@ -10,11 +11,11 @@ export interface CardBase {
   copyright: {
     illustrator: string;
     ffg: string;
-  },
-  setInfo: SetInfo
+  };
+  setInfo: SetInfo;
 }
 
 export type SetInfo = {
   set: string;
   index: string;
-}
+};

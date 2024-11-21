@@ -13,6 +13,7 @@ import { CardTitleComponent } from '../../card-parts/card-title/card-title.compo
 import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.component';
 import { CardAbilitiesComponent } from '../../card-parts/card-abilities/card-abilities.component';
 import { CardCopyrightComponent } from '../../card-parts/card-copyright/card-copyright.component';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-asset-card',
@@ -35,6 +36,7 @@ export class AssetCardComponent {
   constructor(public imagesService: ImagesUrlService) {}
 
   card = input.required<AssetCard>();
+  displayOptions = input.required<DisplayOptions>();
   slotSizes = {
     l: 64,
     m: 43,

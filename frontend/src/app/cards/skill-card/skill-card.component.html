@@ -1,4 +1,4 @@
-﻿<ah-player-card [card]="card()">
+﻿<ah-player-card [card]="card()" [displayOptions]="displayOptions()">
   <ah-card-title
     [card]="card()"
     class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
@@ -12,10 +12,19 @@
       group-data-[size=s]:top-[9.5rem] group-data-[size=s]:pl-6
       group-data-[size=s]:pr-4 font-arno"
   >
-    <ah-card-traits [card]="card()"></ah-card-traits>
-    <ah-card-abilities [card]="card()"></ah-card-abilities>
+    <ah-card-traits
+      [card]="card()"
+      [displayOptions]="displayOptions()"
+    ></ah-card-traits>
+    <ah-card-abilities
+      [card]="card()"
+      [displayOptions]="displayOptions()"
+    ></ah-card-abilities>
   </div>
 
   <ah-card-flavor [card]="card()"></ah-card-flavor>
-  <ah-card-copyright [card]="card()"></ah-card-copyright>
+  <ah-card-copyright
+    [card]="card()"
+    [displayOptions]="displayOptions()"
+  ></ah-card-copyright>
 </ah-player-card>

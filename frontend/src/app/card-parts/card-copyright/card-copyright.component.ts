@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { TrimStartPipe } from '../../pipes/trim-start.pipe';
-import { CardBase } from '../../models/card-base.model';
 import { ImagesUrlService } from '../../services/images-url.service';
 import { PlayerCardBase } from '../../models/player-card.model';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-card-copyright',
@@ -25,8 +25,8 @@ import { PlayerCardBase } from '../../models/player-card.model';
       >
         <img
           [ngSrc]="imagesService.getSetIcon(card().setInfo.set)"
-          [width]="iconSize[card().displayOptions.cardSize]"
-          [height]="iconSize[card().displayOptions.cardSize]"
+          [width]="iconSize[displayOptions().cardSize]"
+          [height]="iconSize[displayOptions().cardSize]"
           class="inline text-white invert"
         />
         {{ card().setInfo.index | trimStart: '0' }}
@@ -39,6 +39,7 @@ export class CardCopyrightComponent {
   constructor(protected imagesService: ImagesUrlService) {}
 
   card = input.required<PlayerCardBase>();
+  displayOptions = input.required<DisplayOptions>();
   iconSize = {
     l: 12,
     m: 8,

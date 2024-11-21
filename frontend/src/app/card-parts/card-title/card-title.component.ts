@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardBase } from '../../models/card-base.model';
+import { CardInfo } from '../../models/card-info.model';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -18,6 +18,6 @@ import { NgClass } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardTitleComponent {
-  card = input.required<CardBase>();
+  card = input.required<CardInfo>();
   align = input<'left' | 'center'>('center');
 }

@@ -5,6 +5,7 @@ import {
   ImagesUrlService,
 } from '../../services/images-url.service';
 import { PlayerCardBase } from '../../models/player-card.model';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-card-skills',
@@ -17,13 +18,13 @@ import { PlayerCardBase } from '../../models/player-card.model';
           [ngSrc]="
             imagesService.getOverlay(CreateOverlay.skillBox(card().class))
           "
-          [width]="skillBox[card().displayOptions.cardSize].w"
-          [height]="skillBox[card().displayOptions.cardSize].h"
+          [width]="skillBox[displayOptions().cardSize].w"
+          [height]="skillBox[displayOptions().cardSize].h"
         />
         <img
           [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill))"
-          [width]="skillIcon[card().displayOptions.cardSize]"
-          [height]="skillIcon[card().displayOptions.cardSize]"
+          [width]="skillIcon[displayOptions().cardSize]"
+          [height]="skillIcon[displayOptions().cardSize]"
           class="absolute
           group-data-[size=l]:left-3 group-data-[size=l]:top-[9px]
           group-data-[size=m]:left-2 group-data-[size=m]:top-[5px]
@@ -39,7 +40,7 @@ export class CardSkillsComponent {
   constructor(protected imagesService: ImagesUrlService) {}
 
   card = input.required<PlayerCardBase>();
-
+  displayOptions = input.required<DisplayOptions>();
   skillBox = {
     l: { w: 54, h: 42 },
     m: { w: 36, h: 28 },

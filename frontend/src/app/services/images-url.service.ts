@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
-import { PlayerCardClass, AssetSlot, PlayerCardType, SkillType } from '../models/player-card.model';
-import { SetInfo } from '../models/card-base.model';
+import {
+  PlayerCardClass,
+  AssetSlot,
+  PlayerCardType,
+  SkillType,
+} from '../models/player-card.model';
+import { SetInfo } from '../models/card-info.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ImagesUrlService {
   getTemplate(type: string, cardClass: string): string {
@@ -22,7 +27,10 @@ export class ImagesUrlService {
     return `/assets/images/illustrations/${info.set}/${info.index}.webp`;
   }
 
-  private getOverlayInternal(type: OverlayType, cardClass: PlayerCardClass | AssetSlot | SkillType): string {
+  private getOverlayInternal(
+    type: OverlayType,
+    cardClass: PlayerCardClass | AssetSlot | SkillType,
+  ): string {
     return `/assets/images/card-overlays/${OverlayType[type]}-${cardClass}.png`;
   }
 }
@@ -30,19 +38,22 @@ export class ImagesUrlService {
 enum OverlayType {
   SkillBox,
   SkillIcon,
-  Slot
+  Slot,
 }
 
-type Overlay = {
-  type: OverlayType.SkillBox;
-  value: PlayerCardClass;
-} | {
-  type: OverlayType.SkillIcon;
-  value: SkillType
-} | {
-  type: OverlayType.Slot;
-  value: AssetSlot
-}
+type Overlay =
+  | {
+      type: OverlayType.SkillBox;
+      value: PlayerCardClass;
+    }
+  | {
+      type: OverlayType.SkillIcon;
+      value: SkillType;
+    }
+  | {
+      type: OverlayType.Slot;
+      value: AssetSlot;
+    };
 
 export class CreateOverlay {
   static skillBox(value: PlayerCardClass): Overlay {

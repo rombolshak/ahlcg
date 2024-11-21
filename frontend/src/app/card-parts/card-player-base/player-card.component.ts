@@ -3,6 +3,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from '../../services/images-url.service';
 import { PlayerCardBase } from '../../models/player-card.model';
 import { CardSkillsComponent } from '../card-skills/card-skills.component';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-player-card',
@@ -15,7 +16,7 @@ export class PlayerCardComponent {
   constructor(protected readonly imagesService: ImagesUrlService) {}
 
   card = input.required<PlayerCardBase>();
-
+  displayOptions = input.required<DisplayOptions>();
   static cardWidths = {
     s: 160,
     m: 250,

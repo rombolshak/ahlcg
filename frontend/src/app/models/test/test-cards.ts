@@ -7,9 +7,10 @@
   SkillCard,
   SkillType,
 } from '../player-card.model';
-import { CardType } from '../card-base.model';
+import { CardType } from '../card-info.model';
 
 export const cardE: EventCard = {
+  id: '1',
   cardType: CardType.Player,
   playerCardType: PlayerCardType.Event,
   class: PlayerCardClass.Seeker,
@@ -33,10 +34,10 @@ export const cardE: EventCard = {
     illustrator: 'Robert Laskey',
     ffg: '2016',
   },
-  displayOptions: { textSize: 'm', cardSize: 's' },
 };
 
 export const cardA: AssetCard = {
+  id: '2',
   cardType: CardType.Player,
   playerCardType: PlayerCardType.Asset,
   class: PlayerCardClass.Seeker,
@@ -61,10 +62,10 @@ export const cardA: AssetCard = {
     illustrator: 'Pixoloid Studious',
     ffg: '2022',
   },
-  displayOptions: { textSize: 'm', cardSize: 's' },
 };
 
 export const cardS: SkillCard = {
+  id: '3',
   cardType: CardType.Player,
   playerCardType: PlayerCardType.Skill,
   class: PlayerCardClass.Mystic,
@@ -86,5 +87,4 @@ export const cardS: SkillCard = {
     illustrator: 'David Hovey',
     ffg: '2024',
   },
-  displayOptions: { textSize: 's', cardSize: 's' },
 };

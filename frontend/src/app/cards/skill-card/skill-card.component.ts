@@ -7,6 +7,7 @@ import { CardFlavorComponent } from '../../card-parts/card-flavor/card-flavor.co
 import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
 import { CardTitleComponent } from '../../card-parts/card-title/card-title.component';
 import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.component';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-skill-card',
@@ -25,4 +26,5 @@ import { CardTraitsComponent } from '../../card-parts/card-traits/card-traits.co
 })
 export class SkillCardComponent {
   card = input.required<SkillCard>();
+  displayOptions = input.required<DisplayOptions>();
 }

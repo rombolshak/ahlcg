@@ -11,6 +11,7 @@ import { CardTitleComponent } from '../../card-parts/card-title/card-title.compo
 import { CardSkillsComponent } from '../../card-parts/card-skills/card-skills.component';
 import { CardCostComponent } from '../../card-parts/card-cost/card-cost.component';
 import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
+import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-event-card',
@@ -33,4 +34,5 @@ import { PlayerCardComponent } from '../../card-parts/card-player-base/player-ca
 })
 export class EventCardComponent {
   card = input.required<EventCard>();
+  displayOptions = input.required<DisplayOptions>();
 }

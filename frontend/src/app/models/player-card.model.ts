@@ -1,4 +1,4 @@
-﻿import { CardBase, CardType } from './card-base.model';
+﻿import { CardInfo, CardType } from './card-info.model';
 
 export enum PlayerCardType {
   Asset = 'Asset',
@@ -41,19 +41,13 @@ interface CardTrait {
   displayValue: string;
 }
 
-interface DisplayOptions {
-  textSize: 's' | 'm';
-  cardSize: 's' | 'm' | 'l';
-}
-
-export interface PlayerCardBase extends CardBase {
+export interface PlayerCardBase extends CardInfo {
   cardType: CardType.Player;
   playerCardType: PlayerCardType;
   class: PlayerCardClass;
   skills: SkillType[];
   traits: CardTrait[];
   abilities: string[];
-  displayOptions: DisplayOptions;
 }
 
 export type WithCost = { cost: number };
