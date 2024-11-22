@@ -1,5 +1,4 @@
 import { Component, signal, WritableSignal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { cardA, cardE, cardS } from './models/test/test-cards';
 import { NgOptimizedImage } from '@angular/common';
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
@@ -8,8 +7,7 @@ import { CardInfo } from './models/card-info.model';
 
 @Component({
   selector: 'ah-root',
-  standalone: true,
-  imports: [RouterOutlet, NgOptimizedImage, CardsHandComponent],
+  imports: [NgOptimizedImage, CardsHandComponent],
   template: `
     <img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />
     <button (click)="addCard()" class="bg-red-400">ADD CARD</button>

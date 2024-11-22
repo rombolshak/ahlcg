@@ -16,14 +16,7 @@ import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-card',
-  standalone: true,
-  imports: [
-    AsPipe,
-    AssetCardComponent,
-    EventCardComponent,
-    SkillCardComponent,
-    PlayerCardComponent,
-  ],
+  imports: [AsPipe, AssetCardComponent, EventCardComponent, SkillCardComponent],
   templateUrl: './card.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,

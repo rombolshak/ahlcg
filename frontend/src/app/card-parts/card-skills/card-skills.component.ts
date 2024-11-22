@@ -8,10 +8,9 @@ import { PlayerCardBase } from '../../models/player-card.model';
 import { DisplayOptions } from '../../models/display.options';
 
 @Component({
-  selector: 'ah-card-skills',
-  standalone: true,
-  imports: [NgOptimizedImage],
-  template: `
+    selector: 'ah-card-skills',
+    imports: [NgOptimizedImage],
+    template: `
     @for (skill of card().skills; track $index) {
       <div class="relative flex items-center">
         <img
@@ -33,8 +32,8 @@ import { DisplayOptions } from '../../models/display.options';
       </div>
     }
   `,
-  styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    styles: ``,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CardSkillsComponent {
   constructor(protected imagesService: ImagesUrlService) {}

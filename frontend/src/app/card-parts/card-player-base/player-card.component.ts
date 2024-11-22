@@ -6,11 +6,10 @@ import { CardSkillsComponent } from '../card-skills/card-skills.component';
 import { DisplayOptions } from '../../models/display.options';
 
 @Component({
-  selector: 'ah-player-card',
-  standalone: true,
-  imports: [NgOptimizedImage, CardSkillsComponent],
-  templateUrl: './player-card.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'ah-player-card',
+    imports: [NgOptimizedImage, CardSkillsComponent],
+    templateUrl: './player-card.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlayerCardComponent {
   constructor(protected readonly imagesService: ImagesUrlService) {}

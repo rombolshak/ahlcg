@@ -21,8 +21,7 @@ import {
 
 @Component({
   selector: 'ah-cards-hand',
-  standalone: true,
-  imports: [CardComponent, PlayerCardComponent],
+  imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
   styles: `
     :host {

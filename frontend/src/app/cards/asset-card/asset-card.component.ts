@@ -17,11 +17,8 @@ import { DisplayOptions } from '../../models/display.options';
 
 @Component({
   selector: 'ah-asset-card',
-  standalone: true,
   imports: [
     NgOptimizedImage,
-    WithAhSymbolsPipe,
-    TrimStartPipe,
     PlayerCardComponent,
     CardCostComponent,
     CardTitleComponent,
