@@ -1,16 +1,13 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import {
-  CreateOverlay,
-  ImagesUrlService,
-} from '../../services/images-url.service';
-import { PlayerCardBase } from '../../models/player-card.model';
-import { DisplayOptions } from '../../models/display.options';
+import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
+import { PlayerCardBase } from 'models/player-card.model';
+import { DisplayOptions } from 'models/display.options';
 
 @Component({
-    selector: 'ah-card-skills',
-    imports: [NgOptimizedImage],
-    template: `
+  selector: 'ah-card-skills',
+  imports: [NgOptimizedImage],
+  template: `
     @for (skill of card().skills; track $index) {
       <div class="relative flex items-center">
         <img
@@ -32,8 +29,8 @@ import { DisplayOptions } from '../../models/display.options';
       </div>
     }
   `,
-    styles: ``,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  styles: ``,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardSkillsComponent {
   constructor(protected imagesService: ImagesUrlService) {}

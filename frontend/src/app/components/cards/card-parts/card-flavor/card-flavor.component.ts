@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from '../../models/card-info.model';
+import { CardInfo } from 'models/card-info.model';
 
 @Component({
-    selector: 'ah-card-flavor',
-    imports: [],
-    template: `<p
+  selector: 'ah-card-flavor',
+  imports: [],
+  template: `<p
     class="absolute group-data-[size=l]:bottom-12 group-data-[size=m]:bottom-8
       group-data-[size=s]:bottom-5 group-data-[size=l]:px-12 group-data-[size=m]:px-8 group-data-[size=s]:px-4
       w-full whitespace-pre-wrap text-center font-arno italic
@@ -12,7 +12,7 @@ import { CardInfo } from '../../models/card-info.model';
   >
     {{ card().flavor }}
   </p>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardFlavorComponent {
   card = input.required<CardInfo>();

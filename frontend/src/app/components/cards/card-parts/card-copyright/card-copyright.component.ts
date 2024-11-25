@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import { TrimStartPipe } from '../../pipes/trim-start.pipe';
-import { ImagesUrlService } from '../../services/images-url.service';
-import { PlayerCardBase } from '../../models/player-card.model';
-import { DisplayOptions } from '../../models/display.options';
+import { TrimStartPipe } from 'pipes/trim-start.pipe';
+import { ImagesUrlService } from 'services/images-url.service';
+import { PlayerCardBase } from 'models/player-card.model';
+import { DisplayOptions } from 'models/display.options';
 
 @Component({
-    selector: 'ah-card-copyright',
-    imports: [NgOptimizedImage, TrimStartPipe],
-    template: `
+  selector: 'ah-card-copyright',
+  imports: [NgOptimizedImage, TrimStartPipe],
+  template: `
     <div
       class="absolute bottom-px h-3 w-full font-sans text-white group-data-[size=l]:text-[9px] group-data-[size=m]:text-[6px] group-data-[size=s]:text-[4px]"
     >
@@ -32,7 +32,7 @@ import { DisplayOptions } from '../../models/display.options';
       </span>
     </div>
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardCopyrightComponent {
   constructor(protected imagesService: ImagesUrlService) {}

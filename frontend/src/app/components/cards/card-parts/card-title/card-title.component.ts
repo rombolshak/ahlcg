@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from '../../models/card-info.model';
+import { CardInfo } from 'models/card-info.model';
 import { NgClass } from '@angular/common';
 
 @Component({
-    selector: 'ah-card-title',
-    imports: [NgClass],
-    template: ` <div
+  selector: 'ah-card-title',
+  imports: [NgClass],
+  template: ` <div
     class="w-full font-conkordia
     group-data-[size=l]:pl-[81px] group-data-[size=l]:pr-[81px] group-data-[size=l]:text-2xl
     group-data-[size=m]:pl-[48px] group-data-[size=m]:pr-[40px] group-data-[size=m]:text-lg/[18px]
@@ -14,7 +14,7 @@ import { NgClass } from '@angular/common';
   >
     {{ card().title }}
   </div>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardTitleComponent {
   card = input.required<CardInfo>();

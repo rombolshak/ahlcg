@@ -1,16 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostBinding,
-  input,
-} from '@angular/core';
-import { PlayerCardBase } from '../../models/player-card.model';
-import { DisplayOptions } from '../../models/display.options';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { PlayerCardBase } from 'models/player-card.model';
+import { DisplayOptions } from 'models/display.options';
 
 @Component({
-    selector: 'ah-card-traits',
-    imports: [],
-    template: `
+  selector: 'ah-card-traits',
+  imports: [],
+  template: `
     <p
       [attr.data-text-size]="displayOptions().textSize"
       class="text-center font-arno-bold italic
@@ -23,7 +18,7 @@ import { DisplayOptions } from '../../models/display.options';
       }
     </p>
   `,
-    changeDetection: ChangeDetectionStrategy.Default
+  changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CardTraitsComponent {
   card = input.required<PlayerCardBase>();

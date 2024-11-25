@@ -1,18 +1,17 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo, CardType } from '../../models/card-info.model';
+import { CardInfo, CardType } from 'models/card-info.model';
 import {
   PlayerCardBase,
   PlayerCardType,
   AssetCard,
   EventCard,
   SkillCard,
-} from '../../models/player-card.model';
-import { AsPipe } from '../../pipes/as.pipe';
+} from 'models/player-card.model';
+import { AsPipe } from 'pipes/as.pipe';
 import { AssetCardComponent } from '../asset-card/asset-card.component';
 import { EventCardComponent } from '../event-card/event-card.component';
 import { SkillCardComponent } from '../skill-card/skill-card.component';
-import { PlayerCardComponent } from '../../card-parts/card-player-base/player-card.component';
-import { DisplayOptions } from '../../models/display.options';
+import { DisplayOptions } from 'models/display.options';
 
 @Component({
   selector: 'ah-card',

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { WithCost } from '../../models/player-card.model';
+import { WithCost } from 'models/player-card.model';
 
 @Component({
-    selector: 'ah-card-cost',
-    imports: [],
-    template: `<span
+  selector: 'ah-card-cost',
+  imports: [],
+  template: `<span
     class="absolute
     group-data-[size=l]:left-[21px] group-data-[size=l]:top-3 group-data-[size=l]:w-9 group-data-[size=l]:text-3xl
     group-data-[size=m]:left-[14px] group-data-[size=m]:top-1 group-data-[size=m]:w-6 group-data-[size=m]:text-2xl
@@ -12,7 +12,7 @@ import { WithCost } from '../../models/player-card.model';
     text-center font-teutonic text-white text-outline "
     >{{ card().cost }}</span
   >`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardCostComponent {
   card = input.required<WithCost>();

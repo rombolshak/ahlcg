@@ -6,10 +6,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { CardComponent } from '../cards/card/card.component';
-import { PlayerCardComponent } from '../card-parts/card-player-base/player-card.component';
-import { Card } from '../models/card.model';
-import { DisplayOptions } from '../models/display.options';
 import {
   animate,
   sequence,
@@ -18,6 +14,10 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { CardComponent } from 'components/cards/card/card.component';
+import { Card } from 'models/card.model';
+import { DisplayOptions } from 'models/display.options';
+import { CardConstants } from '../../../../models/card.constants';
 
 @Component({
   selector: 'ah-cards-hand',
@@ -88,7 +88,7 @@ export class CardsHandComponent {
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
   focusedCardId?: number;
   cardOffset = computed(() => `${this.calcOffsetFrom(this.cards())}px`);
-  cardWidth = PlayerCardComponent.cardWidths['s'];
+  cardWidth = CardConstants.cardWidths['s'];
 
   private calcOffsetFrom(cards: Card[]) {
     if (cards.length == 0) return;

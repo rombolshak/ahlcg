@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { WithAhSymbolsPipe } from '../../pipes/with-ah-symbols.pipe';
-import { PlayerCardBase } from '../../models/player-card.model';
-import { DisplayOptions } from '../../models/display.options';
+import { WithAhSymbolsPipe } from 'pipes/with-ah-symbols.pipe';
+import { PlayerCardBase } from 'models/player-card.model';
+import { DisplayOptions } from 'models/display.options';
 
 @Component({
-    selector: 'ah-card-abilities',
-    imports: [WithAhSymbolsPipe],
-    template: ` @for (ability of card().abilities; track $index) {
+  selector: 'ah-card-abilities',
+  imports: [WithAhSymbolsPipe],
+  template: ` @for (ability of card().abilities; track $index) {
     <p
       [attr.data-text-size]="displayOptions().textSize"
       class="group-data-[size=l]:mb-1 group-data-[size=l]:data-[text-size=m]:text-[18px]/4 group-data-[size=l]:data-[text-size=s]:text-[16px]/4
@@ -16,8 +16,8 @@ import { DisplayOptions } from '../../models/display.options';
       [innerHtml]="ability | withAhSymbols"
     ></p>
   }`,
-    styles: ``,
-    changeDetection: ChangeDetectionStrategy.OnPush
+  styles: ``,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardAbilitiesComponent {
   card = input.required<PlayerCardBase>();
