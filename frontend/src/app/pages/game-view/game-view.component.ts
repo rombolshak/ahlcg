@@ -25,7 +25,7 @@ import { InvestigatorComponent } from './components/investigator/investigator.co
   styles: `
     :host {
       display: grid;
-      grid-template-columns: 15rem 1fr 10rem;
+      grid-template-columns: 17rem 1fr 10rem;
       grid-template-rows: 7rem 1fr repeat(2, 7rem);
       grid-column-gap: 0;
       grid-row-gap: 0;

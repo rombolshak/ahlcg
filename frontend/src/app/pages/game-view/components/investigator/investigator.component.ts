@@ -15,9 +15,28 @@ import { NgOptimizedImage } from '@angular/common';
         fill
         class="-z-30"
       />
+
+      <div class="w-2 flex flex-col *:flex-1 mr-1 rounded-md">
+        <div class="border-sky-700 border-4 mb-1 "></div>
+        <div class="border-sky-700 border-4 mb-1 "></div>
+        <div class="border-sky-300 border-4 mb-1 "></div>
+        <div class="border-sky-300 border-4 mb-1 "></div>
+        <div class="border-sky-300 border-4 mb-1 "></div>
+        <div class="border-sky-300 border-4 mb-1 "></div>
+        <div class="border-sky-300 border-4 mb-1 last:mb-0"></div>
+      </div>
+
+      <div class="w-2 flex flex-col items-stretch *:flex-1 mr-2 rounded-md">
+        <div class="border-red-700 border-4 mb-1 "></div>
+        <div class="border-red-700 border-4 mb-1 "></div>
+        <div class="border-red-300 border-4 mb-1 "></div>
+        <div class="border-red-300 border-4 mb-1 "></div>
+        <div class="border-red-300 border-4 mb-1 last:mb-0"></div>
+      </div>
+
       <img
         width="100"
-        height="153"
+        height="150"
         [ngSrc]="imagesService.getInvestigator(card.setInfo)"
         class="rounded-lg "
       />
@@ -98,10 +117,10 @@ import { NgOptimizedImage } from '@angular/common';
       </div>
 
       <div class="flex flex-col justify-center items-center text-center">
-        <div class="relative flex w-[5.5rem] h-14 justify-between items-center">
+        <div class="relative flex w-[5rem] h-14 justify-between items-center">
           <img
             ngSrc="/assets/images/card-overlays/SkillBox-Seeker.png"
-            class="-z-20 absolute h-14 -scale-x-100"
+            class="-z-20 absolute h-14 -scale-x-100 left-0.5"
             width="73"
             height="69"
           />
@@ -113,13 +132,13 @@ import { NgOptimizedImage } from '@angular/common';
             height="28"
           />
 
-          <span class="text-slate-700 font-teutonic text-4xl mr-5">14</span>
+          <span class="text-slate-700 font-teutonic text-4xl mr-3">14</span>
         </div>
 
-        <div class="relative flex w-[5.5rem] h-14 justify-between items-center">
+        <div class="relative flex w-[5rem] h-14 justify-between items-center">
           <img
             ngSrc="/assets/images/card-overlays/SkillBox-Seeker.png"
-            class="-z-20 absolute h-14 -scale-x-100"
+            class="-z-20 absolute h-14 -scale-x-100 left-0.5"
             width="73"
             height="69"
           />
@@ -131,7 +150,7 @@ import { NgOptimizedImage } from '@angular/common';
             height="28"
           />
 
-          <span class="text-slate-700 font-teutonic text-4xl mr-5">2</span>
+          <span class="text-slate-700 font-teutonic text-4xl mr-3">2</span>
         </div>
       </div>
     </div>
