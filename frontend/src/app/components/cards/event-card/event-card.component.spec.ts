@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EventCardComponent } from './event-card.component';
-import { cardA, cardE, displayOption } from '../../models/test/test-cards';
+import { cardA, cardE, displayOption } from 'models/test/test-cards';
 
 describe('EventCardComponent', () => {
   let component: EventCardComponent;

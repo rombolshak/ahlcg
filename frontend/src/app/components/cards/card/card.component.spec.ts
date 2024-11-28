@@ -2,13 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CardInfo } from '../../models/card-info.model';
-import {
-  cardA,
-  cardE,
-  cardS,
-  displayOption,
-} from '../../models/test/test-cards';
+import { CardInfo } from 'models/card-info.model';
+import { cardA, cardE, cardS, displayOption } from 'models/test/test-cards';
 import { By } from '@angular/platform-browser';
 
 describe('CardComponent', () => {

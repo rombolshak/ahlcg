@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlayerCardComponent } from './player-card.component';
-import { cardA, displayOption } from '../../models/test/test-cards';
+import { cardA, displayOption } from 'models/test/test-cards';
 
 describe('CardPlayerBaseComponent', () => {
   let component: PlayerCardComponent;

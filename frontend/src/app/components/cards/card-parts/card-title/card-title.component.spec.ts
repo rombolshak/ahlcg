@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardTitleComponent } from './card-title.component';
-import { cardA, displayOption } from '../../models/test/test-cards';
+import { cardA, displayOption } from 'models/test/test-cards';
 import { By } from '@angular/platform-browser';
 
 describe('CardTitleComponent', () => {
