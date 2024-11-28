@@ -4,8 +4,8 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { CardInfo } from '../../models/card-info.model';
-import { cardA, cardE, cardS } from '../../models/test/test-cards';
+import { CardInfo } from 'models/card-info.model';
+import { cardA, cardE, cardS } from 'models/test/test-cards';
 import { Card } from '../../models/card.model';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { InvestigatorComponent } from './components/investigator/investigator.component';

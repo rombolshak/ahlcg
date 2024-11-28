@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { ImagesUrlService } from '../../../../services/images-url.service';
-import { CardInfo, CardType } from '../../../../models/card-info.model';
+import { ImagesUrlService } from 'services/images-url.service';
+import { CardInfo, CardType } from 'models/card-info.model';
 import { NgOptimizedImage } from '@angular/common';
 
 @Component({
@@ -184,7 +184,7 @@ export class InvestigatorComponent {
     },
     id: '01002',
     title: 'Daisy Walker',
-    cardType: CardType.Investigator,
+    cardType: CardType.Player,
     copyright: {
       ffg: '2016',
       illustrator: 'Magali Villeneuve',

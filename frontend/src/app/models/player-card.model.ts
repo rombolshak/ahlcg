@@ -4,6 +4,7 @@ export enum PlayerCardType {
   Asset = 'Asset',
   Skill = 'Skill',
   Event = 'Event',
+  Investigator = 'Investigator',
 }
 
 export enum PlayerCardClass {
@@ -45,7 +46,7 @@ export interface PlayerCardBase extends CardInfo {
   cardType: CardType.Player;
   playerCardType: PlayerCardType;
   class: PlayerCardClass;
-  skills: SkillType[];
+  skills: Map<SkillType, number>;
   traits: CardTrait[];
   abilities: string[];
 }
@@ -66,4 +67,8 @@ export type EventCard = PlayerCardBase &
 
 export type SkillCard = PlayerCardBase & {
   playerCardType: PlayerCardType.Skill;
+};
+
+export type InvestigatorModel = PlayerCardBase & {
+  playerCardType: PlayerCardType.Investigator;
 };

@@ -19,7 +19,10 @@ export const cardE: EventCard = {
   class: PlayerCardClass.Seeker,
   cost: 3,
   title: '"I\'ve got a plan!"',
-  skills: [SkillType.Intellect, SkillType.Combat],
+  skills: new Map<SkillType, number>([
+    [SkillType.Intellect, 1],
+    [SkillType.Combat, 1],
+  ]),
   traits: [
     { key: 'Insight', displayValue: 'Insight' },
     { key: 'Tactic', displayValue: 'Tactic' },
@@ -46,7 +49,7 @@ export const cardA: AssetCard = {
   class: PlayerCardClass.Seeker,
   cost: 1,
   title: 'Исследовательские заметки',
-  skills: [SkillType.Intellect, SkillType.Intellect],
+  skills: new Map<SkillType, number>([[SkillType.Intellect, 2]]),
   traits: [
     { key: 'Item', displayValue: 'Вещь' },
     { key: 'Tome', displayValue: 'Книга' },
@@ -73,7 +76,7 @@ export const cardS: SkillCard = {
   playerCardType: PlayerCardType.Skill,
   class: PlayerCardClass.Mystic,
   title: 'Обречённый на проклятья',
-  skills: [SkillType.Wild],
+  skills: new Map<SkillType, number>([[SkillType.Wild, 1]]),
   traits: [
     { key: 'Innate', displayValue: 'Врождённый' },
     { key: 'Cursed', displayValue: 'Проклятый' },

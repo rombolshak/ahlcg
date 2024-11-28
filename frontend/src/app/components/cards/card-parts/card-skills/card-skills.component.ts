@@ -9,24 +9,28 @@ import { DisplayOptions } from 'models/display.options';
   imports: [NgOptimizedImage],
   template: `
     @for (skill of card().skills; track $index) {
-      <div class="relative flex items-center">
-        <img
-          [ngSrc]="
-            imagesService.getOverlay(CreateOverlay.skillBox(card().class))
-          "
-          [width]="skillBox[displayOptions().cardSize].w"
-          [height]="skillBox[displayOptions().cardSize].h"
-        />
-        <img
-          [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill))"
-          [width]="skillIcon[displayOptions().cardSize]"
-          [height]="skillIcon[displayOptions().cardSize]"
-          class="absolute
+      @for (_ of [].constructor(skill[1]); track $index) {
+        <div class="relative flex items-center">
+          <img
+            [ngSrc]="
+              imagesService.getOverlay(CreateOverlay.skillBox(card().class))
+            "
+            [width]="skillBox[displayOptions().cardSize].w"
+            [height]="skillBox[displayOptions().cardSize].h"
+          />
+          <img
+            [ngSrc]="
+              imagesService.getOverlay(CreateOverlay.skillIcon(skill[0]))
+            "
+            [width]="skillIcon[displayOptions().cardSize]"
+            [height]="skillIcon[displayOptions().cardSize]"
+            class="absolute
           group-data-[size=l]:left-3 group-data-[size=l]:top-[9px]
           group-data-[size=m]:left-2 group-data-[size=m]:top-[5px]
           group-data-[size=s]:left-1.5 group-data-[size=s]:top-[4px]"
-        />
-      </div>
+          />
+        </div>
+      }
     }
   `,
   styles: ``,
