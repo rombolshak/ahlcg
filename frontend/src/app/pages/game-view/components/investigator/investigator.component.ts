@@ -8,7 +8,7 @@ import { NgOptimizedImage } from '@angular/common';
   imports: [NgOptimizedImage],
   template: `
     <div
-      class="flex p-1 rounded-lg outline outline-2 outline-orange-300 relative"
+      class="flex p-1 pr-0 rounded-lg outline outline-2 outline-orange-300 relative"
     >
       <img
         ngSrc="/assets/images/card-templates/Investigator-Seeker.webp"
@@ -95,42 +95,44 @@ import { NgOptimizedImage } from '@angular/common';
             height="25"
           />
         </div>
-        <!--
-                <img
-                  src="assets/images/card-overlays/SkillIcon-Intellect.png"
-                  width="24"
-                />
+      </div>
 
-                <img
-                  src="assets/images/card-overlays/SkillIcon-Combat.png"
-                  width="24"
-                />
+      <div class="flex flex-col justify-center items-center text-center">
+        <div class="relative flex w-[5.5rem] h-14 justify-between items-center">
+          <img
+            ngSrc="/assets/images/card-overlays/SkillBox-Seeker.png"
+            class="-z-20 absolute h-14 -scale-x-100"
+            width="73"
+            height="69"
+          />
 
-                <img
-                  src="assets/images/card-overlays/SkillIcon-Agility.png"
-                  width="24"
-                />
-                <span class="text-white font-teutonic text-2xl">1</span>
-                <span class="text-white font-teutonic text-2xl">0</span>
-                <span class="text-white font-teutonic text-2xl">3</span>
+          <img
+            class="max-w-none h-7 ml-5"
+            ngSrc="assets/images/card-overlays/resource.png"
+            width="28"
+            height="28"
+          />
 
-                <img
-                  src="assets/images/card-overlays/resource.png"
-                  class="col-start-3 col-end-5 row-start-1 row-end-3 filter brightness-75 ml-2"
-                />
-                <img
-                  src="assets/images/card-overlays/clue.png"
-                  class=" col-start-3 col-end-5 row-start-3 row-end-5 filter brightness-75 ml-2"
-                />
-                <span
-                  class="z-10 text-white font-teutonic text-4xl col-start-3 col-end-5 row-start-1 row-end-3 ml-2"
-                  >4</span
-                >
-                <span
-                  class="z-10 text-white font-teutonic text-4xl col-start-3 col-end-5 row-start-3 row-end-5 ml-2"
-                  >1</span
-                >
-                -->
+          <span class="text-slate-700 font-teutonic text-4xl mr-5">14</span>
+        </div>
+
+        <div class="relative flex w-[5.5rem] h-14 justify-between items-center">
+          <img
+            ngSrc="/assets/images/card-overlays/SkillBox-Seeker.png"
+            class="-z-20 absolute h-14 -scale-x-100"
+            width="73"
+            height="69"
+          />
+
+          <img
+            class="max-w-none h-7 ml-5"
+            ngSrc="assets/images/card-overlays/clue.png"
+            width="28"
+            height="28"
+          />
+
+          <span class="text-slate-700 font-teutonic text-4xl mr-5">2</span>
+        </div>
       </div>
     </div>
   `,
