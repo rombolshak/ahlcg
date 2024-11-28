@@ -1,4 +1,7 @@
-﻿<div class="flex -ml-[var(--card-offset)]" [style.--card-offset]="cardOffset()">
+﻿<div
+  class="flex ml-[calc(var(--card-offset)_-_160px)]"
+  [style.--card-offset]="cardOffset()"
+>
   @for (card of cards(); track card.id) {
     <ah-card
       [card]="card.cardInfo"

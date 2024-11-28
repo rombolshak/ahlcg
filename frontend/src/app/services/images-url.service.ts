@@ -27,6 +27,10 @@ export class ImagesUrlService {
     return `/assets/images/illustrations/${info.set}/${info.index}.webp`;
   }
 
+  getInvestigator(info: SetInfo): string {
+    return `/assets/images/investigators/${info.set}/${info.index}.webp`;
+  }
+
   private getOverlayInternal(
     type: OverlayType,
     cardClass: PlayerCardClass | AssetSlot | SkillType,
