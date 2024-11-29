@@ -26,7 +26,7 @@ module.exports = function (config) {
     coverageReporter: {
       dir: require("path").join(__dirname, "./coverage/ahlcg"),
       subdir: ".",
-      reporters: [{ type: "json" }, { type: "html" }],
+      reporters: [{ type: "lcov" }, { type: "html" }],
     },
     reporters: ["progress", "kjhtml"],
     browsers: ["Chrome"],
