@@ -94,7 +94,6 @@ export class CardsHandComponent {
   private calcOffsetFrom(cards: Card[]) {
     let container = this.element.nativeElement.getBoundingClientRect().width;
     if (container == 0) container = 600;
-    console.log(container);
     if (cards.length < 2) return this.cardWidth;
     const value = Math.min(
       Math.max(
