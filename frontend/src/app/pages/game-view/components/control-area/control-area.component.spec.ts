@@ -8,12 +8,13 @@ describe('ControlAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ControlAreaComponent]
-    })
-    .compileComponents();
+      imports: [ControlAreaComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ControlAreaComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('assets', []);
+    fixture.componentRef.setInput('states', []);
     fixture.detectChanges();
   });
 

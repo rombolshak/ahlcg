@@ -23,7 +23,7 @@ import { AssetState } from '../../../../models/asset.state';
         [cardClass]="asset.class"
       >
         <img
-          [ngSrc]="imagesServise.getMiniIllustration(asset.setInfo)"
+          [ngSrc]="imagesService.getMiniIllustration(asset.setInfo)"
           width="240"
           height="180"
         />
@@ -70,5 +70,5 @@ import { AssetState } from '../../../../models/asset.state';
 export class ControlAreaComponent {
   assets = input.required<AssetCard[]>();
   states = input.required<Map<string, AssetState>>();
-  imagesServise = inject(ImagesUrlService);
+  imagesService = inject(ImagesUrlService);
 }
