@@ -5,10 +5,11 @@ import { CardConstants } from 'models/card.constants';
 import { ImagesUrlService } from 'services/images-url.service';
 import { PlayerCardBase } from 'models/player-card.model';
 import { DisplayOptions } from 'models/display.options';
+import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
 
 @Component({
   selector: 'ah-player-card',
-  imports: [NgOptimizedImage, CardSkillsComponent],
+  imports: [NgOptimizedImage, CardSkillsComponent, CardOutlineDirective],
   templateUrl: './player-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

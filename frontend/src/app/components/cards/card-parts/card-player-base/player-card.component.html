@@ -3,7 +3,9 @@
   class="data-[size=l]:w-card-large data-[size=l]:h-card-large
     data-[size=m]:w-card-medium data-[size=s]:w-card-small
     data-[size=m]:h-card-medium data-[size=s]:h-card-small group relative block
-    *:w-full outline-2 outline outline-sky-500 rounded-xl"
+    *:w-full rounded-xl"
+  ahCardOutline
+  [cardClass]="card().class"
 >
   <img
     [height]="cardHeights[displayOptions().cardSize]"

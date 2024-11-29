@@ -8,10 +8,11 @@ import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 import { InvestigatorModel } from '../../../../models/player-card.model';
 import { InvestigatorState } from '../../../../models/investigator.state';
+import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
 
 @Component({
   selector: 'ah-investigator',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, CardOutlineDirective],
   templateUrl: 'investigator.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
