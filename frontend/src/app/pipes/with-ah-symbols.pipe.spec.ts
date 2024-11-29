@@ -24,15 +24,15 @@ describe('WithAhSymbolsPipe', () => {
 
   it('replaces symbol if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
-    expect(pipe.transform('ab#c#de')).toEqual(
-      'ab<span class="font-ah-symbol">c</span>de',
+    expect(pipe.transform('ab#c#de@f@g')).toEqual(
+      'ab<span class="font-ah-symbol">c</span>de<span class="font-arno-bold italic">f</span>g',
     );
   });
 
   it('replaces two symbols if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
-    expect(pipe.transform('ab#cc#de')).toEqual(
-      'ab<span class="font-ah-symbol">cc</span>de',
+    expect(pipe.transform('ab#cc#de@ff@g')).toEqual(
+      'ab<span class="font-ah-symbol">cc</span>de<span class="font-arno-bold italic">ff</span>g',
     );
   });
 
