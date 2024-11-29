@@ -15,7 +15,7 @@ describe('InvestigatorComponent', () => {
     fixture = TestBed.createComponent(InvestigatorComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('baseModel', InvestigatorS);
-    fixture.componentRef.setInput('investigatorState', {
+    fixture.componentRef.setInput('assetState', {
       damage: 0,
       horror: 0,
       clues: 0,

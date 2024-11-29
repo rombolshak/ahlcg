@@ -7,7 +7,7 @@ import {
 import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 import { InvestigatorModel } from '../../../../models/player-card.model';
-import { InvestigatorState } from '../../../../models/investigator.state';
+import { AssetState } from '../../../../models/asset.state';
 import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
 import { CardTitleComponent } from '../../../../components/cards/card-parts/card-title/card-title.component';
 import { CardSubtitleComponent } from '../../../../components/cards/card-parts/card-subtitle/card-subtitle.component';
@@ -33,7 +33,7 @@ export class InvestigatorComponent {
   protected readonly imagesService = inject(ImagesUrlService);
 
   baseModel = input.required<InvestigatorModel>();
-  investigatorState = input.required<InvestigatorState>();
+  assetState = input.required<AssetState>();
   protected readonly CreateOverlay = CreateOverlay;
   protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 }

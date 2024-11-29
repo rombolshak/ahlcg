@@ -27,6 +27,10 @@ export class ImagesUrlService {
     return `/assets/images/illustrations/${info.set}/${info.index}.webp`;
   }
 
+  getMiniIllustration(info: SetInfo): string {
+    return `/assets/images/illustrations/${info.set}/${info.index}-m.webp`;
+  }
+
   getInvestigator(info: SetInfo): string {
     return `/assets/images/investigators/${info.set}/${info.index}.webp`;
   }

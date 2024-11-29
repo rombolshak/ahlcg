@@ -70,6 +70,9 @@ export const cardA: AssetCard = {
   },
 };
 
+export const cardA2 = { ...cardA, health: 2 };
+export const cardA3 = { ...cardA, sanity: 1 };
+
 export const cardS: SkillCard = {
   id: '3',
   cardType: CardType.Player,
