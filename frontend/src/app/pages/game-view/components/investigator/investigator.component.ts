@@ -9,10 +9,22 @@ import { NgOptimizedImage } from '@angular/common';
 import { InvestigatorModel } from '../../../../models/player-card.model';
 import { InvestigatorState } from '../../../../models/investigator.state';
 import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
+import { CardTitleComponent } from '../../../../components/cards/card-parts/card-title/card-title.component';
+import { CardSubtitleComponent } from '../../../../components/cards/card-parts/card-subtitle/card-subtitle.component';
+import { CardTraitsComponent } from '../../../../components/cards/card-parts/card-traits/card-traits.component';
+import { DisplayOptions } from '../../../../models/display.options';
+import { CardAbilitiesComponent } from '../../../../components/cards/card-parts/card-abilities/card-abilities.component';
 
 @Component({
   selector: 'ah-investigator',
-  imports: [NgOptimizedImage, CardOutlineDirective],
+  imports: [
+    NgOptimizedImage,
+    CardOutlineDirective,
+    CardTitleComponent,
+    CardSubtitleComponent,
+    CardTraitsComponent,
+    CardAbilitiesComponent,
+  ],
   templateUrl: 'investigator.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,4 +35,5 @@ export class InvestigatorComponent {
   baseModel = input.required<InvestigatorModel>();
   investigatorState = input.required<InvestigatorState>();
   protected readonly CreateOverlay = CreateOverlay;
+  protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 }

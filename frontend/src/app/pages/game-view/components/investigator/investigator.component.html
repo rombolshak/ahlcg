@@ -37,7 +37,33 @@
     [ngSrc]="imagesService.getInvestigator(baseModel().setInfo)"
     class=""
   />
-  <div class="flex flex-col justify-center items-center text-center">
+
+  <div class="flex flex-col relative w-36 h-40 py-1 px-2 group" data-size="i">
+    <img
+      [ngSrc]="
+        imagesService.getTemplate('Investigator-Details', baseModel().class)
+      "
+      fill
+      class="absolute -z-10"
+    />
+
+    <ah-card-title [card]="baseModel()" [align]="'center'"></ah-card-title>
+    <ah-card-subtitle [card]="baseModel()"></ah-card-subtitle>
+    <ah-card-traits
+      class="mt-0.5"
+      [card]="baseModel()"
+      [displayOptions]="displayOptions"
+    ></ah-card-traits>
+    <ah-card-abilities
+      class="mt-0.5"
+      [card]="baseModel()"
+      [displayOptions]="displayOptions"
+    ></ah-card-abilities>
+  </div>
+
+  <div
+    class="flex flex-col justify-center items-center text-center w-0 overflow-hidden"
+  >
     @for (skill of baseModel().skills; track $index) {
       <div
         class="relative flex w-16 h-10 justify-between items-center pl-2 pr-4"
@@ -63,7 +89,9 @@
       </div>
     }
   </div>
-  <div class="flex flex-col justify-center items-center text-center">
+  <div
+    class="flex flex-col justify-center items-center text-center w-0 overflow-hidden"
+  >
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
       <img
         [ngSrc]="

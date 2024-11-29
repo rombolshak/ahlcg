@@ -13,6 +13,7 @@ export const InvestigatorS: InvestigatorModel = {
   },
   id: '01002',
   title: 'Daisy Walker',
+  subtitle: 'The Librarian',
   cardType: CardType.Player,
   playerCardType: PlayerCardType.Investigator,
   copyright: {
@@ -26,8 +27,11 @@ export const InvestigatorS: InvestigatorModel = {
     [SkillType.Agility, 3],
   ]),
   class: PlayerCardClass.Seeker,
-  traits: [],
-  abilities: [],
+  traits: [{ key: 'Miskatonic', displayValue: 'Miskatonic' }],
+  abilities: [
+    'You may take an additional action during your turn, which can only be used on @Tome@ abilities.',
+    '#E# effect: +0. If you succeed, draw 1 card for each @Tome@ you control',
+  ],
   health: 5,
   sanity: 7,
 };
