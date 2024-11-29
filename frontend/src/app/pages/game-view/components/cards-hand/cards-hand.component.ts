@@ -30,6 +30,7 @@ import { CardConstants } from '../../../../models/card.constants';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
+    trigger('cardsHand', [transition(':enter', [])]),
     trigger('cardState', [
       state(
         'normal',
@@ -91,12 +92,13 @@ export class CardsHandComponent {
   cardWidth = CardConstants.cardWidths['s'];
 
   private calcOffsetFrom(cards: Card[]) {
-    if (cards.length == 0) return;
+    let container = this.element.nativeElement.getBoundingClientRect().width;
+    if (container == 0) container = 600;
+    console.log(container);
+    if (cards.length < 2) return this.cardWidth;
     const value = Math.min(
       Math.max(
-        (this.cardWidth * cards.length -
-          this.element.nativeElement.getBoundingClientRect().width) /
-          (cards.length - 1),
+        (this.cardWidth * cards.length - container) / (cards.length - 1),
         this.cardWidth * 0.4,
       ),
       this.cardWidth * 0.8,
