@@ -5,7 +5,15 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { CardInfo } from 'models/card-info.model';
-import { cardA, cardA2, cardA3, cardE, cardS } from 'models/test/test-cards';
+import {
+  cardA,
+  cardA2,
+  cardA3,
+  cardA4,
+  cardA5,
+  cardE,
+  cardS,
+} from 'models/test/test-cards';
 import { Card } from '../../models/card.model';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { InvestigatorComponent } from './components/investigator/investigator.component';
@@ -58,18 +66,18 @@ export class GameViewComponent {
   };
   protected assets = [
     cardA,
-    cardA,
+    cardA5,
     cardA2,
     cardA,
     cardA,
     cardA3,
     cardA,
-    cardA,
+    cardA4,
     cardA,
     cardA2,
     cardA,
     cardA,
-    cardA,
+    cardA4,
     cardA,
   ];
   protected assetStates = new Map<string, AssetState>([
