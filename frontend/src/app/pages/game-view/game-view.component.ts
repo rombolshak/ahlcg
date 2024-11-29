@@ -9,12 +9,18 @@ import { cardA, cardE, cardS } from 'models/test/test-cards';
 import { Card } from '../../models/card.model';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { InvestigatorComponent } from './components/investigator/investigator.component';
+import { InvestigatorState } from '../../models/investigator.state';
+import { InvestigatorS } from '../../models/test/test-investigators';
 
 @Component({
   selector: 'ah-game-view',
   imports: [CardsHandComponent, InvestigatorComponent],
   template: `
-    <ah-investigator class="col-start-1 row-start-1"></ah-investigator>
+    <ah-investigator
+      class="col-start-1 row-start-1"
+      [baseModel]="InvestigatorS"
+      [investigatorState]="investigatorState"
+    ></ah-investigator>
     <button (click)="addCard()" class="bg-red-400 col-start-3">ADD CARD</button>
     <ah-cards-hand
       [cards]="cards()"
@@ -37,6 +43,12 @@ import { InvestigatorComponent } from './components/investigator/investigator.co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent {
+  protected investigatorState: InvestigatorState = {
+    damage: 2,
+    horror: 1,
+    resources: 6,
+    clues: 3,
+  };
   private index = 1;
   private availableCards: CardInfo[] = [cardA, cardE, cardS];
   cards: WritableSignal<Card[]> = signal([
@@ -66,4 +78,6 @@ export class GameViewComponent {
   removeCard(id: number) {
     this.cards.update((value) => value.filter((card) => card.id !== id));
   }
+
+  protected readonly InvestigatorS = InvestigatorS;
 }

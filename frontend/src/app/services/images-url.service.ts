@@ -12,7 +12,7 @@ import { SetInfo } from '../models/card-info.model';
 })
 export class ImagesUrlService {
   getTemplate(type: string, cardClass: string): string {
-    return `/assets/images/card-templates/${type}-${cardClass}.png`;
+    return `/assets/images/card-templates/${type}-${cardClass}.webp`;
   }
 
   getOverlay(info: Overlay) {

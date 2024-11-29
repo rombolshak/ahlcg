@@ -74,7 +74,7 @@ export const cardS: SkillCard = {
   id: '3',
   cardType: CardType.Player,
   playerCardType: PlayerCardType.Skill,
-  class: PlayerCardClass.Mystic,
+  class: PlayerCardClass.Survivor,
   title: 'Обречённый на проклятья',
   skills: new Map<SkillType, number>([[SkillType.Wild, 1]]),
   traits: [
