@@ -14,6 +14,7 @@ import { CardSubtitleComponent } from '../../../../components/cards/card-parts/c
 import { CardTraitsComponent } from '../../../../components/cards/card-parts/card-traits/card-traits.component';
 import { DisplayOptions } from '../../../../models/display.options';
 import { CardAbilitiesComponent } from '../../../../components/cards/card-parts/card-abilities/card-abilities.component';
+import { VitalsBarComponent } from '../../../../components/vitals-bar/vitals-bar.component';
 
 @Component({
   selector: 'ah-investigator',
@@ -24,6 +25,7 @@ import { CardAbilitiesComponent } from '../../../../components/cards/card-parts/
     CardSubtitleComponent,
     CardTraitsComponent,
     CardAbilitiesComponent,
+    VitalsBarComponent,
   ],
   templateUrl: 'investigator.component.html',
   styles: ``,

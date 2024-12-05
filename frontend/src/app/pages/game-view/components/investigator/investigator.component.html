@@ -9,27 +9,11 @@
     class="-z-30"
   />
 
-  <div class="flex bg-gray-950/70">
-    <div class="w-2 flex flex-col *:flex-1 mr-1 ml-2 rounded-md">
-      @for (_ of [].constructor(baseModel().sanity); track $index) {
-        @if ($index < (assetState().horror ?? -1)) {
-          <div class="border-sky-700 border-4 mb-1 last:mb-0"></div>
-        } @else {
-          <div class="border-sky-300 border-4 mb-1 last:mb-0"></div>
-        }
-      }
-    </div>
-
-    <div class="w-2 flex flex-col items-stretch *:flex-1 mr-1 rounded-md">
-      @for (_ of [].constructor(baseModel().health); track $index) {
-        @if ($index < (assetState().damage ?? -1)) {
-          <div class="border-red-700 border-4 mb-1 last:mb-0"></div>
-        } @else {
-          <div class="border-red-300 border-4 mb-1 last:mb-0"></div>
-        }
-      }
-    </div>
-  </div>
+  <ah-vitals-bar
+    [asset]="baseModel()"
+    [state]="assetState()"
+    orientation="vertical"
+  ></ah-vitals-bar>
 
   <img
     width="100"

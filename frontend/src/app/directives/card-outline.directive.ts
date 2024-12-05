@@ -28,7 +28,7 @@ export class CardOutlineDirective {
       case PlayerCardClass.Mystic:
         return 'outline-purple-400';
       case PlayerCardClass.Neutral:
-        return 'outline-black-400';
+        return 'outline-gray-400';
     }
 
     return '';
