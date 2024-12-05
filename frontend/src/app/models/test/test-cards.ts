@@ -73,6 +73,7 @@ export const cardA: AssetCard = {
 export const cardA2 = {
   ...cardA,
   id: '3',
+  subtitle: 'Law enforcer',
   class: PlayerCardClass.Guardian,
   health: 2,
   slot: AssetSlot.Ally,

@@ -1,17 +1,18 @@
-import { CardOutlineDirective } from './card-outline.directive';
+import { CardBackgroundDirective } from './card-background.directive';
 import { Component, input } from '@angular/core';
+import { CardOutlineDirective } from './card-outline.directive';
 import { PlayerCardClass } from '../models/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
-  imports: [CardOutlineDirective],
-  template: ` <div ahCardOutline [cardClass]="cardClass()"></div>`,
+  imports: [CardBackgroundDirective],
+  template: ` <div ahCardBackground [cardClass]="cardClass()"></div>`,
 })
 class TestComponent {
   cardClass = input.required<PlayerCardClass>();
 }
 
-describe('CardOutlineDirective', () => {
+describe('CardBackgroundDirective', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
@@ -28,9 +29,7 @@ describe('CardOutlineDirective', () => {
 
   it('should create an instance', () => {
     expect(fixture.debugElement.children[0].classes).toEqual({
-      outline: true,
-      'outline-2': true,
-      'outline-green-400': true,
+      'bg-green-200': true,
     });
   });
 });

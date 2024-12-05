@@ -8,14 +8,21 @@ import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 import { AssetCard } from 'models/player-card.model';
 import { AssetState } from 'models/asset.state';
-import { VitalsBarComponent } from '../../../../../components/vitals-bar/vitals-bar.component';
+import { VitalsBarComponent } from 'components/vitals-bar/vitals-bar.component';
 import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.component';
+import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 
 @Component({
   selector: 'ah-controlled-asset',
-  imports: [NgOptimizedImage, VitalsBarComponent, AssetDetailIconComponent],
+  imports: [
+    NgOptimizedImage,
+    VitalsBarComponent,
+    AssetDetailIconComponent,
+    AssetPopoverComponent,
+    AssetPopoverComponent,
+  ],
   template: `
-    <div class="flex flex-col justify-between relative w-full h-full">
+    <div class="flex flex-col justify-between w-full h-full relative peer">
       <img
         [ngSrc]="imagesService.getMiniIllustration(asset().setInfo)"
         fill
@@ -54,8 +61,17 @@ import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.
         ></ah-asset-detail-icon>
       </div>
     </div>
+
+    <ah-asset-popover
+      [asset]="asset()"
+      class="opacity-0 w-60 transition-opacity absolute left-[70%] top-[40%] -z-50 peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50"
+    ></ah-asset-popover>
   `,
-  styles: ``,
+  styles: `
+    :host {
+      @apply relative;
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlledAssetComponent {
