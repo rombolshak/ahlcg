@@ -45,7 +45,7 @@ import { ControlAreaComponent } from './components/control-area/control-area.com
   styles: `
     :host {
       display: grid;
-      grid-template-columns: 17rem 1fr 10rem;
+      grid-template-columns: 17rem 1fr 17rem;
       grid-template-rows: 10rem 1fr 7rem;
       grid-column-gap: 1rem;
       grid-row-gap: 1rem;
@@ -82,6 +82,9 @@ export class GameViewComponent {
   ];
   protected assetStates = new Map<string, AssetState>([
     [cardA2.id, { damage: 1 }],
+    [cardA4.id, { resources: 3 }],
+    [cardA5.id, { clues: 1 }],
+    [cardA3.id, { doom: 1, resources: 6 }],
   ]);
   private index = 1;
   private availableCards: CardInfo[] = [cardA, cardE, cardS];

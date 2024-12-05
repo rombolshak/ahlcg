@@ -70,10 +70,32 @@ export const cardA: AssetCard = {
   },
 };
 
-export const cardA2 = { ...cardA, class: PlayerCardClass.Guardian, health: 2 };
-export const cardA3 = { ...cardA, class: PlayerCardClass.Rogue, sanity: 1 };
-export const cardA4 = { ...cardA, class: PlayerCardClass.Mystic };
-export const cardA5 = { ...cardA, class: PlayerCardClass.Neutral };
+export const cardA2 = {
+  ...cardA,
+  id: '3',
+  class: PlayerCardClass.Guardian,
+  health: 2,
+  slot: AssetSlot.Ally,
+};
+export const cardA3 = {
+  ...cardA,
+  id: '4',
+  class: PlayerCardClass.Rogue,
+  sanity: 1,
+  slot: AssetSlot.Accessory,
+};
+export const cardA4 = {
+  ...cardA,
+  id: '5',
+  class: PlayerCardClass.Mystic,
+  slot: undefined,
+};
+export const cardA5 = {
+  ...cardA,
+  id: '6',
+  class: PlayerCardClass.Neutral,
+  slot: undefined,
+};
 
 export const cardS: SkillCard = {
   id: '3',

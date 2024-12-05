@@ -105,7 +105,7 @@
 
       <img
         class="max-w-none h-7 ml-5"
-        ngSrc="assets/images/card-overlays/resource.png"
+        [ngSrc]="imagesService.getSimpleOverlay('resource')"
         width="28"
         height="28"
       />
@@ -127,7 +127,7 @@
 
       <img
         class="max-w-none h-7 ml-5"
-        ngSrc="assets/images/card-overlays/clue.png"
+        [ngSrc]="imagesService.getSimpleOverlay('clue')"
         width="28"
         height="28"
       />

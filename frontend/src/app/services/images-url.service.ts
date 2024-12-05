@@ -15,8 +15,12 @@ export class ImagesUrlService {
     return `/assets/images/card-templates/${type}-${cardClass}.webp`;
   }
 
-  getOverlay(info: Overlay) {
+  getOverlay(info: Overlay): string {
     return this.getOverlayInternal(info.type, info.value);
+  }
+
+  getSimpleOverlay(type: string) {
+    return `/assets/images/card-overlays/${type}.png`;
   }
 
   getSetIcon(setId: string): string {
