@@ -15,7 +15,8 @@ export class ImagesUrlService {
     return `/assets/images/card-templates/${type}-${cardClass}.webp`;
   }
 
-  getOverlay(info: Overlay): string {
+  getOverlay(info: Overlay | null): string {
+    if (!info) return '';
     return this.getOverlayInternal(info.type, info.value);
   }
 
@@ -76,7 +77,8 @@ export class CreateOverlay {
     return { type: OverlayType.SkillIcon, value: value };
   }
 
-  static cardSlot(value: AssetSlot): Overlay {
+  static cardSlot(value?: AssetSlot): Overlay | null {
+    if (!value) return null;
     return { type: OverlayType.Slot, value: value };
   }
 }
