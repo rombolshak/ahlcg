@@ -17,7 +17,7 @@ import {
 import { CardComponent } from 'components/cards/card/card.component';
 import { Card } from 'models/card.model';
 import { DisplayOptions } from 'models/display.options';
-import { CardConstants } from '../../../../models/card.constants';
+import { CardConstants } from 'models/card.constants';
 
 @Component({
   selector: 'ah-cards-hand',

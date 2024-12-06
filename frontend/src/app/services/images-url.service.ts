@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import {
   PlayerCardClass,
   AssetSlot,
-  PlayerCardType,
   SkillType,
-} from '../models/player-card.model';
-import { SetInfo } from '../models/card-info.model';
+} from 'models/player-card.model';
+import { SetInfo } from 'models/card-info.model';
 
 @Injectable({
   providedIn: 'root',

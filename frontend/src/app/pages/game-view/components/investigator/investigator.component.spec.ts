@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorComponent } from './investigator.component';
-import { InvestigatorS } from '../../../../models/test/test-investigators';
+import { InvestigatorS } from 'models/test/test-investigators';
 
 describe('InvestigatorComponent', () => {
   let component: InvestigatorComponent;

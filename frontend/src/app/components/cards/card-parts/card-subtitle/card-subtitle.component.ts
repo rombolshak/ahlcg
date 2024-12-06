@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from '../../../../models/card-info.model';
+import { CardInfo } from 'models/card-info.model';
 
 @Component({
   selector: 'ah-card-subtitle',

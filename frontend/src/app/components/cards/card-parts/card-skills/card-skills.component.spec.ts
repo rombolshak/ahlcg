@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardSkillsComponent } from './card-skills.component';
 import { By } from '@angular/platform-browser';
 import { cardA, displayOption } from 'models/test/test-cards';
-import { SkillType } from '../../../../models/player-card.model';
 
 describe('CardSkillsComponent', () => {
   let component: CardSkillsComponent;

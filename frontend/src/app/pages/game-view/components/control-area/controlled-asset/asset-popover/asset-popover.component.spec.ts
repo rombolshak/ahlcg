@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AssetPopoverComponent } from './asset-popover.component';
-import { cardA } from '../../../../../../models/test/test-cards';
+import { cardA } from 'models/test/test-cards';
 
 describe('AssetPopoverComponent', () => {
   let component: AssetPopoverComponent;

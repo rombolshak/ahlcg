@@ -1,5 +1,5 @@
-import { computed, Directive, ElementRef, Input, input } from '@angular/core';
-import { PlayerCardClass } from '../models/player-card.model';
+import { Directive, ElementRef, Input } from '@angular/core';
+import { PlayerCardClass } from 'models/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',

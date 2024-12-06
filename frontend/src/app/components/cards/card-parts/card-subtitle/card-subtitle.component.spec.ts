@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardSubtitleComponent } from './card-subtitle.component';
-import { cardA } from '../../../../models/test/test-cards';
+import { cardA } from 'models/test/test-cards';
 
 describe('CardSubtitleComponent', () => {
   let component: CardSubtitleComponent;

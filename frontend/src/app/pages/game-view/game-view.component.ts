@@ -14,11 +14,11 @@ import {
   cardE,
   cardS,
 } from 'models/test/test-cards';
-import { Card } from '../../models/card.model';
+import { Card } from 'models/card.model';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { InvestigatorComponent } from './components/investigator/investigator.component';
-import { AssetState } from '../../models/asset.state';
-import { InvestigatorS } from '../../models/test/test-investigators';
+import { AssetState } from 'models/asset.state';
+import { InvestigatorS } from 'models/test/test-investigators';
 import { ControlAreaComponent } from './components/control-area/control-area.component';
 
 @Component({

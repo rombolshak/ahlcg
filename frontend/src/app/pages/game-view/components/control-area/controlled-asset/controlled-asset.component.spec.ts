@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ControlledAssetComponent } from './controlled-asset.component';
-import { cardA } from '../../../../../models/test/test-cards';
+import { cardA } from 'models/test/test-cards';
 
 describe('ControlledAssetComponent', () => {
   let component: ControlledAssetComponent;

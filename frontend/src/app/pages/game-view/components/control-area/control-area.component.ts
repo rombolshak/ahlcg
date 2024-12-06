@@ -8,7 +8,7 @@ import { AssetCard } from 'models/player-card.model';
 import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
 import { AssetState } from 'models/asset.state';
 import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
-import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
+import { CardOutlineDirective } from 'directives/card-outline.directive';
 
 @Component({
   selector: 'ah-control-area',
@@ -19,7 +19,7 @@ import { CardOutlineDirective } from '../../../../directives/card-outline.direct
       <ah-controlled-asset
         [asset]="asset"
         [state]="assetState"
-        class="basis-[7rem] aspect-[4/3] mr-3 mb-3 rounded-lg"
+        class="basis-[6rem] aspect-[4/3] mr-3 mb-3 rounded-lg"
         ahCardOutline
         [cardClass]="asset.class"
       ></ah-controlled-asset>

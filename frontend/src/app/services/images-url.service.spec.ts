@@ -6,7 +6,7 @@ import {
   AssetSlot,
   PlayerCardType,
   SkillType,
-} from '../models/player-card.model';
+} from 'models/player-card.model';
 
 describe('ImagesUrlService', () => {
   let service: ImagesUrlService;

@@ -1,6 +1,6 @@
 import { CardOutlineDirective } from './card-outline.directive';
 import { Component, input } from '@angular/core';
-import { PlayerCardClass } from '../models/player-card.model';
+import { PlayerCardClass } from 'models/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
