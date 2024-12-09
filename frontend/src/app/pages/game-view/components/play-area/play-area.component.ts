@@ -7,10 +7,10 @@ import {
   ViewChild,
 } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import { ImagesUrlService } from '../../../../services/images-url.service';
-import { CardInfo, CardType } from '../../../../models/card-info.model';
-import { InvestigatorS } from '../../../../models/test/test-investigators';
-import { CardOutlineDirective } from '../../../../directives/card-outline.directive';
+import { ImagesUrlService } from 'services/images-url.service';
+import { CardInfo, CardType } from 'models/card-info.model';
+import { InvestigatorS } from 'models/test/test-investigators';
+import { CardOutlineDirective } from 'directives/card-outline.directive';
 import * as pz from 'panzoom';
 
 @Component({
