@@ -1,5 +1,6 @@
 ﻿export enum CardType {
   Player = 'player',
+  Location = 'location',
 }
 
 export interface CardInfo {

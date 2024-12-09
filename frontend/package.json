@@ -18,6 +18,7 @@
     "@angular/platform-browser": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/router": "^19.0.0",
+    "panzoom": "^9.4.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -27,6 +28,7 @@
     "@angular/cli": "^19.0.1",
     "@angular/compiler-cli": "^19.0.0",
     "@html-eslint/parser": "^0.27.0",
+    "@tailwindcss/language-server": "latest",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/parser": "^8.14.0",
     "autoprefixer": "^10.4.20",
@@ -42,7 +44,6 @@
     "prettier-plugin-classnames": "^0.7.4",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.14",
-    "@tailwindcss/language-server": "latest",
     "typescript": "~5.6.3"
   }
 }

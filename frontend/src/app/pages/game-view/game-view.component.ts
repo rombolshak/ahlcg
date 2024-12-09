@@ -20,10 +20,16 @@ import { InvestigatorComponent } from './components/investigator/investigator.co
 import { AssetState } from 'models/asset.state';
 import { InvestigatorS } from 'models/test/test-investigators';
 import { ControlAreaComponent } from './components/control-area/control-area.component';
+import { PlayAreaComponent } from './components/play-area/play-area.component';
 
 @Component({
   selector: 'ah-game-view',
-  imports: [CardsHandComponent, InvestigatorComponent, ControlAreaComponent],
+  imports: [
+    CardsHandComponent,
+    InvestigatorComponent,
+    ControlAreaComponent,
+    PlayAreaComponent,
+  ],
   template: `
     <ah-investigator
       class="col-start-1 row-start-1"
@@ -36,6 +42,7 @@ import { ControlAreaComponent } from './components/control-area/control-area.com
       [states]="assetStates"
     ></ah-control-area>
     <button (click)="addCard()" class="bg-red-400 col-start-3">ADD CARD</button>
+    <ah-play-area class="col-start-2 row-start-2"></ah-play-area>
     <ah-cards-hand
       [cards]="cards()"
       (cardSelected)="removeCard($event.id)"
