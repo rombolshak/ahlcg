@@ -10,13 +10,12 @@ import { NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from 'services/images-url.service';
 import { CardInfo, CardType } from 'models/card-info.model';
 import { InvestigatorS } from 'models/test/test-investigators';
-import { CardOutlineDirective } from 'directives/card-outline.directive';
 import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
 
 @Component({
   selector: 'ah-play-area',
-  imports: [NgOptimizedImage, CardOutlineDirective],
+  imports: [NgOptimizedImage],
   template: ` <div
     class="grid grid-cols-[repeat(9,44rem)] grid-rows-9"
     #playArea
@@ -61,15 +60,15 @@ export class PlayAreaComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.zoomArea = pz.default(this.playArea.nativeElement);
-    const rec = this.start.nativeElement.getBoundingClientRect();
-    const parentRec =
-      this.start.nativeElement.parentNode.parentNode.getBoundingClientRect();
-    console.log(rec);
-    this.zoomArea.smoothMoveTo(
-      -rec.left + rec.width / 4,
-      -rec.top + (3 * rec.height) / 4,
-    );
+    const locX = 3;
+    const locY = 3;
+    const cx = -locX * this.locationWidth + this.locationWidth / 4;
+    const cy = -locY * this.locationHeight + this.locationHeight / 4;
+    this.zoomArea.smoothMoveTo(cx, cy);
   }
+
+  locationWidth = 44 * 16;
+  locationHeight = 420;
 
   @ViewChild('playArea')
   private readonly playArea!: ElementRef;
