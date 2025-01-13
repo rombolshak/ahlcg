@@ -12,64 +12,21 @@ import { CardInfo, CardType } from 'models/card-info.model';
 import { InvestigatorS } from 'models/test/test-investigators';
 import { CardOutlineDirective } from 'directives/card-outline.directive';
 import * as pz from 'panzoom';
+import { PanZoom } from 'panzoom';
 
 @Component({
   selector: 'ah-play-area',
   imports: [NgOptimizedImage, CardOutlineDirective],
   template: ` <div
-    class="grid grid-cols-[repeat(9,20rem)] grid-rows-9"
+    class="grid grid-cols-[repeat(9,44rem)] grid-rows-9"
     #playArea
   >
-    <div class="relative col-start-4 row-start-4 rounded">
+    <div class="relative col-start-4 row-start-4 rounded" #start>
       <img
         [ngSrc]="imageService.getIllustration(location.setInfo)"
-        width="312"
-        height="172"
+        width="690"
+        height="420"
         class="outline outline-2 outline-stone-200 rounded"
-      />
-
-      <div class="flex justify-center flex-wrap">
-        <img
-          [ngSrc]="imageService.getInvestigator(InvestigatorS.setInfo)"
-          width="112"
-          height="173"
-          ahCardOutline
-          class="rounded outline-1 max-w-28"
-          [cardClass]="InvestigatorS.class"
-        />
-        <img
-          [ngSrc]="imageService.getInvestigator(InvestigatorS.setInfo)"
-          width="112"
-          height="173"
-          ahCardOutline
-          class="rounded outline-1 max-w-28"
-          [cardClass]="InvestigatorS.class"
-        />
-        <img
-          [ngSrc]="imageService.getInvestigator(InvestigatorS.setInfo)"
-          width="112"
-          height="173"
-          ahCardOutline
-          class="rounded outline-1 max-w-28"
-          [cardClass]="InvestigatorS.class"
-        />
-        <img
-          [ngSrc]="imageService.getInvestigator(InvestigatorS.setInfo)"
-          width="112"
-          height="173"
-          ahCardOutline
-          class="rounded outline-1 max-w-28"
-          [cardClass]="InvestigatorS.class"
-        />
-      </div>
-    </div>
-
-    <div class="relative col-start-6 row-start-4 rounded ">
-      <img
-        [ngSrc]="imageService.getIllustration(location.setInfo)"
-        width="156"
-        height="86"
-        class="outline outline-2 outline-gray-400"
       />
     </div>
   </div>`,
@@ -103,9 +60,22 @@ export class PlayAreaComponent implements AfterViewInit {
   protected readonly element = inject(ElementRef);
 
   public ngAfterViewInit() {
-    pz.default(this.playArea.nativeElement);
+    this.zoomArea = pz.default(this.playArea.nativeElement);
+    const rec = this.start.nativeElement.getBoundingClientRect();
+    const parentRec =
+      this.start.nativeElement.parentNode.parentNode.getBoundingClientRect();
+    console.log(rec);
+    this.zoomArea.smoothMoveTo(
+      -rec.left + rec.width / 4,
+      -rec.top + (3 * rec.height) / 4,
+    );
   }
 
   @ViewChild('playArea')
   private readonly playArea!: ElementRef;
+
+  @ViewChild('start')
+  private readonly start!: ElementRef;
+
+  private zoomArea!: PanZoom;
 }
