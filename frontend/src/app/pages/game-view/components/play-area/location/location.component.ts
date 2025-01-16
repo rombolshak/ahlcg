@@ -12,14 +12,20 @@ import { NgOptimizedImage } from '@angular/common';
   selector: 'ah-location',
   imports: [NgOptimizedImage],
   template: `
+    <div class="w-full bg-orange-100 h-16">
+      <p class="font-conkordia text-4xl/[4rem] text-center w-full h-16">
+        {{ location().title }}
+      </p>
+    </div>
     <img
       [ngSrc]="imageService.getIllustration(location().setInfo)"
-      width="690"
-      height="420"
-      class="outline outline-2 outline-stone-200 rounded"
+      width="704"
+      height="428"
     />
   `,
-  styles: ``,
+  host: {
+    class: 'flex flex-col',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationComponent {

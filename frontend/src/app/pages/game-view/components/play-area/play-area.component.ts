@@ -18,7 +18,7 @@ import { LocationComponent } from './location/location.component';
   selector: 'ah-play-area',
   imports: [LocationComponent],
   template: ` <div
-    class="grid grid-cols-[repeat(9,44rem)] grid-rows-9"
+    class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)]"
     #playArea
   >
     <ah-location
@@ -84,7 +84,7 @@ export class PlayAreaComponent implements AfterViewInit {
   }
 
   locationWidth = 44 * 16;
-  locationHeight = 420;
+  locationHeight = 31 * 16;
 
   @ViewChild('playArea')
   private readonly playArea!: ElementRef;
