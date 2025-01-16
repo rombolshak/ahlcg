@@ -12,22 +12,20 @@ import { CardInfo, CardType } from 'models/card-info.model';
 import { InvestigatorS } from 'models/test/test-investigators';
 import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
+import { LocationComponent } from './location/location.component';
 
 @Component({
   selector: 'ah-play-area',
-  imports: [NgOptimizedImage],
+  imports: [LocationComponent],
   template: ` <div
     class="grid grid-cols-[repeat(9,44rem)] grid-rows-9"
     #playArea
   >
-    <div class="relative col-start-4 row-start-4 rounded" #start>
-      <img
-        [ngSrc]="imageService.getIllustration(location.setInfo)"
-        width="690"
-        height="420"
-        class="outline outline-2 outline-stone-200 rounded"
-      />
-    </div>
+    <ah-location
+      class="relative col-start-1 row-start-1 rounded"
+      [location]="location"
+    >
+    </ah-location>
   </div>`,
   styles: `
     :host {
@@ -41,7 +39,6 @@ import { PanZoom } from 'panzoom';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayAreaComponent implements AfterViewInit {
-  imageService = inject(ImagesUrlService);
   location: CardInfo = {
     id: '02126',
     title: 'Вход в музей',
@@ -59,12 +56,31 @@ export class PlayAreaComponent implements AfterViewInit {
   protected readonly element = inject(ElementRef);
 
   public ngAfterViewInit() {
-    this.zoomArea = pz.default(this.playArea.nativeElement);
-    const locX = 3;
-    const locY = 3;
-    const cx = -locX * this.locationWidth + this.locationWidth / 4;
-    const cy = -locY * this.locationHeight + this.locationHeight / 4;
-    this.zoomArea.smoothMoveTo(cx, cy);
+    setTimeout(() => {
+      this.zoomArea = pz.default(this.playArea.nativeElement, {
+        maxZoom: 1,
+        minZoom: 0.2,
+      });
+      this.zoomArea.on('transform', (e: PanZoom) => {
+        console.log(e.getTransform());
+      });
+
+      const parent = this.playArea.nativeElement.parentNode;
+      console.log(parent);
+      console.log(parent.offsetWidth);
+      console.log(parent.offsetHeight);
+      const locX = 0;
+      const locY = 0;
+      const cx =
+        -locX * this.locationWidth +
+        parent.offsetWidth / 2 -
+        this.locationWidth / 2;
+      const cy =
+        -locY * this.locationHeight +
+        parent.offsetHeight / 2 -
+        this.locationHeight / 2;
+      this.zoomArea.smoothMoveTo(cx, cy);
+    }, 10);
   }
 
   locationWidth = 44 * 16;
@@ -72,9 +88,6 @@ export class PlayAreaComponent implements AfterViewInit {
 
   @ViewChild('playArea')
   private readonly playArea!: ElementRef;
-
-  @ViewChild('start')
-  private readonly start!: ElementRef;
 
   private zoomArea!: PanZoom;
 }
