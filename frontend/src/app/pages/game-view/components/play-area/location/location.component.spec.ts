@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationComponent } from './location.component';
+import { testLocation } from '../../../../../models/test/test-locations';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -8,12 +9,12 @@ describe('LocationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LocationComponent]
-    })
-    .compileComponents();
+      imports: [LocationComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('location', testLocation);
     fixture.detectChanges();
   });
 

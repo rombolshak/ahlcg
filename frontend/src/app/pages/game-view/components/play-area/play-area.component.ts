@@ -12,6 +12,7 @@ import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
 import { LocationComponent } from './location/location.component';
 import { Location } from '../../../../models/location.model';
+import { testLocation } from '../../../../models/test/test-locations';
 
 @Component({
   selector: 'ah-play-area',
@@ -38,21 +39,7 @@ import { Location } from '../../../../models/location.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayAreaComponent implements AfterViewInit {
-  location: Location = {
-    shroud: 2,
-    clues: 3,
-    id: '02126',
-    title: 'Вход в музей',
-    setInfo: {
-      set: '02',
-      index: '126',
-    },
-    cardType: CardType.Location,
-    copyright: {
-      illustrator: 'Preston Stone',
-      ffg: '2016',
-    },
-  };
+  location: Location = testLocation;
   protected readonly InvestigatorS = InvestigatorS;
   protected readonly element = inject(ElementRef);
 
