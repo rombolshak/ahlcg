@@ -6,30 +6,25 @@ import {
 } from '@angular/core';
 import { ImagesUrlService } from 'services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { Location } from '../../../../../models/location.model';
+import { Location } from 'models/location.model';
 
 @Component({
   selector: 'ah-location',
   imports: [NgOptimizedImage],
   template: `
     <div
-      class="flex items-center justify-between flex-row-reverse w-full bg-orange-100 h-16 rounded-t-3xl z-0"
+      class="flex items-center justify-between flex-row-reverse w-full bg-zinc-200/80 h-16 rounded-t-3xl z-0"
     >
       <p class="font-conkordia text-4xl text-center w-full absolute">
         {{ location().title }}
       </p>
-      <div class="flex m-1">
-        <div
-          class="flex items-center justify-center w-[56px] h-[56px] bg-stone-900 rounded-full text-5xl font-teutonic text-white"
-        >
-          <p>
-            {{ location().shroud }}
-          </p>
+      <div
+        class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px] *:rounded-full *:text-5xl *:font-teutonic *:relative"
+      >
+        <div class="bg-stone-900 text-white">
+          {{ location().shroud }}
         </div>
-        <div
-          class=" flex items-center justify-center w-[56px] h-[56px] rounded-full text-5xl font-teutonic font-bold
-             relative"
-        >
+        <div>
           <img
             [ngSrc]="imageService.getSimpleOverlay('clue')"
             fill

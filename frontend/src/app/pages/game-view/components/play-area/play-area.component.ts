@@ -6,9 +6,7 @@ import {
   inject,
   ViewChild,
 } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
-import { ImagesUrlService } from 'services/images-url.service';
-import { CardInfo, CardType } from 'models/card-info.model';
+import { CardType } from 'models/card-info.model';
 import { InvestigatorS } from 'models/test/test-investigators';
 import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
@@ -34,7 +32,7 @@ import { Location } from '../../../../models/location.model';
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: rgba(8, 17, 147, 0.6);
+      // background: rgba(8, 17, 147, 0.6);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
