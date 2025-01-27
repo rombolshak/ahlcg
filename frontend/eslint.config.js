@@ -7,7 +7,15 @@ import globals from "globals";
 import { config, configs as tsConfigs } from "typescript-eslint";
 
 export default config(
-  { ignores: [".angular/*", "dist/*", "eslint.config.js", "karma.conf.js"] },
+  {
+    ignores: [
+      ".angular/*",
+      "dist/*",
+      "coverage/*",
+      "eslint.config.js",
+      "karma.conf.js",
+    ],
+  },
   {
     files: ["**/*.js"],
     extends: [eslint.configs.recommended, prettierConfig],
