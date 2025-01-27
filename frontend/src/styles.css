@@ -1,75 +1,70 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-
-  @font-face {
+@font-face {
     font-family: "AHSymbol";
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/AHLCGSymbol.ttf") format("truetype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "ArnoPro";
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/arnopro_regular.otf") format("opentype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "ArnoPro";
     font-style: normal;
     font-weight: bold;
     src: url("/assets/fonts/arnopro_bolddisplay.oft") format("opentype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "ArnoProBold";
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/arnopro_bold.otf") format("opentype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "ArnoProBold";
     font-style: normal;
     font-weight: bold;
     src: url("/assets/fonts/arnopro_boldcaption.otf") format("opentype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "ArnoProBold";
     font-style: italic;
     font-weight: normal;
     src: url("/assets/fonts/arnopro_bolditalic.otf") format("opentype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "Conkordia";
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/Conkordia.ttf") format("truetype");
-  }
+}
 
-  @font-face {
+@font-face {
     font-family: "Teutonic";
     font-style: normal;
     font-weight: normal;
     src: url("/assets/fonts/Teutonic.ttf") format("opentype");
-  }
 }
 
 @layer utilities {
-  .text-outline {
-    text-shadow: 0 1px 1px #000,
-      0 -1px 1px #000,
-    -1px 0 1px #000,
-    1px 0 1px #000,
-    1px 1px 1px #000,
-      1px -1px 1px #000,
-    -1px 1px 1px #000,
-      -1px -1px 1px #000;
-  }
+    .text-outline {
+        text-shadow: 0 1px 1px #000,
+        0 -1px 1px #000,
+        -1px 0 1px #000,
+        1px 0 1px #000,
+        1px 1px 1px #000,
+        1px -1px 1px #000,
+        -1px 1px 1px #000,
+        -1px -1px 1px #000;
+    }
 }

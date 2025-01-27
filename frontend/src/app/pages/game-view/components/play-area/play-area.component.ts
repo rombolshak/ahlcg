@@ -33,7 +33,6 @@ import { testLocation } from '../../../../models/test/test-locations';
       width: 100%;
       height: 100%;
       overflow: hidden;
-      // background: rgba(8, 17, 147, 0.6);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

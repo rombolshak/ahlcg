@@ -11,10 +11,10 @@ export class WithAhSymbolsPipe implements PipeTransform {
   transform(value: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(
       value
-        .replaceAll(/#(.*?)#/g, `<span class="font-ah-symbol">$1</span>`)
+        .replaceAll(/#(.*?)#/g, `<span class="font-[AHSymbol]">$1</span>`)
         .replaceAll(
           /@(.*?)@/g,
-          `<span class="font-arno-bold italic">$1</span>`,
+          `<span class="font-[ArnoProBold] italic">$1</span>`,
         ),
     );
   }

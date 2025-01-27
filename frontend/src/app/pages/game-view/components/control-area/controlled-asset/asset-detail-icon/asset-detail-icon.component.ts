@@ -9,7 +9,7 @@ import { NgOptimizedImage } from '@angular/common';
     <div class="relative flex justify-center items-center w-6 h-6">
       <img [ngSrc]="image()" fill />
       @if (!withoutText()) {
-        <span class="z-10 text-lg text-white font-teutonic">{{
+        <span class="z-10 text-lg text-white font-[Teutonic]">{{
           detail()
         }}</span>
       }

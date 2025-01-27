@@ -11,11 +11,15 @@ import { CardBackgroundDirective } from 'directives/card-background.directive';
     ahCardOutline
     ahCardBackground
     [cardClass]="asset().class"
-    class="w-full px-2 py-1 rounded whitespace-pre-wrap font-arno text-base/4 "
+    class="w-full px-2 py-1 rounded whitespace-pre-wrap font-[ArnoPro] text-base/4 "
   >
-    <p class="font-conkordia text-lg/5 text-center mb-0">{{ asset().title }}</p>
-    <p class="font-arno text-sm text-center mb-1">{{ asset().subtitle }}</p>
-    <p class="font-arno-bold italic text-sm text-center mb-1">
+    <p class="font-[Conkordia] text-lg/5 text-center mb-0">
+      {{ asset().title }}
+    </p>
+    <p class="font-[ArnoPro] text-sm text-center mb-1">
+      {{ asset().subtitle }}
+    </p>
+    <p class="font-[ArnoProBold] italic text-sm text-center mb-1">
       @for (trait of asset().traits; track $index) {
         <span>{{ trait.displayValue }}. </span>
       }
