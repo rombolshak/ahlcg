@@ -4,15 +4,17 @@ import { PlayerCardClass } from 'models/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
+  selector: 'ah-test',
   imports: [CardBackgroundDirective],
-  template: ` <div ahCardBackground [cardClass]="cardClass()"></div>`,
+  template: `
+    <div ahCardBackground [cardClass]="cardClass()"></div>
+  `,
 })
 class TestComponent {
-  cardClass = input.required<PlayerCardClass>();
+  readonly cardClass = input.required<PlayerCardClass>();
 }
 
 describe('CardBackgroundDirective', () => {
-  let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(async () => {
@@ -21,13 +23,12 @@ describe('CardBackgroundDirective', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    component = fixture.componentInstance;
     fixture.componentRef.setInput('cardClass', PlayerCardClass.Rogue);
     fixture.detectChanges();
   });
 
   it('should create an instance', () => {
-    expect(fixture.debugElement.children[0].classes).toEqual({
+    expect(fixture.debugElement.children[0]?.classes).toEqual({
       'bg-green-200': true,
     });
   });

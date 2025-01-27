@@ -28,8 +28,9 @@ describe('CardTraitsComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(
       cardA.traits.length,
     );
+
     expect(
       fixture.debugElement.query(By.css('span')).nativeElement.innerText,
-    ).toContain(cardA.traits[0].displayValue);
+    ).toContain(cardA.traits[0]?.displayValue);
   });
 });

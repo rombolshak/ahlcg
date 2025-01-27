@@ -29,6 +29,7 @@ import { CardConstants } from 'models/card.constants';
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   animations: [
     trigger('cardsHand', [transition(':enter', [])]),
     trigger('cardState', [
@@ -83,16 +84,20 @@ import { CardConstants } from 'models/card.constants';
 export class CardsHandComponent {
   constructor(private element: ElementRef) {}
 
-  cards = input.required<Card[]>();
-  cardSelected = output<Card>();
+  readonly cards = input.required<Card[]>();
+  readonly cardSelected = output<Card>();
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
-  focusedCardId?: number;
-  cardOffset = computed(() => `${this.calcOffsetFrom(this.cards())}px`);
-  cardWidth = CardConstants.cardWidths['s'];
+  focusedCardId: number | undefined;
+  readonly cardOffset = computed(
+    () => `${this.calcOffsetFrom(this.cards()).toString()}px`,
+  );
+  cardWidth = CardConstants.cardWidths.s;
 
   private calcOffsetFrom(cards: Card[]) {
-    let container = this.element.nativeElement.getBoundingClientRect().width;
+    let container = (
+      this.element.nativeElement as HTMLElement
+    ).getBoundingClientRect().width;
     if (container == 0) container = 600;
     if (cards.length < 2) return this.cardWidth;
     const value = Math.min(

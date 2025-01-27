@@ -3,11 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  inject,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
-import { CardType } from 'models/card-info.model';
-import { InvestigatorS } from 'models/test/test-investigators';
 import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
 import { LocationComponent } from './location/location.component';
@@ -17,16 +14,19 @@ import { testLocation } from '../../../../models/test/test-locations';
 @Component({
   selector: 'ah-play-area',
   imports: [LocationComponent],
-  template: ` <div
-    class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)]"
-    #playArea
-  >
-    <ah-location
-      class="relative col-start-1 row-start-1 rounded"
-      [location]="location"
+  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
+  template: `
+    <div
+      #playArea
+      class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)]"
     >
-    </ah-location>
-  </div>`,
+      <ah-location
+        class="relative col-start-1 row-start-1 rounded"
+        [location]="location"
+      />
+    </div>
+  `,
+  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   styles: `
     :host {
       display: block;
@@ -39,20 +39,22 @@ import { testLocation } from '../../../../models/test/test-locations';
 })
 export class PlayAreaComponent implements AfterViewInit {
   location: Location = testLocation;
-  protected readonly InvestigatorS = InvestigatorS;
-  protected readonly element = inject(ElementRef);
 
   public ngAfterViewInit() {
     setTimeout(() => {
-      this.zoomArea = pz.default(this.playArea.nativeElement, {
-        maxZoom: 1,
-        minZoom: 0.2,
-      });
+      this.zoomArea = pz.default(
+        this.playArea()?.nativeElement as HTMLElement,
+        {
+          maxZoom: 1,
+          minZoom: 0.2,
+        },
+      );
       this.zoomArea.on('transform', (e: PanZoom) => {
         console.log(e.getTransform());
       });
 
-      const parent = this.playArea.nativeElement.parentNode;
+      const parent = (this.playArea()?.nativeElement as HTMLElement)
+        .parentNode as HTMLElement;
       console.log(parent);
       console.log(parent.offsetWidth);
       console.log(parent.offsetHeight);
@@ -73,8 +75,7 @@ export class PlayAreaComponent implements AfterViewInit {
   locationWidth = 44 * 16;
   locationHeight = 31 * 16;
 
-  @ViewChild('playArea')
-  private readonly playArea!: ElementRef;
+  private readonly playArea = viewChild<ElementRef>('playArea');
 
   private zoomArea!: PanZoom;
 }

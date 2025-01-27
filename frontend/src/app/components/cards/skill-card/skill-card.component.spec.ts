@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SkillCardComponent } from './skill-card.component';
-import { cardA, cardS, displayOption } from 'models/test/test-cards';
+import { cardS, displayOption } from 'models/test/test-cards';
 
 describe('SkillCardComponent', () => {
   let component: SkillCardComponent;

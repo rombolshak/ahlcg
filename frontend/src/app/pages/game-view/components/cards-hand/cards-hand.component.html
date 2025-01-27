@@ -1,18 +1,20 @@
-﻿<div
-  @cardsHand
+﻿<!--suppress CssUnknownProperty -->
+<!--eslint-disable @angular-eslint/template/no-inline-styles -->
+<div
   class="flex ml-[calc(var(--card-offset)_-_160px)]"
+  @cardsHand
   [style.--card-offset]="cardOffset()"
 >
   @for (card of cards(); track card.id) {
     <ah-card
+      class="origin-bottom isolate"
       [card]="card.cardInfo"
       [displayOptions]="cardDisplayOptions"
-      class="origin-bottom isolate"
       [attr.data-index]="$index"
-      (click)="cardSelected.emit(card)"
       [@cardState]="card.id === focusedCardId ? 'focused' : 'normal'"
+      (click)="cardSelected.emit(card)"
       (mouseenter)="focusedCardId = card.id"
       (mouseleave)="focusedCardId = undefined"
-    ></ah-card>
+    />
   }
 </div>

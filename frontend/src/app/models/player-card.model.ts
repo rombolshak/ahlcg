@@ -51,19 +51,21 @@ export interface PlayerCardBase extends CardInfo {
   abilities: string[];
 }
 
-export type WithCost = { cost: number };
+export interface WithCost {
+  cost: number;
+}
 
-export type WithHealth = {
+export interface WithHealth {
   health: number;
   sanity: number;
-};
+}
 
 export type AssetCard = PlayerCardBase &
   WithCost &
   Partial<WithHealth> & {
     playerCardType: PlayerCardType.Asset;
-    slot?: AssetSlot;
-    additionalSlot?: AssetSlot;
+    slot?: AssetSlot | undefined;
+    additionalSlot?: AssetSlot | undefined;
   };
 
 export type EventCard = PlayerCardBase &

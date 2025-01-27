@@ -39,7 +39,7 @@ export default config(
         "error",
         {
           type: "attribute",
-          prefix: "app",
+          prefix: "ah",
           style: "camelCase",
         },
       ],
@@ -47,11 +47,12 @@ export default config(
         "error",
         {
           type: "element",
-          prefix: "app",
+          prefix: "ah",
           style: "kebab-case",
         },
       ],
       "@angular-eslint/prefer-on-push-component-change-detection": "off",
+      "@angular-eslint/template/no-call-expression": "off",
     },
   },
   {
@@ -59,6 +60,7 @@ export default config(
     extends: [...ngConfigs.templateAll, ...ngConfigs.templateAccessibility],
     rules: {
       "@angular-eslint/template/i18n": "off",
+      "@angular-eslint/template/no-call-expression": "off",
     },
   },
   {
@@ -78,6 +80,8 @@ export default config(
       },
     },
     plugins: { jasmine: jasminePlugin },
-    rules: {},
+    rules: {
+      "@typescript-eslint/no-unsafe-member-access": "off",
+    },
   },
 );

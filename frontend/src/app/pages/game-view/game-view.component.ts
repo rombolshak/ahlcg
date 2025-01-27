@@ -30,25 +30,29 @@ import { PlayAreaComponent } from './components/play-area/play-area.component';
     ControlAreaComponent,
     PlayAreaComponent,
   ],
+  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   template: `
     <ah-investigator
       class="col-start-1 row-start-1"
       [baseModel]="InvestigatorS"
       [assetState]="assetState"
-    ></ah-investigator>
+    />
     <ah-control-area
-      [assets]="assets"
       class="col-start-2"
+      [assets]="assets"
       [states]="assetStates"
-    ></ah-control-area>
-    <button (click)="addCard()" class="bg-red-400 col-start-3">ADD CARD</button>
-    <ah-play-area class="col-start-2 row-start-2"></ah-play-area>
+    />
+    <button type="button" class="bg-red-400 col-start-3" (click)="addCard()">
+      ADD CARD
+    </button>
+    <ah-play-area class="col-start-2 row-start-2" />
     <ah-cards-hand
+      class="col-start-2 row-start-3"
       [cards]="cards()"
       (cardSelected)="removeCard($event.id)"
-      class="col-start-2 row-start-3"
-    ></ah-cards-hand>
+    />
   `,
+  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   styles: `
     :host {
       display: grid;
@@ -95,7 +99,7 @@ export class GameViewComponent {
   ]);
   private index = 1;
   private availableCards: CardInfo[] = [cardA, cardE, cardS];
-  cards: WritableSignal<Card[]> = signal([
+  readonly cards: WritableSignal<Card[]> = signal([
     {
       id: this.index++,
       cardInfo: cardA,
@@ -112,9 +116,10 @@ export class GameViewComponent {
       {
         id: this.index++,
         cardInfo:
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.availableCards[
             Math.floor(Math.random() * this.availableCards.length)
-          ],
+          ]!,
       },
     ]);
   }
