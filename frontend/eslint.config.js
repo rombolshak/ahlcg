@@ -1,36 +1,83 @@
-﻿// eslint.config.js
-import eslintParserTypeScript from "@typescript-eslint/parser";
-import eslintParserHTML from "@html-eslint/parser";
-import eslintPluginReadableTailwind from "eslint-plugin-readable-tailwind";
+﻿import eslint from "@eslint/js";
+import { configs as ngConfigs, processInlineTemplates } from "angular-eslint";
+import prettierConfig from "eslint-config-prettier";
+import jasminePlugin from "eslint-plugin-jasmine";
+import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
+import globals from "globals";
+import { config, configs as tsConfigs } from "typescript-eslint";
 
-export default [
+export default config(
+  { ignores: [".angular/*", "dist/*"] },
   {
-    files: ["**/*.{ts}"],
+    files: ["**/*.js"],
+    extends: [eslint.configs.recommended, prettierConfig],
     languageOptions: {
-      parser: eslintParserTypeScript,
+      globals: {
+        ...globals.node
+      }
+    },
+    rules: {}
+  },
+  {
+    files: ["**/*.ts"],
+    extends: [
+      eslint.configs.recommended,
+      ...tsConfigs.strictTypeChecked,
+      ...tsConfigs.stylisticTypeChecked,
+      ...ngConfigs.tsAll,
+      prettierConfig
+    ],
+    languageOptions: {
       parserOptions: {
-        project: true,
-      },
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
+      }
     },
-  },
-  {
-    files: ["**/*.{html}"],
-    languageOptions: {
-      parser: eslintParserHTML,
-    },
-  },
-  {
-    plugins: {
-      "readable-tailwind": eslintPluginReadableTailwind,
-    },
+    processor: processInlineTemplates,
     rules: {
-      // enable all recommended rules to warn
-      ...eslintPluginReadableTailwind.configs.warning.rules,
-      // enable all recommended rules to error
-      ...eslintPluginReadableTailwind.configs.error.rules,
-
-      // or configure rules individually
-      "readable-tailwind/multiline": ["warn", { printWidth: 100 }],
-    },
+      "@angular-eslint/directive-selector": [
+        "error",
+        {
+          type: "attribute",
+          prefix: "app",
+          style: "camelCase"
+        }
+      ],
+      "@angular-eslint/component-selector": [
+        "error",
+        {
+          type: "element",
+          prefix: "app",
+          style: "kebab-case"
+        }
+      ],
+      "@angular-eslint/prefer-on-push-component-change-detection": "off"
+    }
   },
-];
+  {
+    files: ["**/*.html"],
+    extends: [...ngConfigs.templateAll, ...ngConfigs.templateAccessibility],
+    rules: {
+      "@angular-eslint/template/i18n": "off"
+    }
+  },
+  {
+    files: ["**/*.json"],
+    extends: [
+      ...jsoncConfigs["flat/recommended-with-jsonc"],
+      ...jsoncConfigs["flat/prettier"]
+    ],
+    rules: {}
+  },
+  {
+    files: ["src/**/*.spec.ts"],
+    extends: [jasminePlugin.configs.recommended, prettierConfig],
+    languageOptions: {
+      globals: {
+        ...globals.jasmine
+      }
+    },
+    plugins: { jasmine: jasminePlugin },
+    rules: {}
+  }
+);
