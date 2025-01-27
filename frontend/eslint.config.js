@@ -7,16 +7,16 @@ import globals from "globals";
 import { config, configs as tsConfigs } from "typescript-eslint";
 
 export default config(
-  { ignores: [".angular/*", "dist/*"] },
+  { ignores: [".angular/*", "dist/*", "eslint.config.js", "karma.conf.js"] },
   {
     files: ["**/*.js"],
     extends: [eslint.configs.recommended, prettierConfig],
     languageOptions: {
       globals: {
-        ...globals.node
-      }
+        ...globals.node,
+      },
     },
-    rules: {}
+    rules: {},
   },
   {
     files: ["**/*.ts"],
@@ -25,13 +25,13 @@ export default config(
       ...tsConfigs.strictTypeChecked,
       ...tsConfigs.stylisticTypeChecked,
       ...ngConfigs.tsAll,
-      prettierConfig
+      prettierConfig,
     ],
     languageOptions: {
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: import.meta.dirname
-      }
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     processor: processInlineTemplates,
     rules: {
@@ -40,44 +40,44 @@ export default config(
         {
           type: "attribute",
           prefix: "app",
-          style: "camelCase"
-        }
+          style: "camelCase",
+        },
       ],
       "@angular-eslint/component-selector": [
         "error",
         {
           type: "element",
           prefix: "app",
-          style: "kebab-case"
-        }
+          style: "kebab-case",
+        },
       ],
-      "@angular-eslint/prefer-on-push-component-change-detection": "off"
-    }
+      "@angular-eslint/prefer-on-push-component-change-detection": "off",
+    },
   },
   {
     files: ["**/*.html"],
     extends: [...ngConfigs.templateAll, ...ngConfigs.templateAccessibility],
     rules: {
-      "@angular-eslint/template/i18n": "off"
-    }
+      "@angular-eslint/template/i18n": "off",
+    },
   },
   {
     files: ["**/*.json"],
     extends: [
       ...jsoncConfigs["flat/recommended-with-jsonc"],
-      ...jsoncConfigs["flat/prettier"]
+      ...jsoncConfigs["flat/prettier"],
     ],
-    rules: {}
+    rules: {},
   },
   {
     files: ["src/**/*.spec.ts"],
     extends: [jasminePlugin.configs.recommended, prettierConfig],
     languageOptions: {
       globals: {
-        ...globals.jasmine
-      }
+        ...globals.jasmine,
+      },
     },
     plugins: { jasmine: jasminePlugin },
-    rules: {}
-  }
+    rules: {},
+  },
 );
