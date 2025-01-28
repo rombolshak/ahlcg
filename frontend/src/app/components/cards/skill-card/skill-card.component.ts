@@ -22,6 +22,6 @@ import { DisplayOptions } from 'models/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkillCardComponent {
-  card = input.required<SkillCard>();
-  displayOptions = input.required<DisplayOptions>();
+  readonly card = input.required<SkillCard>();
+  readonly displayOptions = input.required<DisplayOptions>();
 }

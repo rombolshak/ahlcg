@@ -1,0 +1,21 @@
+﻿<div
+  ahCardOutline
+  ahCardBackground
+  class="w-full px-2 py-1 rounded whitespace-pre-wrap font-[ArnoPro] text-base/4"
+  [cardClass]="asset().class"
+>
+  <p class="font-[Conkordia] text-lg/5 text-center mb-0">
+    {{ asset().title }}
+  </p>
+  <p class="font-[ArnoPro] text-sm text-center mb-1">
+    {{ asset().subtitle }}
+  </p>
+  <p class="font-[ArnoProBold] italic text-sm text-center mb-1">
+    @for (trait of asset().traits; track $index) {
+      <span>{{ trait.displayValue }}.</span>
+    }
+  </p>
+  @for (ability of asset().abilities; track $index) {
+    <p class="mb-1" [innerHtml]="ability | withAhSymbols"></p>
+  }
+</div>

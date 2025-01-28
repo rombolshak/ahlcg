@@ -5,22 +5,24 @@ import { NgOptimizedImage } from '@angular/common';
 @Component({
   selector: 'ah-asset-detail-icon',
   imports: [NgOptimizedImage],
-  template: `@if (detail()) {
-    <div class="relative flex justify-center items-center w-6 h-6">
-      <img [ngSrc]="image()" fill />
-      @if (!withoutText()) {
-        <span class="z-10 text-lg text-white font-[Teutonic]">{{
-          detail()
-        }}</span>
-      }
-    </div>
-  }`,
+  template: `
+    @if (detail()) {
+      <div class="relative flex justify-center items-center w-6 h-6">
+        <img fill alt="" [ngSrc]="image()" />
+        @if (!withoutText()) {
+          <span class="z-10 text-lg text-white font-[Teutonic]">
+            {{ detail() }}
+          </span>
+        }
+      </div>
+    }
+  `,
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetDetailIconComponent {
-  detail = input.required<unknown | undefined>();
-  withoutText = input<Boolean>(false);
-  image = input.required<string>();
+  readonly detail = input.required<unknown>();
+  readonly withoutText = input<boolean>(false);
+  readonly image = input.required<string>();
   protected readonly CreateOverlay = CreateOverlay;
 }

@@ -1,0 +1,35 @@
+﻿<div
+  class="flex items-center justify-between flex-row-reverse w-full bg-zinc-200/80 h-16
+    rounded-t-3xl z-0"
+>
+  <p class="font-[Conkordia] text-4xl text-center w-full absolute">
+    {{ location().title }}
+  </p>
+  <div
+    class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
+      *:rounded-full *:text-5xl *:font-[Teutonic] *:relative"
+  >
+    <div class="bg-stone-900 text-white">
+      {{ location().shroud }}
+    </div>
+    <div>
+      <img
+        fill
+        class="-z-10"
+        alt="location-clues"
+        [ngSrc]="imageService.getSimpleOverlay('clue')"
+      />
+      <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
+      <p class="absolute -z-10" style="-webkit-text-stroke-width: medium">
+        {{ location().clues }}
+      </p>
+      <p class="text-white">{{ location().clues }}</p>
+    </div>
+  </div>
+</div>
+<img
+  alt="location-illustration"
+  height="428"
+  width="704"
+  [ngSrc]="imageService.getIllustration(location().setInfo)"
+/>

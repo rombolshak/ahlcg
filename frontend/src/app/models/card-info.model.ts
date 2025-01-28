@@ -16,7 +16,7 @@ export interface CardInfo {
   setInfo: SetInfo;
 }
 
-export type SetInfo = {
+export interface SetInfo {
   set: string;
   index: string;
-};
+}

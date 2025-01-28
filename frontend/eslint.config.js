@@ -61,6 +61,12 @@ export default config(
       ],
       "@angular-eslint/prefer-on-push-component-change-detection": "off",
       "@angular-eslint/template/no-call-expression": "off",
+      "@angular-eslint/component-max-inline-declarations": [
+        "error",
+        {
+          template: 10,
+        },
+      ],
     },
   },
   {

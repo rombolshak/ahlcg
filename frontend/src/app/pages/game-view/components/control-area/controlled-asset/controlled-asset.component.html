@@ -1,0 +1,42 @@
+﻿<div class="flex flex-col justify-between w-full h-full relative peer">
+  <img
+    fill
+    class="-z-10 rounded"
+    alt="mini-investigator"
+    [ngSrc]="imagesService.getMiniIllustration(asset().setInfo)"
+  />
+
+  <ah-vitals-bar [asset]="asset()" [state]="state()" />
+  <div class="bg-gray-950/50 flex justify-center items-center">
+    <ah-asset-detail-icon
+      [detail]="asset().slot"
+      [image]="imagesService.getOverlay(CreateOverlay.cardSlot(asset().slot))"
+      [withoutText]="true"
+    />
+    <ah-asset-detail-icon
+      [detail]="asset().additionalSlot"
+      [image]="
+        imagesService.getOverlay(CreateOverlay.cardSlot(asset().additionalSlot))
+      "
+      [withoutText]="true"
+    />
+    <ah-asset-detail-icon
+      [detail]="state()?.resources"
+      [image]="imagesService.getSimpleOverlay('resource')"
+    />
+    <ah-asset-detail-icon
+      [detail]="state()?.clues"
+      [image]="imagesService.getSimpleOverlay('clue')"
+    />
+    <ah-asset-detail-icon
+      [detail]="state()?.doom"
+      [image]="imagesService.getSimpleOverlay('doom')"
+    />
+  </div>
+</div>
+
+<ah-asset-popover
+  class="opacity-0 w-60 transition-opacity absolute left-[70%] top-[40%] -z-50
+    peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50"
+  [asset]="asset()"
+/>

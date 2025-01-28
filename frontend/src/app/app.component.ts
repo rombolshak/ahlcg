@@ -6,13 +6,18 @@ import { RouterOutlet } from '@angular/router';
   selector: 'ah-root',
   imports: [NgOptimizedImage, RouterOutlet],
   template: `
-    <img ngSrc="/assets/images/bg-min.jpg" fill priority class="-z-50" />
-    <router-outlet></router-outlet>
+    <img
+      alt="bg"
+      ngSrc="/assets/images/bg-min.jpg"
+      fill
+      priority
+      class="-z-50"
+    />
+    <router-outlet />
   `,
-  styles: `
-    :host {
-      @apply block h-screen w-screen;
-    }
-  `,
+  host: {
+    class: 'block h-screen w-screen',
+  },
 })
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class AppComponent {}

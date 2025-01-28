@@ -2,13 +2,11 @@
 
 @Pipe({
   name: 'trimStart',
-  standalone: true
+  standalone: true,
 })
 export class TrimStartPipe implements PipeTransform {
-
   transform(value: string, ...args: string[]): string {
     const search = args.join('|');
     return value.replaceAll(new RegExp(`^${search}*`, 'g'), '');
   }
-
 }

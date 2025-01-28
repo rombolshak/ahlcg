@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Input } from '@angular/core';
+import { Directive, effect, ElementRef, input } from '@angular/core';
 import { PlayerCardClass } from 'models/player-card.model';
 
 @Directive({
@@ -6,28 +6,35 @@ import { PlayerCardClass } from 'models/player-card.model';
 })
 export class CardOutlineDirective {
   constructor(private readonly el: ElementRef) {
-    this.el.nativeElement.classList.add('outline', 'outline-2');
+    (this.el.nativeElement as HTMLElement).classList.add(
+      'outline',
+      'outline-2',
+    );
+    effect(() => {
+      if (this.lastColor) {
+        (this.el.nativeElement as HTMLElement).classList.remove(this.lastColor);
+      }
+
+      this.lastColor = this.getOutlineColor(this.cardClass());
+      (this.el.nativeElement as HTMLElement).classList.add(this.lastColor);
+    });
   }
 
-  @Input() set cardClass(value: PlayerCardClass) {
-    this.el.nativeElement.classList.remove(this.lastColor);
-    this.lastColor = this.getOutlineColor(value);
-    this.el.nativeElement.classList.add(this.lastColor);
-  }
+  readonly cardClass = input.required<PlayerCardClass>();
 
   getOutlineColor(cardClass: string) {
     switch (cardClass) {
-      case PlayerCardClass.Guardian:
+      case PlayerCardClass.Guardian.toString():
         return 'outline-blue-400';
-      case PlayerCardClass.Seeker:
+      case PlayerCardClass.Seeker.toString():
         return 'outline-orange-400';
-      case PlayerCardClass.Rogue:
+      case PlayerCardClass.Rogue.toString():
         return 'outline-green-400';
-      case PlayerCardClass.Survivor:
+      case PlayerCardClass.Survivor.toString():
         return 'outline-red-400';
-      case PlayerCardClass.Mystic:
+      case PlayerCardClass.Mystic.toString():
         return 'outline-purple-400';
-      case PlayerCardClass.Neutral:
+      case PlayerCardClass.Neutral.toString():
         return 'outline-gray-400';
     }
 

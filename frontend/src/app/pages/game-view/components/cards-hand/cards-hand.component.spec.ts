@@ -46,6 +46,7 @@ describe('CardsHandComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('cards', []);
     fixture.detectChanges();
+
     expect(fixture.debugElement.queryAll(By.css('ah-card')).length).toBe(0);
   });
 });

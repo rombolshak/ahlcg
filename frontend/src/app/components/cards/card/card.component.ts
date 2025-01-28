@@ -21,8 +21,8 @@ import { DisplayOptions } from 'models/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardComponent {
-  card = input.required<CardInfo>();
-  displayOptions = input.required<DisplayOptions>();
+  readonly card = input.required<CardInfo>();
+  readonly displayOptions = input.required<DisplayOptions>();
 
   protected readonly PlayerCardBase!: PlayerCardBase;
   protected readonly AssetCard!: AssetCard;

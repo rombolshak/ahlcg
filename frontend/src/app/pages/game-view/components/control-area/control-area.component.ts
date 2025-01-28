@@ -13,23 +13,26 @@ import { CardOutlineDirective } from 'directives/card-outline.directive';
 @Component({
   selector: 'ah-control-area',
   imports: [ControlledAssetComponent, CardOutlineDirective],
-  template: ` <div class="flex flex-wrap">
+  template: `
     @for (asset of assets(); track asset.id) {
       @let assetState = states().get(asset.id);
       <ah-controlled-asset
-        [asset]="asset"
-        [state]="assetState"
         class="basis-[6rem] aspect-[4/3] mr-3 mb-3 rounded-lg"
         ahCardOutline
+        [asset]="asset"
+        [state]="assetState"
         [cardClass]="asset.class"
-      ></ah-controlled-asset>
+      />
     }
-  </div>`,
+  `,
+  host: {
+    class: 'flex flex-wrap',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlAreaComponent {
-  assets = input.required<AssetCard[]>();
-  states = input.required<Map<string, AssetState>>();
+  readonly assets = input.required<AssetCard[]>();
+  readonly states = input.required<Map<string, AssetState>>();
   imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
 }

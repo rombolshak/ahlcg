@@ -19,11 +19,13 @@ describe('WithAhSymbolsPipe', () => {
 
   it('create an instance', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+
     expect(pipe).toBeTruthy();
   });
 
   it('replaces symbol if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+
     expect(pipe.transform('ab#c#de@f@g')).toEqual(
       'ab<span class="font-[AHSymbol]">c</span>de<span class="font-[ArnoProBold] italic">f</span>g',
     );
@@ -31,6 +33,7 @@ describe('WithAhSymbolsPipe', () => {
 
   it('replaces two symbols if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+
     expect(pipe.transform('ab#cc#de@ff@g')).toEqual(
       'ab<span class="font-[AHSymbol]">cc</span>de<span class="font-[ArnoProBold] italic">ff</span>g',
     );
@@ -38,6 +41,7 @@ describe('WithAhSymbolsPipe', () => {
 
   it('doesnt replace symbol if not needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+
     expect(pipe.transform('abcde')).toEqual('abcde');
   });
 });

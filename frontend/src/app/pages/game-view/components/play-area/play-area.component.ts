@@ -14,7 +14,6 @@ import { testLocation } from '../../../../models/test/test-locations';
 @Component({
   selector: 'ah-play-area',
   imports: [LocationComponent],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   template: `
     <div
       #playArea

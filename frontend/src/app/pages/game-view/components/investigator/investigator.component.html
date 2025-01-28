@@ -4,23 +4,25 @@
   [cardClass]="baseModel().class"
 >
   <img
-    [ngSrc]="imagesService.getTemplate('Investigator', baseModel().class)"
     fill
     class="-z-30"
     priority
+    alt="investigator-template"
+    [ngSrc]="imagesService.getTemplate('Investigator', baseModel().class)"
   />
 
   <ah-vitals-bar
+    orientation="vertical"
     [asset]="baseModel()"
     [state]="assetState()"
-    orientation="vertical"
-  ></ah-vitals-bar>
+  />
 
   <img
     width="100"
     height="150"
-    [ngSrc]="imagesService.getInvestigator(baseModel().setInfo)"
     class="peer"
+    alt="investigator-image"
+    [ngSrc]="imagesService.getInvestigator(baseModel().setInfo)"
   />
 
   <div
@@ -30,25 +32,26 @@
     data-size="i"
   >
     <img
+      fill
+      class="absolute -z-10"
+      alt="investigator-details"
       [ngSrc]="
         imagesService.getTemplate('Investigator-Details', baseModel().class)
       "
-      fill
-      class="absolute -z-10"
     />
 
-    <ah-card-title [card]="baseModel()" [align]="'center'"></ah-card-title>
-    <ah-card-subtitle [card]="baseModel()"></ah-card-subtitle>
+    <ah-card-title [card]="baseModel()" [align]="'center'" />
+    <ah-card-subtitle [card]="baseModel()" />
     <ah-card-traits
       class="mt-0.5"
       [card]="baseModel()"
       [displayOptions]="displayOptions"
-    ></ah-card-traits>
+    />
     <ah-card-abilities
       class="mt-0.5"
       [card]="baseModel()"
       [displayOptions]="displayOptions"
-    ></ah-card-abilities>
+    />
   </div>
 
   <div class="flex flex-col justify-center items-center text-center">
@@ -57,22 +60,24 @@
         class="relative flex w-16 h-10 justify-between items-center pl-2 pr-4"
       >
         <img
-          [ngSrc]="
-            imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
-          "
           class="-z-20 absolute left-0 h-10"
           width="73"
           height="46"
+          alt="investigator-skills-box"
+          [ngSrc]="
+            imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+          "
         />
 
-        <span class="text-slate-700 font-[Teutonic] text-2xl">{{
-          skill[1]
-        }}</span>
+        <span class="text-slate-700 font-[Teutonic] text-2xl">
+          {{ skill[1] }}
+        </span>
         <img
           class="max-w-none h-6"
-          [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill[0]))"
           width="24"
           height="25"
+          alt="investigator-skill"
+          [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill[0]))"
         />
       </div>
     }
@@ -80,46 +85,50 @@
   <div class="flex flex-col justify-center items-center text-center">
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
       <img
-        [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
-        "
         class="-z-20 absolute h-14 -scale-x-100 left-0.5"
         width="73"
         height="69"
+        alt="investigator-skill-box"
+        [ngSrc]="
+          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+        "
       />
 
       <img
         class="max-w-none h-7 ml-5"
-        [ngSrc]="imagesService.getSimpleOverlay('resource')"
         width="28"
         height="28"
+        alt="investigator-resources"
+        [ngSrc]="imagesService.getSimpleOverlay('resource')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">{{
-        assetState().resources
-      }}</span>
+      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">
+        {{ assetState().resources }}
+      </span>
     </div>
 
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
       <img
-        [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
-        "
         class="-z-20 absolute h-14 -scale-x-100 left-0.5"
         width="73"
         height="69"
+        alt="investigator-skill-box"
+        [ngSrc]="
+          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+        "
       />
 
       <img
         class="max-w-none h-7 ml-5"
-        [ngSrc]="imagesService.getSimpleOverlay('clue')"
         width="28"
         height="28"
+        alt="investigator-clues"
+        [ngSrc]="imagesService.getSimpleOverlay('clue')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">{{
-        assetState().clues
-      }}</span>
+      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">
+        {{ assetState().clues }}
+      </span>
     </div>
   </div>
 </div>

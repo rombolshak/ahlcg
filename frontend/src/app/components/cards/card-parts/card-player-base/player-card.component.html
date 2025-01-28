@@ -1,22 +1,24 @@
 ﻿<div
-  [attr.data-size]="displayOptions().cardSize"
   class="data-[size=l]:w-[375px] data-[size=l]:h-[525px] data-[size=m]:w-[250px]
     data-[size=s]:w-[160px] data-[size=m]:h-[350px] data-[size=s]:h-[224px] group
     relative block *:w-full rounded-xl"
   ahCardOutline
+  [attr.data-size]="displayOptions().cardSize"
   [cardClass]="card().class"
 >
   <img
+    class="-z-10 rounded-xl"
+    priority
+    alt="card-template"
     [height]="cardHeights[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    class="-z-10 rounded-xl"
     [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
-    priority
   />
   <img
+    class="absolute top-0 -z-20 rounded-xl"
+    alt="card-illustration"
     [height]="cardWidths[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    class="absolute top-0 -z-20 rounded-xl"
     [ngSrc]="imagesService.getIllustration(card().setInfo)"
   />
 
@@ -35,11 +37,11 @@
   </div>
 
   <ah-card-skills
-    [card]="card()"
-    [displayOptions]="displayOptions()"
     class="absolute group-data-[size=l]:top-[81px] group-data-[size=m]:top-[54px]
       group-data-[size=s]:top-[36px]"
-  ></ah-card-skills>
+    [card]="card()"
+    [displayOptions]="displayOptions()"
+  />
 
-  <ng-content></ng-content>
+  <ng-content />
 </div>

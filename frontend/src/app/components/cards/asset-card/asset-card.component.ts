@@ -27,8 +27,8 @@ import { DisplayOptions } from 'models/display.options';
 export class AssetCardComponent {
   constructor(public imagesService: ImagesUrlService) {}
 
-  card = input.required<AssetCard>();
-  displayOptions = input.required<DisplayOptions>();
+  readonly card = input.required<AssetCard>();
+  readonly displayOptions = input.required<DisplayOptions>();
   slotSizes = {
     l: 64,
     m: 43,

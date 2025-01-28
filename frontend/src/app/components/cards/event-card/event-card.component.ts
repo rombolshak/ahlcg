@@ -24,6 +24,6 @@ import { DisplayOptions } from 'models/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardComponent {
-  card = input.required<EventCard>();
-  displayOptions = input.required<DisplayOptions>();
+  readonly card = input.required<EventCard>();
+  readonly displayOptions = input.required<DisplayOptions>();
 }

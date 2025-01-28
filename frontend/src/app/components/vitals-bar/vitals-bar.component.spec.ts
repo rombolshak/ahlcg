@@ -8,9 +8,8 @@ describe('VitalsBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VitalsBarComponent]
-    })
-    .compileComponents();
+      imports: [VitalsBarComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(VitalsBarComponent);
     component = fixture.componentInstance;

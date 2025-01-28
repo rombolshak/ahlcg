@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { CardSkillsComponent } from '../card-skills/card-skills.component';
-import { CardConstants } from 'models/card.constants';
+import { cardWidths, cardHeights } from 'models/card.constants';
 import { ImagesUrlService } from 'services/images-url.service';
 import { PlayerCardBase } from 'models/player-card.model';
 import { DisplayOptions } from 'models/display.options';
@@ -16,9 +16,9 @@ import { CardOutlineDirective } from 'directives/card-outline.directive';
 export class PlayerCardComponent {
   constructor(protected readonly imagesService: ImagesUrlService) {}
 
-  card = input.required<PlayerCardBase>();
-  displayOptions = input.required<DisplayOptions>();
+  readonly card = input.required<PlayerCardBase>();
+  readonly displayOptions = input.required<DisplayOptions>();
 
-  cardWidths = CardConstants.cardWidths;
-  cardHeights = CardConstants.cardHeights;
+  cardWidths = cardWidths;
+  cardHeights = cardHeights;
 }

@@ -1,0 +1,15 @@
+﻿<ah-investigator
+  class="col-start-1 row-start-1"
+  [baseModel]="InvestigatorS"
+  [assetState]="assetState"
+/>
+<ah-control-area class="col-start-2" [assets]="assets" [states]="assetStates" />
+<button type="button" class="bg-red-400 col-start-3" (click)="addCard()">
+  ADD CARD
+</button>
+<ah-play-area class="col-start-2 row-start-2" />
+<ah-cards-hand
+  class="col-start-2 row-start-3"
+  [cards]="cards()"
+  (cardSelected)="removeCard($event.id)"
+/>

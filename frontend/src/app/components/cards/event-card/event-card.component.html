@@ -1,11 +1,11 @@
 ﻿<ah-player-card [card]="card()" [displayOptions]="displayOptions()">
-  <ah-card-cost [card]="card()"></ah-card-cost>
+  <ah-card-cost [card]="card()" />
 
   <ah-card-title
-    [card]="card()"
     class="absolute group-data-[size=l]:top-[19rem] group-data-[size=m]:top-[12.5rem]
       group-data-[size=s]:top-[8.25rem] text-center"
-  ></ah-card-title>
+    [card]="card()"
+  />
 
   <div
     class="absolute group-data-[size=l]:top-[21rem] group-data-[size=l]:pl-8
@@ -13,19 +13,10 @@
       group-data-[size=m]:pl-8 group-data-[size=m]:pr-8 group-data-[size=s]:top-[9rem]
       group-data-[size=s]:pl-4 group-data-[size=s]:pr-4 font-[ArnoPro]"
   >
-    <ah-card-traits
-      [card]="card()"
-      [displayOptions]="displayOptions()"
-    ></ah-card-traits>
-    <ah-card-abilities
-      [card]="card()"
-      [displayOptions]="displayOptions()"
-    ></ah-card-abilities>
+    <ah-card-traits [card]="card()" [displayOptions]="displayOptions()" />
+    <ah-card-abilities [card]="card()" [displayOptions]="displayOptions()" />
   </div>
 
-  <ah-card-flavor [card]="card()"></ah-card-flavor>
-  <ah-card-copyright
-    [card]="card()"
-    [displayOptions]="displayOptions()"
-  ></ah-card-copyright>
+  <ah-card-flavor [card]="card()" />
+  <ah-card-copyright [card]="card()" [displayOptions]="displayOptions()" />
 </ah-player-card>

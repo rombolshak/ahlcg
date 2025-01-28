@@ -6,19 +6,19 @@
         <ah-asset-card
           [card]="playerCard | as: AssetCard"
           [displayOptions]="displayOptions()"
-        ></ah-asset-card>
+        />
       }
       @case (PlayerCardType.Event) {
         <ah-event-card
           [card]="playerCard | as: EventCard"
           [displayOptions]="displayOptions()"
-        ></ah-event-card>
+        />
       }
       @case (PlayerCardType.Skill) {
         <ah-skill-card
           [card]="playerCard | as: SkillCard"
           [displayOptions]="displayOptions()"
-        ></ah-skill-card>
+        />
       }
     }
   }

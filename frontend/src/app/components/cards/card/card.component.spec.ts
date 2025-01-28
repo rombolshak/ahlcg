@@ -29,6 +29,7 @@ describe('CardComponent', () => {
   it('should show Asset', () => {
     fixture.componentRef.setInput('card', cardA);
     fixture.detectChanges();
+
     expect(fixture.debugElement.query(By.css('ah-asset-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeFalsy();
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeFalsy();
@@ -37,6 +38,7 @@ describe('CardComponent', () => {
   it('should show Skill', () => {
     fixture.componentRef.setInput('card', cardS);
     fixture.detectChanges();
+
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-asset-card'))).toBeFalsy();
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeFalsy();
@@ -45,6 +47,7 @@ describe('CardComponent', () => {
   it('should show Event', () => {
     fixture.componentRef.setInput('card', cardE);
     fixture.detectChanges();
+
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeFalsy();
     expect(fixture.debugElement.query(By.css('ah-asset-card'))).toBeFalsy();

@@ -27,15 +27,14 @@ import { VitalsBarComponent } from 'components/vitals-bar/vitals-bar.component';
     CardAbilitiesComponent,
     VitalsBarComponent,
   ],
-  templateUrl: 'investigator.component.html',
-  styles: ``,
+  templateUrl: './investigator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorComponent {
   protected readonly imagesService = inject(ImagesUrlService);
 
-  baseModel = input.required<InvestigatorModel>();
-  assetState = input.required<AssetState>();
+  readonly baseModel = input.required<InvestigatorModel>();
+  readonly assetState = input.required<AssetState>();
   protected readonly CreateOverlay = CreateOverlay;
   protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 }

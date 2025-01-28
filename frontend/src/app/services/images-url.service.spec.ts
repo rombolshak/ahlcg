@@ -24,9 +24,11 @@ describe('ImagesUrlService', () => {
     expect(
       service.getTemplate(PlayerCardType.Asset, PlayerCardClass.Guardian),
     ).toEqual(`/assets/images/card-templates/Asset-Guardian.webp`);
+
     expect(
       service.getTemplate(PlayerCardType.Skill, PlayerCardClass.Mystic),
     ).toEqual(`/assets/images/card-templates/Skill-Mystic.webp`);
+
     expect(
       service.getTemplate(PlayerCardType.Event, PlayerCardClass.Neutral),
     ).toEqual(`/assets/images/card-templates/Event-Neutral.webp`);
@@ -36,9 +38,11 @@ describe('ImagesUrlService', () => {
     expect(
       service.getOverlay(CreateOverlay.skillBox(PlayerCardClass.Guardian)),
     ).toEqual(`/assets/images/card-overlays/SkillBox-Guardian.png`);
+
     expect(service.getOverlay(CreateOverlay.cardSlot(AssetSlot.Ally))).toEqual(
       `/assets/images/card-overlays/Slot-Ally.png`,
     );
+
     expect(
       service.getOverlay(CreateOverlay.skillIcon(SkillType.Agility)),
     ).toEqual(`/assets/images/card-overlays/SkillIcon-Agility.png`);

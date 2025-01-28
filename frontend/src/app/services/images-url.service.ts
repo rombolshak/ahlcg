@@ -67,6 +67,7 @@ type Overlay =
       value: AssetSlot;
     };
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class CreateOverlay {
   static skillBox(value: PlayerCardClass): Overlay {
     return { type: OverlayType.SkillBox, value: value };

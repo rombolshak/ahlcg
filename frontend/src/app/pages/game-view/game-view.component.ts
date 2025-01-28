@@ -21,6 +21,7 @@ import { AssetState } from 'models/asset.state';
 import { InvestigatorS } from 'models/test/test-investigators';
 import { ControlAreaComponent } from './components/control-area/control-area.component';
 import { PlayAreaComponent } from './components/play-area/play-area.component';
+import { AssetCard } from '../../models/player-card.model';
 
 @Component({
   selector: 'ah-game-view',
@@ -30,28 +31,7 @@ import { PlayAreaComponent } from './components/play-area/play-area.component';
     ControlAreaComponent,
     PlayAreaComponent,
   ],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
-  template: `
-    <ah-investigator
-      class="col-start-1 row-start-1"
-      [baseModel]="InvestigatorS"
-      [assetState]="assetState"
-    />
-    <ah-control-area
-      class="col-start-2"
-      [assets]="assets"
-      [states]="assetStates"
-    />
-    <button type="button" class="bg-red-400 col-start-3" (click)="addCard()">
-      ADD CARD
-    </button>
-    <ah-play-area class="col-start-2 row-start-2" />
-    <ah-cards-hand
-      class="col-start-2 row-start-3"
-      [cards]="cards()"
-      (cardSelected)="removeCard($event.id)"
-    />
-  `,
+  templateUrl: './game-view.component.html',
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   styles: `
     :host {
@@ -75,7 +55,7 @@ export class GameViewComponent {
     clues: 3,
     doom: 0,
   };
-  protected assets = [
+  protected assets: AssetCard[] = [
     cardA,
     cardA5,
     cardA2,

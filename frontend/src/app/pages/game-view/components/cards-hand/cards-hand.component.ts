@@ -17,17 +17,15 @@ import {
 import { CardComponent } from 'components/cards/card/card.component';
 import { Card } from 'models/card.model';
 import { DisplayOptions } from 'models/display.options';
-import { CardConstants } from 'models/card.constants';
+import { cardWidths } from 'models/card.constants';
 
 @Component({
   selector: 'ah-cards-hand',
   imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
-  styles: `
-    :host {
-      @apply flex justify-center;
-    }
-  `,
+  host: {
+    class: 'flex justify-center',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   animations: [
@@ -92,7 +90,7 @@ export class CardsHandComponent {
   readonly cardOffset = computed(
     () => `${this.calcOffsetFrom(this.cards()).toString()}px`,
   );
-  cardWidth = CardConstants.cardWidths.s;
+  cardWidth = cardWidths.s;
 
   private calcOffsetFrom(cards: Card[]) {
     let container = (
