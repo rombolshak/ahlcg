@@ -6,8 +6,8 @@ import { Pipe, PipeTransform } from '@angular/core';
   pure: true,
 })
 export class AsPipe implements PipeTransform {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  transform<T>(value: never, _type: (new (...args: never[]) => T) | T): T {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
+  transform<T>(value: any, _type: (new (...args: never[]) => T) | T): T {
     return value as T;
   }
 }
