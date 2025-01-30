@@ -48,15 +48,9 @@ export class PlayAreaComponent implements AfterViewInit {
           minZoom: 0.2,
         },
       );
-      this.zoomArea.on('transform', (e: PanZoom) => {
-        console.log(e.getTransform());
-      });
 
       const parent = (this.playArea()?.nativeElement as HTMLElement)
         .parentNode as HTMLElement;
-      console.log(parent);
-      console.log(parent.offsetWidth);
-      console.log(parent.offsetHeight);
       const locX = 0;
       const locY = 0;
       const cx =
