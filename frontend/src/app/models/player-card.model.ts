@@ -48,7 +48,6 @@ export interface PlayerCardBase extends CardInfo {
   class: PlayerCardClass;
   skills: Map<SkillType, number>;
   traits: CardTrait[];
-  abilities: string[];
 }
 
 export interface WithCost {

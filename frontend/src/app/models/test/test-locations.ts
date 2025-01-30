@@ -6,6 +6,7 @@ export const testLocation: Location = {
   clues: 3,
   id: '02126',
   title: 'Вход в музей',
+  abilities: [],
   setInfo: {
     set: '02',
     index: '126',

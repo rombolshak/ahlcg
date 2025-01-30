@@ -24,9 +24,13 @@ describe('CardCostComponent', () => {
   });
 
   it('should print cost', () => {
-    expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(1);
     expect(
-      fixture.debugElement.query(By.css('span')).nativeElement.innerText,
+      fixture.debugElement.queryAll(By.css('ah-text-with-overlay')).length,
+    ).toEqual(1);
+
+    expect(
+      fixture.debugElement.query(By.css('ah-text-with-overlay')).nativeElement
+        .innerText,
     ).toContain(cardA.cost);
   });
 });

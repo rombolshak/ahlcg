@@ -8,6 +8,7 @@ export interface CardInfo {
   cardType: CardType;
   title: string;
   subtitle?: string;
+  abilities: string[];
   flavor?: string;
   copyright: {
     illustrator: string;

@@ -19,11 +19,8 @@
         alt="location-clues"
         [ngSrc]="imageService.getSimpleOverlay('clue')"
       />
-      <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
-      <p class="absolute -z-10" style="-webkit-text-stroke-width: medium">
-        {{ location().clues }}
-      </p>
-      <p class="text-white">{{ location().clues }}</p>
+
+      <ah-text-with-overlay [text]="location().clues" />
     </div>
   </div>
 </div>
