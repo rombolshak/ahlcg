@@ -78,7 +78,7 @@ export class GameViewComponent {
     [cardA3.id, { doom: 1, resources: 6 }],
   ]);
   private index = 1;
-  private availableCards: CardInfo[] = [cardA, cardE, cardS];
+  private readonly availableCards: CardInfo[] = [cardA, cardE, cardS];
   readonly cards: WritableSignal<Card[]> = signal([
     {
       id: this.index++,
