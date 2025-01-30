@@ -80,7 +80,7 @@ import { cardWidths } from 'models/card.constants';
   ],
 })
 export class CardsHandComponent {
-  constructor(private element: ElementRef) {}
+  constructor(private readonly element: ElementRef) {}
 
   readonly cards = input.required<Card[]>();
   readonly cardSelected = output<Card>();
