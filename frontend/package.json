@@ -71,7 +71,7 @@
     "lint-staged": "^15.3.0",
     "postcss": "^8.5.1",
     "prettier": "^3.4.2",
-    "prettier-plugin-classnames": "^0.7.4",
+    "prettier-plugin-classnames": "^0.7.6",
     "prettier-plugin-css-order": "^2.1.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-sh": "^0.14.0",
