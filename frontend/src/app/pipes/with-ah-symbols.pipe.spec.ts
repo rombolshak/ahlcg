@@ -26,8 +26,8 @@ describe('WithAhSymbolsPipe', () => {
   it('replaces symbol if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
 
-    expect(pipe.transform('ab#c#de@f@g')).toEqual(
-      'ab<span class="font-[AHSymbol]">c</span>de<span class="font-[ArnoProBold] italic">f</span>g',
+    expect(pipe.transform('ab#q#de@f@g')).toEqual(
+      'ab<span class="font-[AHSymbol]">q</span>de<span class="font-[ArnoProBold] italic">f</span>g',
     );
   });
 
@@ -36,6 +36,14 @@ describe('WithAhSymbolsPipe', () => {
 
     expect(pipe.transform('ab#cc#de@ff@g')).toEqual(
       'ab<span class="font-[AHSymbol]">cc</span>de<span class="font-[ArnoProBold] italic">ff</span>g',
+    );
+  });
+
+  it('replaces several occurences if needed', () => {
+    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+
+    expect(pipe.transform('ab#c#q#d#e')).toEqual(
+      'ab<span class="font-[AHSymbol]">c</span>q<span class="font-[AHSymbol]">d</span>e',
     );
   });
 
