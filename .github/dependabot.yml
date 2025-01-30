@@ -9,3 +9,19 @@ updates:
     directory: "/frontend" # Location of package manifests
     schedule:
       interval: "weekly"
+    groups:
+      angular:
+        applies-to: version-updates
+        patterns:
+          - "@angular*"
+        update-types:
+          - "minor"
+          - "patch"
+      minor-and-patch:
+        applies-to: security-updates
+        update-types:
+          - "patch"
+          - "minor"
+    ignore:
+      - dependency-name: "@angular*"
+        update-types: ["version-update:semver-major"]
