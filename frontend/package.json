@@ -50,7 +50,7 @@
     "@commitlint/config-conventional": "^19.6.0",
     "@html-eslint/parser": "^0.27.0",
     "@tailwindcss/language-server": "latest",
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.1",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/parser": "^8.14.0",
     "angular-eslint": "19.0.2",
