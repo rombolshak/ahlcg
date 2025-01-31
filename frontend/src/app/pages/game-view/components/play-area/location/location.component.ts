@@ -4,13 +4,14 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { ImagesUrlService } from 'services/images-url.service';
+import { ImagesUrlService } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { Location } from 'models/location.model';
+import { Location } from 'shared/domain/location.model';
+import { TextWithOverlayComponent } from 'shared/ui/components/text-with-overlay/text-with-overlay.component';
 
 @Component({
   selector: 'ah-location',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, TextWithOverlayComponent],
   templateUrl: './location.component.html',
   host: {
     class: 'flex flex-col',

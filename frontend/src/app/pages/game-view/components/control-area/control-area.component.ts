@@ -4,11 +4,14 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { AssetCard } from 'models/player-card.model';
-import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
-import { AssetState } from 'models/asset.state';
+import { AssetCard } from 'shared/domain/player-card.model';
+import {
+  CreateOverlay,
+  ImagesUrlService,
+} from 'shared/services/images-url.service';
+import { AssetState } from 'shared/domain/asset.state';
 import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
-import { CardOutlineDirective } from 'directives/card-outline.directive';
+import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 
 @Component({
   selector: 'ah-control-area',

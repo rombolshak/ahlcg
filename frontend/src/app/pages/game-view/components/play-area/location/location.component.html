@@ -9,6 +9,7 @@
     class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
       *:rounded-full *:text-5xl *:font-[Teutonic] *:relative"
   >
+    <div class="bg-yellow-400">i</div>
     <div class="bg-stone-900 text-white">
       {{ location().shroud }}
     </div>
@@ -19,11 +20,8 @@
         alt="location-clues"
         [ngSrc]="imageService.getSimpleOverlay('clue')"
       />
-      <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
-      <p class="absolute -z-10" style="-webkit-text-stroke-width: medium">
-        {{ location().clues }}
-      </p>
-      <p class="text-white">{{ location().clues }}</p>
+
+      <ah-text-with-overlay [text]="location().clues" />
     </div>
   </div>
 </div>
