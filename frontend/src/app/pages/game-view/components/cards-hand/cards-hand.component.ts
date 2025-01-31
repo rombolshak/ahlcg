@@ -14,10 +14,10 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { CardComponent } from 'components/cards/card/card.component';
-import { Card } from 'models/card.model';
-import { DisplayOptions } from 'models/display.options';
-import { cardWidths } from 'models/card.constants';
+import { CardComponent } from 'shared/ui/components/cards/card/card.component';
+import { Card } from 'shared/domain/card.model';
+import { DisplayOptions } from 'shared/domain/display.options';
+import { cardWidths } from 'shared/domain/card.constants';
 
 @Component({
   selector: 'ah-cards-hand',

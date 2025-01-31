@@ -4,11 +4,14 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { CreateOverlay, ImagesUrlService } from 'services/images-url.service';
+import {
+  CreateOverlay,
+  ImagesUrlService,
+} from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { AssetCard } from 'models/player-card.model';
-import { AssetState } from 'models/asset.state';
-import { VitalsBarComponent } from 'components/vitals-bar/vitals-bar.component';
+import { AssetCard } from 'shared/domain/player-card.model';
+import { AssetState } from 'shared/domain/asset.state';
+import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.component';
 import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 

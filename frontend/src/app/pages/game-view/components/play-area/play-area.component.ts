@@ -8,8 +8,8 @@ import {
 import * as pz from 'panzoom';
 import { PanZoom } from 'panzoom';
 import { LocationComponent } from './location/location.component';
-import { Location } from '../../../../models/location.model';
-import { testLocation } from '../../../../models/test/test-locations';
+import { Location } from 'shared/domain/location.model';
+import { testLocation } from 'shared/domain/test/test-locations';
 
 @Component({
   selector: 'ah-play-area',

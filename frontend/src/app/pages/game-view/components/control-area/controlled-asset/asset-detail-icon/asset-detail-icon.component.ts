@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CreateOverlay } from 'services/images-url.service';
+import { CreateOverlay } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 
 @Component({

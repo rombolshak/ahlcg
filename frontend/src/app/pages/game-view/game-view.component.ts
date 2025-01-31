@@ -4,7 +4,7 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
-import { CardInfo } from 'models/card-info.model';
+import { CardInfo } from 'shared/domain/card-info.model';
 import {
   cardA,
   cardA2,
@@ -13,15 +13,15 @@ import {
   cardA5,
   cardE,
   cardS,
-} from 'models/test/test-cards';
-import { Card } from 'models/card.model';
+} from 'shared/domain/test/test-cards';
+import { Card } from 'shared/domain/card.model';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { InvestigatorComponent } from './components/investigator/investigator.component';
-import { AssetState } from 'models/asset.state';
-import { InvestigatorS } from 'models/test/test-investigators';
+import { AssetState } from 'shared/domain/asset.state';
+import { InvestigatorS } from 'shared/domain/test/test-investigators';
 import { ControlAreaComponent } from './components/control-area/control-area.component';
 import { PlayAreaComponent } from './components/play-area/play-area.component';
-import { AssetCard } from '../../models/player-card.model';
+import { AssetCard } from 'shared/domain/player-card.model';
 
 @Component({
   selector: 'ah-game-view',

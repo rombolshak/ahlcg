@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardsHandComponent } from './cards-hand.component';
-import { cardA, cardE, cardS } from 'models/test/test-cards';
+import { cardA, cardE, cardS } from 'shared/domain/test/test-cards';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 

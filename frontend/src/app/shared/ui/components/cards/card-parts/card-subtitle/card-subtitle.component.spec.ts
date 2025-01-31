@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AssetPopoverComponent } from './asset-popover.component';
+import { CardSubtitleComponent } from './card-subtitle.component';
 import { cardA } from 'shared/domain/test/test-cards';
 
-describe('AssetPopoverComponent', () => {
-  let component: AssetPopoverComponent;
-  let fixture: ComponentFixture<AssetPopoverComponent>;
+describe('CardSubtitleComponent', () => {
+  let component: CardSubtitleComponent;
+  let fixture: ComponentFixture<CardSubtitleComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AssetPopoverComponent],
+      imports: [CardSubtitleComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AssetPopoverComponent);
-    fixture.componentRef.setInput('asset', cardA);
+    fixture = TestBed.createComponent(CardSubtitleComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('card', cardA);
     fixture.detectChanges();
   });
 
