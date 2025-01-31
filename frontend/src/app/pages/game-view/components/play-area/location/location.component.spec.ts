@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationComponent } from './location.component';
-import { testLocation } from '../../../../../models/test/test-locations';
+import { testLocation } from 'shared/domain/test/test-locations';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
