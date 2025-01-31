@@ -26,24 +26,28 @@ describe('WithAhSymbolsPipe', () => {
   it('replaces symbol if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
 
-    expect(pipe.transform('ab#q#de@f@g')).toEqual(
-      'ab<span class="font-[AHSymbol]">q</span>de<span class="font-[ArnoProBold] italic">f</span>g',
+    expect(pipe.transform('one symbol #q# is @f@ replaced')).toEqual(
+      'one symbol <span class="font-[AHSymbol]">q</span> is <span class="font-[ArnoProBold] italic">f</span> replaced',
     );
   });
 
   it('replaces two symbols if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
 
-    expect(pipe.transform('ab#cc#de@ff@g')).toEqual(
-      'ab<span class="font-[AHSymbol]">cc</span>de<span class="font-[ArnoProBold] italic">ff</span>g',
+    expect(pipe.transform('two consecutive symbols #cc# or @ff@ too')).toEqual(
+      'two consecutive symbols <span class="font-[AHSymbol]">cc</span> or <span class="font-[ArnoProBold] italic">ff</span> too',
     );
   });
 
   it('replaces several occurences if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
 
-    expect(pipe.transform('ab#c#q#d#e')).toEqual(
-      'ab<span class="font-[AHSymbol]">c</span>q<span class="font-[AHSymbol]">d</span>e',
+    expect(
+      pipe.transform(
+        'several replacements by one symbol #c# and #d# succeeded',
+      ),
+    ).toEqual(
+      'several replacements by one symbol <span class="font-[AHSymbol]">c</span> and <span class="font-[AHSymbol]">d</span> succeeded',
     );
   });
 
