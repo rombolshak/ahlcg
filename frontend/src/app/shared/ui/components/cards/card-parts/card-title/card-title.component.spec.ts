@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardTitleComponent } from './card-title.component';
 import { cardA } from 'shared/domain/test/test-cards';
 import { By } from '@angular/platform-browser';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('CardTitleComponent', () => {
   let component: CardTitleComponent;
@@ -10,13 +11,14 @@ describe('CardTitleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [CardTitleComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardTitleComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', cardA);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

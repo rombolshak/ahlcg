@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardSkillsComponent } from './card-skills.component';
 import { By } from '@angular/platform-browser';
 import { cardA, displayOption } from 'shared/domain/test/test-cards';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('CardSkillsComponent', () => {
   let component: CardSkillsComponent;
@@ -10,6 +11,7 @@ describe('CardSkillsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [CardSkillsComponent],
     }).compileComponents();
 
@@ -17,7 +19,7 @@ describe('CardSkillsComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', cardA);
     fixture.componentRef.setInput('displayOptions', displayOption);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

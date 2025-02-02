@@ -7,12 +7,15 @@ import {
   PlayerCardType,
   SkillType,
 } from 'shared/domain/player-card.model';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('ImagesUrlService', () => {
   let service: ImagesUrlService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
+    });
     service = TestBed.inject(ImagesUrlService);
   });
 

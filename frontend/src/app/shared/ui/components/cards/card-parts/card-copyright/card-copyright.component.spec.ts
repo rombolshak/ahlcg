@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardCopyrightComponent } from './card-copyright.component';
 import { cardA, displayOption } from 'shared/domain/test/test-cards';
 import { By } from '@angular/platform-browser';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('CardCopyrightComponent', () => {
   let component: CardCopyrightComponent;
@@ -10,6 +11,7 @@ describe('CardCopyrightComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [CardCopyrightComponent],
     }).compileComponents();
 
@@ -17,7 +19,7 @@ describe('CardCopyrightComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', cardA);
     fixture.componentRef.setInput('displayOptions', displayOption);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

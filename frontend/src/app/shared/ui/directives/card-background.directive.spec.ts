@@ -1,5 +1,9 @@
 import { CardBackgroundDirective } from './card-background.directive';
-import { Component, input } from '@angular/core';
+import {
+  Component,
+  input,
+  provideExperimentalZonelessChangeDetection,
+} from '@angular/core';
 import { PlayerCardClass } from 'shared/domain/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
@@ -19,12 +23,13 @@ describe('CardBackgroundDirective', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [TestComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
     fixture.componentRef.setInput('cardClass', PlayerCardClass.Rogue);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create an instance', () => {

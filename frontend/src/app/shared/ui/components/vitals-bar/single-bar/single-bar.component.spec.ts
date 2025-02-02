@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SingleBarComponent } from './single-bar.component';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('SingleBarComponent', () => {
   let component: SingleBarComponent;
@@ -8,6 +9,7 @@ describe('SingleBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [SingleBarComponent],
     }).compileComponents();
 
@@ -17,7 +19,7 @@ describe('SingleBarComponent', () => {
     fixture.componentRef.setInput('goodColor', '');
     fixture.componentRef.setInput('badColor', '');
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TextWithOverlayComponent } from './text-with-overlay.component';
 import { By } from '@angular/platform-browser';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('TextWithOverlayComponent', () => {
   let component: TextWithOverlayComponent;
@@ -9,13 +10,14 @@ describe('TextWithOverlayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [TextWithOverlayComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TextWithOverlayComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('text', 'test');
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

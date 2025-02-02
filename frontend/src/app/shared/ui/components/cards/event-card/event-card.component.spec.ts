@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EventCardComponent } from './event-card.component';
 import { cardE, displayOption } from 'shared/domain/test/test-cards';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('EventCardComponent', () => {
   let component: EventCardComponent;
@@ -9,6 +10,7 @@ describe('EventCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [EventCardComponent],
     }).compileComponents();
 
@@ -16,7 +18,7 @@ describe('EventCardComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', cardE);
     fixture.componentRef.setInput('displayOptions', displayOption);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {
