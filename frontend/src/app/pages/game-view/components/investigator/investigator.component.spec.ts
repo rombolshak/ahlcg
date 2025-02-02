@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorComponent } from './investigator.component';
 import { InvestigatorS } from 'shared/domain/test/test-investigators';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('InvestigatorComponent', () => {
   let component: InvestigatorComponent;
@@ -9,6 +10,7 @@ describe('InvestigatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [InvestigatorComponent],
     }).compileComponents();
 
@@ -21,7 +23,7 @@ describe('InvestigatorComponent', () => {
       clues: 0,
       resources: 0,
     });
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

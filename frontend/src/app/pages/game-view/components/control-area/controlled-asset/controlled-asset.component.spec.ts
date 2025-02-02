@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ControlledAssetComponent } from './controlled-asset.component';
 import { cardA } from 'shared/domain/test/test-cards';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('ControlledAssetComponent', () => {
   let component: ControlledAssetComponent;
@@ -9,13 +10,14 @@ describe('ControlledAssetComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [ControlledAssetComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ControlledAssetComponent);
     fixture.componentRef.setInput('asset', cardA);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

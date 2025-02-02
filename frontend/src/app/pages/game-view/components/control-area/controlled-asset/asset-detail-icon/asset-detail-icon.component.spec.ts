@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AssetDetailIconComponent } from './asset-detail-icon.component';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('AssetDetailIconComponent', () => {
   let component: AssetDetailIconComponent;
@@ -8,6 +9,7 @@ describe('AssetDetailIconComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [AssetDetailIconComponent],
     }).compileComponents();
 
@@ -15,7 +17,7 @@ describe('AssetDetailIconComponent', () => {
     fixture.componentRef.setInput('detail', undefined);
     fixture.componentRef.setInput('image', '');
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {

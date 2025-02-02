@@ -10,6 +10,7 @@ import {
   displayOption,
 } from 'shared/domain/test/test-cards';
 import { By } from '@angular/platform-browser';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -17,6 +18,7 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideExperimentalZonelessChangeDetection()],
       imports: [CardComponent, NoopAnimationsModule],
     }).compileComponents();
 
@@ -24,34 +26,34 @@ describe('CardComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', {} as CardInfo);
     fixture.componentRef.setInput('displayOptions', displayOption);
-    fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show Asset', () => {
+  it('should show Asset', async () => {
     fixture.componentRef.setInput('card', cardA);
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(fixture.debugElement.query(By.css('ah-asset-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeFalsy();
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeFalsy();
   });
 
-  it('should show Skill', () => {
+  it('should show Skill', async () => {
     fixture.componentRef.setInput('card', cardS);
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-asset-card'))).toBeFalsy();
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeFalsy();
   });
 
-  it('should show Event', () => {
+  it('should show Event', async () => {
     fixture.componentRef.setInput('card', cardE);
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(fixture.debugElement.query(By.css('ah-event-card'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('ah-skill-card'))).toBeFalsy();
