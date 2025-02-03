@@ -59,7 +59,7 @@
     "eslint-formatter-mo": "^2.1.0",
     "eslint-plugin-jasmine": "^4.2.2",
     "eslint-plugin-jsonc": "^2.18.2",
-    "eslint-plugin-readable-tailwind": "^1.8.2",
+    "eslint-plugin-readable-tailwind": "^1.9.0",
     "husky": "^9.1.7",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
