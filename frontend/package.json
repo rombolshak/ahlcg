@@ -46,7 +46,7 @@
     "@angular/cli": "^19.1.5",
     "@angular/compiler-cli": "^19.1.4",
     "@commitlint/cli": "^19.7.1",
-    "@commitlint/config-conventional": "^19.6.0",
+    "@commitlint/config-conventional": "^19.7.1",
     "@html-eslint/parser": "^0.27.0",
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.0.1",
