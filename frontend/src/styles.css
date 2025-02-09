@@ -1,5 +1,10 @@
 @import url("tailwindcss");
 
+/* stylelint-disable-next-line */
+*:not(.cursor-reset, :is(.\*\:cursor-reset > *)) {
+  cursor: default;
+}
+
 @font-face {
   font-style: normal;
   font-weight: normal;
@@ -60,5 +65,9 @@
   .stroke {
     /* stylelint-disable */
     -webkit-text-stroke-width: thick;
+  }
+
+  .cursor-reset {
+    cursor: unset;
   }
 }
