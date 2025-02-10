@@ -8,56 +8,56 @@
 @font-face {
   font-style: normal;
   font-weight: normal;
-  src: url("/assets/fonts/AHLCGSymbol.ttf") format("truetype");
+  src: url("/assets/fonts/AHLCGSymbol.woff2");
   font-family: AHSymbol;
 }
 
 @font-face {
   font-style: normal;
   font-weight: normal;
-  src: url("/assets/fonts/arnopro_regular.otf") format("opentype");
+  src: url("/assets/fonts/arnopro_regular.woff2");
   font-family: ArnoPro;
 }
 
 @font-face {
   font-style: normal;
   font-weight: bold;
-  src: url("/assets/fonts/arnopro_bolddisplay.oft") format("opentype");
+  src: url("/assets/fonts/arnopro_bolddisplay.woff2");
   font-family: ArnoPro;
 }
 
 @font-face {
   font-style: normal;
   font-weight: normal;
-  src: url("/assets/fonts/arnopro_bold.otf") format("opentype");
+  src: url("/assets/fonts/arnopro_bold.woff2");
   font-family: ArnoProBold;
 }
 
 @font-face {
   font-style: normal;
   font-weight: bold;
-  src: url("/assets/fonts/arnopro_boldcaption.otf") format("opentype");
+  src: url("/assets/fonts/arnopro_boldcaption.woff2");
   font-family: ArnoProBold;
 }
 
 @font-face {
   font-style: italic;
   font-weight: normal;
-  src: url("/assets/fonts/arnopro_bolditalic.otf") format("opentype");
+  src: url("/assets/fonts/arnopro_bolditalic.woff2");
   font-family: ArnoProBold;
 }
 
 @font-face {
   font-style: normal;
   font-weight: normal;
-  src: url("/assets/fonts/Conkordia.ttf") format("truetype");
+  src: url("/assets/fonts/Conkordia.woff2");
   font-family: Conkordia;
 }
 
 @font-face {
   font-style: normal;
   font-weight: normal;
-  src: url("/assets/fonts/Teutonic.ttf") format("opentype");
+  src: url("/assets/fonts/Teutonic.woff2");
   font-family: Teutonic;
 }
 
