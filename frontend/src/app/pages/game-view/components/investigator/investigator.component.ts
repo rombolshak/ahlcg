@@ -18,6 +18,7 @@ import { CardTraitsComponent } from 'shared/ui/components/cards/card-parts/card-
 import { DisplayOptions } from 'shared/domain/display.options';
 import { CardAbilitiesComponent } from 'shared/ui/components/cards/card-parts/card-abilities/card-abilities.component';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
+import { EntityAvatarComponent } from '../entity-avatar/entity-avatar.component';
 
 @Component({
   selector: 'ah-investigator',
@@ -29,6 +30,7 @@ import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.c
     CardTraitsComponent,
     CardAbilitiesComponent,
     VitalsBarComponent,
+    EntityAvatarComponent,
   ],
   templateUrl: './investigator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
