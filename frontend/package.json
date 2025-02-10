@@ -55,7 +55,7 @@
     "@tailwindcss/postcss": "^4.0.1",
     "@types/jasmine": "~5.1.5",
     "@typescript-eslint/parser": "^8.23.0",
-    "angular-eslint": "19.0.2",
+    "angular-eslint": "19.1.0",
     "cspell": "^8.17.1",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.0.1",
