@@ -37,6 +37,9 @@
     "@angular/platform-browser": "^19.1.4",
     "@angular/platform-browser-dynamic": "^19.1.4",
     "@angular/router": "^19.1.4",
+    "@bugsnag/browser-performance": "^2.11.0",
+    "@bugsnag/js": "^8.2.0",
+    "@bugsnag/plugin-angular": "^8.2.0",
     "panzoom": "^9.4.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
