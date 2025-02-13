@@ -11,25 +11,21 @@ import {
 import { NgOptimizedImage } from '@angular/common';
 import { InvestigatorModel } from 'shared/domain/player-card.model';
 import { AssetState } from 'shared/domain/asset.state';
-import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 import { CardTitleComponent } from 'shared/ui/components/cards/card-parts/card-title/card-title.component';
 import { CardSubtitleComponent } from 'shared/ui/components/cards/card-parts/card-subtitle/card-subtitle.component';
 import { CardTraitsComponent } from 'shared/ui/components/cards/card-parts/card-traits/card-traits.component';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { CardAbilitiesComponent } from 'shared/ui/components/cards/card-parts/card-abilities/card-abilities.component';
-import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 import { EntityAvatarComponent } from '../entity-avatar/entity-avatar.component';
 
 @Component({
   selector: 'ah-investigator',
   imports: [
     NgOptimizedImage,
-    CardOutlineDirective,
     CardTitleComponent,
     CardSubtitleComponent,
     CardTraitsComponent,
     CardAbilitiesComponent,
-    VitalsBarComponent,
     EntityAvatarComponent,
   ],
   templateUrl: './investigator.component.html',

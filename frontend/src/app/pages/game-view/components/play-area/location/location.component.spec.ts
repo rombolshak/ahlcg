@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LocationComponent } from './location.component';
 import { testLocation } from 'shared/domain/test/test-locations';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -22,5 +23,17 @@ describe('LocationComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should have header', () => {
+    expect(
+      fixture.debugElement.queryAll(By.css('ah-location-header')).length,
+    ).toBe(1);
+  });
+
+  it('should have image', () => {
+    expect(
+      fixture.debugElement.queryAll(By.css('img[src*="illustrations"]')).length,
+    ).toBe(1);
   });
 });
