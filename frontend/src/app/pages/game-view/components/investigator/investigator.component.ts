@@ -9,8 +9,7 @@ import {
   ImagesUrlService,
 } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { InvestigatorModel } from 'shared/domain/player-card.model';
-import { AssetState } from 'shared/domain/asset.state';
+import { InvestigatorWithState } from 'shared/domain/player-card.model';
 import { CardTitleComponent } from 'shared/ui/components/cards/card-parts/card-title/card-title.component';
 import { CardSubtitleComponent } from 'shared/ui/components/cards/card-parts/card-subtitle/card-subtitle.component';
 import { CardTraitsComponent } from 'shared/ui/components/cards/card-parts/card-traits/card-traits.component';
@@ -34,8 +33,7 @@ import { EntityAvatarComponent } from '../entity-avatar/entity-avatar.component'
 export class InvestigatorComponent {
   protected readonly imagesService = inject(ImagesUrlService);
 
-  readonly baseModel = input.required<InvestigatorModel>();
-  readonly assetState = input.required<AssetState>();
+  readonly investigator = input.required<InvestigatorWithState>();
   protected readonly CreateOverlay = CreateOverlay;
   protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 }

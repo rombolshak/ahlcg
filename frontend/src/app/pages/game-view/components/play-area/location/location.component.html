@@ -1,8 +1,10 @@
 ﻿<ah-location-header [location]="location()" />
 
-<img
-  alt="location-illustration"
-  height="428"
-  width="704"
-  [ngSrc]="imageService.getIllustration(location().setInfo)"
-/>
+<div class="h-108 relative">
+  <img
+    alt="location-illustration"
+    fill
+    class="-z-50"
+    [ngSrc]="imageService.getIllustration(location().setInfo)"
+  />
+</div>

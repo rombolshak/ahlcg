@@ -1,4 +1,5 @@
-﻿import { CardInfo, CardType } from './card-info.model';
+﻿import { AssetState } from './asset.state';
+import { CardInfo, CardType } from './card-info.model';
 
 export enum PlayerCardType {
   Asset = 'Asset',
@@ -74,3 +75,5 @@ export type InvestigatorModel = PlayerCardBase &
   WithHealth & {
     playerCardType: PlayerCardType.Investigator;
   };
+
+export type InvestigatorWithState = InvestigatorModel & AssetState;

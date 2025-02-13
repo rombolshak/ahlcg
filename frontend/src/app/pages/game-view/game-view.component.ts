@@ -55,22 +55,13 @@ export class GameViewComponent {
     clues: 3,
     doom: 0,
   };
-  protected assets: AssetCard[] = [
-    cardA,
-    cardA5,
-    cardA2,
-    cardA,
-    cardA,
-    cardA3,
-    cardA,
-    cardA4,
-    cardA,
-    cardA2,
-    cardA,
-    cardA,
-    cardA4,
-    cardA,
-  ];
+
+  protected investigator = {
+    ...InvestigatorS,
+    ...this.assetState,
+  };
+
+  protected assets: AssetCard[] = [cardA, cardA5, cardA2, cardA, cardA];
   protected assetStates = new Map<string, AssetState>([
     [cardA2.id, { damage: 1 }],
     [cardA4.id, { resources: 3 }],

@@ -10,6 +10,8 @@ import { PanZoom } from 'panzoom';
 import { LocationComponent } from './location/location.component';
 import { Location } from 'shared/domain/location.model';
 import { testLocation } from 'shared/domain/test/test-locations';
+import { InvestigatorS } from 'shared/domain/test/test-investigators';
+import { InvestigatorWithState } from 'shared/domain/player-card.model';
 
 @Component({
   selector: 'ah-play-area',
@@ -22,6 +24,7 @@ import { testLocation } from 'shared/domain/test/test-locations';
       <ah-location
         class="relative col-start-1 row-start-1 rounded"
         [location]="location"
+        [investigators]="investigators"
       />
     </div>
   `,
@@ -38,6 +41,15 @@ import { testLocation } from 'shared/domain/test/test-locations';
 })
 export class PlayAreaComponent implements AfterViewInit {
   location: Location = testLocation;
+  investigator1 = {
+    ...InvestigatorS,
+    clues: 2,
+    horror: 3,
+  };
+  investigators: InvestigatorWithState[] = [
+    this.investigator1,
+    this.investigator1,
+  ];
 
   public ngAfterViewInit() {
     setTimeout(() => {
