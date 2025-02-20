@@ -7,8 +7,7 @@ import {
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 import { NgOptimizedImage } from '@angular/common';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
-import { InvestigatorModel } from 'shared/domain/player-card.model';
-import { AssetState } from 'shared/domain/asset.state';
+import { InvestigatorWithState } from 'shared/domain/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 
 @Component({
@@ -18,8 +17,7 @@ import { ImagesUrlService } from 'shared/services/images-url.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EntityAvatarComponent {
-  readonly investigator = input.required<InvestigatorModel>();
-  readonly state = input<AssetState>({});
+  readonly investigator = input.required<InvestigatorWithState>();
 
   protected readonly imagesService = inject(ImagesUrlService);
 }

@@ -54,26 +54,25 @@ export interface WithHealth {
   sanity: number;
 }
 
-export type AssetCard = PlayerCardBase &
-  WithCost &
-  Partial<WithHealth> & {
-    playerCardType: PlayerCardType.Asset;
-    slot?: AssetSlot | undefined;
-    additionalSlot?: AssetSlot | undefined;
-  };
+export interface AssetCard
+  extends PlayerCardBase,
+    WithCost,
+    Partial<WithHealth> {
+  playerCardType: PlayerCardType.Asset;
+  slot?: AssetSlot | undefined;
+  additionalSlot?: AssetSlot | undefined;
+}
 
-export type EventCard = PlayerCardBase &
-  WithCost & {
-    playerCardType: PlayerCardType.Event;
-  };
+export interface EventCard extends PlayerCardBase, WithCost {
+  playerCardType: PlayerCardType.Event;
+}
 
-export type SkillCard = PlayerCardBase & {
+export interface SkillCard extends PlayerCardBase {
   playerCardType: PlayerCardType.Skill;
-};
+}
 
-export type InvestigatorModel = PlayerCardBase &
-  WithHealth & {
-    playerCardType: PlayerCardType.Investigator;
-  };
+export interface InvestigatorModel extends PlayerCardBase, WithHealth {
+  playerCardType: PlayerCardType.Investigator;
+}
 
-export type InvestigatorWithState = InvestigatorModel & AssetState;
+export interface InvestigatorWithState extends InvestigatorModel, AssetState {}

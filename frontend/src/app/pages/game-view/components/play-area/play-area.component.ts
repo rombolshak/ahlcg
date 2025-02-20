@@ -45,6 +45,7 @@ export class PlayAreaComponent implements AfterViewInit {
     ...InvestigatorS,
     clues: 2,
     horror: 3,
+    damage: 2,
   };
   investigators: InvestigatorWithState[] = [
     this.investigator1,

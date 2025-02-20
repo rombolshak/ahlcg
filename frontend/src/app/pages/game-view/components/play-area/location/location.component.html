@@ -1,10 +1,22 @@
 ﻿<ah-location-header [location]="location()" />
 
-<div class="h-108 relative">
+<div class="flex h-108 relative">
   <img
     alt="location-illustration"
     fill
     class="-z-50"
     [ngSrc]="imageService.getIllustration(location().setInfo)"
   />
+
+  <div
+    class="w-4/5 p-2 flex flex-row flex-wrap-reverse place-content-start place-self-end
+      gap-2"
+  >
+    @for (investigator of investigators(); track investigator.id) {
+      <ah-entity-avatar
+        class="block basis-24/100"
+        [investigator]="investigator"
+      />
+    }
+  </div>
 </div>
