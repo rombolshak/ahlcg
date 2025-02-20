@@ -6,7 +6,6 @@ import { CardInfo } from 'shared/domain/card-info.model';
   selector: 'ah-card-details-text',
   imports: [WithAhSymbolsPipe],
   templateUrl: './card-details-text.component.html',
-  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardDetailsTextComponent {

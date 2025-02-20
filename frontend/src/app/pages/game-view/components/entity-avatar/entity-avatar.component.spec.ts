@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InvestigatorComponent } from './investigator.component';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
+import { EntityAvatarComponent } from './entity-avatar.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { InvestigatorS } from 'shared/domain/test/test-investigators';
 
-describe('InvestigatorComponent', () => {
-  let component: InvestigatorComponent;
-  let fixture: ComponentFixture<InvestigatorComponent>;
+describe('EntityAvatarComponent', () => {
+  let component: EntityAvatarComponent;
+  let fixture: ComponentFixture<EntityAvatarComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [InvestigatorComponent],
+      imports: [EntityAvatarComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(InvestigatorComponent);
+    fixture = TestBed.createComponent(EntityAvatarComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('investigator', InvestigatorS);
     await fixture.whenStable();

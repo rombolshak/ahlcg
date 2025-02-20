@@ -41,7 +41,7 @@ describe('WithAhSymbolsPipe', () => {
     );
   });
 
-  it('replaces several occurences if needed', () => {
+  it('replaces several occurrences if needed', () => {
     const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
 
     expect(

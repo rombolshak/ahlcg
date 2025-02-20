@@ -1,30 +1,4 @@
-﻿<div
-  class="flex py-0 rounded-lg relative"
-  ahCardOutline
-  [cardClass]="baseModel().class"
->
-  <img
-    fill
-    class="-z-30"
-    priority
-    alt="investigator-template"
-    [ngSrc]="imagesService.getTemplate('Investigator', baseModel().class)"
-  />
-
-  <ah-vitals-bar
-    orientation="vertical"
-    [asset]="baseModel()"
-    [state]="assetState()"
-  />
-
-  <img
-    width="100"
-    height="150"
-    class="peer"
-    alt="investigator avatar"
-    [ngSrc]="imagesService.getInvestigator(baseModel().setInfo)"
-  />
-
+﻿<ah-entity-avatar [investigator]="investigator()">
   <div
     class="flex flex-col absolute -z-50 left-32 py-1 px-2 group w-0 h-40 overflow-hidden
       transition-all duration-300 peer-hover:w-36 peer-hover:z-10 hover:w-36
@@ -36,26 +10,26 @@
       class="absolute -z-10"
       alt="investigator-details"
       [ngSrc]="
-        imagesService.getTemplate('Investigator-Details', baseModel().class)
+        imagesService.getTemplate('Investigator-Details', investigator().class)
       "
     />
 
-    <ah-card-title align="center" [card]="baseModel()" />
-    <ah-card-subtitle [card]="baseModel()" />
+    <ah-card-title align="center" [card]="investigator()" />
+    <ah-card-subtitle [card]="investigator()" />
     <ah-card-traits
       class="mt-0.5"
-      [card]="baseModel()"
+      [card]="investigator()"
       [displayOptions]="displayOptions"
     />
     <ah-card-abilities
       class="mt-0.5"
-      [card]="baseModel()"
+      [card]="investigator()"
       [displayOptions]="displayOptions"
     />
   </div>
 
   <div class="flex flex-col justify-center items-center text-center">
-    @for (skill of baseModel().skills; track $index) {
+    @for (skill of investigator().skills; track $index) {
       <div
         class="relative flex w-16 h-10 justify-between items-center pl-2 pr-4"
       >
@@ -65,7 +39,9 @@
           height="46"
           alt="investigator-skills-box"
           [ngSrc]="
-            imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+            imagesService.getOverlay(
+              CreateOverlay.skillBox(investigator().class)
+            )
           "
         />
 
@@ -85,50 +61,50 @@
   <div class="flex flex-col justify-center items-center text-center">
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
       <img
-        class="-z-20 absolute h-14 -scale-x-100 left-0.5"
+        class="-z-20 absolute h-14 -scale-x-100 left-1.5"
         width="73"
         height="69"
         alt="investigator-skill-box"
         [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+          imagesService.getOverlay(CreateOverlay.skillBox(investigator().class))
         "
       />
 
       <img
-        class="max-w-none h-7 ml-5"
+        class="max-w-none h-7 ml-6"
         width="28"
         height="28"
         alt="investigator-resources"
         [ngSrc]="imagesService.getSimpleOverlay('resource')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">
-        {{ assetState().resources }}
+      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
+        {{ investigator().resources }}
       </span>
     </div>
 
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
       <img
-        class="-z-20 absolute h-14 -scale-x-100 left-0.5"
+        class="-z-20 absolute h-14 -scale-x-100 left-1.5"
         width="73"
         height="69"
         alt="investigator-skill-box"
         [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(baseModel().class))
+          imagesService.getOverlay(CreateOverlay.skillBox(investigator().class))
         "
       />
 
       <img
-        class="max-w-none h-7 ml-5"
+        class="max-w-none h-7 ml-6"
         width="28"
         height="28"
         alt="investigator-clues"
         [ngSrc]="imagesService.getSimpleOverlay('clue')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-3">
-        {{ assetState().clues }}
+      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
+        {{ investigator().clues }}
       </span>
     </div>
   </div>
-</div>
+</ah-entity-avatar>

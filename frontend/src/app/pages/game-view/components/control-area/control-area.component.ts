@@ -20,7 +20,7 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
     @for (asset of assets(); track asset.id) {
       @let assetState = states().get(asset.id);
       <ah-controlled-asset
-        class="basis-[6rem] aspect-[4/3] mr-3 mb-3 rounded-lg"
+        class="w-[6rem] h-[4.5rem] mr-3 mb-3 rounded-lg"
         ahCardOutline
         [asset]="asset"
         [state]="assetState"

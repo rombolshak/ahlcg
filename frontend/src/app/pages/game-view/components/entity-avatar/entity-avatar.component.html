@@ -1,0 +1,29 @@
+<div
+  class="flex py-0 rounded-lg relative"
+  ahCardOutline
+  [cardClass]="investigator().class"
+>
+  <img
+    fill
+    class="-z-30"
+    priority
+    alt="investigator-template"
+    [ngSrc]="imagesService.getTemplate('Investigator', investigator().class)"
+  />
+
+  <ah-vitals-bar
+    orientation="vertical"
+    [asset]="investigator()"
+    [state]="investigator()"
+  />
+
+  <img
+    width="100"
+    height="154"
+    class="peer"
+    alt="investigator avatar"
+    [ngSrc]="imagesService.getInvestigator(investigator().setInfo)"
+  />
+
+  <ng-content />
+</div>
