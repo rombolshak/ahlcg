@@ -4,6 +4,7 @@ import { LocationComponent } from './location.component';
 import { testLocation } from 'shared/domain/test/test-locations';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { InvestigatorS } from '../../../../../shared/domain/test/test-investigators';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -18,6 +19,10 @@ describe('LocationComponent', () => {
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('location', testLocation);
+    fixture.componentRef.setInput('investigators', [
+      InvestigatorS,
+      InvestigatorS,
+    ]);
     await fixture.whenStable();
   });
 
@@ -35,5 +40,11 @@ describe('LocationComponent', () => {
     expect(
       fixture.debugElement.queryAll(By.css('img[src*="illustrations"]')).length,
     ).toBe(1);
+  });
+
+  it('should display investigators', () => {
+    expect(
+      fixture.debugElement.queryAll(By.css('ah-entity-avatar')).length,
+    ).toBe(2);
   });
 });

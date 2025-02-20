@@ -40,5 +40,5 @@
     "softwareTerms",
     "typescript"
   ],
-  "ignorePaths": ["*test*", "*.spec.ts"]
+  "ignorePaths": ["*test*"]
 }
