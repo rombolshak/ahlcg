@@ -4,6 +4,7 @@
   <img
     alt="location-illustration"
     fill
+    priority
     class="-z-50"
     [ngSrc]="imageService.getIllustration(location().setInfo)"
   />
@@ -13,10 +14,42 @@
       gap-2"
   >
     @for (investigator of investigators(); track investigator.id) {
-      <ah-entity-avatar
-        class="block basis-24/100"
-        [investigator]="investigator"
-      />
+      <ah-entity-avatar class="basis-74/100" [investigator]="investigator">
+        <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
+          <div class="bg-zinc-900/70 w-33">
+            <ah-vitals-bar [state]="{ damage: 2 }" [asset]="{ health: 3 }" />
+            <img
+              alt="enemy"
+              width="132"
+              height="45"
+              class="max-w-none h-fit"
+              [ngSrc]="imageService.getIllustration(enemyImage)"
+            />
+          </div>
+
+          <div class="bg-zinc-900/70 w-33">
+            <ah-vitals-bar [state]="{ damage: 1 }" [asset]="{ health: 2 }" />
+            <img
+              alt="enemy"
+              width="132"
+              height="45"
+              class="max-w-none h-fit"
+              [ngSrc]="imageService.getIllustration(enemyImage)"
+            />
+          </div>
+
+          <div class="bg-zinc-900/70 w-33">
+            <ah-vitals-bar [state]="{ damage: 1 }" [asset]="{ health: 2 }" />
+            <img
+              alt="enemy"
+              width="132"
+              height="45"
+              class="max-w-none h-fit"
+              [ngSrc]="imageService.getIllustration(enemyImage)"
+            />
+          </div>
+        </div>
+      </ah-entity-avatar>
     }
   </div>
 </div>
