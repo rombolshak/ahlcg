@@ -9,7 +9,7 @@ import {
   ImagesUrlService,
 } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { InvestigatorWithState } from 'shared/domain/player-card.model';
+import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { CardTitleComponent } from 'shared/ui/components/cards/card-parts/card-title/card-title.component';
 import { CardSubtitleComponent } from 'shared/ui/components/cards/card-parts/card-subtitle/card-subtitle.component';
 import { CardTraitsComponent } from 'shared/ui/components/cards/card-parts/card-traits/card-traits.component';

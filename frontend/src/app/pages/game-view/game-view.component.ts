@@ -59,6 +59,7 @@ export class GameViewComponent {
   protected investigator = {
     ...InvestigatorS,
     ...this.assetState,
+    threatArea: [],
   };
 
   protected assets: AssetCard[] = [cardA, cardA5, cardA2, cardA, cardA];

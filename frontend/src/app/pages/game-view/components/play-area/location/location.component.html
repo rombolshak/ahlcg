@@ -14,40 +14,31 @@
       gap-2"
   >
     @for (investigator of investigators(); track investigator.id) {
-      <ah-entity-avatar class="basis-74/100" [investigator]="investigator">
+      @let basis =
+        investigator.threatArea.length == 0
+          ? "basis-24/100"
+          : investigator.threatArea.length <= 2
+            ? "basis-49/100"
+            : investigator.threatArea.length <= 4
+              ? "basis-74/100"
+              : "basis-100/100";
+      <ah-entity-avatar [class]="basis" [investigator]="investigator">
         <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
-          <div class="bg-zinc-900/70 w-33">
-            <ah-vitals-bar [state]="{ damage: 2 }" [asset]="{ health: 3 }" />
-            <img
-              alt="enemy"
-              width="132"
-              height="45"
-              class="max-w-none h-fit"
-              [ngSrc]="imageService.getIllustration(enemyImage)"
-            />
-          </div>
-
-          <div class="bg-zinc-900/70 w-33">
-            <ah-vitals-bar [state]="{ damage: 1 }" [asset]="{ health: 2 }" />
-            <img
-              alt="enemy"
-              width="132"
-              height="45"
-              class="max-w-none h-fit"
-              [ngSrc]="imageService.getIllustration(enemyImage)"
-            />
-          </div>
-
-          <div class="bg-zinc-900/70 w-33">
-            <ah-vitals-bar [state]="{ damage: 1 }" [asset]="{ health: 2 }" />
-            <img
-              alt="enemy"
-              width="132"
-              height="45"
-              class="max-w-none h-fit"
-              [ngSrc]="imageService.getIllustration(enemyImage)"
-            />
-          </div>
+          @for (
+            engagedEnemy of investigator.threatArea;
+            track engagedEnemy.id
+          ) {
+            <div class="bg-zinc-900/70 w-33">
+              <ah-vitals-bar [state]="engagedEnemy" [asset]="engagedEnemy" />
+              <img
+                alt="enemy"
+                width="132"
+                height="61"
+                class="max-w-none h-fit"
+                [ngSrc]="imageService.getIllustration(engagedEnemy.setInfo)"
+              />
+            </div>
+          }
         </div>
       </ah-entity-avatar>
     }

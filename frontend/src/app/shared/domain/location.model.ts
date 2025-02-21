@@ -1,6 +1,7 @@
-﻿import { CardInfo } from './card-info.model';
+﻿import { CardInfo, CardType } from './card-info.model';
 
-export type Location = CardInfo & {
+export interface Location extends CardInfo {
+  cardType: CardType.Location;
   shroud: number;
   clues: number;
-};
+}

@@ -8,7 +8,7 @@ import { ImagesUrlService } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
-import { InvestigatorWithState } from 'shared/domain/player-card.model';
+import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { EntityAvatarComponent } from '../../entity-avatar/entity-avatar.component';
 import { SetInfo } from '../../../../../shared/domain/card-info.model';
 import { VitalsBarComponent } from '../../../../../shared/ui/components/vitals-bar/vitals-bar.component';

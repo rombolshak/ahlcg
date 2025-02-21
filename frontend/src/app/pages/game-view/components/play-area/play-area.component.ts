@@ -11,7 +11,9 @@ import { LocationComponent } from './location/location.component';
 import { Location } from 'shared/domain/location.model';
 import { testLocation } from 'shared/domain/test/test-locations';
 import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { InvestigatorWithState } from 'shared/domain/player-card.model';
+import { InvestigatorWithState } from 'shared/domain/investigator.model';
+import { Enemy } from 'shared/domain/enemy.model';
+import { testEnemy } from 'shared/domain/test/test-enemies';
 
 @Component({
   selector: 'ah-play-area',
@@ -41,15 +43,51 @@ import { InvestigatorWithState } from 'shared/domain/player-card.model';
 })
 export class PlayAreaComponent implements AfterViewInit {
   location: Location = testLocation;
+  enemy: Enemy = testEnemy;
   investigator1 = {
     ...InvestigatorS,
     clues: 2,
     horror: 3,
     damage: 2,
+    threatArea: [
+      {
+        ...this.enemy,
+        damage: 1,
+        health: 4,
+      },
+    ],
+  };
+  investigator2 = {
+    ...InvestigatorS,
+    clues: 2,
+    horror: 4,
+    damage: 1,
+    threatArea: [],
+  };
+  investigator3 = {
+    ...InvestigatorS,
+    clues: 0,
+    horror: 1,
+    damage: 4,
+    threatArea: [
+      {
+        ...this.enemy,
+        damage: 1,
+      },
+      {
+        ...this.enemy,
+        damage: 2,
+      },
+      {
+        ...this.enemy,
+        damage: 3,
+      },
+    ],
   };
   investigators: InvestigatorWithState[] = [
     this.investigator1,
-    this.investigator1,
+    this.investigator2,
+    this.investigator3,
   ];
 
   public ngAfterViewInit() {
