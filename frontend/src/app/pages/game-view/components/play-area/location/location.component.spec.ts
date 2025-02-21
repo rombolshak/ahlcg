@@ -4,7 +4,8 @@ import { LocationComponent } from './location.component';
 import { testLocation } from 'shared/domain/test/test-locations';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { InvestigatorS } from '../../../../../shared/domain/test/test-investigators';
+import { InvestigatorS } from 'shared/domain/test/test-investigators';
+import { testEnemy } from 'shared/domain/test/test-enemies';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -20,8 +21,8 @@ describe('LocationComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('location', testLocation);
     fixture.componentRef.setInput('investigators', [
-      InvestigatorS,
-      InvestigatorS,
+      { ...InvestigatorS, threatArea: [] },
+      { ...InvestigatorS, threatArea: [testEnemy] },
     ]);
     await fixture.whenStable();
   });
@@ -38,7 +39,8 @@ describe('LocationComponent', () => {
 
   it('should have image', () => {
     expect(
-      fixture.debugElement.queryAll(By.css('img[src*="illustrations"]')).length,
+      fixture.debugElement.queryAll(By.css('img[alt="location-illustration"]'))
+        .length,
     ).toBe(1);
   });
 
@@ -46,5 +48,11 @@ describe('LocationComponent', () => {
     expect(
       fixture.debugElement.queryAll(By.css('ah-entity-avatar')).length,
     ).toBe(2);
+  });
+
+  it('should display enemies', () => {
+    expect(
+      fixture.debugElement.queryAll(By.css('img[alt="enemy"]')).length,
+    ).toBe(1);
   });
 });
