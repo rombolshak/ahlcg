@@ -1,5 +1,4 @@
-﻿import { AssetState } from './asset.state';
-import { CardInfo, CardType } from './card-info.model';
+﻿import { CardInfo, CardType } from './card-info.model';
 
 export enum PlayerCardType {
   Asset = 'Asset',
@@ -70,9 +69,3 @@ export interface EventCard extends PlayerCardBase, WithCost {
 export interface SkillCard extends PlayerCardBase {
   playerCardType: PlayerCardType.Skill;
 }
-
-export interface InvestigatorModel extends PlayerCardBase, WithHealth {
-  playerCardType: PlayerCardType.Investigator;
-}
-
-export interface InvestigatorWithState extends InvestigatorModel, AssetState {}

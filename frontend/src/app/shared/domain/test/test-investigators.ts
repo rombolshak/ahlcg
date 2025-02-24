@@ -1,6 +1,6 @@
 ﻿import { CardType } from '../card-info.model';
+import { InvestigatorModel } from '../investigator.model';
 import {
-  InvestigatorModel,
   PlayerCardClass,
   PlayerCardType,
   SkillType,
