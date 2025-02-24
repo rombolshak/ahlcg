@@ -28,16 +28,7 @@
             engagedEnemy of investigator.threatArea;
             track engagedEnemy.id
           ) {
-            <div class="bg-zinc-900/70 w-33">
-              <ah-vitals-bar [state]="engagedEnemy" [asset]="engagedEnemy" />
-              <img
-                alt="enemy"
-                width="132"
-                height="61"
-                class="max-w-none h-fit"
-                [ngSrc]="imageService.getIllustration(engagedEnemy.setInfo)"
-              />
-            </div>
+            <ah-enemy-avatar class="w-33" [enemy]="engagedEnemy" />
           }
         </div>
       </ah-investigator-avatar>

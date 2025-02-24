@@ -10,8 +10,7 @@ import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { InvestigatorAvatarComponent } from '../../investigator-avatar/investigator-avatar.component';
-import { SetInfo } from 'shared/domain/card-info.model';
-import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
+import { EnemyAvatarComponent } from '../../enemy-avatar/enemy-avatar.component';
 
 @Component({
   selector: 'ah-location',
@@ -19,7 +18,7 @@ import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.c
     NgOptimizedImage,
     LocationHeaderComponent,
     InvestigatorAvatarComponent,
-    VitalsBarComponent,
+    EnemyAvatarComponent,
   ],
   templateUrl: './location.component.html',
   host: {
@@ -31,8 +30,4 @@ export class LocationComponent {
   imageService = inject(ImagesUrlService);
   readonly location = input.required<Location>();
   readonly investigators = input.required<InvestigatorWithState[]>();
-  readonly enemyImage: SetInfo = {
-    set: '01',
-    index: '119',
-  };
 }
