@@ -41,7 +41,7 @@
     "@bugsnag/js": "^8.2.0",
     "@bugsnag/plugin-angular": "^8.2.0",
     "panzoom": "^9.4.3",
-    "rxjs": "~7.8.0",
+    "rxjs": "~7.8.2",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
