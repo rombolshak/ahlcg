@@ -85,9 +85,9 @@ export class PlayAreaComponent implements AfterViewInit {
     ],
   };
   investigators: InvestigatorWithState[] = [
-    this.investigator1,
-    this.investigator2,
     this.investigator3,
+    this.investigator2,
+    this.investigator1,
   ];
 
   public ngAfterViewInit() {

@@ -9,16 +9,16 @@ import { NgOptimizedImage } from '@angular/common';
 import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
-import { EntityAvatarComponent } from '../../entity-avatar/entity-avatar.component';
-import { SetInfo } from '../../../../../shared/domain/card-info.model';
-import { VitalsBarComponent } from '../../../../../shared/ui/components/vitals-bar/vitals-bar.component';
+import { InvestigatorAvatarComponent } from '../../investigator-avatar/investigator-avatar.component';
+import { SetInfo } from 'shared/domain/card-info.model';
+import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 
 @Component({
   selector: 'ah-location',
   imports: [
     NgOptimizedImage,
     LocationHeaderComponent,
-    EntityAvatarComponent,
+    InvestigatorAvatarComponent,
     VitalsBarComponent,
   ],
   templateUrl: './location.component.html',

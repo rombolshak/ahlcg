@@ -15,7 +15,7 @@ import { CardSubtitleComponent } from 'shared/ui/components/cards/card-parts/car
 import { CardTraitsComponent } from 'shared/ui/components/cards/card-parts/card-traits/card-traits.component';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { CardAbilitiesComponent } from 'shared/ui/components/cards/card-parts/card-abilities/card-abilities.component';
-import { EntityAvatarComponent } from '../entity-avatar/entity-avatar.component';
+import { InvestigatorAvatarComponent } from '../investigator-avatar/investigator-avatar.component';
 
 @Component({
   selector: 'ah-investigator',
@@ -25,7 +25,7 @@ import { EntityAvatarComponent } from '../entity-avatar/entity-avatar.component'
     CardSubtitleComponent,
     CardTraitsComponent,
     CardAbilitiesComponent,
-    EntityAvatarComponent,
+    InvestigatorAvatarComponent,
   ],
   templateUrl: './investigator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

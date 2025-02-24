@@ -46,7 +46,7 @@ describe('LocationComponent', () => {
 
   it('should display investigators', () => {
     expect(
-      fixture.debugElement.queryAll(By.css('ah-entity-avatar')).length,
+      fixture.debugElement.queryAll(By.css('ah-investigator-avatar')).length,
     ).toBe(2);
   });
 

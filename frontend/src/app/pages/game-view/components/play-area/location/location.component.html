@@ -22,7 +22,7 @@
             : investigator.threatArea.length <= 4
               ? "basis-74/100"
               : "basis-100/100";
-      <ah-entity-avatar [class]="basis" [investigator]="investigator">
+      <ah-investigator-avatar [class]="basis" [investigator]="investigator">
         <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
           @for (
             engagedEnemy of investigator.threatArea;
@@ -40,7 +40,7 @@
             </div>
           }
         </div>
-      </ah-entity-avatar>
+      </ah-investigator-avatar>
     }
   </div>
 </div>
