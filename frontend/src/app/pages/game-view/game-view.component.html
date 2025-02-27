@@ -2,6 +2,10 @@
   class="col-start-1 row-start-1"
   [investigator]="investigator"
 />
+<ah-left-panel
+  class="col-start-1 row-start-2 row-span-2"
+  [threatArea]="investigator.threatArea"
+/>
 <ah-control-area class="col-start-2" [assets]="assets" [states]="assetStates" />
 <button type="button" class="bg-red-400 col-start-3" (click)="addCard()">
   ADD CARD

@@ -8,6 +8,7 @@ export interface Enemy extends CardInfo, Partial<WithHealth> {
   evade: number;
   damageAttack: number;
   horrorAttack: number;
+  isMassive: boolean;
 }
 
 export interface EnemyWithState extends Enemy, AssetState {}

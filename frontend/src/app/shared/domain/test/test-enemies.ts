@@ -26,4 +26,5 @@ export const testEnemy: Enemy = {
   damageAttack: 2,
   horrorAttack: 1,
   health: 4,
+  isMassive: false,
 };
