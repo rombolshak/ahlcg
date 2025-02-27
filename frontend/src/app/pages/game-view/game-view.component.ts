@@ -22,6 +22,8 @@ import { InvestigatorS } from 'shared/domain/test/test-investigators';
 import { ControlAreaComponent } from './components/control-area/control-area.component';
 import { PlayAreaComponent } from './components/play-area/play-area.component';
 import { AssetCard } from 'shared/domain/player-card.model';
+import { LeftPanelComponent } from './components/left-panel/left-panel.component';
+import { testEnemy } from '../../shared/domain/test/test-enemies';
 
 @Component({
   selector: 'ah-game-view',
@@ -30,6 +32,7 @@ import { AssetCard } from 'shared/domain/player-card.model';
     InvestigatorComponent,
     ControlAreaComponent,
     PlayAreaComponent,
+    LeftPanelComponent,
   ],
   templateUrl: './game-view.component.html',
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
@@ -56,10 +59,25 @@ export class GameViewComponent {
     doom: 0,
   };
 
+  enemy = testEnemy;
   protected investigator = {
     ...InvestigatorS,
     ...this.assetState,
-    threatArea: [],
+    threatArea: [
+      {
+        ...this.enemy,
+        damage: 1,
+      },
+      {
+        ...this.enemy,
+        damage: 2,
+        isMassive: true,
+      },
+      {
+        ...this.enemy,
+        damage: 3,
+      },
+    ],
   };
 
   protected assets: AssetCard[] = [cardA, cardA5, cardA2, cardA, cardA];

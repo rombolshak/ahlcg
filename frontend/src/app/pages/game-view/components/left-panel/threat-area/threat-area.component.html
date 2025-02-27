@@ -1,0 +1,7 @@
+@for (enemy of massiveEnemies(); track enemy.id) {
+  <ah-enemy-avatar class="w-full" [enemy]="enemy" />
+}
+
+@for (enemy of normalEnemies(); track enemy.id) {
+  <ah-enemy-avatar class="w-48/100" [enemy]="enemy" />
+}
