@@ -3,6 +3,12 @@
   alt="enemy"
   width="132"
   height="61"
-  class="h-fit w-full"
+  class="h-fit w-full peer"
   [ngSrc]="imageService.getIllustration(enemy().setInfo)"
+/>
+
+<ah-enemy-popover
+  class="opacity-0 w-70 transition-opacity absolute left-[70%] top-[-40%] -z-50
+    peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50"
+  [enemy]="enemy()"
 />
