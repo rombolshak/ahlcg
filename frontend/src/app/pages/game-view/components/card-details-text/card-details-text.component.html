@@ -18,8 +18,10 @@
 </p>
 @for (ability of card().abilities; track $index) {
   <p
-    class="mb-1"
+    class="mb-1 whitespace-pre-wrap font-[ArnoPro] text-base/4"
     data-testId="ability"
     [innerHtml]="ability | withAhSymbols"
   ></p>
 }
+
+<ng-content />
