@@ -5,8 +5,7 @@ import {
   ElementRef,
   viewChild,
 } from '@angular/core';
-import * as pz from 'panzoom';
-import { PanZoom } from 'panzoom';
+import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { LocationComponent } from './location/location.component';
 import { Location } from 'shared/domain/location.model';
 import { testLocation } from 'shared/domain/test/test-locations';
@@ -21,10 +20,10 @@ import { testEnemy } from 'shared/domain/test/test-enemies';
   template: `
     <div
       #playArea
-      class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)]"
+      class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)] w-max"
     >
       <ah-location
-        class="relative col-start-1 row-start-1 rounded"
+        class="relative col-start-2 row-start-2 rounded"
         [location]="location"
         [investigators]="investigators"
       />
@@ -91,28 +90,31 @@ export class PlayAreaComponent implements AfterViewInit {
   ];
 
   public ngAfterViewInit() {
-    setTimeout(() => {
-      this.zoomArea = pz.default(
-        this.playArea()?.nativeElement as HTMLElement,
-        {
-          maxZoom: 1,
-          minZoom: 0.2,
-        },
-      );
+    this.zoomArea = Panzoom(this.playArea()?.nativeElement as HTMLElement, {
+      maxScale: 1,
+      minScale: 0.2,
+    } satisfies PanzoomOptions);
 
-      const parent = (this.playArea()?.nativeElement as HTMLElement)
-        .parentNode as HTMLElement;
-      const locX = 0;
-      const locY = 0;
-      const cx =
-        -locX * this.locationWidth +
-        parent.offsetWidth / 2 -
-        this.locationWidth / 2;
-      const cy =
-        -locY * this.locationHeight +
-        parent.offsetHeight / 2 -
-        this.locationHeight / 2;
-      this.zoomArea.smoothMoveTo(cx, cy);
+    const parent = (this.playArea()?.nativeElement as HTMLElement)
+      .parentNode as HTMLElement;
+    const locX = 1;
+    const locY = 1;
+    const cx =
+      -locX * this.locationWidth +
+      parent.offsetWidth / 2 -
+      this.locationWidth / 2;
+    const cy =
+      -locY * this.locationHeight +
+      parent.offsetHeight / 2 -
+      this.locationHeight / 2;
+
+    (this.playArea()?.nativeElement as HTMLElement).addEventListener(
+      'wheel',
+      this.zoomArea.zoomWithWheel,
+    );
+
+    setTimeout(() => {
+      this.zoomArea.pan(cx, cy, { animate: true });
     }, 10);
   }
 
@@ -121,5 +123,5 @@ export class PlayAreaComponent implements AfterViewInit {
 
   private readonly playArea = viewChild<ElementRef>('playArea');
 
-  private zoomArea!: PanZoom;
+  private zoomArea!: PanzoomObject;
 }
