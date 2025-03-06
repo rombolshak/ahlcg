@@ -11,18 +11,12 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { CardDetailsTextComponent } from '../card-details-text/card-details-text.component';
-import { SkillType } from '../../../../shared/domain/player-card.model';
+import { SkillType } from 'shared/domain/player-card.model';
 import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 
 @Component({
   selector: 'ah-enemy-avatar',
-  imports: [
-    VitalsBarComponent,
-    NgOptimizedImage,
-    CardDetailsTextComponent,
-    EnemyPopoverComponent,
-  ],
+  imports: [VitalsBarComponent, NgOptimizedImage, EnemyPopoverComponent],
   templateUrl: './enemy-avatar.component.html',
   host: {
     class: 'relative bg-zinc-900/70',
