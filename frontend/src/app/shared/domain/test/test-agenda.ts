@@ -21,7 +21,7 @@ export const testAgenda: Agenda = {
   cardType: CardType.Agenda,
 
   stage: 3,
-  requiredDoom: 6,
+  requiredDoom: 10,
   doomOnCards: 0,
   currentDoom: 2,
 };
