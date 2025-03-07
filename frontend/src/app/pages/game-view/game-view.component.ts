@@ -24,6 +24,7 @@ import { PlayAreaComponent } from './components/play-area/play-area.component';
 import { AssetCard } from 'shared/domain/player-card.model';
 import { LeftPanelComponent } from './components/left-panel/left-panel.component';
 import { testEnemy } from '../../shared/domain/test/test-enemies';
+import { testAgenda } from '../../shared/domain/test/test-agenda';
 
 @Component({
   selector: 'ah-game-view',
@@ -67,11 +68,6 @@ export class GameViewComponent {
       {
         ...this.enemy,
         damage: 1,
-      },
-      {
-        ...this.enemy,
-        damage: 2,
-        isMassive: true,
       },
       {
         ...this.enemy,
@@ -119,4 +115,5 @@ export class GameViewComponent {
   }
 
   protected readonly InvestigatorS = InvestigatorS;
+  protected readonly testAgenda = testAgenda;
 }

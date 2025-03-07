@@ -1,0 +1,55 @@
+<div class="text-white peer text-center">
+  <p class="text-sm/4 font-[ArnoPro] -my-1">Agenda {{ agenda().stage }}</p>
+  <p class="text-xl font-[Conkordia]">
+    {{ agenda().title }}
+  </p>
+</div>
+
+<div
+  class="grid grid-flow-col gap-1"
+  [ngClass]="
+    agenda().requiredDoom <= 6
+      ? 'grid-rows-1'
+      : agenda().requiredDoom <= 12
+        ? 'grid-rows-2'
+        : 'grid-rows-3'
+  "
+>
+  @for (_ of [].constructor(agenda().currentDoom); track $index) {
+    <img
+      width="36"
+      height="36"
+      alt="doom token"
+      class="brightness-125 flex-none"
+      [ngSrc]="imageService.getSimpleOverlay('doom')"
+    />
+  }
+  @for (_ of [].constructor(agenda().doomOnCards); track $index) {
+    <img
+      width="36"
+      height="36"
+      alt="doom token"
+      class="brightness-95"
+      [ngSrc]="imageService.getSimpleOverlay('doom_white')"
+    />
+  }
+
+  @for (_ of [].constructor(emptyDoomSlots()); track $index) {
+    <img
+      width="36"
+      height="36"
+      alt="doom token"
+      class="brightness-25"
+      [ngSrc]="imageService.getSimpleOverlay('doom')"
+    />
+  }
+</div>
+<!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
+<ah-card-details-text
+  class="absolute w-full px-2 top-[2.5rem] text-white rounded h-0 opacity-0
+    peer-hover:h-auto peer-hover:opacity-100"
+  [class]="hostClasses()"
+  [showTitle]="false"
+  [card]="agenda()"
+/>
+<!-- eslint-enable @angular-eslint/template/no-duplicate-attributes -->

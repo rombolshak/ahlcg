@@ -1,22 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LeftPanelComponent } from './left-panel.component';
+import { AgendaComponent } from './agenda.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testAgenda } from 'shared/domain/test/test-agenda';
+import { testAgenda } from '../../../../../shared/domain/test/test-agenda';
 
-describe('LeftPanelComponent', () => {
-  let component: LeftPanelComponent;
-  let fixture: ComponentFixture<LeftPanelComponent>;
+describe('AgendaComponent', () => {
+  let component: AgendaComponent;
+  let fixture: ComponentFixture<AgendaComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [AgendaComponent],
       providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [LeftPanelComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LeftPanelComponent);
+    fixture = TestBed.createComponent(AgendaComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('threatArea', []);
     fixture.componentRef.setInput('agenda', testAgenda);
     await fixture.whenStable();
   });

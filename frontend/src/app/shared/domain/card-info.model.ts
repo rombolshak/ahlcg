@@ -2,6 +2,7 @@
   Player = 'player',
   Location = 'location',
   Enemy = 'enemy',
+  Agenda = 'agenda',
 }
 
 interface CardTrait {
