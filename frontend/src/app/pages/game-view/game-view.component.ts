@@ -25,6 +25,7 @@ import { AssetCard } from 'shared/domain/player-card.model';
 import { LeftPanelComponent } from './components/left-panel/left-panel.component';
 import { testEnemy } from '../../shared/domain/test/test-enemies';
 import { testAgenda } from '../../shared/domain/test/test-agenda';
+import { testAct } from '../../shared/domain/test/test-act';
 
 @Component({
   selector: 'ah-game-view',
@@ -116,4 +117,5 @@ export class GameViewComponent {
 
   protected readonly InvestigatorS = InvestigatorS;
   protected readonly testAgenda = testAgenda;
+  protected readonly testAct = testAct;
 }

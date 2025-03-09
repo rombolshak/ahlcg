@@ -38,8 +38,8 @@ export class AgendaComponent {
   );
 
   protected readonly hostClasses = computed(() => ({
-    'bg-neutral-800/70': this.emptySlotsRatio() >= 0.8,
-    'outline-neutral-700': this.emptySlotsRatio() >= 0.8,
+    'bg-slate-800/70': this.emptySlotsRatio() >= 0.8,
+    'outline-slate-700': this.emptySlotsRatio() >= 0.8,
     'bg-yellow-800/70':
       this.emptySlotsRatio() >= 0.6 && this.emptySlotsRatio() < 0.8,
     'outline-yellow-700':

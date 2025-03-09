@@ -60,9 +60,9 @@ describe('AgendaComponent', () => {
   }
 
   it('should change background by doom threshold', async () => {
-    await checkDoom(0, 'neutral');
-    await checkDoom(1, 'neutral');
-    await checkDoom(2, 'neutral');
+    await checkDoom(0, 'slate');
+    await checkDoom(1, 'slate');
+    await checkDoom(2, 'slate');
 
     await checkDoom(3, 'yellow');
     await checkDoom(4, 'yellow');
