@@ -71,4 +71,29 @@ describe('ActComponent', () => {
       (fixture.debugElement.nativeElement as HTMLElement).textContent,
     ).toContain(testAct.title);
   });
+
+  it('should calc max lines for objective', async () => {
+    fixture.componentRef.setInput('act', {
+      ...testAct,
+      objectives: [
+        {
+          ...testAct.objectives[0],
+          startValue: 8,
+          requiredValue: 0,
+          type: 'resource',
+        },
+        {
+          ...testAct.objectives[1],
+          startValue: 0,
+          requiredValue: 14,
+          type: 'clue',
+        },
+      ],
+    });
+    await fixture.whenStable();
+
+    expect(fixture.debugElement.query(By.css('.grid-rows-2'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('.grid-rows-3'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('.grid-rows-1'))).toBeNull();
+  });
 });
