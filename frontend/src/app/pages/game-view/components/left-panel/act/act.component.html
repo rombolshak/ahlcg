@@ -6,7 +6,10 @@
 </div>
 
 @for (objective of act().objectives; track $index) {
-  <p [innerHTML]="objective.description | withAhSymbols"></p>
+  <p
+    data-testId="objective"
+    [innerHTML]="objective.description | withAhSymbols"
+  ></p>
   @switch (objective.type) {
     @case ("health") {
       <ah-single-bar

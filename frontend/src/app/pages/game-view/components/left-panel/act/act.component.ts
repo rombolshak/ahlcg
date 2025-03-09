@@ -50,7 +50,6 @@ export class ActComponent {
     const maxProgress = Math.max(
       ...this.act().objectives.map((o) => this.calcObjectiveProgress(o)),
     );
-    console.log('max progress', maxProgress);
     return {
       'bg-lime-700/80': maxProgress >= 1,
       'outline-lime-600': maxProgress >= 1,
