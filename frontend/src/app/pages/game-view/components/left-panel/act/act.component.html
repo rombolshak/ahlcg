@@ -8,10 +8,18 @@
 @for (objective of act().objectives; track $index) {
   <p [innerHTML]="objective.description | withAhSymbols"></p>
   @switch (objective.type) {
-    @case ("health") {}
+    @case ("health") {
+      <ah-single-bar
+        class="h-5 w-full mb-2"
+        goodColor="bg-red-900"
+        badColor="bg-slate-950"
+        [current]="objective.currentValue"
+        [max]="objective.startValue || objective.requiredValue"
+      />
+    }
     @default {
       <div
-        class="grid grid-flow-col gap-1"
+        class="grid grid-flow-col gap-1 mb-2"
         [ngClass]="
           maxLines()[$index] === 1
             ? 'grid-rows-1'
@@ -48,4 +56,5 @@
     peer-hover:opacity-100"
   [showTitle]="false"
   [card]="act()"
+  [ngClass]="hostClasses()"
 />

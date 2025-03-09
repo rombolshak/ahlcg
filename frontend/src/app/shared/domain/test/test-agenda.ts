@@ -23,5 +23,5 @@ export const testAgenda: Agenda = {
   stage: 3,
   requiredDoom: 10,
   doomOnCards: 0,
-  currentDoom: 2,
+  currentDoom: 9,
 };

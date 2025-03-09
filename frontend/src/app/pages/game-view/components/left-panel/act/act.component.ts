@@ -10,6 +10,7 @@ import { ImagesUrlService } from '../../../../../shared/services/images-url.serv
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
 import { WithAhSymbolsPipe } from '../../../../../shared/ui/pipes/with-ah-symbols.pipe';
 import { NgClass, NgOptimizedImage } from '@angular/common';
+import { SingleBarComponent } from '../../../../../shared/ui/components/vitals-bar/single-bar/single-bar.component';
 
 @Component({
   selector: 'ah-act',
@@ -18,6 +19,7 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
     WithAhSymbolsPipe,
     NgOptimizedImage,
     NgClass,
+    SingleBarComponent,
   ],
   templateUrl: './act.component.html',
   host: {
@@ -50,19 +52,19 @@ export class ActComponent {
     );
     console.log('max progress', maxProgress);
     return {
-      'bg-lime-700/70': maxProgress >= 1,
+      'bg-lime-700/80': maxProgress >= 1,
       'outline-lime-600': maxProgress >= 1,
-      'bg-green-700/70': maxProgress >= 0.8 && maxProgress < 1,
+      'bg-green-700/80': maxProgress >= 0.8 && maxProgress < 1,
       'outline-green-600': maxProgress >= 0.8 && maxProgress < 1,
-      'bg-emerald-700/70': maxProgress >= 0.6 && maxProgress < 0.8,
+      'bg-emerald-700/80': maxProgress >= 0.6 && maxProgress < 0.8,
       'outline-emerald-600': maxProgress >= 0.6 && maxProgress < 0.8,
-      'bg-teal-700/70': maxProgress >= 0.45 && maxProgress < 0.6,
+      'bg-teal-700/80': maxProgress >= 0.45 && maxProgress < 0.6,
       'outline-teal-600': maxProgress >= 0.45 && maxProgress < 0.6,
-      'bg-cyan-700/70': maxProgress >= 0.3 && maxProgress < 0.45,
+      'bg-cyan-700/80': maxProgress >= 0.3 && maxProgress < 0.45,
       'outline-cyan-600': maxProgress >= 0.3 && maxProgress < 0.45,
-      'bg-sky-700/70': maxProgress >= 0.15 && maxProgress < 0.3,
+      'bg-sky-700/80': maxProgress >= 0.15 && maxProgress < 0.3,
       'outline-sky-600': maxProgress >= 0.15 && maxProgress < 0.3,
-      'bg-slate-700/70': maxProgress < 0.15,
+      'bg-slate-700/80': maxProgress < 0.15,
       'outline-slate-600': maxProgress < 0.15,
     };
   });
