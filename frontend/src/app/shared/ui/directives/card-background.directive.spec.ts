@@ -34,7 +34,9 @@ describe('CardBackgroundDirective', () => {
 
   it('should create an instance', () => {
     expect(fixture.debugElement.children[0]?.classes).toEqual({
-      'bg-green-200': true,
+      'to-green-300': true,
+      'from-green-200': true,
+      'bg-linear-to-b': true,
     });
   });
 });

@@ -20,7 +20,7 @@ import { testEnemy } from 'shared/domain/test/test-enemies';
   template: `
     <div
       #playArea
-      class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,31rem)] w-max"
+      class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,27rem)] w-max"
     >
       <ah-location
         class="relative col-start-2 row-start-2 rounded"
@@ -91,6 +91,7 @@ export class PlayAreaComponent implements AfterViewInit {
 
   public ngAfterViewInit() {
     this.zoomArea = Panzoom(this.playArea()?.nativeElement as HTMLElement, {
+      contain: 'outside',
       maxScale: 1,
       minScale: 0.2,
     } satisfies PanzoomOptions);

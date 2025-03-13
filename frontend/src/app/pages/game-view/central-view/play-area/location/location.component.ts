@@ -22,7 +22,8 @@ import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-ava
   ],
   templateUrl: './location.component.html',
   host: {
-    class: 'flex flex-col rounded-3xl outline outline-2 outline-zinc-400',
+    class:
+      'flex flex-col rounded-3xl outline outline-2 outline-zinc-400 relative',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

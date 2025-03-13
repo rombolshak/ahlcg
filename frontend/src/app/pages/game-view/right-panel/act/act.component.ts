@@ -24,7 +24,7 @@ import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/s
   templateUrl: './act.component.html',
   host: {
     class:
-      'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-white',
+      'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-white bg-radial-[at_50%_5%] to-90%',
     '[class]': 'hostClasses()',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,19 +51,26 @@ export class ActComponent {
       ...this.act().objectives.map((o) => this.calcObjectiveProgress(o)),
     );
     return {
-      'bg-lime-700/80': maxProgress >= 1,
+      'from-lime-500/80': maxProgress >= 1,
+      'to-lime-700/80': maxProgress >= 1,
       'outline-lime-600': maxProgress >= 1,
-      'bg-green-700/80': maxProgress >= 0.8 && maxProgress < 1,
+      'from-green-500/80': maxProgress >= 0.8 && maxProgress < 1,
+      'to-green-700/80': maxProgress >= 0.8 && maxProgress < 1,
       'outline-green-600': maxProgress >= 0.8 && maxProgress < 1,
-      'bg-emerald-700/80': maxProgress >= 0.6 && maxProgress < 0.8,
+      'from-emerald-500/80': maxProgress >= 0.6 && maxProgress < 0.8,
+      'to-emerald-700/80': maxProgress >= 0.6 && maxProgress < 0.8,
       'outline-emerald-600': maxProgress >= 0.6 && maxProgress < 0.8,
-      'bg-teal-700/80': maxProgress >= 0.45 && maxProgress < 0.6,
+      'from-teal-500/80': maxProgress >= 0.45 && maxProgress < 0.6,
+      'to-teal-700/80': maxProgress >= 0.45 && maxProgress < 0.6,
       'outline-teal-600': maxProgress >= 0.45 && maxProgress < 0.6,
-      'bg-cyan-700/80': maxProgress >= 0.3 && maxProgress < 0.45,
+      'from-cyan-500/80': maxProgress >= 0.3 && maxProgress < 0.45,
+      'to-cyan-700/80': maxProgress >= 0.3 && maxProgress < 0.45,
       'outline-cyan-600': maxProgress >= 0.3 && maxProgress < 0.45,
-      'bg-sky-700/80': maxProgress >= 0.15 && maxProgress < 0.3,
+      'from-sky-500/80': maxProgress >= 0.15 && maxProgress < 0.3,
+      'to-sky-700/80': maxProgress >= 0.15 && maxProgress < 0.3,
       'outline-sky-600': maxProgress >= 0.15 && maxProgress < 0.3,
-      'bg-slate-700/80': maxProgress < 0.15,
+      'from-slate-500/80': maxProgress < 0.15,
+      'to-slate-700/80': maxProgress < 0.15,
       'outline-slate-600': maxProgress < 0.15,
     };
   });

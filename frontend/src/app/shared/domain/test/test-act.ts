@@ -23,7 +23,7 @@ export const testAct: Act = {
     {
       description: '<b>Цель —</b> Если «Сайлас Бишоп» побеждён, (→<b>И1</b>).',
       requiredValue: 0,
-      currentValue: 9,
+      currentValue: 12,
       startValue: 18,
       type: 'health',
     },
@@ -31,7 +31,7 @@ export const testAct: Act = {
       description:
         '<b>Цель —</b> Если в «Тайной комнате» нет улик, продвиньтесь.',
       requiredValue: 0,
-      currentValue: 2,
+      currentValue: 4,
       startValue: 6,
       type: 'clue',
     },

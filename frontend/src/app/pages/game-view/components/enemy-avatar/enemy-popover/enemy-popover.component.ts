@@ -18,7 +18,7 @@ import { SkillType } from 'shared/domain/player-card.model';
   imports: [CardDetailsTextComponent, NgOptimizedImage],
   templateUrl: './enemy-popover.component.html',
   host: {
-    class: 'bg-zinc-200/80 rounded px-2 py-1',
+    class: 'bg-linear-to-b from-zinc-100 to-zinc-300 rounded px-2 py-1',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
