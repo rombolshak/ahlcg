@@ -6,11 +6,11 @@ import {
   input,
 } from '@angular/core';
 import { Act, Objective } from 'shared/domain/act.model';
-import { ImagesUrlService } from '../../../../../shared/services/images-url.service';
-import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
-import { WithAhSymbolsPipe } from '../../../../../shared/ui/pipes/with-ah-symbols.pipe';
+import { ImagesUrlService } from 'shared/services/images-url.service';
+import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
+import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 import { NgClass, NgOptimizedImage } from '@angular/common';
-import { SingleBarComponent } from '../../../../../shared/ui/components/vitals-bar/single-bar/single-bar.component';
+import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
 
 @Component({
   selector: 'ah-act',

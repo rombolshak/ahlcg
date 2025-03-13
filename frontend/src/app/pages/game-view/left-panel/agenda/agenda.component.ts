@@ -8,7 +8,7 @@ import {
 import { Agenda } from 'shared/domain/agenda.model';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from 'shared/services/images-url.service';
-import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-agenda',

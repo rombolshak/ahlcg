@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { PlayerCardBase } from 'shared/domain/player-card.model';
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 import { CardBackgroundDirective } from 'shared/ui/directives/card-background.directive';
-import { CardDetailsTextComponent } from '../../../card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../../../components/card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-asset-popover',

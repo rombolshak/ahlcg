@@ -5,7 +5,7 @@ import {
   input,
 } from '@angular/core';
 import { EnemyWithState } from 'shared/domain/enemy.model';
-import { EnemyAvatarComponent } from '../../enemy-avatar/enemy-avatar.component';
+import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
 
 @Component({
   selector: 'ah-threat-area',

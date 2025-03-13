@@ -9,8 +9,8 @@ import { NgOptimizedImage } from '@angular/common';
 import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
-import { InvestigatorAvatarComponent } from '../../investigator-avatar/investigator-avatar.component';
-import { EnemyAvatarComponent } from '../../enemy-avatar/enemy-avatar.component';
+import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
+import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
 
 @Component({
   selector: 'ah-location',

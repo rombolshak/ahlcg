@@ -4,7 +4,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { CardDetailsTextComponent } from '../../../card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../../../components/card-details-text/card-details-text.component';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { Location } from 'shared/domain/location.model';
 import { TextWithOverlayComponent } from 'shared/ui/components/text-with-overlay/text-with-overlay.component';
