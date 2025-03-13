@@ -10,7 +10,9 @@ import { Card } from 'shared/domain/card.model';
   selector: 'ah-central-view',
   imports: [CardsHandComponent, ControlAreaComponent, PlayAreaComponent],
   templateUrl: './central-view.component.html',
-  styles: ``,
+  host: {
+    class: 'flex flex-col gap-4',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CentralViewComponent {

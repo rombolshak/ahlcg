@@ -1,12 +1,12 @@
-﻿<ah-left-panel
-  class="col-start-1 row-start-2 row-span-2"
-  [investigator]="investigator"
-  [agenda]="testAgenda"
-  [act]="testAct"
-/>
+﻿<ah-left-panel class="w-[17rem] flex-none" [investigator]="investigator" />
 <ah-central-view
+  class="min-w-0"
   [assets]="assets"
   [assetStates]="assetStates"
   [cards]="cards()"
 />
-<ah-right-panel />
+<ah-right-panel
+  class="w-[17rem] flex-none"
+  [agenda]="testAgenda"
+  [act]="testAct"
+/>
