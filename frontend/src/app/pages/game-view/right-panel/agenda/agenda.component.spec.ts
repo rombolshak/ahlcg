@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AgendaComponent } from './agenda.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testAgenda } from '../../../../../shared/domain/test/test-agenda';
+import { testAgenda } from 'shared/domain/test/test-agenda';
 import { By } from '@angular/platform-browser';
 
 describe('AgendaComponent', () => {
@@ -56,7 +56,7 @@ describe('AgendaComponent', () => {
     });
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes[`bg-${color}-800/70`]).toBeTrue();
+    expect(fixture.debugElement.classes[`to-${color}-800/70`]).toBeTrue();
   }
 
   it('should change background by doom threshold', async () => {

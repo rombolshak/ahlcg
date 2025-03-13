@@ -49,10 +49,10 @@ describe('ActComponent', () => {
       'checking ',
       fixture.debugElement.classes,
       'to contain',
-      `bg-${progress}-700/80`,
+      `to-${progress}-700/80`,
     );
 
-    expect(fixture.debugElement.classes[`bg-${progress}-700/80`]).toBeTrue();
+    expect(fixture.debugElement.classes[`to-${progress}-700/80`]).toBeTrue();
   }
 
   it('should calc overall objectives progress', async () => {

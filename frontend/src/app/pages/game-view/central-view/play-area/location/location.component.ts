@@ -9,8 +9,8 @@ import { NgOptimizedImage } from '@angular/common';
 import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
-import { InvestigatorAvatarComponent } from '../../investigator-avatar/investigator-avatar.component';
-import { EnemyAvatarComponent } from '../../enemy-avatar/enemy-avatar.component';
+import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
+import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
 
 @Component({
   selector: 'ah-location',
@@ -22,7 +22,8 @@ import { EnemyAvatarComponent } from '../../enemy-avatar/enemy-avatar.component'
   ],
   templateUrl: './location.component.html',
   host: {
-    class: 'flex flex-col rounded-3xl outline outline-2 outline-zinc-400',
+    class:
+      'flex flex-col rounded-3xl outline outline-2 outline-zinc-400 relative',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

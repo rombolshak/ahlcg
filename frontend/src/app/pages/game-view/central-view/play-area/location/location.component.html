@@ -1,11 +1,11 @@
-﻿<ah-location-header [location]="location()" />
+﻿<ah-location-header class="absolute top-0 z-1" [location]="location()" />
 
 <div class="flex h-108 relative">
   <img
     alt="location-illustration"
     fill
     priority
-    class="-z-50"
+    class="-z-50 rounded-3xl"
     [ngSrc]="imageService.getIllustration(location().setInfo)"
   />
 

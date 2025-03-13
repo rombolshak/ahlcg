@@ -7,12 +7,17 @@ import { PlayerCardClass } from 'shared/domain/player-card.model';
 export class CardBackgroundDirective {
   constructor(private readonly el: ElementRef) {
     effect(() => {
-      if (this.lastColor) {
-        (this.el.nativeElement as HTMLElement).classList.remove(this.lastColor);
+      if (this.lastColor.length) {
+        (this.el.nativeElement as HTMLElement).classList.remove(
+          ...this.lastColor,
+        );
       }
 
       this.lastColor = this.getColor(this.cardClass());
-      (this.el.nativeElement as HTMLElement).classList.add(this.lastColor);
+      (this.el.nativeElement as HTMLElement).classList.add(
+        ...this.lastColor,
+        'bg-linear-to-b',
+      );
     });
   }
 
@@ -21,21 +26,21 @@ export class CardBackgroundDirective {
   getColor(cardClass: string) {
     switch (cardClass) {
       case PlayerCardClass.Guardian.toString():
-        return 'bg-blue-200';
+        return ['from-blue-200', 'to-blue-300'];
       case PlayerCardClass.Seeker.toString():
-        return 'bg-orange-200';
+        return ['from-orange-200', 'to-orange-300'];
       case PlayerCardClass.Rogue.toString():
-        return 'bg-green-200';
+        return ['from-green-200', 'to-green-300'];
       case PlayerCardClass.Survivor.toString():
-        return 'bg-red-200';
+        return ['from-red-200', 'to-red-300'];
       case PlayerCardClass.Mystic.toString():
-        return 'bg-purple-200';
+        return ['from-purple-200', 'to-purple-300'];
       case PlayerCardClass.Neutral.toString():
-        return 'bg-gray-200';
+        return ['from-gray-200', 'to-gray-300'];
     }
 
-    return '';
+    return [];
   }
 
-  private lastColor?: string;
+  private lastColor: string[] = [];
 }
