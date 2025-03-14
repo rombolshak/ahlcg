@@ -23,7 +23,7 @@ import { testEnemy } from 'shared/domain/test/test-enemies';
       class="grid grid-cols-[repeat(9,44rem)] grid-rows-[repeat(9,27rem)] w-max"
     >
       <ah-location
-        class="relative col-start-2 row-start-2 rounded"
+        class="relative col-start-1 row-start-1 rounded"
         [location]="location"
         [investigators]="investigators"
       />
@@ -98,8 +98,8 @@ export class PlayAreaComponent implements AfterViewInit {
 
     const parent = (this.playArea()?.nativeElement as HTMLElement)
       .parentNode as HTMLElement;
-    const locX = 1;
-    const locY = 1;
+    const locX = 0;
+    const locY = 0;
     const cx =
       -locX * this.locationWidth +
       parent.offsetWidth / 2 -
