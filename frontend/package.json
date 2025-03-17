@@ -58,7 +58,7 @@
     "angular-eslint": "19.1.0",
     "cspell": "^8.17.5",
     "eslint": "^9.20.0",
-    "eslint-config-prettier": "^10.0.2",
+    "eslint-config-prettier": "^10.1.1",
     "eslint-formatter-mo": "^2.3.0",
     "eslint-plugin-jasmine": "^4.2.2",
     "eslint-plugin-jsonc": "^2.18.2",
