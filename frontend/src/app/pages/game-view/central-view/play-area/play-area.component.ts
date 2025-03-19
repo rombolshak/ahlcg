@@ -13,10 +13,11 @@ import { InvestigatorS } from 'shared/domain/test/test-investigators';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { Enemy } from 'shared/domain/enemy.model';
 import { testEnemy } from 'shared/domain/test/test-enemies';
+import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
 
 @Component({
   selector: 'ah-play-area',
-  imports: [LocationComponent],
+  imports: [LocationComponent, LocationsConnectionComponent],
   templateUrl: './play-area.component.html',
   host: {
     class: 'block w-full h-full overflow-hidden',
@@ -80,21 +81,25 @@ export class PlayAreaComponent implements AfterViewInit {
       {
         x: 2,
         y: 3,
-        location: testLocation,
+        location: { ...testLocation, id: '1' },
         investigators: this.investigators,
       },
       {
         x: 4,
         y: 2,
-        location: testLocation,
+        location: { ...testLocation, id: '2' },
         investigators: [],
       },
       {
         x: 4,
         y: 4,
-        location: testLocation,
+        location: { ...testLocation, id: '3' },
         investigators: [],
       },
+    ],
+    connections: [
+      { from: 1, to: 2 },
+      { from: 1, to: 3 },
     ],
   };
 
@@ -126,7 +131,7 @@ export class PlayAreaComponent implements AfterViewInit {
     console.log(cx, cy);
     setTimeout(() => {
       this.zoomArea.pan(cx, cy, { animate: true });
-    }, 10);
+    }, 1000);
   }
 
   locationWidth = 44 * 16;
