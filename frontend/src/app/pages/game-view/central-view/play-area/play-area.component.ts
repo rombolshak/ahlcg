@@ -2,13 +2,18 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   viewChild,
 } from '@angular/core';
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { LocationComponent } from './location/location.component';
 import { Location } from 'shared/domain/location.model';
-import { testLocation } from 'shared/domain/test/test-locations';
+import {
+  testLocation,
+  testLocation2,
+  testLocation3,
+} from 'shared/domain/test/test-locations';
 import { InvestigatorS } from 'shared/domain/test/test-investigators';
 import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { Enemy } from 'shared/domain/enemy.model';
@@ -87,21 +92,33 @@ export class PlayAreaComponent implements AfterViewInit {
       {
         x: 4,
         y: 2,
-        location: { ...testLocation, id: '2' },
+        location: { ...testLocation2, id: '2' },
         investigators: [],
       },
       {
         x: 4,
         y: 4,
-        location: { ...testLocation, id: '3' },
+        location: { ...testLocation3, id: '3' },
         investigators: [],
       },
     ],
     connections: [
-      { from: 1, to: 2 },
-      { from: 1, to: 3 },
+      { from: '1', to: '2' },
+      { from: '1', to: '3' },
     ],
   };
+
+  protected readonly connectionColors = computed(() => {
+    return this.worldMap.connections.map((conn) => {
+      return {
+        fromColor: this.worldMap.locations.find(
+          (l) => l.location.id === conn.from,
+        )?.location.color,
+        toColor: this.worldMap.locations.find((l) => l.location.id === conn.to)
+          ?.location.color,
+      };
+    });
+  });
 
   public ngAfterViewInit() {
     this.zoomArea = Panzoom(this.playArea()?.nativeElement as HTMLElement, {

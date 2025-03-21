@@ -20,6 +20,8 @@
 
   @for (connection of worldMap.connections; track $index) {
     <ah-locations-connection
+      [fromColor]="connectionColors()[$index]?.fromColor"
+      [toColor]="connectionColors()[$index]?.toColor"
       [from]="'#location-' + connection.from"
       [to]="'#location-' + connection.to"
     />

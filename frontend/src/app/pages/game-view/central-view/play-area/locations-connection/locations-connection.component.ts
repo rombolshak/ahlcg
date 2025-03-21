@@ -17,6 +17,8 @@ import { ConnectionPointsService } from './connection-points.service';
 export class LocationsConnectionComponent {
   readonly from = input.required<string>();
   readonly to = input.required<string>();
+  readonly fromColor = input<string | undefined>('var(--color-stone-700)');
+  readonly toColor = input<string | undefined>('var(--color-stone-700)');
 
   private readonly connectionsService = inject(ConnectionPointsService);
   private readonly options = {
@@ -48,15 +50,19 @@ export class LocationsConnectionComponent {
     };
   });
 
-  protected readonly end = computed(() => {
-    const endElement = document.querySelector(this.to());
-    if (!(endElement instanceof HTMLElement)) {
-      throw new Error('Could not find element by selector ' + this.to());
-    }
+  protected readonly gradientName = computed(
+    () =>
+      `gradient-${this.sanitize(this.fromColor())}-${this.sanitize(this.toColor())}`,
+  );
 
-    return {
-      x: endElement.offsetLeft,
-      y: endElement.offsetTop + endElement.offsetHeight,
-    };
-  });
+  protected readonly markerStartName = computed(
+    () => `arrow-${this.sanitize(this.fromColor())}`,
+  );
+  protected readonly markerEndName = computed(
+    () => `arrow-${this.sanitize(this.toColor())}`,
+  );
+
+  private sanitize(str: string | undefined): string {
+    return str?.replace('(', '_').replace(')', '_') ?? '';
+  }
 }
