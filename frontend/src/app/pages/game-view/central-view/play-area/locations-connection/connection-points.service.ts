@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
-enum Plane {
+export enum Plane {
   Top,
   Right,
   Bottom,
   Left,
 }
 
-enum HorizontalConnectorPosition {
+export enum HorizontalConnectorPosition {
   CornerLeft,
   Left,
   Center,
@@ -15,13 +15,13 @@ enum HorizontalConnectorPosition {
   CornerRight,
 }
 
-enum VerticalConnectorPosition {
+export enum VerticalConnectorPosition {
   Top,
   Center,
   Bottom,
 }
 
-type Connector =
+export type Connector =
   | TopConnector
   | BottomConnector
   | LeftConnector
@@ -47,13 +47,20 @@ interface RightConnector {
   position: VerticalConnectorPosition;
 }
 
+interface ElementBox {
+  offsetLeft: number;
+  offsetTop: number;
+  offsetWidth: number;
+  offsetHeight: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ConnectionPointsService {
   public getConnectors(
-    fromEl: HTMLElement,
-    toEl: HTMLElement,
+    fromEl: ElementBox,
+    toEl: ElementBox,
   ): [Connector, Connector] {
     const fromPlane = this.getOriginatingPlane(fromEl, toEl);
     const point = this.getConnectorPosition(fromEl, toEl, fromPlane);
@@ -63,7 +70,7 @@ export class ConnectionPointsService {
   }
 
   public getPoint(
-    el: HTMLElement,
+    el: ElementBox,
     connector: Connector,
     options: {
       horizontalStep: number;
@@ -144,7 +151,7 @@ export class ConnectionPointsService {
     return start + length * step;
   }
 
-  private getOriginatingPlane(fromEl: HTMLElement, toEl: HTMLElement): Plane {
+  private getOriginatingPlane(fromEl: ElementBox, toEl: ElementBox): Plane {
     if (fromEl.offsetTop + fromEl.offsetHeight <= toEl.offsetTop)
       return Plane.Bottom;
     if (toEl.offsetTop + toEl.offsetHeight <= fromEl.offsetTop)
@@ -154,8 +161,8 @@ export class ConnectionPointsService {
   }
 
   private getConnectorPosition(
-    fromEl: HTMLElement,
-    toEl: HTMLElement,
+    fromEl: ElementBox,
+    toEl: ElementBox,
     fromPlane: Plane,
   ) {
     switch (fromPlane) {
