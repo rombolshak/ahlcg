@@ -1,0 +1,46 @@
+<svg class="absolute w-full h-full top-0 left-0">
+  <defs>
+    <marker
+      markerWidth="10"
+      markerHeight="10"
+      refX="5"
+      refY="4"
+      orient="auto"
+      markerUnits="strokeWidth"
+      viewBox="0 0 20 20"
+      [id]="markerEndName()"
+      [attr.fill]="toColor()"
+    >
+      <path d="M0,0 L0,8 L10,4 z" />
+    </marker>
+    <marker
+      markerWidth="10"
+      markerHeight="10"
+      refX="5"
+      refY="4"
+      orient="auto"
+      markerUnits="strokeWidth"
+      viewBox="0 0 20 20"
+      [id]="markerStartName()"
+      [attr.fill]="fromColor()"
+    >
+      <path d="M10,0 L10,8 L0,4 z" />
+    </marker>
+
+    <linearGradient [id]="gradientName()">
+      <stop offset="0" [attr.stop-color]="fromColor()" />
+      <stop offset="100%" [attr.stop-color]="toColor()" />
+    </linearGradient>
+  </defs>
+
+  <line
+    stroke-width="5"
+    [attr.stroke]="'url(#' + gradientName() + ')'"
+    [attr.marker-end]="'url(#' + markerEndName() + ')'"
+    [attr.marker-start]="'url(#' + markerStartName() + ')'"
+    [attr.x1]="connection().from.x"
+    [attr.y1]="connection().from.y"
+    [attr.x2]="connection().to.x"
+    [attr.y2]="connection().to.y"
+  />
+</svg>

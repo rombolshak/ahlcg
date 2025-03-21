@@ -4,6 +4,7 @@ import { CardType } from '../card-info.model';
 export const testLocation: Location = {
   shroud: 2,
   clues: 3,
+  color: 'var(--color-amber-700)',
   id: '02126',
   title: 'Вход в музей',
   abilities: [
@@ -34,6 +35,7 @@ export const testLocation: Location = {
 export const testLocation2: Location = {
   shroud: 1,
   clues: 2,
+  color: 'var(--color-green-700)',
   id: '02126',
   title: 'Вход в музей',
   subtitle: 'Южная сторона',
@@ -48,4 +50,9 @@ export const testLocation2: Location = {
     illustrator: 'Preston Stone',
     ffg: '2016',
   },
+};
+
+export const testLocation3: Location = {
+  ...testLocation2,
+  color: 'var(--color-yellow-400)',
 };
