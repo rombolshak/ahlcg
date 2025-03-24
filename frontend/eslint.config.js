@@ -10,6 +10,7 @@ export default config(
   {
     ignores: [
       ".angular/*",
+      ".storybook/*",
       "dist/*",
       "coverage/*",
       "eslint.config.js",
