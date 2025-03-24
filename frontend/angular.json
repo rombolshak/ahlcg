@@ -102,6 +102,7 @@
             "experimentalZoneless": true,
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
+            "styles": ["dist/ahlcg/browser/styles-ZFN7HZ4L.css"],
             "compodoc": false,
             "compodocArgs": ["-e", "json", "-d", "."],
             "port": 6006
@@ -113,6 +114,7 @@
             "experimentalZoneless": true,
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
+            "styles": ["dist/ahlcg/browser/styles-ZFN7HZ4L.css"],
             "compodoc": false,
             "compodocArgs": ["-e", "json", "-d", "."],
             "outputDir": "storybook-static"

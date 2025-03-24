@@ -16,8 +16,8 @@ describe('SingleBarComponent', () => {
     fixture = TestBed.createComponent(SingleBarComponent);
     fixture.componentRef.setInput('max', 5);
     fixture.componentRef.setInput('current', 2);
-    fixture.componentRef.setInput('goodColor', '');
-    fixture.componentRef.setInput('badColor', '');
+    fixture.componentRef.setInput('goodColor', 'color-red-700');
+    fixture.componentRef.setInput('badColor', 'color-red-500');
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
