@@ -7,7 +7,7 @@ import { Orientation } from '../orientation';
   imports: [NgClass],
   templateUrl: './single-bar.component.html',
   host: {
-    class: 'block h-full w-full',
+    class: 'block',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

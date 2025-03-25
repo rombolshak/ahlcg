@@ -26,8 +26,8 @@
     "ci:all": "npm run lint:all && npm run test:ci",
     "shove": "git config push.autoSetupRemote true && git add . && git commit -m 'wip: shoved' --no-verify && git push --no-verify",
     "prepare": "husky",
-    "storybook": "ng build && ng run ahlcg:storybook",
-    "build-storybook": "ng build && ng run ahlcg:build-storybook"
+    "storybook": "ng build && node .storybook/update-style-ref.js && ng run ahlcg:storybook",
+    "build-storybook": "ng build && node .storybook/update-style-ref.js && ng run ahlcg:build-storybook"
   },
   "private": true,
   "dependencies": {
