@@ -1,32 +1,31 @@
-﻿export enum CardType {
-  Player = 'player',
-  Location = 'location',
-  Enemy = 'enemy',
-  Agenda = 'agenda',
-  Act = 'act',
-}
+﻿import { type } from 'arktype';
 
-interface CardTrait {
-  key: string;
-  displayValue: string;
-}
+const setInfo = type({
+  set: 'string',
+  index: 'string',
+});
 
-export interface CardInfo {
-  id: string;
-  cardType: CardType;
-  title: string;
-  subtitle?: string;
-  traits: CardTrait[];
-  abilities: string[];
-  flavor?: string;
+export type SetInfo = typeof setInfo.infer;
+
+const cardType = type("'act' | 'agenda' | 'location' | 'player' | 'enemy'");
+export type CardType = typeof cardType.infer;
+
+const _cardInfo = type({
+  cardType,
+  title: 'string',
+  'subtitle?': 'string',
+  'flavor?': 'string',
+  traits: 'string[]',
+  abilities: 'string[]',
   copyright: {
-    illustrator: string;
-    ffg: string;
-  };
-  setInfo: SetInfo;
-}
+    illustrator: 'string',
+    ffg: 'string',
+  },
+  setInfo: setInfo,
+});
+type _CardInfo = typeof _cardInfo.infer;
 
-export interface SetInfo {
-  set: string;
-  index: string;
-}
+/* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
+export interface CardInfo extends _CardInfo {}
+
+export const cardInfo: type<CardInfo> = _cardInfo;

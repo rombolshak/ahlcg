@@ -1,71 +1,57 @@
-﻿import { CardInfo, CardType } from './card-info.model';
+﻿import { gameCard } from './card.model';
+import { health, sanity } from './vitals.model';
+import { type } from 'arktype';
 
-export enum PlayerCardType {
-  Asset = 'Asset',
-  Skill = 'Skill',
-  Event = 'Event',
-  Investigator = 'Investigator',
-}
+export const playerCardType = type("'asset' | 'skill' | 'event'");
+export type PlayerCardType = typeof playerCardType.infer;
 
-export enum PlayerCardClass {
-  Neutral = 'Neutral',
-  Guardian = 'Guardian',
-  Seeker = 'Seeker',
-  Rogue = 'Rogue',
-  Survivor = 'Survivor',
-  Mystic = 'Mystic',
-  Weakness = 'Weakness',
-  BasicWeakness = 'BasicWeakness',
-}
+export const playerCardClass = type(
+  "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
+);
+export type PlayerCardClassType = typeof playerCardClass.infer;
 
-export enum SkillType {
-  Willpower = 'Willpower',
-  Intellect = 'Intellect',
-  Combat = 'Combat',
-  Agility = 'Agility',
-  Wild = 'Wild',
-}
+export const skills = type({
+  willpower: 'number',
+  intellect: 'number',
+  combat: 'number',
+  agility: 'number',
+  wild: 'number',
+});
 
-export enum AssetSlot {
-  Accessory = 'Accessory',
-  Body = 'Body',
-  Ally = 'Ally',
-  Hand = 'Hand',
-  TwoHands = 'TwoHands',
-  Arcane = 'Arcane',
-  TwoArcane = 'TwoArcane',
-  Tarot = 'Tarot',
-}
+export const skillType = skills.keyof();
+export type SkillType = typeof skillType.infer;
 
-export interface PlayerCardBase extends CardInfo {
-  cardType: CardType.Player;
-  playerCardType: PlayerCardType;
-  class: PlayerCardClass;
-  skills: Map<SkillType, number>;
-}
+export const playerCardBase = gameCard.and({
+  playerCardType,
+  class: playerCardClass,
+  skills: skills.partial(),
+});
 
-export interface WithCost {
-  cost: number;
-}
+const cost = type({
+  cost: 'number',
+});
 
-export interface WithHealth {
-  health: number;
-  sanity: number;
-}
+export const assetSlot = type(
+  "'accessory' | 'body' | 'ally' | 'hand' | 'twohands' | 'arcane' | 'twoarcane' | 'tarot'",
+);
+export type AssetSlot = typeof assetSlot.infer;
 
-export interface AssetCard
-  extends PlayerCardBase,
-    WithCost,
-    Partial<WithHealth> {
-  playerCardType: PlayerCardType.Asset;
-  slot?: AssetSlot | undefined;
-  additionalSlot?: AssetSlot | undefined;
-}
+export const assetCard = playerCardBase.and({
+  playerCardType: "'asset'",
+  'slot?': assetSlot,
+  'additionalSlots?': assetSlot,
+  'health?': health,
+  'sanity?': sanity,
+  cost,
+});
 
-export interface EventCard extends PlayerCardBase, WithCost {
-  playerCardType: PlayerCardType.Event;
-}
+export const eventCard = playerCardBase.and({
+  playerCardType: "'event'",
+  cost,
+});
 
-export interface SkillCard extends PlayerCardBase {
-  playerCardType: PlayerCardType.Skill;
-}
+export const skillCard = playerCardBase.and({
+  playerCardType: "'skill'",
+});
+
+export const playerCard = assetCard.or(eventCard).or(skillCard);
