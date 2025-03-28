@@ -11,7 +11,7 @@ const _enemy = gameCard.and({
   isMassive: 'boolean',
 });
 
-type _Enemy = typeof _enemy.infer;
+type _Enemy = typeof _enemy.t;
 
 /* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
 export interface Enemy extends _Enemy {}

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
-  PlayerCardClass,
+  PlayerCardClassType,
   AssetSlot,
   SkillType,
 } from 'shared/domain/player-card.model';
@@ -41,7 +41,7 @@ export class ImagesUrlService {
 
   private getOverlayInternal(
     type: OverlayType,
-    cardClass: PlayerCardClass | AssetSlot | SkillType,
+    cardClass: PlayerCardClassType | AssetSlot | SkillType,
   ): string {
     return `/assets/images/card-overlays/${OverlayType[type]}-${cardClass}.png`;
   }
@@ -56,7 +56,7 @@ enum OverlayType {
 type Overlay =
   | {
       type: OverlayType.SkillBox;
-      value: PlayerCardClass;
+      value: PlayerCardClassType;
     }
   | {
       type: OverlayType.SkillIcon;
@@ -69,7 +69,7 @@ type Overlay =
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class CreateOverlay {
-  static skillBox(value: PlayerCardClass): Overlay {
+  static skillBox(value: PlayerCardClassType): Overlay {
     return { type: OverlayType.SkillBox, value: value };
   }
 

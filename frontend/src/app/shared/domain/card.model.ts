@@ -5,7 +5,7 @@ import { cardTokens } from './card.tokens';
 export const gameCard = type({
   id: 'number.integer > 0',
   info: cardInfo,
-  tokens: cardTokens,
+  'tokens?': cardTokens,
 });
 
 export const gameCardWithoutTraits = gameCard.omit('info').and({

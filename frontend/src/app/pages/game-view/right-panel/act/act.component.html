@@ -1,7 +1,7 @@
 <div class="peer text-center peer">
   <p class="text-sm/4 font-[ArnoPro] -my-1">Act {{ act().stage }}</p>
   <p class="text-xl font-[Conkordia]">
-    {{ act().title }}
+    {{ act().info.title }}
   </p>
 </div>
 
@@ -58,6 +58,6 @@
   class="absolute w-full px-2 top-[2.5rem] rounded h-0 opacity-0 peer-hover:h-auto
     peer-hover:opacity-100"
   [showTitle]="false"
-  [card]="act()"
+  [card]="act().info"
   [ngClass]="hostClasses()"
 />

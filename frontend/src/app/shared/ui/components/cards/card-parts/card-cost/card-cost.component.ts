@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { WithCost } from 'shared/domain/player-card.model';
 import { TextWithOverlayComponent } from '../../../text-with-overlay/text-with-overlay.component';
 
 @Component({
@@ -15,5 +14,5 @@ import { TextWithOverlayComponent } from '../../../text-with-overlay/text-with-o
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardCostComponent {
-  readonly card = input.required<WithCost>();
+  readonly card = input.required<{ cost: number }>();
 }

@@ -1,5 +1,5 @@
-﻿@for (skill of card().skills; track $index) {
-  @for (_ of [].constructor(skill[1]); track $index) {
+﻿@for (skill of skills(); track $index) {
+  @for (_ of [].constructor(skill.value); track $index) {
     <div class="relative flex items-center">
       <img
         alt="skill-icon-box"
@@ -12,7 +12,7 @@
           group-data-[size=m]:left-2 group-data-[size=m]:top-[5px]
           group-data-[size=s]:left-1.5 group-data-[size=s]:top-[4px]"
         alt="skill-icon"
-        [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill[0]))"
+        [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill.type))"
         [width]="skillIcon[displayOptions().cardSize]"
         [height]="skillIcon[displayOptions().cardSize]"
       />

@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, input } from '@angular/core';
-import { PlayerCardClass } from 'shared/domain/player-card.model';
+import { PlayerCardClassType } from 'shared/domain/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',
@@ -20,21 +20,21 @@ export class CardOutlineDirective {
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClass>();
+  readonly cardClass = input.required<PlayerCardClassType>();
 
   getOutlineColor(cardClass: string) {
     switch (cardClass) {
-      case PlayerCardClass.Guardian.toString():
+      case 'guardian':
         return 'outline-blue-400';
-      case PlayerCardClass.Seeker.toString():
+      case 'seeker':
         return 'outline-orange-400';
-      case PlayerCardClass.Rogue.toString():
+      case 'rogue':
         return 'outline-green-400';
-      case PlayerCardClass.Survivor.toString():
+      case 'survivor':
         return 'outline-red-400';
-      case PlayerCardClass.Mystic.toString():
+      case 'mystic':
         return 'outline-purple-400';
-      case PlayerCardClass.Neutral.toString():
+      case 'neutral':
         return 'outline-gray-400';
     }
 

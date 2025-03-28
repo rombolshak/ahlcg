@@ -15,9 +15,9 @@ import {
   trigger,
 } from '@angular/animations';
 import { CardComponent } from 'shared/ui/components/cards/card/card.component';
-import { Card } from 'shared/domain/card.model';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { cardWidths } from 'shared/domain/card.constants';
+import { PlayerCard } from 'shared/domain/player-card.model';
 
 @Component({
   selector: 'ah-cards-hand',
@@ -82,8 +82,8 @@ import { cardWidths } from 'shared/domain/card.constants';
 export class CardsHandComponent {
   constructor(private readonly element: ElementRef) {}
 
-  readonly cards = input.required<Card[]>();
-  readonly cardSelected = output<Card>();
+  readonly cards = input.required<PlayerCard[]>();
+  readonly cardSelected = output<number>();
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
   focusedCardId: number | undefined;
@@ -92,7 +92,7 @@ export class CardsHandComponent {
   );
   cardWidth = cardWidths.s;
 
-  private calcOffsetFrom(cards: Card[]) {
+  private calcOffsetFrom(cards: unknown[]) {
     let container = (
       this.element.nativeElement as HTMLElement
     ).getBoundingClientRect().width;

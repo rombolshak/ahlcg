@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
+import { Investigator } from 'shared/domain/investigator.model';
 import { ActionsSelectorComponent } from './actions-selector/actions-selector.component';
 
 @Component({
@@ -18,5 +18,5 @@ import { ActionsSelectorComponent } from './actions-selector/actions-selector.co
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeftPanelComponent {
-  readonly investigator = input.required<InvestigatorWithState>();
+  readonly investigator = input.required<Investigator>();
 }

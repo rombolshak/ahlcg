@@ -15,7 +15,7 @@ import {
   testLocation3,
 } from 'shared/domain/test/test-locations';
 import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
+import { Investigator } from 'shared/domain/investigator.model';
 import { Enemy } from 'shared/domain/enemy.model';
 import { testEnemy } from 'shared/domain/test/test-enemies';
 import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
@@ -33,16 +33,26 @@ export class PlayAreaComponent implements AfterViewInit {
   location: Location = testLocation;
 
   enemy: Enemy = testEnemy;
-  investigator1 = {
+  investigator1: Investigator = {
     ...InvestigatorS,
-    clues: 2,
-    horror: 3,
-    damage: 2,
+    tokens: {
+      clue: 2,
+    },
+    sanity: {
+      max: InvestigatorS.sanity.max,
+      damaged: 3,
+    },
+    health: {
+      max: InvestigatorS.health.max,
+      damaged: 2,
+    },
     threatArea: [
       {
         ...this.enemy,
-        damage: 1,
-        health: 4,
+        health: {
+          max: 4,
+          damaged: 1,
+        },
       },
     ],
   };
@@ -73,7 +83,7 @@ export class PlayAreaComponent implements AfterViewInit {
       },
     ],
   };
-  investigators: InvestigatorWithState[] = [
+  investigators: Investigator[] = [
     this.investigator3,
     this.investigator2,
     this.investigator1,
@@ -86,25 +96,25 @@ export class PlayAreaComponent implements AfterViewInit {
       {
         x: 2,
         y: 3,
-        location: { ...testLocation, id: '1' },
+        location: { ...testLocation, id: 1 } satisfies Location,
         investigators: this.investigators,
       },
       {
         x: 4,
         y: 2,
-        location: { ...testLocation2, id: '2' },
+        location: { ...testLocation2, id: 2 },
         investigators: [],
       },
       {
         x: 4,
         y: 4,
-        location: { ...testLocation3, id: '3' },
+        location: { ...testLocation3, id: 3 },
         investigators: [],
       },
     ],
     connections: [
-      { from: '1', to: '2' },
-      { from: '1', to: '3' },
+      { from: 1, to: 2 },
+      { from: 1, to: 3 },
     ],
   };
 

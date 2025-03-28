@@ -12,7 +12,7 @@ const _objective = type({
 type _Objective = typeof _objective.infer;
 
 /* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
-interface Objective extends _Objective {}
+export interface Objective extends _Objective {}
 
 const objective: type<Objective> = _objective;
 

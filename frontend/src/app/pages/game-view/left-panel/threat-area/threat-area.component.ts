@@ -4,7 +4,7 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { EnemyWithState } from 'shared/domain/enemy.model';
+import { Enemy } from 'shared/domain/enemy.model';
 import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
 
 @Component({
@@ -18,7 +18,7 @@ import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar
   },
 })
 export class ThreatAreaComponent {
-  readonly threatArea = input.required<EnemyWithState[]>();
+  readonly threatArea = input.required<Enemy[]>();
 
   protected readonly massiveEnemies = computed(() =>
     this.threatArea().filter((e) => e.isMassive),

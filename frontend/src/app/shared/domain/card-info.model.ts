@@ -15,7 +15,7 @@ const _cardInfo = type({
   title: 'string',
   'subtitle?': 'string',
   'flavor?': 'string',
-  traits: 'string[]',
+  'traits?': 'string[]',
   abilities: 'string[]',
   copyright: {
     illustrator: 'string',
@@ -23,7 +23,7 @@ const _cardInfo = type({
   },
   setInfo: setInfo,
 });
-type _CardInfo = typeof _cardInfo.infer;
+export type _CardInfo = typeof _cardInfo.infer;
 
 /* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
 export interface CardInfo extends _CardInfo {}

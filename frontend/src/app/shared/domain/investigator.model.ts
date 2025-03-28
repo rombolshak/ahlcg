@@ -1,4 +1,5 @@
-﻿import { gameCard } from './card.model';
+﻿import { action } from './action.model';
+import { gameCard } from './card.model';
 import { enemy } from './enemy.model';
 import {
   assetCard,
@@ -17,11 +18,12 @@ const _investigator = gameCard.and({
   threatArea: enemy.array(),
   hand: playerCard.array(),
   controlledAssets: assetCard.array(),
+  availableActions: action.array(),
 });
 
 type _Investigator = typeof _investigator.infer;
 
 /* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
-interface Investigator extends _Investigator {}
+export interface Investigator extends _Investigator {}
 
 export const investigator: type<Investigator> = _investigator;

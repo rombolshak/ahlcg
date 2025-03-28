@@ -2,7 +2,7 @@
   <ah-card-title
     class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
       group-data-[size=s]:top-[7px]"
-    [card]="card()"
+    [card]="card().info"
   />
 
   <div
@@ -12,10 +12,13 @@
       group-data-[size=s]:top-[9.5rem] group-data-[size=s]:pl-6
       group-data-[size=s]:pr-4 font-[ArnoPro]"
   >
-    <ah-card-traits [card]="card()" [displayOptions]="displayOptions()" />
-    <ah-card-abilities [card]="card()" [displayOptions]="displayOptions()" />
+    <ah-card-traits [card]="card().info" [displayOptions]="displayOptions()" />
+    <ah-card-abilities
+      [card]="card().info"
+      [displayOptions]="displayOptions()"
+    />
   </div>
 
-  <ah-card-flavor [card]="card()" />
-  <ah-card-copyright [card]="card()" [displayOptions]="displayOptions()" />
+  <ah-card-flavor [card]="card().info" />
+  <ah-card-copyright [card]="card().info" [displayOptions]="displayOptions()" />
 </ah-player-card>
