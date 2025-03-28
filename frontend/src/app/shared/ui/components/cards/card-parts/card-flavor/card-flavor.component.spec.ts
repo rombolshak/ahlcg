@@ -17,7 +17,7 @@ describe('CardFlavorComponent', () => {
 
     fixture = TestBed.createComponent(CardFlavorComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardS);
+    fixture.componentRef.setInput('card', cardS.info);
     await fixture.whenStable();
   });
 
@@ -29,6 +29,6 @@ describe('CardFlavorComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(1);
     expect(
       fixture.debugElement.query(By.css('p')).nativeElement.innerText,
-    ).toContain(cardS.flavor);
+    ).toContain(cardS.info.flavor);
   });
 });

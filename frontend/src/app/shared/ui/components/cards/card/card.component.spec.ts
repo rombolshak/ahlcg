@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CardInfo } from 'shared/domain/card-info.model';
 import {
   cardA,
   cardE,
@@ -24,7 +23,7 @@ describe('CardComponent', () => {
 
     fixture = TestBed.createComponent(CardComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', {} as CardInfo);
+    fixture.componentRef.setInput('card', cardA);
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });

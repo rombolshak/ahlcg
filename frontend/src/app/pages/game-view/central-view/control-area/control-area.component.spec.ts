@@ -16,7 +16,6 @@ describe('ControlAreaComponent', () => {
     fixture = TestBed.createComponent(ControlAreaComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('assets', []);
-    fixture.componentRef.setInput('states', []);
     await fixture.whenStable();
   });
 

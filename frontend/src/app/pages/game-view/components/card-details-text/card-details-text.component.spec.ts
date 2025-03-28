@@ -17,7 +17,7 @@ describe('CardDetailsTextComponent', () => {
 
     fixture = TestBed.createComponent(CardDetailsTextComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', testLocation);
+    fixture.componentRef.setInput('card', testLocation.info);
     await fixture.whenStable();
   });
 
@@ -29,17 +29,19 @@ describe('CardDetailsTextComponent', () => {
     const title = fixture.debugElement.query(By.css('[data-testId=title]'))
       .nativeElement as HTMLElement;
 
-    expect(title.textContent?.trim()).toEqual(testLocation.title);
+    expect(title.textContent?.trim()).toEqual(testLocation.info.title);
   });
 
   it('should display card subtitle if exists', async () => {
-    fixture.componentRef.setInput('card', testLocation2);
+    fixture.componentRef.setInput('card', testLocation2.info);
     await fixture.whenStable();
     const subtitle = fixture.debugElement.query(
       By.css('[data-testId=subtitle]'),
     ).nativeElement as HTMLElement;
 
-    expect(subtitle.textContent?.trim()).toEqual(testLocation2.subtitle ?? '');
+    expect(subtitle.textContent?.trim()).toEqual(
+      testLocation2.info.subtitle ?? '',
+    );
   });
 
   it('should not display subtitle if empty', () => {
@@ -54,8 +56,8 @@ describe('CardDetailsTextComponent', () => {
     const traits = fixture.debugElement.query(By.css('[data-testId=traits]'))
       .nativeElement as HTMLElement;
 
-    for (const trait of testLocation.traits) {
-      expect(traits.textContent?.trim()).toContain(trait.displayValue);
+    for (const trait of testLocation.info.traits ?? []) {
+      expect(traits.textContent?.trim()).toContain(trait);
     }
   });
 
@@ -64,7 +66,7 @@ describe('CardDetailsTextComponent', () => {
       By.css('[data-testId=ability]'),
     );
 
-    expect(abilities.length).toEqual(testLocation.abilities.length);
+    expect(abilities.length).toEqual(testLocation.info.abilities.length);
   });
 
   it('should not display title', async () => {

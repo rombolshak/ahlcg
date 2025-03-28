@@ -20,7 +20,6 @@ describe('CentralViewComponent', () => {
     fixture = TestBed.createComponent(CentralViewComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('assets', []);
-    fixture.componentRef.setInput('assetStates', {});
     fixture.componentRef.setInput('cards', []);
     await fixture.whenStable();
   });

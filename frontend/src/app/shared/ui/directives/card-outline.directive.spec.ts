@@ -4,7 +4,7 @@ import {
   input,
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
-import { PlayerCardClass } from 'shared/domain/player-card.model';
+import { PlayerCardClassType } from 'shared/domain/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
@@ -15,7 +15,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
   `,
 })
 class TestComponent {
-  readonly cardClass = input.required<PlayerCardClass>();
+  readonly cardClass = input.required<PlayerCardClassType>();
 }
 
 describe('CardOutlineDirective', () => {
@@ -28,7 +28,7 @@ describe('CardOutlineDirective', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    fixture.componentRef.setInput('cardClass', PlayerCardClass.Rogue);
+    fixture.componentRef.setInput('cardClass', 'rogue');
     await fixture.whenStable();
   });
 

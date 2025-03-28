@@ -17,7 +17,7 @@ describe('CardTraitsComponent', () => {
 
     fixture = TestBed.createComponent(CardTraitsComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', cardA.info);
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });
@@ -28,11 +28,11 @@ describe('CardTraitsComponent', () => {
 
   it('should print traits', () => {
     expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(
-      cardA.traits.length,
+      cardA.info.traits?.length ?? 0,
     );
 
     expect(
       fixture.debugElement.query(By.css('span')).nativeElement.innerText,
-    ).toContain(cardA.traits[0]?.displayValue);
+    ).toContain(cardA.info.traits?.[0]);
   });
 });
