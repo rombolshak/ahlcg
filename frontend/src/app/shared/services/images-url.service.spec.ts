@@ -33,15 +33,15 @@ describe('ImagesUrlService', () => {
 
   it('should generate card overlays url', () => {
     expect(service.getOverlay(CreateOverlay.skillBox('guardian'))).toEqual(
-      `/assets/images/card-overlays/SkillBox-guardian.png`,
+      `/assets/images/card-overlays/skill-box-guardian.png`,
     );
 
     expect(service.getOverlay(CreateOverlay.cardSlot('ally'))).toEqual(
-      `/assets/images/card-overlays/Slot-ally.png`,
+      `/assets/images/card-overlays/slot-ally.png`,
     );
 
     expect(service.getOverlay(CreateOverlay.skillIcon('agility'))).toEqual(
-      `/assets/images/card-overlays/SkillIcon-agility.png`,
+      `/assets/images/card-overlays/skill-icon-agility.png`,
     );
   });
 

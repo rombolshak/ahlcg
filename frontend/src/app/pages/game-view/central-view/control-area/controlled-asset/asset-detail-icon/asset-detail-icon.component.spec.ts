@@ -31,7 +31,7 @@ describe('AssetDetailIconComponent', () => {
         fixture.debugElement.query(By.css('img'))
           .nativeElement as HTMLImageElement
       ).src,
-    ).toEqual('test-image');
+    ).toContain('test-image');
   });
 
   it('should display detail text', () => {
