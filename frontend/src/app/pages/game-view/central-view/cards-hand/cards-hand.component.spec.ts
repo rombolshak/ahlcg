@@ -18,20 +18,7 @@ describe('CardsHandComponent', () => {
 
     fixture = TestBed.createComponent(CardsHandComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('cards', [
-      {
-        id: 1,
-        cardInfo: cardA,
-      },
-      {
-        id: 2,
-        cardInfo: cardS,
-      },
-      {
-        id: 13,
-        cardInfo: cardE,
-      },
-    ]);
+    fixture.componentRef.setInput('cards', [cardA, cardS, cardE]);
     await fixture.whenStable();
   });
 

@@ -15,6 +15,7 @@ describe('VitalsBarComponent', () => {
 
     fixture = TestBed.createComponent(VitalsBarComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('entity', { health: { max: 4, damaged: 1 } });
     await fixture.whenStable();
   });
 

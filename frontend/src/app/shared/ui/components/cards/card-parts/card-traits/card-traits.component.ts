@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { PlayerCardBase } from 'shared/domain/player-card.model';
+import { CardInfo } from 'shared/domain/card-info.model';
 import { DisplayOptions } from 'shared/domain/display.options';
 
 @Component({
@@ -9,6 +9,6 @@ import { DisplayOptions } from 'shared/domain/display.options';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CardTraitsComponent {
-  readonly card = input.required<PlayerCardBase>();
+  readonly card = input.required<CardInfo>();
   readonly displayOptions = input.required<DisplayOptions>();
 }

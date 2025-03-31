@@ -15,6 +15,7 @@ describe('ActionsSelectorComponent', () => {
 
     fixture = TestBed.createComponent(ActionsSelectorComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('actions', []);
     await fixture.whenStable();
   });
 

@@ -1,14 +1,19 @@
-﻿import { CardInfo, CardType } from './card-info.model';
-import { AssetState } from './asset.state';
-import { WithHealth } from './player-card.model';
+﻿import { type } from 'arktype';
+import { gameCard } from './card.model';
+import { health } from './vitals.model';
 
-export interface Enemy extends CardInfo, Partial<WithHealth> {
-  cardType: CardType.Enemy;
-  fight: number;
-  evade: number;
-  damageAttack: number;
-  horrorAttack: number;
-  isMassive: boolean;
-}
+const _enemy = gameCard.and({
+  health,
+  fight: 'number',
+  evade: 'number',
+  damageAttack: 'number',
+  horrorAttack: 'number',
+  isMassive: 'boolean',
+});
 
-export interface EnemyWithState extends Enemy, AssetState {}
+type _Enemy = typeof _enemy.t;
+
+/* eslint-disable-next-line @typescript-eslint/no-empty-object-type */
+export interface Enemy extends _Enemy {}
+
+export const enemy: type<Enemy> = _enemy;

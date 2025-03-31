@@ -9,7 +9,6 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { AssetState } from 'shared/domain/asset.state';
 import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 
@@ -18,12 +17,10 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
   imports: [ControlledAssetComponent, CardOutlineDirective],
   template: `
     @for (asset of assets(); track asset.id) {
-      @let assetState = states().get(asset.id);
       <ah-controlled-asset
         class="w-[6rem] h-[4.5rem] mr-3 mb-3 rounded-lg"
         ahCardOutline
         [asset]="asset"
-        [state]="assetState"
         [cardClass]="asset.class"
       />
     }
@@ -35,7 +32,6 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
 })
 export class ControlAreaComponent {
   readonly assets = input.required<AssetCard[]>();
-  readonly states = input.required<Map<string, AssetState>>();
   imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
 }

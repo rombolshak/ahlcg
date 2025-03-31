@@ -6,12 +6,11 @@ import {
 } from '@angular/core';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 import { NgOptimizedImage } from '@angular/common';
-import { EnemyWithState } from 'shared/domain/enemy.model';
+import { Enemy } from 'shared/domain/enemy.model';
 import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { SkillType } from 'shared/domain/player-card.model';
 import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 
 @Component({
@@ -24,8 +23,7 @@ import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnemyAvatarComponent {
-  readonly enemy = input.required<EnemyWithState>();
+  readonly enemy = input.required<Enemy>();
   readonly imageService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
-  protected readonly SkillType = SkillType;
 }

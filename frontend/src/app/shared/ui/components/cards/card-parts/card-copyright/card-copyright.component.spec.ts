@@ -17,7 +17,7 @@ describe('CardCopyrightComponent', () => {
 
     fixture = TestBed.createComponent(CardCopyrightComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', cardA.info);
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });

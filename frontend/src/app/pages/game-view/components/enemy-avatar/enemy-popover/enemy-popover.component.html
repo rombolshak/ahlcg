@@ -11,7 +11,7 @@
     }
   </div>
   <p class="font-[Conkordia] text-xl/6 text-center mb-0" data-testId="title">
-    {{ enemy().title }}
+    {{ enemy().info.title }}
   </p>
   <div class="flex items-center">
     @for (_ of [].constructor(enemy().horrorAttack); track $index) {
@@ -26,16 +26,14 @@
   </div>
 </div>
 
-<ah-card-details-text [card]="enemy()" [showTitle]="false">
+<ah-card-details-text [card]="enemy().info" [showTitle]="false">
   <div class="flex justify-evenly">
     <div class="flex">
       <img
         width="24"
         height="24"
         alt="fight value"
-        [ngSrc]="
-          imageService.getOverlay(CreateOverlay.skillIcon(SkillType.Combat))
-        "
+        [ngSrc]="imageService.getOverlay(CreateOverlay.skillIcon('combat'))"
       />
       <span class="font-[Teutonic] text-2xl/6 ml-1">{{ enemy().fight }}</span>
     </div>
@@ -44,9 +42,7 @@
         width="24"
         height="24"
         alt="evade value"
-        [ngSrc]="
-          imageService.getOverlay(CreateOverlay.skillIcon(SkillType.Agility))
-        "
+        [ngSrc]="imageService.getOverlay(CreateOverlay.skillIcon('agility'))"
       />
       <span class="font-[Teutonic] text-2xl/6 ml-1">{{ enemy().evade }}</span>
     </div>

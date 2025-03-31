@@ -1,7 +1,7 @@
 <div class="text-white peer text-center">
   <p class="text-sm/4 font-[ArnoPro] -my-1">Agenda {{ agenda().stage }}</p>
   <p class="text-xl font-[Conkordia]">
-    {{ agenda().title }}
+    {{ agenda().info.title }}
   </p>
 </div>
 
@@ -50,6 +50,6 @@
     peer-hover:h-auto peer-hover:opacity-100"
   [class]="hostClasses()"
   [showTitle]="false"
-  [card]="agenda()"
+  [card]="agenda().info"
 />
 <!-- eslint-enable @angular-eslint/template/no-duplicate-attributes -->

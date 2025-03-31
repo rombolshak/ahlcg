@@ -8,7 +8,7 @@ import { ImagesUrlService } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
 import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
+import { Investigator } from 'shared/domain/investigator.model';
 import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
 import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
 
@@ -29,5 +29,5 @@ import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-ava
 export class LocationComponent {
   imageService = inject(ImagesUrlService);
   readonly location = input.required<Location>();
-  readonly investigators = input.required<InvestigatorWithState[]>();
+  readonly investigators = input.required<Investigator[]>();
 }

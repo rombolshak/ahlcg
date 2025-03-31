@@ -1,37 +1,43 @@
-﻿import { CardType } from '../card-info.model';
-import { InvestigatorModel } from '../investigator.model';
-import {
-  PlayerCardClass,
-  PlayerCardType,
-  SkillType,
-} from '../player-card.model';
+﻿import { Investigator } from '../investigator.model';
 
-export const InvestigatorS: InvestigatorModel = {
-  setInfo: {
-    set: '01',
-    index: '002',
+export const InvestigatorS: Investigator = {
+  id: 1002,
+  info: {
+    cardType: 'player',
+    setInfo: {
+      set: '01',
+      index: '002',
+    },
+    title: 'Daisy Walker',
+    subtitle: 'The Librarian',
+    traits: ['Miskatonic'],
+    abilities: [
+      'You may take an additional action during your turn, which can only be used on @Tome@ abilities.',
+      '#E# effect: +0. If you succeed, draw 1 card for each @Tome@ you control',
+    ],
+    copyright: {
+      ffg: '2016',
+      illustrator: 'Magali Villeneuve',
+    },
   },
-  id: '01002',
-  title: 'Daisy Walker',
-  subtitle: 'The Librarian',
-  cardType: CardType.Player,
-  playerCardType: PlayerCardType.Investigator,
-  copyright: {
-    ffg: '2016',
-    illustrator: 'Magali Villeneuve',
+  skills: {
+    willpower: 3,
+    intellect: 4,
+    combat: 1,
+    agility: 3,
   },
-  skills: new Map<SkillType, number>([
-    [SkillType.Willpower, 3],
-    [SkillType.Intellect, 4],
-    [SkillType.Combat, 1],
-    [SkillType.Agility, 3],
-  ]),
-  class: PlayerCardClass.Seeker,
-  traits: [{ key: 'Miskatonic', displayValue: 'Miskatonic' }],
-  abilities: [
-    'You may take an additional action during your turn, which can only be used on @Tome@ abilities.',
-    '#E# effect: +0. If you succeed, draw 1 card for each @Tome@ you control',
-  ],
-  health: 5,
-  sanity: 7,
+  class: 'seeker',
+  health: {
+    max: 5,
+    damaged: 1,
+  },
+  sanity: {
+    max: 7,
+    damaged: 3,
+  },
+
+  threatArea: [],
+  hand: [],
+  controlledAssets: [],
+  availableActions: [],
 };

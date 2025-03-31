@@ -11,7 +11,6 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { SkillType } from 'shared/domain/player-card.model';
 
 @Component({
   selector: 'ah-enemy-popover',
@@ -26,5 +25,4 @@ export class EnemyPopoverComponent {
   readonly enemy = input.required<Enemy>();
   readonly imageService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
-  protected readonly SkillType = SkillType;
 }

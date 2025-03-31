@@ -2,7 +2,7 @@
   class="font-[Conkordia] text-4xl text-center w-full flex items-center justify-center
     absolute peer cursor-default"
 >
-  <span>{{ location().title }}</span>
+  <span>{{ location().info.title }}</span>
   <div
     class="ml-2 w-[32px] h-[32px] rounded-full text-3xl font-[Teutonic] bg-yellow-400"
   >
@@ -33,6 +33,6 @@
     whitespace-pre-wrap font-[ArnoPro] text-lg/5 transition-all absolute left-[20%]
     bottom-[4rem] -z-50 peer-hover:opacity-100 peer-hover:z-50 peer-hover:max-h-48
     hover:opacity-100 hover:z-50 hover:max-h-48 duration-300"
-  [card]="location()"
+  [card]="location().info"
   [showTitle]="false"
 />

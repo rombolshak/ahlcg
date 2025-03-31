@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
-import { PlayerCardBase } from 'shared/domain/player-card.model';
 import { DisplayOptions } from 'shared/domain/display.options';
+import { CardInfo } from 'shared/domain/card-info.model';
 
 @Component({
   selector: 'ah-card-abilities',
@@ -22,6 +22,6 @@ import { DisplayOptions } from 'shared/domain/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardAbilitiesComponent {
-  readonly card = input.required<PlayerCardBase>();
+  readonly card = input.required<CardInfo>();
   readonly displayOptions = input.required<DisplayOptions>();
 }

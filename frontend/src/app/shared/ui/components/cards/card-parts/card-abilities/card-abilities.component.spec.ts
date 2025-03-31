@@ -17,7 +17,7 @@ describe('CardAbilityComponent', () => {
 
     fixture = TestBed.createComponent(CardAbilitiesComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', cardA.info);
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });
@@ -28,7 +28,7 @@ describe('CardAbilityComponent', () => {
 
   it('should print abilities', () => {
     expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(
-      cardA.abilities.length,
+      cardA.info.abilities.length,
     );
   });
 });

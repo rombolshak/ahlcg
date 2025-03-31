@@ -46,7 +46,7 @@ describe('AgendaComponent', () => {
   it('should display agenda title', () => {
     expect(
       (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain(testAgenda.title);
+    ).toContain(testAgenda.info.title);
   });
 
   async function checkDoom(doom: number, color: string) {

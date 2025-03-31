@@ -4,35 +4,33 @@
     data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full"
   [attr.data-orientation]="orientation()"
 >
-  @if (state()) {
-    @if (asset().sanity) {
-      <ah-single-bar
-        class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
-          group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
-          group-data-[orientation=vertical]:flex
-          group-data-[orientation=vertical]:flex-col
-          group-data-[orientation=vertical]:mr-1 group-data-[orientation=vertical]:ml-1
-          rounded-md"
-        badColor="bg-sky-700"
-        goodColor="bg-sky-300"
-        [max]="asset().sanity!"
-        [current]="state()?.horror ?? -1"
-        [orientation]="orientation()"
-      />
-    }
-    @if (asset().health) {
-      <ah-single-bar
-        class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
-          group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
-          group-data-[orientation=vertical]:flex
-          group-data-[orientation=vertical]:flex-col
-          group-data-[orientation=vertical]:mr-1 rounded-md"
-        badColor="bg-red-700"
-        goodColor="bg-red-300"
-        [max]="asset().health!"
-        [current]="state()?.damage ?? -1"
-        [orientation]="orientation()"
-      />
-    }
+  @if (entity().sanity) {
+    <ah-single-bar
+      class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
+        group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
+        group-data-[orientation=vertical]:flex
+        group-data-[orientation=vertical]:flex-col
+        group-data-[orientation=vertical]:mr-1 group-data-[orientation=vertical]:ml-1
+        rounded-md"
+      badColor="bg-sky-700"
+      goodColor="bg-sky-300"
+      [max]="entity().sanity!.max"
+      [current]="entity().sanity!.damaged"
+      [orientation]="orientation()"
+    />
+  }
+  @if (entity().health) {
+    <ah-single-bar
+      class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
+        group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
+        group-data-[orientation=vertical]:flex
+        group-data-[orientation=vertical]:flex-col
+        group-data-[orientation=vertical]:mr-1 rounded-md"
+      badColor="bg-red-700"
+      goodColor="bg-red-300"
+      [max]="entity().health!.max"
+      [current]="entity().health!.damaged!"
+      [orientation]="orientation()"
+    />
   }
 </div>

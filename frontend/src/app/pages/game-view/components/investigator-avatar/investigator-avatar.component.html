@@ -8,21 +8,17 @@
     class="-z-30"
     priority
     alt="investigator-template"
-    [ngSrc]="imagesService.getTemplate('Investigator', investigator().class)"
+    [ngSrc]="imagesService.getTemplate('investigator', investigator().class)"
   />
 
-  <ah-vitals-bar
-    orientation="vertical"
-    [asset]="investigator()"
-    [state]="investigator()"
-  />
+  <ah-vitals-bar orientation="vertical" [entity]="investigator()" />
 
   <img
     width="100"
     height="154"
     class="peer"
     alt="investigator avatar"
-    [ngSrc]="imagesService.getInvestigator(investigator().setInfo)"
+    [ngSrc]="imagesService.getInvestigator(investigator().info.setInfo)"
   />
 
   <ng-content />

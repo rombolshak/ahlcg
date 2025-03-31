@@ -17,7 +17,7 @@ describe('CardTitleComponent', () => {
 
     fixture = TestBed.createComponent(CardTitleComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', cardA.info);
     await fixture.whenStable();
   });
 
@@ -29,6 +29,6 @@ describe('CardTitleComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('div')).length).toEqual(1);
     expect(
       fixture.debugElement.query(By.css('div')).nativeElement.innerText,
-    ).toContain(cardA.title);
+    ).toContain(cardA.info.title);
   });
 });
