@@ -21,7 +21,7 @@ import { NgOptimizedImage } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetDetailIconComponent {
-  readonly detail = input.required<unknown>();
+  readonly detail = input.required<string | number | undefined>();
   readonly withoutText = input<boolean>(false);
   readonly image = input.required<string>();
   protected readonly CreateOverlay = CreateOverlay;
