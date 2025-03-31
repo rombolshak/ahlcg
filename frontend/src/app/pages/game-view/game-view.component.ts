@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
 import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
-import { GameState } from 'shared/domain/game-state';
-import { testGameState } from '../../shared/domain/test/test-game-state';
+import { GameStateService } from './services/game-state.service';
 
 @Component({
   selector: 'ah-game-view',
@@ -15,5 +14,6 @@ import { testGameState } from '../../shared/domain/test/test-game-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent {
-  readonly gameState = input<GameState>(testGameState);
+  private readonly gameStateService = inject(GameStateService);
+  readonly gameState = this.gameStateService.state;
 }
