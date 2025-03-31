@@ -28,7 +28,7 @@ export const testLocation2: Location = {
   shroud: 1,
   clues: 2,
   color: 'var(--color-green-700)',
-  id: 2126,
+  id: 2128,
   info: {
     title: 'Вход в музей',
     subtitle: 'Южная сторона',
@@ -48,5 +48,6 @@ export const testLocation2: Location = {
 
 export const testLocation3: Location = {
   ...testLocation2,
+  id: 2129,
   color: 'var(--color-yellow-400)',
 };

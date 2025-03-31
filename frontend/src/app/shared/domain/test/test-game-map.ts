@@ -26,7 +26,7 @@ export const testGameMap: GameMap = {
     },
   ],
   connections: [
-    { from: 1, to: 2 },
-    { from: 1, to: 3 },
+    { from: 2126, to: 2128 },
+    { from: 2126, to: 2129 },
   ],
 };

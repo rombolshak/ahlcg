@@ -31,7 +31,7 @@ export type PlayerCardBase = typeof playerCardBase.infer;
 const cost = type('number');
 
 export const assetSlot = type(
-  "'accessory' | 'body' | 'ally' | 'hand' | 'twohands' | 'arcane' | 'twoarcane' | 'tarot'",
+  "'accessory' | 'body' | 'ally' | 'hand' | 'two-hands' | 'arcane' | 'two-arcane' | 'tarot'",
 );
 export type AssetSlot = typeof assetSlot.infer;
 

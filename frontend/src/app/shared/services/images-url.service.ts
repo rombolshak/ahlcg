@@ -43,42 +43,38 @@ export class ImagesUrlService {
     type: OverlayType,
     cardClass: PlayerCardClassType | AssetSlot | SkillType,
   ): string {
-    return `/assets/images/card-overlays/${OverlayType[type]}-${cardClass}.png`;
+    return `/assets/images/card-overlays/${type}-${cardClass}.png`;
   }
 }
 
-enum OverlayType {
-  SkillBox,
-  SkillIcon,
-  Slot,
-}
+type OverlayType = 'skill-box' | 'skill-icon' | 'slot';
 
 type Overlay =
   | {
-      type: OverlayType.SkillBox;
+      type: 'skill-box';
       value: PlayerCardClassType;
     }
   | {
-      type: OverlayType.SkillIcon;
+      type: 'skill-icon';
       value: SkillType;
     }
   | {
-      type: OverlayType.Slot;
+      type: 'slot';
       value: AssetSlot;
     };
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class CreateOverlay {
   static skillBox(value: PlayerCardClassType): Overlay {
-    return { type: OverlayType.SkillBox, value: value };
+    return { type: 'skill-box', value: value };
   }
 
   static skillIcon(value: SkillType): Overlay {
-    return { type: OverlayType.SkillIcon, value: value };
+    return { type: 'skill-icon', value: value };
   }
 
   static cardSlot(value?: AssetSlot): Overlay | null {
     if (!value) return null;
-    return { type: OverlayType.Slot, value: value };
+    return { type: 'slot', value: value };
   }
 }

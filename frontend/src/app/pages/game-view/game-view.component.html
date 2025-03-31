@@ -1,7 +1,15 @@
-﻿<ah-left-panel class="w-[17rem] flex-none" [investigator]="investigator" />
-<ah-central-view class="min-w-0" [assets]="assets" [cards]="cards()" />
+﻿<ah-left-panel
+  class="w-[17rem] flex-none"
+  [investigator]="gameState().investigators[0]!"
+/>
+<ah-central-view
+  class="min-w-0"
+  [assets]="gameState().investigators[0]!.controlledAssets"
+  [cards]="gameState().investigators[0]!.hand"
+  [gameMap]="gameState().map"
+/>
 <ah-right-panel
   class="w-[17rem] flex-none"
-  [agenda]="testAgenda"
-  [act]="testAct"
+  [agenda]="gameState().agendas[0]!"
+  [act]="gameState().acts[0]!"
 />

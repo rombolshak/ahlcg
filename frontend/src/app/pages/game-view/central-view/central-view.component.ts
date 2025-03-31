@@ -3,6 +3,7 @@ import { CardsHandComponent } from './cards-hand/cards-hand.component';
 import { ControlAreaComponent } from './control-area/control-area.component';
 import { PlayAreaComponent } from './play-area/play-area.component';
 import { AssetCard, PlayerCard } from 'shared/domain/player-card.model';
+import { GameMap } from 'shared/domain/game-map.model';
 
 @Component({
   selector: 'ah-central-view',
@@ -16,4 +17,5 @@ import { AssetCard, PlayerCard } from 'shared/domain/player-card.model';
 export class CentralViewComponent {
   readonly assets = input.required<AssetCard[]>();
   readonly cards = input.required<PlayerCard[]>();
+  readonly gameMap = input.required<GameMap>();
 }

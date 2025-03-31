@@ -1,27 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  signal,
-  WritableSignal,
-} from '@angular/core';
-import {
-  cardA,
-  cardA2,
-  cardA3,
-  cardA4,
-  cardA5,
-  cardE,
-  cardS,
-} from 'shared/domain/test/test-cards';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { testEnemy } from '../../shared/domain/test/test-enemies';
-import { testAgenda } from '../../shared/domain/test/test-agenda';
-import { testAct } from '../../shared/domain/test/test-act';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
 import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
-import { Investigator } from 'shared/domain/investigator.model';
-import { AssetCard, PlayerCard } from '../../shared/domain/player-card.model';
+import { GameState } from 'shared/domain/game-state';
+import { testGameState } from '../../shared/domain/test/test-game-state';
 
 @Component({
   selector: 'ah-game-view',
@@ -33,31 +15,5 @@ import { AssetCard, PlayerCard } from '../../shared/domain/player-card.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent {
-  enemy = testEnemy;
-  protected investigator: Investigator = {
-    ...InvestigatorS,
-    threatArea: [
-      {
-        ...this.enemy,
-      },
-      {
-        ...this.enemy,
-      },
-    ],
-  };
-
-  protected assets: AssetCard[] = [
-    cardA,
-    cardA5,
-    cardA2,
-    cardA3,
-    cardA4,
-    cardA,
-    cardA,
-  ];
-  readonly cards: WritableSignal<PlayerCard[]> = signal([cardA, cardS, cardE]);
-
-  protected readonly InvestigatorS = InvestigatorS;
-  protected readonly testAgenda = testAgenda;
-  protected readonly testAct = testAct;
+  readonly gameState = input<GameState>(testGameState);
 }
