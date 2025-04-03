@@ -1,0 +1,21 @@
+<div
+  class="bg-neutral-500/80 outline outline-red-200 text-white font-[ArnoPro] h-full
+    w-full"
+>
+  <h1 class="text-center">DEBUG PANEL</h1>
+
+  <label for="gameState">Update game state</label>
+  <textarea
+    id="gameState"
+    class="outline-2 w-full"
+    [(ngModel)]="gameState"
+  ></textarea>
+  <p class="text-red-300 whitespace-pre-wrap">{{ stateErrors }}</p>
+  <button
+    type="submit"
+    class="bg-neutral-700 shadow-md"
+    (click)="updateGameState()"
+  >
+    Update
+  </button>
+</div>
