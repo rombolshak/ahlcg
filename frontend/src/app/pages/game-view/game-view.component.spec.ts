@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GameViewComponent } from './game-view.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('GameViewComponent', () => {
   let component: GameViewComponent;
@@ -10,7 +11,10 @@ describe('GameViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [
+        provideExperimentalZonelessChangeDetection(),
+        provideHttpClient(),
+      ],
       imports: [GameViewComponent, NoopAnimationsModule],
     }).compileComponents();
 

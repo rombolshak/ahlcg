@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  HostListener,
   inject,
 } from '@angular/core';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
@@ -9,10 +10,17 @@ import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
 import { GameStateService } from './services/game-state.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DebugPanelComponent } from './debug-panel/debug-panel.component';
+import { testGameState } from '../../shared/domain/test/test-game-state';
 
 @Component({
   selector: 'ah-game-view',
-  imports: [LeftPanelComponent, CentralViewComponent, RightPanelComponent],
+  imports: [
+    LeftPanelComponent,
+    CentralViewComponent,
+    RightPanelComponent,
+    DebugPanelComponent,
+  ],
   templateUrl: './game-view.component.html',
   host: {
     class: 'flex gap-4 p-8 h-screen w-screen',
@@ -20,6 +28,10 @@ import { HttpErrorResponse } from '@angular/common/http';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent {
+  constructor() {
+    console.log(JSON.stringify(testGameState));
+  }
+
   private readonly gameStateService = inject(GameStateService);
 
   readonly gameState = this.gameStateService.gameState.value;
@@ -44,4 +56,11 @@ export class GameViewComponent {
 
     return JSON.stringify(error);
   });
+
+  showDebug = false;
+
+  @HostListener('body:keydown.`')
+  toggleDebug() {
+    this.showDebug = !this.showDebug;
+  }
 }
