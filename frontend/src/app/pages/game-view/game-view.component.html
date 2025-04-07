@@ -1,4 +1,20 @@
-﻿@if (gameState()) {
+﻿@if (loadingState().isLoading || loadingError()) {
+  <div
+    class="h-1/2 w-1/2 flex flex-col items-center justify-center bg-slate-800 text-white
+      m-auto"
+  >
+    <p>Loading...</p>
+
+    <p>
+      {{ loadingState().progress?.loaded ?? "0" }} of
+      {{ loadingState().progress?.total ?? "???" }}
+    </p>
+
+    <p class="whitespace-pre-wrap">{{ loadingError() }}</p>
+  </div>
+}
+
+@if (gameState()) {
   <ah-left-panel
     class="w-[17rem] flex-none"
     [investigator]="gameState()!.investigators[0]!"
@@ -14,6 +30,8 @@
     [agenda]="gameState()!.agendas[0]!"
     [act]="gameState()!.acts[0]!"
   />
-} @else {
-  <h1>Loading...</h1>
+}
+
+@if (showDebug) {
+  <ah-debug-panel class="absolute w-3/4 h-3/4" />
 }
