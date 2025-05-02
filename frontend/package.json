@@ -41,7 +41,7 @@
     "@bugsnag/js": "^8.2.0",
     "@bugsnag/plugin-angular": "^8.3.0",
     "@panzoom/panzoom": "^4.6.0",
-    "arktype": "^2.1.15",
+    "arktype": "^2.1.20",
     "rxjs": "~7.8.2",
     "tslib": "^2.3.0"
   },
