@@ -1,3 +1,5 @@
-<ah-investigator [investigator]="investigator()" />
-<ah-threat-area [threatArea]="investigator().threatArea" />
-<ah-actions-selector [actions]="investigator().availableActions" />
+@if (investigator() !== null) {
+  <ah-investigator [investigator]="investigator()!" />
+  <ah-threat-area [threatArea]="threatArea()" />
+  <ah-actions-selector [actions]="actions()" />
+}

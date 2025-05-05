@@ -12,6 +12,7 @@ import { GameStateService } from './services/game-state.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DebugPanelComponent } from './debug-panel/debug-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
+import { GameStateStore } from './store/store';
 
 @Component({
   selector: 'ah-game-view',
@@ -34,7 +35,7 @@ export class GameViewComponent {
 
   private readonly gameStateService = inject(GameStateService);
 
-  readonly gameState = this.gameStateService.gameState.value;
+  readonly gameState = inject(GameStateStore);
   readonly loadingState = computed(() => {
     return {
       isLoading: this.gameStateService.gameState.isLoading(),
