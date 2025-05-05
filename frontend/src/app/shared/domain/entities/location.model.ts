@@ -1,7 +1,10 @@
 ﻿import { type } from 'arktype';
 import { gameCard } from './card.model';
+import { locationId } from './id.model';
 
 const _location = gameCard.and({
+  id: locationId,
+  type: "'location'",
   shroud: 'number.integer >= 0',
   clues: 'number.integer >= 0',
   color: 'string',

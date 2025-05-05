@@ -1,17 +1,16 @@
-﻿import { location } from './location.model';
-import { type } from 'arktype';
-import { investigator } from './investigator.model';
+﻿import { type } from 'arktype';
+import { investigatorId, locationId } from './entities/id.model';
 
 const _place = type({
   x: 'number.integer > 0',
   y: 'number.integer > 0',
-  location,
-  investigators: investigator.array(),
+  location: locationId,
+  investigators: investigatorId.array(),
 });
 
 const _connection = type({
-  from: 'number.integer > 0',
-  to: 'number.integer > 0',
+  from: locationId,
+  to: locationId,
 });
 
 const _gameMap = type({

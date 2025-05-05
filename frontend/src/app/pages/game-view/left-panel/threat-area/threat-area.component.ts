@@ -4,7 +4,7 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { Enemy } from 'shared/domain/enemy.model';
+import { Enemy } from 'shared/domain/entities/enemy.model';
 import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
 
 @Component({

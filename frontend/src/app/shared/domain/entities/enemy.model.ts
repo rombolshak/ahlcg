@@ -1,13 +1,16 @@
 ﻿import { type } from 'arktype';
 import { gameCard } from './card.model';
-import { health } from './vitals.model';
+import { health } from './details/vitals.model';
+import { enemyId } from './id.model';
 
 const _enemy = gameCard.and({
+  id: enemyId,
+  type: "'enemy'",
   health,
-  fight: 'number',
-  evade: 'number',
-  damageAttack: 'number',
-  horrorAttack: 'number',
+  fight: 'number.integer >= 0',
+  evade: 'number.integer >= 0',
+  damageAttack: 'number.integer >= 0',
+  horrorAttack: 'number.integer >= 0',
   isMassive: 'boolean',
 });
 

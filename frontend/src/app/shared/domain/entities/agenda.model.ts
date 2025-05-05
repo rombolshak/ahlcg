@@ -1,11 +1,14 @@
 ﻿import { type } from 'arktype';
 import { gameCardWithoutTraits } from './card.model';
+import { agendaId } from './id.model';
 
 const _agenda = gameCardWithoutTraits.and({
-  stage: 'number.integer',
-  requiredDoom: 'number.integer',
-  currentDoom: 'number.integer',
-  doomOnCards: 'number.integer',
+  id: agendaId,
+  type: "'agenda'",
+  stage: 'number.integer > 0',
+  requiredDoom: 'number.integer >= 0',
+  currentDoom: 'number.integer >= 0',
+  doomOnCards: 'number.integer >= 0',
 });
 
 type _Agenda = typeof _agenda.infer;

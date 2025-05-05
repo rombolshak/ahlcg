@@ -21,7 +21,10 @@
   />
   <ah-central-view
     class="min-w-0"
-    [assets]="gameState()!.investigators[0]!.controlledAssets"
+    [assets]="
+      gameState()!.entities.byId[gameState()!.currentInvestigator]!
+        .controlledAssets
+    "
     [cards]="gameState()!.investigators[0]!.hand"
     [gameMap]="gameState()!.map"
   />

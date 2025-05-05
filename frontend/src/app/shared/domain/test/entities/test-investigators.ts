@@ -1,9 +1,10 @@
-﻿import { Investigator } from '../investigator.model';
+﻿import { Investigator } from '../../entities/investigator.model';
+import { investigatorId } from '../../entities/id.model';
 
 export const InvestigatorS: Investigator = {
-  id: 1002,
+  id: investigatorId.assert(1002),
+  type: 'investigator',
   info: {
-    cardType: 'player',
     setInfo: {
       set: '01',
       index: '002',
@@ -39,5 +40,4 @@ export const InvestigatorS: Investigator = {
   threatArea: [],
   hand: [],
   controlledAssets: [],
-  availableActions: [],
 };

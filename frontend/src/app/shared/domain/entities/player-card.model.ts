@@ -1,9 +1,7 @@
 ﻿import { gameCard } from './card.model';
-import { health, sanity } from './vitals.model';
+import { health, sanity } from './details/vitals.model';
 import { type } from 'arktype';
-
-export const playerCardType = type("'asset' | 'skill' | 'event'");
-export type PlayerCardType = typeof playerCardType.infer;
+import { assetId, eventId, skillId } from './id.model';
 
 export const playerCardClass = type(
   "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
@@ -11,18 +9,17 @@ export const playerCardClass = type(
 export type PlayerCardClassType = typeof playerCardClass.infer;
 
 export const skills = type({
-  willpower: 'number',
-  intellect: 'number',
-  combat: 'number',
-  agility: 'number',
-  wild: 'number',
+  willpower: 'number.integer >= 0',
+  intellect: 'number.integer >= 0',
+  combat: 'number.integer >= 0',
+  agility: 'number.integer >= 0',
+  wild: 'number.integer >= 0',
 });
 
 export const skillType = skills.keyof();
 export type SkillType = typeof skillType.infer;
 
 export const playerCardBase = gameCard.and({
-  playerCardType,
   class: playerCardClass,
   skills: skills.partial(),
 });
@@ -36,7 +33,8 @@ export const assetSlot = type(
 export type AssetSlot = typeof assetSlot.infer;
 
 export const assetCard = playerCardBase.and({
-  playerCardType: "'asset'",
+  id: assetId,
+  type: "'asset'",
   'slot?': assetSlot,
   'additionalSlot?': assetSlot,
   'health?': health,
@@ -46,13 +44,15 @@ export const assetCard = playerCardBase.and({
 export type AssetCard = typeof assetCard.infer;
 
 export const eventCard = playerCardBase.and({
-  playerCardType: "'event'",
+  id: eventId,
+  type: "'event'",
   cost,
 });
 export type EventCard = typeof eventCard.infer;
 
 export const skillCard = playerCardBase.and({
-  playerCardType: "'skill'",
+  id: skillId,
+  type: "'skill'",
 });
 export type SkillCard = typeof skillCard.infer;
 
