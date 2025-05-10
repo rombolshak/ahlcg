@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnemyAvatarComponent } from './enemy-avatar.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from 'shared/domain/test/test-enemies';
+import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 
 describe('EnemyAvatarComponent', () => {
   let component: EnemyAvatarComponent;

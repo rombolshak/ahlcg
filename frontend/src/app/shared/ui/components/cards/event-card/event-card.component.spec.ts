@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EventCardComponent } from './event-card.component';
-import { cardE, displayOption } from 'shared/domain/test/test-cards';
+import { cardE, displayOption } from 'shared/domain/test/entities/test-cards';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('EventCardComponent', () => {

@@ -1,11 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationComponent } from './location.component';
-import { testLocation } from 'shared/domain/test/test-locations';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { testEnemy } from 'shared/domain/test/test-enemies';
+import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -19,10 +18,10 @@ describe('LocationComponent', () => {
 
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('location', testLocation);
-    fixture.componentRef.setInput('investigators', [
-      { ...InvestigatorS, threatArea: [] },
-      { ...InvestigatorS, threatArea: [testEnemy] },
+    fixture.componentRef.setInput('locationId', testLocation.id);
+    fixture.componentRef.setInput('investigatorsIds', [
+      InvestigatorS.id,
+      InvestigatorS.id,
     ]);
     await fixture.whenStable();
   });

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThreatAreaComponent } from './threat-area.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from 'shared/domain/test/test-enemies';
+import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 import { By } from '@angular/platform-browser';
 
 describe('ThreatAreaComponent', () => {

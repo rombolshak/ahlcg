@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AgendaComponent } from './agenda.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testAgenda } from 'shared/domain/test/test-agenda';
+import { testAgenda } from 'shared/domain/test/entities/test-agenda';
 import { By } from '@angular/platform-browser';
 
 describe('AgendaComponent', () => {
