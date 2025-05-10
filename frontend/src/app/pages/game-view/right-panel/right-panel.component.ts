@@ -1,8 +1,12 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { AgendaComponent } from './agenda/agenda.component';
 import { ActComponent } from './act/act.component';
-import { Agenda } from 'shared/domain/agenda.model';
-import { Act } from 'shared/domain/act.model';
+import { ActsStore, AgendaStore, GameStateStore } from '../store/store';
 
 @Component({
   selector: 'ah-right-panel',
@@ -14,6 +18,37 @@ import { Act } from 'shared/domain/act.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RightPanelComponent {
-  readonly agenda = input.required<Agenda>();
-  readonly act = input.required<Act>();
+  private readonly state = inject(GameStateStore);
+  private readonly agendaStore = inject(AgendaStore);
+  private readonly actStore = inject(ActsStore);
+
+  readonly agendas = computed(() => {
+    if (this.state.value() === null) {
+      return [];
+    }
+
+    const agendas = this.state.value()?.agendas;
+    if (agendas === undefined) {
+      throw new Error('No agenda in state');
+    }
+
+    return agendas
+      .map((a) => this.agendaStore.entityMap()[a])
+      .filter((v) => v !== undefined);
+  });
+
+  readonly acts = computed(() => {
+    if (this.state.value() === null) {
+      return [];
+    }
+
+    const agendas = this.state.value()?.acts;
+    if (agendas === undefined) {
+      throw new Error('No agenda in state');
+    }
+
+    return agendas
+      .map((a) => this.actStore.entityMap()[a])
+      .filter((v) => v !== undefined);
+  });
 }

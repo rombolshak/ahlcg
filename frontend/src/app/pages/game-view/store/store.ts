@@ -4,6 +4,7 @@ import { withEntities } from '@ngrx/signals/entities';
 import { Act } from 'shared/domain/entities/act.model';
 import { Enemy } from 'shared/domain/entities/enemy.model';
 import { Investigator } from 'shared/domain/entities/investigator.model';
+import { Agenda } from '../../../shared/domain/entities/agenda.model';
 
 interface State {
   isLoading: boolean;
@@ -19,6 +20,11 @@ export const GameStateStore = signalStore(
 export const ActsStore = signalStore(
   { providedIn: 'root' },
   withEntities<Act>(),
+);
+
+export const AgendaStore = signalStore(
+  { providedIn: 'root' },
+  withEntities<Agenda>(),
 );
 
 export const EnemiesStore = signalStore(

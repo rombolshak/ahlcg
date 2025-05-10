@@ -1,2 +1,7 @@
-<ah-agenda [agenda]="agenda()" />
-<ah-act [act]="act()" />
+@for (agenda of agendas(); track agenda.id) {
+  <ah-agenda [agenda]="agenda" />
+}
+
+@for (act of acts(); track act.id) {
+  <ah-act [act]="act" />
+}
