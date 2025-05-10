@@ -13,24 +13,24 @@ export const testGameMap: GameMap = {
     {
       x: 2,
       y: 3,
-      location: testLocation,
-      investigators: [InvestigatorS, InvestigatorS],
+      location: testLocation.id,
+      investigators: [InvestigatorS.id, InvestigatorS.id],
     },
     {
       x: 4,
       y: 2,
-      location: testLocation2,
+      location: testLocation2.id,
       investigators: [],
     },
     {
       x: 4,
       y: 4,
-      location: testLocation3,
+      location: testLocation3.id,
       investigators: [],
     },
   ],
   connections: [
-    { from: 2126, to: 2128 },
-    { from: 2126, to: 2129 },
+    { from: testLocation.id, to: testLocation2.id },
+    { from: testLocation.id, to: testLocation3.id },
   ],
 };

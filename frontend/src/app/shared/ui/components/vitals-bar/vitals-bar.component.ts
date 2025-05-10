@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { SingleBarComponent } from './single-bar/single-bar.component';
-import { Vitals } from '../../../domain/vitals.model';
+import { Vitals } from '../../../domain/entities/details/vitals.model';
 
 @Component({
   selector: 'ah-vitals-bar',

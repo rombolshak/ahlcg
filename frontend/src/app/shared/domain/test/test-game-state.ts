@@ -3,20 +3,10 @@ import { testGameMap } from './test-game-map';
 import { testAct } from './entities/test-act';
 import { testAgenda } from './entities/test-agenda';
 import { InvestigatorS } from './entities/test-investigators';
-import { testEnemy, testEnemy2 } from './entities/test-enemies';
-import {
-  cardA,
-  cardA2,
-  cardA3,
-  cardA4,
-  cardA5,
-  cardE,
-  cardS,
-} from './entities/test-cards';
 import { testActions } from './test-actions';
 
 export const testGameState: GameState = {
-  entities: {
+  /*entities: {
     byId: {
       '2200': testAct,
       '2314': testAgenda,
@@ -46,6 +36,7 @@ export const testGameState: GameState = {
     },
     allIds: [testAct.id, testAgenda.id, InvestigatorS.id],
   },
+  */
   map: testGameMap,
   acts: [testAct.id],
   agendas: [testAgenda.id],

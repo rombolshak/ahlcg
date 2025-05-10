@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { EventCard } from 'shared/domain/player-card.model';
+import { EventCard } from 'shared/domain/entities/player-card.model';
 import { CardCopyrightComponent } from '../card-parts/card-copyright/card-copyright.component';
 import { CardFlavorComponent } from '../card-parts/card-flavor/card-flavor.component';
 import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.component';

@@ -4,7 +4,7 @@ import {
   input,
   provideExperimentalZonelessChangeDetection,
 } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/player-card.model';
+import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({

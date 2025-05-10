@@ -12,7 +12,7 @@
     alt="card-template"
     [height]="cardHeights[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    [ngSrc]="imagesService.getTemplate(card().playerCardType, card().class)"
+    [ngSrc]="imagesService.getTemplate(card().type, card().class)"
   />
   <img
     class="absolute top-0 -z-20 rounded-xl"
@@ -32,7 +32,7 @@
         group-data-[size=s]:w-3 group-data-[size=s]:text-[4px] bold uppercase
         text-center font-[ArnoPro]"
     >
-      {{ card().playerCardType }}
+      {{ card().type }}
     </span>
   </div>
 

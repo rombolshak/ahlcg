@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, input } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/player-card.model';
+import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',

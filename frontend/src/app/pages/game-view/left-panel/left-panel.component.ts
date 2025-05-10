@@ -59,7 +59,7 @@ export class LeftPanelComponent {
       return [];
     }
 
-    return this.enemies.entities().filter((e) => ids.includes(e.id));
+    return ids.map((i) => this.enemies.entityMap()[i]).filter((i) => !!i);
   });
 
   readonly actions = computed(() => {

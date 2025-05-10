@@ -4,13 +4,13 @@ import {
   Component,
   computed,
   ElementRef,
-  input,
+  inject,
   viewChild,
 } from '@angular/core';
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { LocationComponent } from './location/location.component';
 import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
-import { GameMap } from 'shared/domain/game-map.model';
+import { GameStateStore, LocationsStore } from '../../store/store';
 
 @Component({
   selector: 'ah-play-area',
@@ -22,16 +22,25 @@ import { GameMap } from 'shared/domain/game-map.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayAreaComponent implements AfterViewInit {
-  readonly gameMap = input.required<GameMap>();
+  private readonly state = inject(GameStateStore);
+  private readonly locationsStore = inject(LocationsStore);
+
+  readonly gameMap = computed(() => {
+    if (!this.state.value()) {
+      return null;
+    }
+
+    return this.state.value()?.map ?? null;
+  });
 
   protected readonly connectionColors = computed(() => {
-    return this.gameMap().connections.map((conn) => {
+    if (!this.gameMap()) {
+      return [];
+    }
+    return this.gameMap()?.connections.map((conn) => {
       return {
-        fromColor: this.gameMap().places.find(
-          (l) => l.location.id === conn.from,
-        )?.location.color,
-        toColor: this.gameMap().places.find((l) => l.location.id === conn.to)
-          ?.location.color,
+        fromColor: this.locationsStore.entityMap()[conn.from]?.color,
+        toColor: this.locationsStore.entityMap()[conn.to]?.color,
       };
     });
   });

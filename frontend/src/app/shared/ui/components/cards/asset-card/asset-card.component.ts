@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import {
-  ImagesUrlService,
   CreateOverlay,
+  ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { AssetCard } from 'shared/domain/player-card.model';
+import { AssetCard } from 'shared/domain/entities/player-card.model';
 import { PlayerCardComponent } from '../card-parts/card-player-base/player-card.component';
 import { CardCostComponent } from '../card-parts/card-cost/card-cost.component';
 import { CardTitleComponent } from '../card-parts/card-title/card-title.component';

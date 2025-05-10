@@ -4,7 +4,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { AssetCard } from 'shared/domain/player-card.model';
+import { AssetCard } from 'shared/domain/entities/player-card.model';
 import {
   CreateOverlay,
   ImagesUrlService,

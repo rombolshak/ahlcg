@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
-  PlayerCardClassType,
   AssetSlot,
+  PlayerCardClassType,
   SkillType,
-} from 'shared/domain/player-card.model';
-import { SetInfo } from 'shared/domain/card-info.model';
+} from 'shared/domain/entities/player-card.model';
+import { SetInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Injectable({
   providedIn: 'root',

@@ -37,7 +37,7 @@ export const cardE: EventCard = {
 };
 
 export const cardA: AssetCard = {
-  id: assetId.assert(2),
+  id: assetId.assert('2'),
   type: 'asset',
   info: {
     title: 'Исследовательские заметки',
@@ -63,7 +63,7 @@ export const cardA: AssetCard = {
 
 export const cardA2: AssetCard = {
   ...cardA,
-  id: assetId.assert(3),
+  id: assetId.assert('3'),
   class: 'guardian',
   slot: 'ally',
   info: {
@@ -77,7 +77,7 @@ export const cardA2: AssetCard = {
 };
 export const cardA3: AssetCard = {
   ...cardA,
-  id: assetId.assert(4),
+  id: assetId.assert('4'),
   class: 'rogue',
   sanity: {
     max: 1,
@@ -87,17 +87,17 @@ export const cardA3: AssetCard = {
 };
 export const cardA4: AssetCard = {
   ...cardA,
-  id: assetId.assert(5),
+  id: assetId.assert('5'),
   class: 'mystic',
 };
 export const cardA5: AssetCard = {
   ...cardA,
-  id: assetId.assert(6),
+  id: assetId.assert('6'),
   class: 'neutral',
 };
 
 export const cardS: SkillCard = {
-  id: skillId.assert(7),
+  id: skillId.assert('7'),
   type: 'skill',
   info: {
     title: 'Обречённый на проклятья',

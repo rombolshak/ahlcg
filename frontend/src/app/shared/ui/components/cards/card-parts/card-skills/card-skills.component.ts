@@ -9,7 +9,10 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
-import { PlayerCardBase, SkillType } from 'shared/domain/player-card.model';
+import {
+  PlayerCardBase,
+  SkillType,
+} from 'shared/domain/entities/player-card.model';
 import { DisplayOptions } from 'shared/domain/display.options';
 
 @Component({

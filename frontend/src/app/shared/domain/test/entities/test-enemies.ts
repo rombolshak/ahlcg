@@ -2,7 +2,7 @@
 import { enemyId } from '../../entities/id.model';
 
 export const testEnemy: Enemy = {
-  id: enemyId.assert(1119),
+  id: enemyId.assert('1119'),
   type: 'enemy',
   info: {
     setInfo: {

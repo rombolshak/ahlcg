@@ -2,7 +2,7 @@
 import { investigatorId } from '../../entities/id.model';
 
 export const InvestigatorS: Investigator = {
-  id: investigatorId.assert(1002),
+  id: investigatorId.assert('1002'),
   type: 'investigator',
   info: {
     setInfo: {

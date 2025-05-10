@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, input } from '@angular/core';
-import { PlayerCardClassType } from '../../domain/player-card.model';
+import { PlayerCardClassType } from '../../domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardBackground]',

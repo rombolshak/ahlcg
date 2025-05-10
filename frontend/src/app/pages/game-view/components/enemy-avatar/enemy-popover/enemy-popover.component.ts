@@ -4,7 +4,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Enemy } from 'shared/domain/enemy.model';
+import { Enemy } from 'shared/domain/entities/enemy.model';
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
 import { NgOptimizedImage } from '@angular/common';
 import {

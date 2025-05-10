@@ -2,7 +2,7 @@
 import { locationId } from '../../entities/id.model';
 
 export const testLocation: Location = {
-  id: locationId.assert(2126),
+  id: locationId.assert('2126'),
   type: 'location',
   shroud: 2,
   clues: 3,
@@ -26,7 +26,7 @@ export const testLocation: Location = {
 };
 
 export const testLocation2: Location = {
-  id: locationId.assert(2128),
+  id: locationId.assert('2128'),
   type: 'location',
   shroud: 1,
   clues: 2,
@@ -49,6 +49,6 @@ export const testLocation2: Location = {
 
 export const testLocation3: Location = {
   ...testLocation2,
-  id: locationId.assert(2129),
+  id: locationId.assert('2129'),
   color: 'var(--color-yellow-400)',
 };

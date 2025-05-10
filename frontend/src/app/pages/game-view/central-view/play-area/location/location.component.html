@@ -1,37 +1,39 @@
-﻿<ah-location-header class="absolute top-0 z-1" [location]="location()" />
+﻿@if (location()) {
+  <ah-location-header class="absolute top-0 z-1" [location]="location()" />
 
-<div class="flex h-108 relative">
-  <img
-    alt="location-illustration"
-    fill
-    priority
-    class="-z-50 rounded-3xl"
-    [ngSrc]="imageService.getIllustration(location().info.setInfo)"
-  />
+  <div class="flex h-108 relative">
+    <img
+      alt="location-illustration"
+      fill
+      priority
+      class="-z-50 rounded-3xl"
+      [ngSrc]="imageService.getIllustration(location()!.info.setInfo)"
+    />
 
-  <div
-    class="w-4/5 p-2 flex flex-row flex-wrap-reverse place-content-start place-self-end
-      gap-2"
-  >
-    @for (investigator of investigators(); track investigator.id) {
-      @let basis =
-        investigator.threatArea.length == 0
-          ? "basis-24/100"
-          : investigator.threatArea.length <= 2
-            ? "basis-49/100"
-            : investigator.threatArea.length <= 4
-              ? "basis-74/100"
-              : "basis-100/100";
-      <ah-investigator-avatar [class]="basis" [investigator]="investigator">
-        <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
-          @for (
-            engagedEnemy of investigator.threatArea;
-            track engagedEnemy.id
-          ) {
-            <ah-enemy-avatar class="w-33" [enemy]="engagedEnemy" />
-          }
-        </div>
-      </ah-investigator-avatar>
-    }
+    <div
+      class="w-4/5 p-2 flex flex-row flex-wrap-reverse place-content-start place-self-end
+        gap-2"
+    >
+      @for (investigator of investigators(); track investigator.id) {
+        @let basis =
+          investigator.threatArea.length == 0
+            ? "basis-24/100"
+            : investigator.threatArea.length <= 2
+              ? "basis-49/100"
+              : investigator.threatArea.length <= 4
+                ? "basis-74/100"
+                : "basis-100/100";
+        <ah-investigator-avatar [class]="basis" [investigator]="investigator">
+          <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
+            @for (engagedEnemy of investigator.threatArea; track engagedEnemy) {
+              <ah-enemy-avatar
+                class="w-33"
+                [enemy]="enemyStore.entityMap()[engagedEnemy]"
+              />
+            }
+          </div>
+        </ah-investigator-avatar>
+      }
+    </div>
   </div>
-</div>
+}
