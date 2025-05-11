@@ -1,7 +1,9 @@
-﻿import { gameCard } from './card.model';
+﻿/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
 import { type } from 'arktype';
 import { assetId, eventId, skillId } from './id.model';
+import { GameEntity } from '../game-state';
 
 export const playerCardClass = type(
   "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
@@ -32,7 +34,7 @@ export const assetSlot = type(
 );
 export type AssetSlot = typeof assetSlot.infer;
 
-export const assetCard = playerCardBase.and({
+const _assetCard = playerCardBase.and({
   id: assetId,
   type: "'asset'",
   'slot?': assetSlot,
@@ -41,20 +43,48 @@ export const assetCard = playerCardBase.and({
   'sanity?': sanity,
   cost,
 });
-export type AssetCard = typeof assetCard.infer;
+type _AssetCard = typeof _assetCard.infer;
 
-export const eventCard = playerCardBase.and({
+export interface AssetCard extends _AssetCard {}
+
+export const assetCard: type<AssetCard> = _assetCard;
+
+const _eventCard = playerCardBase.and({
   id: eventId,
   type: "'event'",
   cost,
 });
-export type EventCard = typeof eventCard.infer;
+type _EventCard = typeof _eventCard.infer;
 
-export const skillCard = playerCardBase.and({
+export interface EventCard extends _EventCard {}
+
+export const eventCard: type<EventCard> = _eventCard;
+
+const _skillCard = playerCardBase.and({
   id: skillId,
   type: "'skill'",
 });
-export type SkillCard = typeof skillCard.infer;
+type _SkillCard = typeof _skillCard.infer;
+
+export interface SkillCard extends _SkillCard {}
+
+export const skillCard: type<SkillCard> = _skillCard;
 
 export const playerCard = assetCard.or(eventCard).or(skillCard);
 export type PlayerCard = typeof playerCard.infer;
+
+export function isAsset(entity: GameEntity): entity is AssetCard {
+  return entity.type === 'asset';
+}
+
+export function isSkill(entity: GameEntity): entity is SkillCard {
+  return entity.type === 'skill';
+}
+
+export function isEvent(entity: GameEntity): entity is EventCard {
+  return entity.type === 'event';
+}
+
+export function isPlayerCard(entity: GameEntity): entity is PlayerCard {
+  return isAsset(entity) || isSkill(entity) || isEvent(entity);
+}

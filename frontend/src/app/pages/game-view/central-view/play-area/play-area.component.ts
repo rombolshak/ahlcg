@@ -10,7 +10,7 @@ import {
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { LocationComponent } from './location/location.component';
 import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
-import { GameStateStore, LocationsStore } from '../../store/store';
+import { GameStateStore } from '../../store/store';
 
 @Component({
   selector: 'ah-play-area',
@@ -23,14 +23,13 @@ import { GameStateStore, LocationsStore } from '../../store/store';
 })
 export class PlayAreaComponent implements AfterViewInit {
   private readonly state = inject(GameStateStore);
-  private readonly locationsStore = inject(LocationsStore);
 
   readonly gameMap = computed(() => {
-    if (!this.state.value()) {
+    if (!this.state.state()) {
       return null;
     }
 
-    return this.state.value()?.map ?? null;
+    return this.state.state()?.map ?? null;
   });
 
   protected readonly connectionColors = computed(() => {
@@ -39,8 +38,8 @@ export class PlayAreaComponent implements AfterViewInit {
     }
     return this.gameMap()?.connections.map((conn) => {
       return {
-        fromColor: this.locationsStore.entityMap()[conn.from]?.color,
-        toColor: this.locationsStore.entityMap()[conn.to]?.color,
+        fromColor: this.state.getLocation(conn.from).color,
+        toColor: this.state.getLocation(conn.to).color,
       };
     });
   });

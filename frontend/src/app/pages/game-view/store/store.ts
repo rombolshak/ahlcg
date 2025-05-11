@@ -1,62 +1,100 @@
-﻿import { signalStore, withState } from '@ngrx/signals';
-import { GameState } from 'shared/domain/game-state';
+﻿import { signalStore, withComputed, withProps, withState } from '@ngrx/signals';
+import { GameEntity, GameState } from 'shared/domain/game-state';
 import { withEntities } from '@ngrx/signals/entities';
-import { Act } from 'shared/domain/entities/act.model';
-import { Enemy } from 'shared/domain/entities/enemy.model';
-import { Investigator } from 'shared/domain/entities/investigator.model';
-import { Agenda } from 'shared/domain/entities/agenda.model';
-import { Location } from 'shared/domain/entities/location.model';
+import { Act, isAct } from 'shared/domain/entities/act.model';
+import { Enemy, isEnemy } from 'shared/domain/entities/enemy.model';
+import {
+  Investigator,
+  isInvestigator,
+} from 'shared/domain/entities/investigator.model';
+import { Agenda, isAgenda } from 'shared/domain/entities/agenda.model';
+import { isLocation, Location } from 'shared/domain/entities/location.model';
 import {
   AssetCard,
   EventCard,
+  isAsset,
+  isEvent,
+  isPlayerCard,
+  isSkill,
+  PlayerCard,
   SkillCard,
-} from '../../../shared/domain/entities/player-card.model';
+} from 'shared/domain/entities/player-card.model';
+import {
+  ActId,
+  AgendaId,
+  AssetId,
+  EnemyId,
+  EntityId,
+  EventId,
+  InvestigatorId,
+  LocationId,
+  PlayerCardId,
+  SkillId,
+} from 'shared/domain/entities/id.model';
+import { computed } from '@angular/core';
 
 interface State {
   isLoading: boolean;
   error: string | null;
-  value: GameState | null;
+  state: GameState | null;
 }
 
 export const GameStateStore = signalStore(
   { providedIn: 'root' },
-  withState<State>({ isLoading: true, error: null, value: null }),
-);
+  withState<State>({ isLoading: true, error: null, state: null }),
+  withEntities<GameEntity>(),
 
-export const ActsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<Act>(),
-);
+  withProps((store) => ({
+    getEntity<T extends GameEntity>(
+      id: EntityId,
+      guard: (entity: GameEntity) => entity is T,
+    ): T {
+      const model = store.entityMap()[id];
+      if (!model) {
+        throw new Error(`Entity '${id}' not found`);
+      }
 
-export const AgendaStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<Agenda>(),
-);
+      if (guard(model)) {
+        throw new Error(`Entity '${id}' is '${model.type}' type`);
+      }
 
-export const EnemiesStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<Enemy>(),
+      return model as T;
+    },
+    getAct(id: ActId): Act {
+      return this.getEntity<Act>(id, isAct);
+    },
+    getAgenda(id: AgendaId): Agenda {
+      return this.getEntity<Agenda>(id, isAgenda);
+    },
+    getLocation(id: LocationId): Location {
+      return this.getEntity<Location>(id, isLocation);
+    },
+    getInvestigator(id: InvestigatorId): Investigator {
+      return this.getEntity<Investigator>(id, isInvestigator);
+    },
+    getAsset(id: AssetId): AssetCard {
+      return this.getEntity<AssetCard>(id, isAsset);
+    },
+    getSkill(id: SkillId): SkillCard {
+      return this.getEntity<SkillCard>(id, isSkill);
+    },
+    getEvent(id: EventId): EventCard {
+      return this.getEntity<EventCard>(id, isEvent);
+    },
+    getPlayerCard(id: PlayerCardId): PlayerCard {
+      return this.getEntity<PlayerCard>(id, isPlayerCard);
+    },
+    getEnemy(id: EnemyId): Enemy {
+      return this.getEntity<Enemy>(id, isEnemy);
+    },
+  })),
+  withComputed((store) => ({
+    currentInvestigator: computed(() => {
+      if (!store.state()) return null;
+      // eslint-disable-next-line
+      const id = store.state()!.currentInvestigator;
+      return store.getInvestigator(id);
+    }),
+  })),
 );
-
-export const InvestigatorsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<Investigator>(),
-);
-
-export const LocationsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<Location>(),
-);
-
-export const AssetsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<AssetCard>(),
-);
-export const EventsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<EventCard>(),
-);
-export const SkillsStore = signalStore(
-  { providedIn: 'root' },
-  withEntities<SkillCard>(),
-);
+export type GameStateStore = InstanceType<typeof GameStateStore>;

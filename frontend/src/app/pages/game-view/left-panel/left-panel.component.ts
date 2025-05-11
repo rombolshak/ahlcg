@@ -7,11 +7,7 @@ import {
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
 import { ActionsSelectorComponent } from './actions-selector/actions-selector.component';
-import {
-  EnemiesStore,
-  GameStateStore,
-  InvestigatorsStore,
-} from '../store/store';
+import { GameStateStore } from '../store/store';
 
 @Component({
   selector: 'ah-left-panel',
@@ -28,25 +24,18 @@ import {
 })
 export class LeftPanelComponent {
   private readonly state = inject(GameStateStore);
-  private readonly investigators = inject(InvestigatorsStore);
-  private readonly enemies = inject(EnemiesStore);
 
   readonly investigator = computed(() => {
-    if (this.state.value() === null) {
+    if (this.state.state() === null) {
       return null;
     }
 
-    const id = this.state.value()?.currentInvestigator;
+    const id = this.state.state()?.currentInvestigator;
     if (!id) {
       throw new Error('No current investigator in state');
     }
 
-    const model = this.investigators.entityMap()[id];
-    if (!model) {
-      throw new Error('No investigator in store');
-    }
-
-    return model;
+    return this.state.getInvestigator(id);
   });
 
   readonly threatArea = computed(() => {
@@ -59,10 +48,10 @@ export class LeftPanelComponent {
       return [];
     }
 
-    return ids.map((i) => this.enemies.entityMap()[i]).filter((i) => !!i);
+    return ids.map((i) => this.state.getEnemy(i));
   });
 
   readonly actions = computed(() => {
-    return this.state.value()?.availableActions ?? [];
+    return this.state.state()?.availableActions ?? [];
   });
 }

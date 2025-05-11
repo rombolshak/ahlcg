@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { AgendaComponent } from './agenda/agenda.component';
 import { ActComponent } from './act/act.component';
-import { ActsStore, AgendaStore, GameStateStore } from '../store/store';
+import { GameStateStore } from '../store/store';
 
 @Component({
   selector: 'ah-right-panel',
@@ -19,36 +19,30 @@ import { ActsStore, AgendaStore, GameStateStore } from '../store/store';
 })
 export class RightPanelComponent {
   private readonly state = inject(GameStateStore);
-  private readonly agendaStore = inject(AgendaStore);
-  private readonly actStore = inject(ActsStore);
 
   readonly agendas = computed(() => {
-    if (this.state.value() === null) {
+    if (this.state.state() === null) {
       return [];
     }
 
-    const agendas = this.state.value()?.agendas;
+    const agendas = this.state.state()?.agendas;
     if (agendas === undefined) {
       throw new Error('No agenda in state');
     }
 
-    return agendas
-      .map((a) => this.agendaStore.entityMap()[a])
-      .filter((v) => v !== undefined);
+    return agendas.map((a) => this.state.getAgenda(a));
   });
 
   readonly acts = computed(() => {
-    if (this.state.value() === null) {
+    if (this.state.state() === null) {
       return [];
     }
 
-    const agendas = this.state.value()?.acts;
+    const agendas = this.state.state()?.acts;
     if (agendas === undefined) {
       throw new Error('No agenda in state');
     }
 
-    return agendas
-      .map((a) => this.actStore.entityMap()[a])
-      .filter((v) => v !== undefined);
+    return agendas.map((a) => this.state.getAct(a));
   });
 }

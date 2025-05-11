@@ -10,11 +10,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
 import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
-import {
-  EnemiesStore,
-  InvestigatorsStore,
-  LocationsStore,
-} from '../../../store/store';
+import { GameStateStore } from '../../../store/store';
 import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
 
 @Component({
@@ -36,17 +32,13 @@ export class LocationComponent {
   readonly locationId = input.required<LocationId>();
   readonly investigatorsIds = input.required<InvestigatorId[]>();
 
-  private readonly locationStore = inject(LocationsStore);
-  private readonly investigatorStore = inject(InvestigatorsStore);
-  readonly enemyStore = inject(EnemiesStore);
+  readonly store = inject(GameStateStore);
 
-  protected readonly location = computed(
-    () => this.locationStore.entityMap()[this.locationId()],
+  protected readonly location = computed(() =>
+    this.store.getLocation(this.locationId()),
   );
 
   protected readonly investigators = computed(() =>
-    this.investigatorsIds()
-      .map((id) => this.investigatorStore.entityMap()[id])
-      .filter((i) => !!i),
+    this.investigatorsIds().map((id) => this.store.getInvestigator(id)),
   );
 }

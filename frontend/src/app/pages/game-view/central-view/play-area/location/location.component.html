@@ -28,7 +28,7 @@
             @for (engagedEnemy of investigator.threatArea; track engagedEnemy) {
               <ah-enemy-avatar
                 class="w-33"
-                [enemy]="enemyStore.entityMap()[engagedEnemy]"
+                [enemy]="store.getEnemy(engagedEnemy)"
               />
             }
           </div>

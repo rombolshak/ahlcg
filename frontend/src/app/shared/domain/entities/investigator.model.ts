@@ -3,6 +3,7 @@ import { playerCardClass, skills } from './player-card.model';
 import { health, sanity } from './details/vitals.model';
 import { type } from 'arktype';
 import { assetId, enemyId, investigatorId, playerCardId } from './id.model';
+import { GameEntity } from '../game-state';
 
 const _investigator = gameCard.and({
   id: investigatorId,
@@ -22,3 +23,7 @@ type _Investigator = typeof _investigator.infer;
 export interface Investigator extends _Investigator {}
 
 export const investigator: type<Investigator> = _investigator;
+
+export function isInvestigator(entity: GameEntity): entity is Investigator {
+  return entity.type === 'investigator';
+}
