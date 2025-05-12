@@ -11,7 +11,7 @@
       <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
       <ah-location
         class="relative col-span-2 row-span-2 rounded"
-        [id]="'location-' + place.location"
+        [id]="`location-${place.location}`"
         [locationId]="place.location"
         [investigatorsIds]="place.investigators"
         [style.grid-column-start]="place.x"
@@ -23,8 +23,8 @@
       <ah-locations-connection
         [fromColor]="connectionColors()![$index]?.fromColor"
         [toColor]="connectionColors()![$index]?.toColor"
-        [from]="'#location-' + connection.from"
-        [to]="'#location-' + connection.to"
+        [from]="`#location-${connection.from}`"
+        [to]="`#location-${connection.to}`"
       />
     }
   }

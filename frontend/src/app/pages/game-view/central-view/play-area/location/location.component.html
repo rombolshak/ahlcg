@@ -16,7 +16,7 @@
     >
       @for (investigator of investigators(); track investigator.id) {
         @let basis =
-          investigator.threatArea.length == 0
+          investigator.threatArea.length === 0
             ? "basis-24/100"
             : investigator.threatArea.length <= 2
               ? "basis-49/100"

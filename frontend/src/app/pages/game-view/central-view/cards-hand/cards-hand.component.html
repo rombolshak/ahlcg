@@ -1,8 +1,8 @@
 ﻿<!--suppress CssUnknownProperty -->
 <!--eslint-disable @angular-eslint/template/no-inline-styles -->
 <div
-  class="flex ml-[calc(var(--card-offset)_-_160px)]"
   @cardsHand
+  class="flex ml-[calc(var(--card-offset)_-_160px)]"
   [style.--card-offset]="cardOffset()"
 >
   @for (card of cards(); track card.id) {
