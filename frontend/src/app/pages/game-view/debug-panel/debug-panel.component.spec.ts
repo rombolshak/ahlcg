@@ -2,16 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DebugPanelComponent } from './debug-panel.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { GameStateService } from '../services/game-state.service';
-import SpyObj = jasmine.SpyObj;
 import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { GameStateStore } from '../store/game-state.store';
 
 describe('DebugPanelComponent', () => {
   let component: DebugPanelComponent;
   let fixture: ComponentFixture<DebugPanelComponent>;
-  let mockGameStateService: SpyObj<GameStateService>;
+  let mockGameStateService: InstanceType<typeof GameStateStore>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,7 +22,7 @@ describe('DebugPanelComponent', () => {
       ],
     }).compileComponents();
 
-    mockGameStateService = TestBed.inject(GameStateService);
+    mockGameStateService = TestBed.inject(GameStateStore);
     fixture = TestBed.createComponent(DebugPanelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -38,6 +37,6 @@ describe('DebugPanelComponent', () => {
     component.updateGameState();
 
     expect(component.stateErrors).toBe('');
-    expect(mockGameStateService.gameState.value()).toEqual(testGameState);
+    expect(mockGameStateService.state()).toEqual(testGameState);
   });
 });

@@ -23,27 +23,10 @@ import { GameStateStore } from '../store/game-state.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeftPanelComponent {
-  private readonly state = inject(GameStateStore);
-
-  readonly investigator = computed(() => {
-    if (this.state.state() === null) {
-      return null;
-    }
-
-    const id = this.state.state()?.currentInvestigator;
-    if (!id) {
-      throw new Error('No current investigator in state');
-    }
-
-    return this.state.getInvestigator(id);
-  });
+  readonly state = inject(GameStateStore);
 
   readonly threatArea = computed(() => {
-    if (this.investigator() === null) {
-      return [];
-    }
-
-    const ids = this.investigator()?.threatArea;
+    const ids = this.state.currentInvestigator()?.threatArea;
     if (!ids) {
       return [];
     }
