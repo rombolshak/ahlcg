@@ -10,7 +10,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
 import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
-import { GameStateStore } from '../../../store/store';
+import { GameStateStore } from '../../../store/game-state.store';
 import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
 
 @Component({

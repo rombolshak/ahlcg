@@ -7,7 +7,7 @@ import {
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
 import { ControlAreaComponent } from './control-area/control-area.component';
 import { PlayAreaComponent } from './play-area/play-area.component';
-import { GameStateStore } from '../store/store';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-central-view',

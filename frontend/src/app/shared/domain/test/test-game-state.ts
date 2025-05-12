@@ -2,7 +2,7 @@
 import { testGameMap } from './test-game-map';
 import { testAct } from './entities/test-act';
 import { testAgenda } from './entities/test-agenda';
-import { InvestigatorS } from './entities/test-investigators';
+import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
 import { testActions } from './test-actions';
 
 export const testGameState: GameState = {
@@ -40,7 +40,7 @@ export const testGameState: GameState = {
   map: testGameMap,
   acts: [testAct.id],
   agendas: [testAgenda.id],
-  investigators: [InvestigatorS.id],
+  investigators: [InvestigatorS.id, InvestigatorG.id],
   availableActions: testActions,
-  currentInvestigator: InvestigatorS.id,
+  currentInvestigator: InvestigatorG.id,
 };

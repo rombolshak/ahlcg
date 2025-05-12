@@ -1,6 +1,18 @@
-﻿import { signalStore, withComputed, withProps, withState } from '@ngrx/signals';
-import { GameEntity, GameState } from 'shared/domain/game-state';
-import { withEntities } from '@ngrx/signals/entities';
+﻿import {
+  patchState,
+  signalStore,
+  withComputed,
+  withMethods,
+  withProps,
+  withState,
+} from '@ngrx/signals';
+import { GameEntity, gameState, GameState } from 'shared/domain/game-state';
+import {
+  addEntities,
+  removeEntity,
+  updateEntity,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { Act, isAct } from 'shared/domain/entities/act.model';
 import { Enemy, isEnemy } from 'shared/domain/entities/enemy.model';
 import {
@@ -32,6 +44,7 @@ import {
   SkillId,
 } from 'shared/domain/entities/id.model';
 import { computed } from '@angular/core';
+import { ArkErrors } from 'arktype';
 
 interface State {
   isLoading: boolean;
@@ -54,11 +67,11 @@ export const GameStateStore = signalStore(
         throw new Error(`Entity '${id}' not found`);
       }
 
-      if (guard(model)) {
+      if (!guard(model)) {
         throw new Error(`Entity '${id}' is '${model.type}' type`);
       }
 
-      return model as T;
+      return model;
     },
     getAct(id: ActId): Act {
       return this.getEntity<Act>(id, isAct);
@@ -96,5 +109,27 @@ export const GameStateStore = signalStore(
       return store.getInvestigator(id);
     }),
   })),
+  withMethods((store) => ({
+    addEntities(entities: GameEntity[]): void {
+      patchState(store, addEntities(entities));
+    },
+    updateEntity(id: EntityId, changes: Partial<GameEntity>): void {
+      patchState(store, updateEntity({ id, changes }));
+    },
+    removeEntity(id: EntityId): void {
+      patchState(store, removeEntity(id));
+    },
+    updateState(changes: Partial<GameState>): void {
+      patchState(store, (oldState) => {
+        const newState = { ...oldState.state, ...changes };
+        const model = gameState(newState);
+        if (model instanceof ArkErrors) {
+          model.throw();
+          return {};
+        }
+
+        return { state: model, isLoading: false, error: null };
+      });
+    },
+  })),
 );
-export type GameStateStore = InstanceType<typeof GameStateStore>;

@@ -7,7 +7,7 @@ import {
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
 import { ActionsSelectorComponent } from './actions-selector/actions-selector.component';
-import { GameStateStore } from '../store/store';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-left-panel',

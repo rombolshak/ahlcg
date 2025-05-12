@@ -4,7 +4,7 @@ import {
   testLocation2,
   testLocation3,
 } from './entities/test-locations';
-import { InvestigatorS } from './entities/test-investigators';
+import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
 
 export const testGameMap: GameMap = {
   height: 6,
@@ -14,7 +14,7 @@ export const testGameMap: GameMap = {
       x: 2,
       y: 3,
       location: testLocation.id,
-      investigators: [InvestigatorS.id, InvestigatorS.id],
+      investigators: [InvestigatorS.id, InvestigatorG.id],
     },
     {
       x: 4,

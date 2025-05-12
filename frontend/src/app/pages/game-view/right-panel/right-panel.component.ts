@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { AgendaComponent } from './agenda/agenda.component';
 import { ActComponent } from './act/act.component';
-import { GameStateStore } from '../store/store';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-right-panel',
