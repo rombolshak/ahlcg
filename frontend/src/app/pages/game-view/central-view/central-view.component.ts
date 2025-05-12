@@ -1,9 +1,13 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
 import { ControlAreaComponent } from './control-area/control-area.component';
 import { PlayAreaComponent } from './play-area/play-area.component';
-import { AssetCard, PlayerCard } from 'shared/domain/player-card.model';
-import { GameMap } from 'shared/domain/game-map.model';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-central-view',
@@ -15,7 +19,21 @@ import { GameMap } from 'shared/domain/game-map.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CentralViewComponent {
-  readonly assets = input.required<AssetCard[]>();
-  readonly cards = input.required<PlayerCard[]>();
-  readonly gameMap = input.required<GameMap>();
+  private readonly state = inject(GameStateStore);
+
+  readonly assets = computed(() => {
+    return (
+      this.state
+        .currentInvestigator()
+        ?.controlledAssets.map((a) => this.state.getAsset(a)) ?? []
+    );
+  });
+
+  readonly cards = computed(() => {
+    return (
+      this.state
+        .currentInvestigator()
+        ?.hand.map((card) => this.state.getPlayerCard(card)) ?? []
+    );
+  });
 }

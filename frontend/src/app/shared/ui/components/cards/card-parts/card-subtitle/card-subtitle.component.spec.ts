@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardSubtitleComponent } from './card-subtitle.component';
-import { cardA } from 'shared/domain/test/test-cards';
+import { cardA } from 'shared/domain/test/entities/test-cards';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('CardSubtitleComponent', () => {

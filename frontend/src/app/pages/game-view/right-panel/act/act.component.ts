@@ -5,7 +5,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Act, Objective } from 'shared/domain/act.model';
+import { Act, Objective } from 'shared/domain/entities/act.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';

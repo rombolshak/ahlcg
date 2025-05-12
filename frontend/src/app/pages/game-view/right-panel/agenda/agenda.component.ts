@@ -5,7 +5,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Agenda } from 'shared/domain/agenda.model';
+import { Agenda } from 'shared/domain/entities/agenda.model';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';

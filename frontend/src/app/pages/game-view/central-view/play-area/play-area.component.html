@@ -3,27 +3,29 @@
   #playArea
   class="relative grid grid-cols-[repeat(var(--cols-count),11rem)]
     grid-rows-[repeat(var(--rows-count),9rem)] gap-x-[22rem] gap-y-[9rem] w-max"
-  [style.--cols-count]="gameMap().width"
-  [style.--rows-count]="gameMap().height"
+  [style.--cols-count]="gameMap()?.width ?? 1"
+  [style.--rows-count]="gameMap()?.height ?? 1"
 >
-  @for (place of gameMap().places; track place.location.id) {
-    <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
-    <ah-location
-      class="relative col-span-2 row-span-2 rounded"
-      [id]="'location-' + place.location.id"
-      [location]="place.location"
-      [investigators]="place.investigators"
-      [style.grid-column-start]="place.x"
-      [style.grid-row-start]="place.y"
-    />
-  }
+  @if (gameMap()) {
+    @for (place of gameMap()!.places; track place.location) {
+      <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
+      <ah-location
+        class="relative col-span-2 row-span-2 rounded"
+        [id]="'location-' + place.location"
+        [locationId]="place.location"
+        [investigatorsIds]="place.investigators"
+        [style.grid-column-start]="place.x"
+        [style.grid-row-start]="place.y"
+      />
+    }
 
-  @for (connection of gameMap().connections; track $index) {
-    <ah-locations-connection
-      [fromColor]="connectionColors()[$index]?.fromColor"
-      [toColor]="connectionColors()[$index]?.toColor"
-      [from]="'#location-' + connection.from"
-      [to]="'#location-' + connection.to"
-    />
+    @for (connection of gameMap()!.connections; track $index) {
+      <ah-locations-connection
+        [fromColor]="connectionColors()![$index]?.fromColor"
+        [toColor]="connectionColors()![$index]?.toColor"
+        [from]="'#location-' + connection.from"
+        [to]="'#location-' + connection.to"
+      />
+    }
   }
 </div>

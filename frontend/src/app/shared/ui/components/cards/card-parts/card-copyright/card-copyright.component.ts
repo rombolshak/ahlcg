@@ -3,7 +3,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { TrimStartPipe } from 'shared/ui/pipes/trim-start.pipe';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { DisplayOptions } from 'shared/domain/display.options';
-import { CardInfo } from 'shared/domain/card-info.model';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Component({
   selector: 'ah-card-copyright',

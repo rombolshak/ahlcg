@@ -17,7 +17,8 @@ import {
 import { CardComponent } from 'shared/ui/components/cards/card/card.component';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { cardWidths } from 'shared/domain/card.constants';
-import { PlayerCard } from 'shared/domain/player-card.model';
+import { PlayerCard } from 'shared/domain/entities/player-card.model';
+import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
 
 @Component({
   selector: 'ah-cards-hand',
@@ -83,10 +84,10 @@ export class CardsHandComponent {
   constructor(private readonly element: ElementRef) {}
 
   readonly cards = input.required<PlayerCard[]>();
-  readonly cardSelected = output<number>();
+  readonly cardSelected = output<PlayerCardId>();
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
-  focusedCardId: number | undefined;
+  focusedCardId: PlayerCardId | undefined;
   readonly cardOffset = computed(
     () => `${this.calcOffsetFrom(this.cards()).toString()}px`,
   );

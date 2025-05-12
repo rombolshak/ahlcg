@@ -1,7 +1,9 @@
-﻿import { Agenda } from '../agenda.model';
+﻿import { Agenda } from '../../entities/agenda.model';
+import { agendaId } from '../../entities/id.model';
 
 export const testAgenda: Agenda = {
-  id: 2314,
+  id: agendaId.assert('2314'),
+  type: 'agenda',
   info: {
     title: 'Прорываясь вперёд',
     setInfo: {
@@ -17,7 +19,6 @@ export const testAgenda: Agenda = {
     abilities: [
       '<b>Обязательно —</b> После того как эффект карты контакта переместил вас в локацию: Получите 1 ужас.',
     ],
-    cardType: 'agenda',
   },
 
   stage: 3,

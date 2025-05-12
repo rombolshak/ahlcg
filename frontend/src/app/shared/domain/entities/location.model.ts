@@ -1,7 +1,11 @@
 ﻿import { type } from 'arktype';
 import { gameCard } from './card.model';
+import { locationId } from './id.model';
+import { GameEntity } from '../game-state';
 
 const _location = gameCard.and({
+  id: locationId,
+  type: "'location'",
   shroud: 'number.integer >= 0',
   clues: 'number.integer >= 0',
   color: 'string',
@@ -13,3 +17,7 @@ type _Location = typeof _location.infer;
 export interface Location extends _Location {}
 
 export const location: type<Location> = _location;
+
+export function isLocation(entity: GameEntity): entity is Location {
+  return entity.type === 'location';
+}

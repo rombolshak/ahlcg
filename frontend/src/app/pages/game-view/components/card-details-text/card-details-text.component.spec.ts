@@ -1,7 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardDetailsTextComponent } from './card-details-text.component';
-import { testLocation, testLocation2 } from 'shared/domain/test/test-locations';
+import {
+  testLocation,
+  testLocation2,
+} from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 

@@ -1,17 +1,40 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   HostListener,
   inject,
+  OnInit,
 } from '@angular/core';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
 import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
-import { GameStateService } from './services/game-state.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { DebugPanelComponent } from './debug-panel/debug-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
+import { testAct } from '../../shared/domain/test/entities/test-act';
+import { testAgenda } from '../../shared/domain/test/entities/test-agenda';
+import {
+  InvestigatorG,
+  InvestigatorS,
+} from '../../shared/domain/test/entities/test-investigators';
+import {
+  testEnemy,
+  testEnemy2,
+} from '../../shared/domain/test/entities/test-enemies';
+import {
+  cardA,
+  cardA2,
+  cardA3,
+  cardA4,
+  cardA5,
+  cardE,
+  cardS,
+} from '../../shared/domain/test/entities/test-cards';
+import { GameStateStore } from './store/game-state.store';
+import {
+  testLocation,
+  testLocation2,
+  testLocation3,
+} from '../../shared/domain/test/entities/test-locations';
 
 @Component({
   selector: 'ah-game-view',
@@ -27,37 +50,37 @@ import { testGameState } from '../../shared/domain/test/test-game-state';
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class GameViewComponent {
+export class GameViewComponent implements OnInit {
   constructor() {
     console.log(JSON.stringify(testGameState));
   }
 
-  private readonly gameStateService = inject(GameStateService);
-
-  readonly gameState = this.gameStateService.gameState.value;
-  readonly loadingState = computed(() => {
-    return {
-      isLoading: this.gameStateService.gameState.isLoading(),
-      progress: this.gameStateService.gameState.progress(),
-    };
-  });
-
-  readonly loadingError = computed(() => {
-    const error = this.gameStateService.gameState.error();
-    if (!error) return null;
-
-    if (error instanceof HttpErrorResponse) {
-      return `Response status: ${error.statusText}. \r\nError: ${error.message}. \nDetails: ${JSON.stringify(error.error)}`;
-    }
-
-    if (error instanceof Error) {
-      return `Error ${error.name}: ${error.message}`;
-    }
-
-    return JSON.stringify(error);
-  });
+  readonly gameState = inject(GameStateStore);
 
   showDebug = false;
+
+  public ngOnInit() {
+    this.gameState.addEntities([
+      testAct,
+      testAgenda,
+      testLocation,
+      testLocation2,
+      testLocation3,
+      InvestigatorG,
+      InvestigatorS,
+      testEnemy,
+      testEnemy2,
+      cardE,
+      cardA,
+      cardA2,
+      cardA3,
+      cardA4,
+      cardA5,
+      cardS,
+    ]);
+    console.log(this.gameState.getAgenda(testAgenda.id));
+    this.gameState.updateState(testGameState);
+  }
 
   @HostListener('body:keydown.`')
   toggleDebug() {

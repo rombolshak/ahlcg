@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from 'shared/domain/card-info.model';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Component({
   selector: 'ah-card-flavor',

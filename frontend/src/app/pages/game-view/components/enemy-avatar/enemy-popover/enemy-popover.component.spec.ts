@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnemyPopoverComponent } from './enemy-popover.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from '../../../../../shared/domain/test/test-enemies';
+import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 
 describe('EnemyPopoverComponent', () => {
   let component: EnemyPopoverComponent;

@@ -1,12 +1,17 @@
-﻿import { AssetCard, EventCard, SkillCard } from '../player-card.model';
-import { DisplayOptions } from '../display.options';
+﻿import {
+  AssetCard,
+  EventCard,
+  SkillCard,
+} from '../../entities/player-card.model';
+import { DisplayOptions } from '../../display.options';
+import { assetId, eventId, skillId } from '../../entities/id.model';
 
 export const displayOption: DisplayOptions = { cardSize: 'm', textSize: 'm' };
 
 export const cardE: EventCard = {
-  id: 1,
+  id: eventId.assert('1'),
+  type: 'event',
   info: {
-    cardType: 'player',
     title: '"I\'ve got a plan!"',
     traits: ['Insight', 'Tactic'],
     abilities: [
@@ -27,15 +32,14 @@ export const cardE: EventCard = {
     intellect: 1,
     combat: 1,
   },
-  playerCardType: 'event',
   class: 'seeker',
   cost: 3,
 };
 
 export const cardA: AssetCard = {
-  id: 2,
+  id: assetId.assert('2'),
+  type: 'asset',
   info: {
-    cardType: 'player',
     title: 'Исследовательские заметки',
     traits: ['Вещь', 'Книга', 'Наука'],
     abilities: [
@@ -51,7 +55,6 @@ export const cardA: AssetCard = {
       ffg: '2022',
     },
   },
-  playerCardType: 'asset',
   class: 'seeker',
   skills: { intellect: 2 },
   cost: 1,
@@ -60,7 +63,7 @@ export const cardA: AssetCard = {
 
 export const cardA2: AssetCard = {
   ...cardA,
-  id: 3,
+  id: assetId.assert('3'),
   class: 'guardian',
   slot: 'ally',
   info: {
@@ -74,7 +77,7 @@ export const cardA2: AssetCard = {
 };
 export const cardA3: AssetCard = {
   ...cardA,
-  id: 4,
+  id: assetId.assert('4'),
   class: 'rogue',
   sanity: {
     max: 1,
@@ -84,19 +87,19 @@ export const cardA3: AssetCard = {
 };
 export const cardA4: AssetCard = {
   ...cardA,
-  id: 5,
+  id: assetId.assert('5'),
   class: 'mystic',
 };
 export const cardA5: AssetCard = {
   ...cardA,
-  id: 6,
+  id: assetId.assert('6'),
   class: 'neutral',
 };
 
 export const cardS: SkillCard = {
-  id: 3,
+  id: skillId.assert('7'),
+  type: 'skill',
   info: {
-    cardType: 'player',
     title: 'Обречённый на проклятья',
     traits: ['Врождённый', 'Проклятый'],
     abilities: [
@@ -112,7 +115,6 @@ export const cardS: SkillCard = {
       ffg: '2024',
     },
   },
-  playerCardType: 'skill',
   class: 'survivor',
   skills: {
     wild: 1,

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorComponent } from './investigator.component';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
+import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('InvestigatorComponent', () => {

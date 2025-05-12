@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { gameState, GameState } from 'shared/domain/game-state';
 import { ArkErrors } from 'arktype';
-import { GameStateService } from '../services/game-state.service';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-debug-panel',
@@ -12,7 +12,7 @@ import { GameStateService } from '../services/game-state.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DebugPanelComponent {
-  private gameStateService = inject(GameStateService);
+  private gameStateService = inject(GameStateStore);
 
   gameState = '';
   stateErrors = '';
@@ -31,7 +31,7 @@ export class DebugPanelComponent {
         return;
       }
 
-      this.gameStateService.gameState.set(newState);
+      this.gameStateService.updateState(newState);
     } catch (e: unknown) {
       if (e instanceof Error) {
         this.stateErrors = e.message;

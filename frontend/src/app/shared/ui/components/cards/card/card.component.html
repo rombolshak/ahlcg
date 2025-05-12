@@ -1,25 +1,20 @@
-﻿@switch (card().info.cardType) {
-  @case ("player") {
-    @let playerCard = card() | as: PlayerCardBase;
-    @switch (playerCard.playerCardType) {
-      @case ("asset") {
-        <ah-asset-card
-          [card]="playerCard | as: AssetCard"
-          [displayOptions]="displayOptions()"
-        />
-      }
-      @case ("event") {
-        <ah-event-card
-          [card]="playerCard | as: EventCard"
-          [displayOptions]="displayOptions()"
-        />
-      }
-      @case ("skill") {
-        <ah-skill-card
-          [card]="playerCard | as: SkillCard"
-          [displayOptions]="displayOptions()"
-        />
-      }
-    }
+﻿@switch (card().type) {
+  @case ("asset") {
+    <ah-asset-card
+      [card]="card() | as: AssetCard"
+      [displayOptions]="displayOptions()"
+    />
+  }
+  @case ("event") {
+    <ah-event-card
+      [card]="card() | as: EventCard"
+      [displayOptions]="displayOptions()"
+    />
+  }
+  @case ("skill") {
+    <ah-skill-card
+      [card]="card() | as: SkillCard"
+      [displayOptions]="displayOptions()"
+    />
   }
 }

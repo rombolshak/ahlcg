@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { CardDetailsTextComponent } from '../../../../components/card-details-text/card-details-text.component';
 import { ImagesUrlService } from 'shared/services/images-url.service';
-import { Location } from 'shared/domain/location.model';
+import { Location } from 'shared/domain/entities/location.model';
 import { TextWithOverlayComponent } from 'shared/ui/components/text-with-overlay/text-with-overlay.component';
 import { NgOptimizedImage } from '@angular/common';
 
@@ -26,5 +26,5 @@ import { NgOptimizedImage } from '@angular/common';
 })
 export class LocationHeaderComponent {
   imageService = inject(ImagesUrlService);
-  readonly location = input.required<Location>();
+  readonly location = input<Location>();
 }

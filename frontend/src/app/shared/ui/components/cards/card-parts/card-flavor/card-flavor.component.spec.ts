@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardFlavorComponent } from './card-flavor.component';
-import { cardS } from 'shared/domain/test/test-cards';
+import { cardS } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 

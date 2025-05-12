@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardCostComponent } from './card-cost.component';
-import { cardA } from 'shared/domain/test/test-cards';
+import { cardA } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 

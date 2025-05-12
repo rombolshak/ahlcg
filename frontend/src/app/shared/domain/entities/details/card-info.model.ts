@@ -7,11 +7,7 @@ const setInfo = type({
 
 export type SetInfo = typeof setInfo.infer;
 
-const cardType = type("'act' | 'agenda' | 'location' | 'player' | 'enemy'");
-export type CardType = typeof cardType.infer;
-
 const _cardInfo = type({
-  cardType,
   title: 'string',
   'subtitle?': 'string',
   'flavor?': 'string',

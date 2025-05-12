@@ -1,6 +1,10 @@
 ﻿import { GameMap } from '../game-map.model';
-import { testLocation, testLocation2, testLocation3 } from './test-locations';
-import { InvestigatorS } from './test-investigators';
+import {
+  testLocation,
+  testLocation2,
+  testLocation3,
+} from './entities/test-locations';
+import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
 
 export const testGameMap: GameMap = {
   height: 6,
@@ -9,24 +13,24 @@ export const testGameMap: GameMap = {
     {
       x: 2,
       y: 3,
-      location: testLocation,
-      investigators: [InvestigatorS, InvestigatorS],
+      location: testLocation.id,
+      investigators: [InvestigatorS.id, InvestigatorG.id],
     },
     {
       x: 4,
       y: 2,
-      location: testLocation2,
+      location: testLocation2.id,
       investigators: [],
     },
     {
       x: 4,
       y: 4,
-      location: testLocation3,
+      location: testLocation3.id,
       investigators: [],
     },
   ],
   connections: [
-    { from: 2126, to: 2128 },
-    { from: 2126, to: 2129 },
+    { from: testLocation.id, to: testLocation2.id },
+    { from: testLocation.id, to: testLocation3.id },
   ],
 };

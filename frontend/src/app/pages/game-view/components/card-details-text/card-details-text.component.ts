@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
-import { CardInfo } from 'shared/domain/card-info.model';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Component({
   selector: 'ah-card-details-text',

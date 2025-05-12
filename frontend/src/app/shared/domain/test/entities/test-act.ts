@@ -1,10 +1,11 @@
-﻿import { Act } from '../act.model';
+﻿import { Act } from '../../entities/act.model';
+import { actId } from '../../entities/id.model';
 
 export const testAct: Act = {
-  id: 2200,
+  id: actId.assert('2200'),
+  type: 'act',
   info: {
     title: 'Обиталище Зверя',
-    cardType: 'act',
     flavor:
       'Жалкая тварь пытается схватить вас скользкими руками, её челюсти клацают от голода. Убить существо было бы милосердием. Но возможно, вам стоит побольше узнать об этом чудовище…',
     abilities: [],

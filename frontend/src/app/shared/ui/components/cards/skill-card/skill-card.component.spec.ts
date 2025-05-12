@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SkillCardComponent } from './skill-card.component';
-import { cardS, displayOption } from 'shared/domain/test/test-cards';
+import { cardS, displayOption } from 'shared/domain/test/entities/test-cards';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 describe('SkillCardComponent', () => {
