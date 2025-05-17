@@ -1,7 +1,48 @@
-@import url("tailwindcss");
+/* stylelint-disable-next-line */
+@import "tailwindcss";
+/* stylelint-disable-next-line */
+@import "vanilla-jsoneditor/themes/jse-theme-dark.css";
+/* stylelint-disable-next-line */
+@plugin "daisyui";
 
 /* stylelint-disable-next-line */
-*:not(.cursor-reset, :is(.\*\:cursor-reset > *)) {
+@plugin "daisyui/theme" {
+  name: "abyss";
+  default: true;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  --color-base-100: oklch(20% 0.08 209deg);
+  --color-base-200: oklch(15% 0.08 209deg);
+  --color-base-300: oklch(10% 0.08 209deg);
+  --color-base-content: oklch(90% 0.076 70.697deg);
+  --color-primary: oklch(47% 0.157 37.304deg);
+  --color-primary-content: oklch(90% 0.076 70.697deg);
+  --color-secondary: oklch(50% 0.118 165.612deg);
+  --color-secondary-content: oklch(95% 0.051 180.801deg);
+  --color-accent: oklch(43% 0 0deg);
+  --color-accent-content: oklch(98% 0.022 95.277deg);
+  --color-neutral: oklch(30% 0.08 209deg);
+  --color-neutral-content: oklch(90% 0.076 70.697deg);
+  --color-info: oklch(74% 0.16 232.661deg);
+  --color-info-content: oklch(29% 0.066 243.157deg);
+  --color-success: oklch(79% 0.209 151.711deg);
+  --color-success-content: oklch(26% 0.065 152.934deg);
+  --color-warning: oklch(84.8% 0.1962 84.62deg);
+  --color-warning-content: oklch(44.8% 0.1962 84.62deg);
+  --color-error: oklch(65% 0.1985 24.22deg);
+  --color-error-content: oklch(27% 0.1985 24.22deg);
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+*:not(:is(.cursor-reset, .cursor-reset *)) {
   cursor: default;
 }
 

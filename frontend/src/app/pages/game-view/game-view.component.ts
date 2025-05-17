@@ -46,7 +46,7 @@ import {
   ],
   templateUrl: './game-view.component.html',
   host: {
-    class: 'flex gap-4 p-8 h-screen w-screen',
+    class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -57,7 +57,7 @@ export class GameViewComponent implements OnInit {
 
   readonly gameState = inject(GameStateStore);
 
-  showDebug = false;
+  showDebug = true;
 
   public ngOnInit() {
     this.gameState.addEntities([
