@@ -23,9 +23,12 @@ export const gameState = type({
   acts: actId.array().atLeastLength(1),
   agendas: agendaId.array().atLeastLength(1),
   investigators: investigatorId.array().atLeastLength(1),
-  map: gameMap,
+  scenarioMap: gameMap,
   currentInvestigator: investigatorId,
   availableActions: action.array(),
+  gameEntities: {
+    '[string]': gameEntity,
+  },
 });
 
 export type GameState = typeof gameState.infer;

@@ -7,13 +7,6 @@
   withState,
 } from '@ngrx/signals';
 import { GameEntity, gameState, GameState } from 'shared/domain/game-state';
-import {
-  addEntities,
-  removeEntity,
-  setAllEntities,
-  updateEntity,
-  withEntities,
-} from '@ngrx/signals/entities';
 import { Act, isAct } from 'shared/domain/entities/act.model';
 import { Enemy, isEnemy } from 'shared/domain/entities/enemy.model';
 import {
@@ -46,24 +39,24 @@ import {
 } from 'shared/domain/entities/id.model';
 import { computed } from '@angular/core';
 import { ArkErrors } from 'arktype';
+import { applyPatch, Operation } from 'rfc6902';
 
 interface State {
   isLoading: boolean;
   error: string | null;
-  state: GameState | null;
+  gameState: GameState | null;
 }
 
 export const GameStateStore = signalStore(
   { providedIn: 'root' },
-  withState<State>({ isLoading: true, error: null, state: null }),
-  withEntities<GameEntity>(),
+  withState<State>({ isLoading: true, error: null, gameState: null }),
 
   withProps((store) => ({
     getEntity<T extends GameEntity>(
       id: EntityId,
       guard: (entity: GameEntity) => entity is T,
     ): T {
-      const model = store.entityMap()[id];
+      const model = store.gameState()?.gameEntities[id];
       if (!model) {
         throw new Error(`Entity '${id}' not found`);
       }
@@ -101,38 +94,44 @@ export const GameStateStore = signalStore(
     getEnemy(id: EnemyId): Enemy {
       return this.getEntity<Enemy>(id, isEnemy);
     },
+    validateState(state: GameState): void {
+      const model = gameState(state);
+      if (model instanceof ArkErrors) {
+        model.throw();
+      }
+    },
   })),
   withComputed((store) => ({
     currentInvestigator: computed(() => {
-      if (!store.state()) return null;
+      if (!store.gameState()) return null;
       // eslint-disable-next-line
-      const id = store.state()!.currentInvestigator;
+      const id = store.gameState()!.currentInvestigator;
       return store.getInvestigator(id);
     }),
   })),
   withMethods((store) => ({
-    addEntities(entities: GameEntity[]): void {
-      patchState(store, addEntities(entities));
+    setState(state: GameState): void {
+      patchState(store, () => {
+        return { gameState: state };
+      });
     },
-    updateEntity(id: EntityId, changes: Partial<GameEntity>): void {
-      patchState(store, updateEntity({ id, changes }));
-    },
-    removeEntity(id: EntityId): void {
-      patchState(store, removeEntity(id));
-    },
-    setAllEntities(entities: GameEntity[]): void {
-      patchState(store, setAllEntities(entities));
-    },
-    updateState(changes: Partial<GameState>): void {
+    updateState(changes: Operation[]): void {
       patchState(store, (oldState) => {
-        const newState = { ...oldState.state, ...changes };
-        const model = gameState(newState);
-        if (model instanceof ArkErrors) {
-          model.throw();
-          return {};
+        if (!oldState.gameState) {
+          throw new Error('Called updateState for null state');
         }
 
-        return { state: model, isLoading: false, error: null };
+        const results = applyPatch(oldState.gameState, changes);
+        const errors = results.filter((r) => r !== null);
+        if (errors.length > 0) {
+          throw new Error(
+            'Error applying changes to game state: ' +
+              errors.map((e) => e.message).join('; '),
+          );
+        }
+
+        store.validateState(oldState.gameState);
+        return oldState;
       });
     },
   })),

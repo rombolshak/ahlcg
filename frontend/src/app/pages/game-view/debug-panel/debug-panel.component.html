@@ -10,6 +10,7 @@
       name="debug-tabs"
       class="tab"
       aria-label="State editor"
+      checked="checked"
     />
     <div class="tab-content bg-base-100 border-base-300 p-6">
       <ah-json-editor
@@ -20,21 +21,8 @@
       />
     </div>
 
-    <input
-      type="radio"
-      name="debug-tabs"
-      class="tab"
-      aria-label="Entities"
-      checked="checked"
-    />
-    <div class="tab-content bg-base-100 border-base-300 p-6">
-      <ah-json-editor
-        class="block h-150 flex-grow"
-        [data]="entities()"
-        [validateFn]="validateEntities"
-        (update)="entities.set($event)"
-      />
-    </div>
+    <input type="radio" name="debug-tabs" class="tab" aria-label="Entities" />
+    <div class="tab-content bg-base-100 border-base-300 p-6"></div>
   </div>
 
   @if (stateErrors) {

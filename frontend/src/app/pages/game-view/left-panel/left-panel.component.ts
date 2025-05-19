@@ -35,6 +35,6 @@ export class LeftPanelComponent {
   });
 
   readonly actions = computed(() => {
-    return this.state.state()?.availableActions ?? [];
+    return this.state.gameState()?.availableActions ?? [];
   });
 }

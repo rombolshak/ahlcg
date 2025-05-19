@@ -58,6 +58,7 @@ export class JsonEditorComponent<T> implements OnDestroy {
 
   public ngOnDestroy() {
     if (this.editorRef) {
+      console.log('DESTROY');
       void this.editorRef.destroy();
     }
   }

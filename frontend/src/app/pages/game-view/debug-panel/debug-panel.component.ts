@@ -5,16 +5,12 @@ import {
   linkedSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  gameEntities,
-  GameEntity,
-  GameState,
-  gameState,
-} from 'shared/domain/game-state';
+import { GameState, gameState } from 'shared/domain/game-state';
 import { ArkErrors } from 'arktype';
 import { GameStateStore } from '../store/game-state.store';
 import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
 import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
+import { createPatch } from 'rfc6902';
 
 @Component({
   selector: 'ah-debug-panel',
@@ -26,8 +22,7 @@ import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
 export class DebugPanelComponent {
   private gameStateService = inject(GameStateStore);
 
-  readonly gameState = linkedSignal(() => this.gameStateService.state());
-  readonly entities = linkedSignal(() => this.gameStateService.entities());
+  readonly gameState = linkedSignal(() => this.gameStateService.gameState());
   stateErrors = '';
 
   validateState(data: GameState | null): ValidationError[] {
@@ -52,40 +47,13 @@ export class DebugPanelComponent {
     return [];
   }
 
-  validateEntities(data: GameEntity[]): ValidationError[] {
-    const entities = gameEntities(data);
-    if (entities instanceof ArkErrors) {
-      return entities
-        .entries()
-        .map(
-          (e) =>
-            ({
-              path: e[1].path
-                .entries()
-                .map((v) => v[1].toString())
-                .toArray(),
-              message: e[1].message,
-              severity: ValidationSeverity.error,
-            }) satisfies ValidationError,
-        )
-        .toArray();
-    }
-
-    return [];
-  }
-
   updateGameState() {
     this.stateErrors = '';
     try {
       const stateErrors = this.validateState(this.gameState());
-      const entitiesErrors = this.validateEntities(this.entities());
 
       if (stateErrors.length > 0) {
         this.stateErrors += `State errors:\n${stateErrors.map((e) => `${e.path.toString()}: ${e.message}`).join('\n')}`;
-      }
-
-      if (entitiesErrors.length > 0) {
-        this.stateErrors += `\nEntities errors:\n${entitiesErrors.map((e) => `${e.path.toString()}: ${e.message}`).join('\n')}`;
       }
 
       if (this.stateErrors.length > 0) {
@@ -94,9 +62,11 @@ export class DebugPanelComponent {
       }
 
       console.log('updating state');
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.gameStateService.updateState(this.gameState()!);
-      this.gameStateService.setAllEntities(this.entities());
+      const patch = createPatch(
+        this.gameStateService.gameState(),
+        this.gameState(),
+      );
+      this.gameStateService.updateState(patch);
     } catch (e: unknown) {
       if (e instanceof Error) {
         this.stateErrors = e.message;
