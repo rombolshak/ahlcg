@@ -3,7 +3,6 @@ import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
 import { type } from 'arktype';
 import { assetId, eventId, skillId } from './id.model';
-import { GameEntity } from '../game-state';
 
 export const playerCardClass = type(
   "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
@@ -72,19 +71,3 @@ export const skillCard: type<SkillCard> = _skillCard;
 
 export const playerCard = assetCard.or(eventCard).or(skillCard);
 export type PlayerCard = typeof playerCard.infer;
-
-export function isAsset(entity: GameEntity): entity is AssetCard {
-  return entity.type === 'asset';
-}
-
-export function isSkill(entity: GameEntity): entity is SkillCard {
-  return entity.type === 'skill';
-}
-
-export function isEvent(entity: GameEntity): entity is EventCard {
-  return entity.type === 'event';
-}
-
-export function isPlayerCard(entity: GameEntity): entity is PlayerCard {
-  return isAsset(entity) || isSkill(entity) || isEvent(entity);
-}

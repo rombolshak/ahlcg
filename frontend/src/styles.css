@@ -1,11 +1,9 @@
-/* stylelint-disable-next-line */
+/* stylelint-disable */
 @import "tailwindcss";
-/* stylelint-disable-next-line */
 @import "vanilla-jsoneditor/themes/jse-theme-dark.css";
-/* stylelint-disable-next-line */
+
 @plugin "daisyui";
 
-/* stylelint-disable-next-line */
 @plugin "daisyui/theme" {
   name: "abyss";
   default: true;
@@ -104,7 +102,6 @@
 
 @layer utilities {
   .stroke {
-    /* stylelint-disable */
     -webkit-text-stroke-width: thick;
   }
 

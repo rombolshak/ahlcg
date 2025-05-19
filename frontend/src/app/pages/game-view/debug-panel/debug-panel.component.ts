@@ -23,7 +23,7 @@ import { createPatch } from 'rfc6902';
   },
 })
 export class DebugPanelComponent {
-  private gameStateService = inject(GameStateStore);
+  private readonly gameStateService = inject(GameStateStore);
 
   readonly gameState = linkedSignal(() => this.gameStateService.gameState());
   stateErrors = '';
@@ -54,15 +54,9 @@ export class DebugPanelComponent {
     this.stateErrors = '';
     try {
       const stateErrors = this.validateState(this.gameState());
-
-      if (stateErrors.length > 0) {
-        this.stateErrors += `State errors:\n${stateErrors.map((e) => `${e.path.toString()}: ${e.message}`).join('\n')}`;
-      }
-
-      if (this.stateErrors.length > 0) {
-        this.stateErrors = this.stateErrors.trim();
-        return;
-      }
+      this.stateErrors = stateErrors
+        .map((e) => `${e.path.toString()}: ${e.message}`)
+        .join('\n');
 
       const patch = createPatch(
         this.gameStateService.gameState(),

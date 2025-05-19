@@ -5,23 +5,17 @@
   withMethods,
   withProps,
   withState,
+  WritableStateSource,
 } from '@ngrx/signals';
-import { GameEntity, gameState, GameState } from 'shared/domain/game-state';
-import { Act, isAct } from 'shared/domain/entities/act.model';
-import { Enemy, isEnemy } from 'shared/domain/entities/enemy.model';
-import {
-  Investigator,
-  isInvestigator,
-} from 'shared/domain/entities/investigator.model';
-import { Agenda, isAgenda } from 'shared/domain/entities/agenda.model';
-import { isLocation, Location } from 'shared/domain/entities/location.model';
+import { gameState, GameState } from 'shared/domain/game-state';
+import { Act } from 'shared/domain/entities/act.model';
+import { Enemy } from 'shared/domain/entities/enemy.model';
+import { Investigator } from 'shared/domain/entities/investigator.model';
+import { Agenda } from 'shared/domain/entities/agenda.model';
+import { Location } from 'shared/domain/entities/location.model';
 import {
   AssetCard,
   EventCard,
-  isAsset,
-  isEvent,
-  isPlayerCard,
-  isSkill,
   PlayerCard,
   SkillCard,
 } from 'shared/domain/entities/player-card.model';
@@ -41,11 +35,60 @@ import { computed } from '@angular/core';
 import { ArkErrors } from 'arktype';
 import { applyPatch, Operation } from 'rfc6902';
 import { produce } from 'immer';
+import {
+  GameEntity,
+  isAct,
+  isAgenda,
+  isAsset,
+  isEnemy,
+  isEvent,
+  isInvestigator,
+  isLocation,
+  isPlayerCard,
+  isSkill,
+} from 'shared/domain/game-entity';
 
 interface State {
   isLoading: boolean;
   error: string | null;
   gameState: GameState | null;
+}
+
+function validateState(state: GameState | null): void {
+  const model = gameState(state);
+  if (model instanceof ArkErrors) {
+    model.throw();
+  }
+}
+
+function applyStatePatches(
+  store: WritableStateSource<State>,
+  changes: Operation[],
+) {
+  patchState(store, (oldState) => {
+    let newState: GameState | null;
+    if (
+      oldState.gameState === null &&
+      changes.length === 1 &&
+      changes[0]?.op === 'replace' &&
+      changes[0].path === ''
+    ) {
+      newState = changes[0].value as GameState;
+    } else
+      newState = produce(oldState.gameState, (draft) => {
+        const results = applyPatch(draft, changes);
+        const errors = results.filter((r) => r !== null);
+        if (errors.length > 0) {
+          throw new Error(
+            'Error applying changes to game state: ' +
+              errors.map((e) => e.message).join('; '),
+          );
+        }
+      });
+
+    validateState(newState);
+    return { gameState: newState };
+  });
 }
 
 export const GameStateStore = signalStore(
@@ -95,12 +138,6 @@ export const GameStateStore = signalStore(
     getEnemy(id: EnemyId): Enemy {
       return this.getEntity<Enemy>(id, isEnemy);
     },
-    validateState(state: GameState | null): void {
-      const model = gameState(state);
-      if (model instanceof ArkErrors) {
-        model.throw();
-      }
-    },
   })),
   withComputed((store) => ({
     currentInvestigator: computed(() => {
@@ -117,30 +154,7 @@ export const GameStateStore = signalStore(
       });
     },
     updateState(changes: Operation[]): void {
-      patchState(store, (oldState) => {
-        let newState: GameState | null;
-        if (
-          oldState.gameState === null &&
-          changes.length === 1 &&
-          changes[0]?.op === 'replace' &&
-          changes[0].path === ''
-        ) {
-          newState = changes[0].value as GameState;
-        } else
-          newState = produce(oldState.gameState, (draft) => {
-            const results = applyPatch(draft, changes);
-            const errors = results.filter((r) => r !== null);
-            if (errors.length > 0) {
-              throw new Error(
-                'Error applying changes to game state: ' +
-                  errors.map((e) => e.message).join('; '),
-              );
-            }
-          });
-
-        store.validateState(newState);
-        return { gameState: newState };
-      });
+      applyStatePatches(store, changes);
     },
   })),
 );
