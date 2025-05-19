@@ -21,11 +21,11 @@ export class RightPanelComponent {
   private readonly state = inject(GameStateStore);
 
   readonly agendas = computed(() => {
-    if (this.state.state() === null) {
+    if (this.state.gameState() === null) {
       return [];
     }
 
-    const agendas = this.state.state()?.agendas;
+    const agendas = this.state.gameState()?.agendas;
     if (agendas === undefined) {
       throw new Error('No agenda in state');
     }
@@ -34,11 +34,11 @@ export class RightPanelComponent {
   });
 
   readonly acts = computed(() => {
-    if (this.state.state() === null) {
+    if (this.state.gameState() === null) {
       return [];
     }
 
-    const agendas = this.state.state()?.acts;
+    const agendas = this.state.gameState()?.acts;
     if (agendas === undefined) {
       throw new Error('No agenda in state');
     }

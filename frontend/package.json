@@ -43,8 +43,11 @@
     "@ngrx/signals": "^19.1.0",
     "@panzoom/panzoom": "^4.6.0",
     "arktype": "^2.1.20",
+    "immer": "^10.1.1",
+    "rfc6902": "^5.1.2",
     "rxjs": "~7.8.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "vanilla-jsoneditor": "^3.3.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.11",
@@ -52,6 +55,7 @@
     "@angular/compiler-cli": "^19.2.10",
     "@commitlint/cli": "^19.7.1",
     "@commitlint/config-conventional": "^19.7.1",
+    "@cspell/dict-ru_ru": "^2.3.0",
     "@html-eslint/parser": "^0.37.0",
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.0.15",
@@ -59,6 +63,7 @@
     "@typescript-eslint/parser": "^8.26.0",
     "angular-eslint": "19.4.0",
     "cspell": "^8.17.5",
+    "daisyui": "^5.0.35",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-formatter-mo": "^2.3.0",

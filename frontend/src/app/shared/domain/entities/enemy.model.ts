@@ -2,7 +2,6 @@
 import { gameCard } from './card.model';
 import { health } from './details/vitals.model';
 import { enemyId } from './id.model';
-import { GameEntity } from '../game-state';
 
 const _enemy = gameCard.and({
   id: enemyId,
@@ -21,7 +20,3 @@ type _Enemy = typeof _enemy.t;
 export interface Enemy extends _Enemy {}
 
 export const enemy: type<Enemy> = _enemy;
-
-export function isEnemy(entity: GameEntity): entity is Enemy {
-  return entity.type === 'enemy';
-}

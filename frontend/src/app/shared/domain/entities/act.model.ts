@@ -1,7 +1,6 @@
 ﻿import { type } from 'arktype';
 import { gameCardWithoutTraits } from './card.model';
 import { actId } from './id.model';
-import { GameEntity } from '../game-state';
 
 const _objective = type({
   type: "'clue' | 'health' | 'resource'",
@@ -31,7 +30,3 @@ type _Act = typeof _act.infer;
 export interface Act extends _Act {}
 
 export const act: type<Act> = _act;
-
-export function isAct(entity: GameEntity): entity is Act {
-  return entity.type === 'act';
-}

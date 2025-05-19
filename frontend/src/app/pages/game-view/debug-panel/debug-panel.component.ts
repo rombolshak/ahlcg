@@ -1,37 +1,69 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  linkedSignal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { gameState, GameState } from 'shared/domain/game-state';
+import { GameState, gameState } from 'shared/domain/game-state';
 import { ArkErrors } from 'arktype';
 import { GameStateStore } from '../store/game-state.store';
+import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
+import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
+import { createPatch } from 'rfc6902';
 
 @Component({
   selector: 'ah-debug-panel',
-  imports: [FormsModule],
+  imports: [FormsModule, JsonEditorComponent],
   templateUrl: './debug-panel.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'absolute w-full h-full top-0 left-0 cursor-reset',
+  },
 })
 export class DebugPanelComponent {
-  private gameStateService = inject(GameStateStore);
+  private readonly gameStateService = inject(GameStateStore);
 
-  gameState = '';
+  readonly gameState = linkedSignal(() => this.gameStateService.gameState());
   stateErrors = '';
+
+  validateState(data: GameState | null): ValidationError[] {
+    const newState = gameState(data);
+    if (newState instanceof ArkErrors) {
+      return newState
+        .entries()
+        .map(
+          (e) =>
+            ({
+              path: e[1].path
+                .entries()
+                .map((v) => v[1].toString())
+                .toArray(),
+              message: e[1].message,
+              severity: ValidationSeverity.error,
+            }) satisfies ValidationError,
+        )
+        .toArray();
+    }
+
+    return [];
+  }
 
   updateGameState() {
     this.stateErrors = '';
     try {
-      const obj = JSON.parse(this.gameState) as GameState;
-      const newState = gameState(obj);
-      if (newState instanceof ArkErrors) {
-        this.stateErrors = newState
-          .entries()
-          .map((e) => `${e[0].toString()}: ${e[1].toString()}`)
-          .toArray()
-          .join('\n');
-        return;
-      }
+      const stateErrors = this.validateState(this.gameState());
+      this.stateErrors = stateErrors
+        .map((e) => `${e.path.toString()}: ${e.message}`)
+        .join('\n');
 
-      this.gameStateService.updateState(newState);
+      const patch = createPatch(
+        this.gameStateService.gameState(),
+        this.gameState(),
+      );
+
+      this.gameStateService.updateState(patch);
     } catch (e: unknown) {
       if (e instanceof Error) {
         this.stateErrors = e.message;

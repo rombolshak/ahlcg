@@ -1,19 +1,41 @@
 <div
-  class="bg-neutral-500/80 outline outline-red-200 text-white font-[ArnoPro] h-full
-    w-full"
+  class="bg-base-100/80 outline outline-red-200 text-base-content font-[ArnoPro] h-full
+    w-full p-4"
 >
-  <h1 class="text-center">DEBUG PANEL</h1>
+  <h1 class="text-center text-4xl font-[Conkordia]">Debug panel</h1>
 
-  <label for="gameState">Update game state</label>
-  <textarea
-    id="gameState"
-    class="outline-2 w-full"
-    [(ngModel)]="gameState"
-  ></textarea>
-  <p class="text-red-300 whitespace-pre-wrap">{{ stateErrors }}</p>
+  <div class="tabs tabs-box">
+    <input
+      type="radio"
+      name="debug-tabs"
+      class="tab"
+      aria-label="State editor"
+      checked="checked"
+    />
+    <div class="tab-content bg-base-100 border-base-300 p-6">
+      <ah-json-editor
+        class="block h-150"
+        [data]="gameState()!"
+        [validateFn]="validateState"
+        (update)="gameState.set($event)"
+      />
+    </div>
+
+    <input type="radio" name="debug-tabs" class="tab" aria-label="Entities" />
+    <div class="tab-content bg-base-100 border-base-300 p-6"></div>
+  </div>
+
+  @if (stateErrors) {
+    <div
+      role="alert"
+      class="alert alert-error alert-outline h-30 overflow-scroll"
+    >
+      <span class="whitespace-pre-wrap">{{ stateErrors }}</span>
+    </div>
+  }
   <button
     type="submit"
-    class="bg-neutral-700 shadow-md"
+    class="btn btn-primary mt-4"
     (click)="updateGameState()"
   >
     Update

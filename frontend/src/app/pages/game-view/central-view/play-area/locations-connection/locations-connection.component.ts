@@ -6,6 +6,7 @@ import {
   input,
 } from '@angular/core';
 import { ConnectionPointsService } from './connection-points.service';
+import { GameMap } from 'shared/domain/game-map.model';
 
 @Component({
   selector: 'ah-locations-connection',
@@ -15,6 +16,7 @@ import { ConnectionPointsService } from './connection-points.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationsConnectionComponent {
+  readonly map = input.required<GameMap>();
   readonly from = input.required<string>();
   readonly to = input.required<string>();
   readonly fromColor = input<string | undefined>('var(--color-stone-700)');
@@ -28,6 +30,11 @@ export class LocationsConnectionComponent {
   };
 
   protected readonly connection = computed(() => {
+    // захватываем map(), чтоб срабатывала перерисовка при изменении позиции локации
+    this.map().places.find(
+      (p) => p.location === this.from() || p.location === this.to(),
+    );
+
     const startElement = document.querySelector(this.from());
     const endElement = document.querySelector(this.to());
 

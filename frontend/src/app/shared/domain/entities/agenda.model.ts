@@ -1,7 +1,6 @@
 ﻿import { type } from 'arktype';
 import { gameCardWithoutTraits } from './card.model';
 import { agendaId } from './id.model';
-import { GameEntity } from '../game-state';
 
 const _agenda = gameCardWithoutTraits.and({
   id: agendaId,
@@ -18,7 +17,3 @@ type _Agenda = typeof _agenda.infer;
 export interface Agenda extends _Agenda {}
 
 export const agenda: type<Agenda> = _agenda;
-
-export function isAgenda(entity: GameEntity): entity is Agenda {
-  return entity.type === 'agenda';
-}

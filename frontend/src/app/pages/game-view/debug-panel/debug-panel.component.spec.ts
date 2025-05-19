@@ -33,10 +33,10 @@ describe('DebugPanelComponent', () => {
   });
 
   it('should update game state', () => {
-    component.gameState = JSON.stringify(testGameState);
+    component.gameState.set(testGameState);
     component.updateGameState();
 
     expect(component.stateErrors).toBe('');
-    expect(mockGameStateService.state()).toEqual(testGameState);
+    expect(mockGameStateService.gameState()).toEqual(testGameState);
   });
 });

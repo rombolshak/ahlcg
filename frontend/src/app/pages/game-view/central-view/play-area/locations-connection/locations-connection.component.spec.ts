@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LocationsConnectionComponent } from './locations-connection.component';
 import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { testGameMap } from '../../../../../shared/domain/test/test-game-map';
 
 describe('LocationsConnectionComponent', () => {
   let component: LocationsConnectionComponent;
@@ -26,6 +27,7 @@ describe('LocationsConnectionComponent', () => {
     fixture.componentRef.setInput('from', '.loc1');
     fixture.componentRef.setInput('to', '.loc2');
     fixture.componentRef.setInput('fromColor', 'green');
+    fixture.componentRef.setInput('map', testGameMap);
     await fixture.whenStable();
   });
 
@@ -38,6 +40,7 @@ describe('LocationsConnectionComponent', () => {
       const f = TestBed.createComponent(LocationsConnectionComponent);
       f.componentRef.setInput('from', '.test1');
       f.componentRef.setInput('to', '.test2');
+      f.componentRef.setInput('map', testGameMap);
       f.detectChanges();
     }).toThrowError('Could not find element by selector .test1');
 
@@ -45,6 +48,7 @@ describe('LocationsConnectionComponent', () => {
       const f = TestBed.createComponent(LocationsConnectionComponent);
       f.componentRef.setInput('from', '.loc1');
       f.componentRef.setInput('to', '.test2');
+      f.componentRef.setInput('map', testGameMap);
       f.detectChanges();
     }).toThrowError('Could not find element by selector .test2');
   });
