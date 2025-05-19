@@ -5,7 +5,12 @@ import {
   linkedSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GameState, gameState } from 'shared/domain/game-state';
+import {
+  gameEntities,
+  GameEntity,
+  GameState,
+  gameState,
+} from 'shared/domain/game-state';
 import { ArkErrors } from 'arktype';
 import { GameStateStore } from '../store/game-state.store';
 import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
@@ -22,9 +27,10 @@ export class DebugPanelComponent {
   private gameStateService = inject(GameStateStore);
 
   readonly gameState = linkedSignal(() => this.gameStateService.state());
+  readonly entities = linkedSignal(() => this.gameStateService.entities());
   stateErrors = '';
 
-  validateState(data: GameState): ValidationError[] {
+  validateState(data: GameState | null): ValidationError[] {
     const newState = gameState(data);
     if (newState instanceof ArkErrors) {
       return newState
@@ -46,21 +52,51 @@ export class DebugPanelComponent {
     return [];
   }
 
+  validateEntities(data: GameEntity[]): ValidationError[] {
+    const entities = gameEntities(data);
+    if (entities instanceof ArkErrors) {
+      return entities
+        .entries()
+        .map(
+          (e) =>
+            ({
+              path: e[1].path
+                .entries()
+                .map((v) => v[1].toString())
+                .toArray(),
+              message: e[1].message,
+              severity: ValidationSeverity.error,
+            }) satisfies ValidationError,
+        )
+        .toArray();
+    }
+
+    return [];
+  }
+
   updateGameState() {
     this.stateErrors = '';
     try {
-      const obj = this.gameState();
-      const newState = gameState(obj);
-      if (newState instanceof ArkErrors) {
-        this.stateErrors = newState
-          .entries()
-          .map((e) => `${e[0].toString()}: ${e[1].toString()}`)
-          .toArray()
-          .join('\n');
+      const stateErrors = this.validateState(this.gameState());
+      const entitiesErrors = this.validateEntities(this.entities());
+
+      if (stateErrors.length > 0) {
+        this.stateErrors += `State errors:\n${stateErrors.map((e) => `${e.path.toString()}: ${e.message}`).join('\n')}`;
+      }
+
+      if (entitiesErrors.length > 0) {
+        this.stateErrors += `\nEntities errors:\n${entitiesErrors.map((e) => `${e.path.toString()}: ${e.message}`).join('\n')}`;
+      }
+
+      if (this.stateErrors.length > 0) {
+        this.stateErrors = this.stateErrors.trim();
         return;
       }
 
-      this.gameStateService.updateState(newState);
+      console.log('updating state');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.gameStateService.updateState(this.gameState()!);
+      this.gameStateService.setAllEntities(this.entities());
     } catch (e: unknown) {
       if (e instanceof Error) {
         this.stateErrors = e.message;

@@ -10,6 +10,7 @@ import { GameEntity, gameState, GameState } from 'shared/domain/game-state';
 import {
   addEntities,
   removeEntity,
+  setAllEntities,
   updateEntity,
   withEntities,
 } from '@ngrx/signals/entities';
@@ -118,6 +119,9 @@ export const GameStateStore = signalStore(
     },
     removeEntity(id: EntityId): void {
       patchState(store, removeEntity(id));
+    },
+    setAllEntities(entities: GameEntity[]): void {
+      patchState(store, setAllEntities(entities));
     },
     updateState(changes: Partial<GameState>): void {
       patchState(store, (oldState) => {

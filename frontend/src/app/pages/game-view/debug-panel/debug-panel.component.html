@@ -10,7 +10,6 @@
       name="debug-tabs"
       class="tab"
       aria-label="State editor"
-      checked="checked"
     />
     <div class="tab-content bg-base-100 border-base-300 p-6">
       <ah-json-editor
@@ -19,18 +18,38 @@
         [validateFn]="validateState"
         (update)="gameState.set($event)"
       />
-
-      <p class="text-red-300 whitespace-pre-wrap">{{ stateErrors }}</p>
-      <button
-        type="submit"
-        class="btn btn-primary mt-4"
-        (click)="updateGameState()"
-      >
-        Update
-      </button>
     </div>
 
-    <input type="radio" name="debug-tabs" class="tab" aria-label="Entities" />
-    <div class="tab-content bg-base-100 border-base-300 p-6">Tab content 2</div>
+    <input
+      type="radio"
+      name="debug-tabs"
+      class="tab"
+      aria-label="Entities"
+      checked="checked"
+    />
+    <div class="tab-content bg-base-100 border-base-300 p-6">
+      <ah-json-editor
+        class="block h-150 flex-grow"
+        [data]="entities()"
+        [validateFn]="validateEntities"
+        (update)="entities.set($event)"
+      />
+    </div>
   </div>
+
+  @if (stateErrors) {
+    <div
+      role="alert"
+      class="alert alert-error alert-outline h-30 overflow-scroll"
+    >
+      <span class="whitespace-pre-wrap">{{ stateErrors }}</span>
+    </div>
+  }
+  <button
+    type="submit"
+    class="btn btn-primary mt-4"
+    (click)="updateGameState()"
+  >
+    Update
+  </button>
 </div>

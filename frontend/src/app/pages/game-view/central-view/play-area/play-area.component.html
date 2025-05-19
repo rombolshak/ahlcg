@@ -21,6 +21,7 @@
 
     @for (connection of gameMap()!.connections; track $index) {
       <ah-locations-connection
+        [map]="gameMap()!"
         [fromColor]="connectionColors()![$index]?.fromColor"
         [toColor]="connectionColors()![$index]?.toColor"
         [from]="`#location-${connection.from}`"

@@ -17,6 +17,7 @@ export const gameEntity = act
   .or(investigator)
   .or(playerCard);
 export type GameEntity = typeof gameEntity.infer;
+export const gameEntities = gameEntity.array();
 
 export const gameState = type({
   acts: actId.array().atLeastLength(1),
