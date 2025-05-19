@@ -59,7 +59,7 @@
     "@html-eslint/parser": "^0.37.0",
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.0.15",
-    "@types/jasmine": "~5.1.7",
+    "@types/jasmine": "~5.1.8",
     "@typescript-eslint/parser": "^8.26.0",
     "angular-eslint": "19.4.0",
     "cspell": "^8.17.5",
