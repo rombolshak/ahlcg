@@ -40,6 +40,7 @@ import {
 import { computed } from '@angular/core';
 import { ArkErrors } from 'arktype';
 import { applyPatch, Operation } from 'rfc6902';
+import { produce } from 'immer';
 
 interface State {
   isLoading: boolean;
@@ -112,7 +113,7 @@ export const GameStateStore = signalStore(
   withMethods((store) => ({
     setState(state: GameState): void {
       patchState(store, () => {
-        return { gameState: state };
+        return { isLoading: false, gameState: state };
       });
     },
     updateState(changes: Operation[]): void {
@@ -121,17 +122,19 @@ export const GameStateStore = signalStore(
           throw new Error('Called updateState for null state');
         }
 
-        const results = applyPatch(oldState.gameState, changes);
-        const errors = results.filter((r) => r !== null);
-        if (errors.length > 0) {
-          throw new Error(
-            'Error applying changes to game state: ' +
-              errors.map((e) => e.message).join('; '),
-          );
-        }
+        const newState = produce(oldState.gameState, (draft) => {
+          const results = applyPatch(draft, changes);
+          const errors = results.filter((r) => r !== null);
+          if (errors.length > 0) {
+            throw new Error(
+              'Error applying changes to game state: ' +
+                errors.map((e) => e.message).join('; '),
+            );
+          }
+        });
 
-        store.validateState(oldState.gameState);
-        return oldState;
+        store.validateState(newState);
+        return { gameState: newState };
       });
     },
   })),

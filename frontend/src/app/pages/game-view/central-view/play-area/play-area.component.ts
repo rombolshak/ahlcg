@@ -25,10 +25,6 @@ export class PlayAreaComponent implements AfterViewInit {
   private readonly state = inject(GameStateStore);
 
   readonly gameMap = computed(() => {
-    if (!this.state.gameState()) {
-      return null;
-    }
-
     return this.state.gameState()?.scenarioMap ?? null;
   });
 

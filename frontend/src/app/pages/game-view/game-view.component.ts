@@ -4,22 +4,18 @@ import {
   HostListener,
   inject,
   OnInit,
+  viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
 import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
-import { DebugPanelComponent } from './debug-panel/debug-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
 import { GameStateStore } from './store/game-state.store';
 
 @Component({
   selector: 'ah-game-view',
-  imports: [
-    LeftPanelComponent,
-    CentralViewComponent,
-    RightPanelComponent,
-    DebugPanelComponent,
-  ],
+  imports: [LeftPanelComponent, CentralViewComponent, RightPanelComponent],
   templateUrl: './game-view.component.html',
   host: {
     class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
@@ -32,15 +28,31 @@ export class GameViewComponent implements OnInit {
   }
 
   readonly gameState = inject(GameStateStore);
+  private readonly debugPanel = viewChild('debugPanel', {
+    read: ViewContainerRef,
+  });
 
-  showDebug = true;
+  showDebug = false;
 
   public ngOnInit() {
     this.gameState.setState(testGameState);
   }
 
   @HostListener('body:keydown.`')
-  toggleDebug() {
+  async toggleDebug() {
     this.showDebug = !this.showDebug;
+    if (this.showDebug) {
+      const { DebugPanelComponent } = await import(
+        './debug-panel/debug-panel.component'
+      );
+
+      const debugPanel = this.debugPanel();
+      if (!debugPanel) {
+        return;
+      }
+
+      debugPanel.clear();
+      debugPanel.createComponent(DebugPanelComponent);
+    }
   }
 }

@@ -31,7 +31,10 @@ export class LocationsConnectionComponent {
 
   protected readonly connection = computed(() => {
     // захватываем map(), чтоб срабатывала перерисовка при изменении позиции локации
-    this.map().places.find((p) => p.location === this.from());
+    this.map().places.filter(
+      (p) => p.location === this.from() || p.location === this.to(),
+    );
+
     const startElement = document.querySelector(this.from());
     const endElement = document.querySelector(this.to());
 

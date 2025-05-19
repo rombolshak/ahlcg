@@ -18,6 +18,9 @@ import { createPatch } from 'rfc6902';
   templateUrl: './debug-panel.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'absolute w-full h-full top-0 left-0 cursor-reset',
+  },
 })
 export class DebugPanelComponent {
   private gameStateService = inject(GameStateStore);
@@ -61,11 +64,11 @@ export class DebugPanelComponent {
         return;
       }
 
-      console.log('updating state');
       const patch = createPatch(
         this.gameStateService.gameState(),
         this.gameState(),
       );
+
       this.gameStateService.updateState(patch);
     } catch (e: unknown) {
       if (e instanceof Error) {
