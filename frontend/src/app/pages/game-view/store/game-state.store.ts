@@ -95,7 +95,7 @@ export const GameStateStore = signalStore(
     getEnemy(id: EnemyId): Enemy {
       return this.getEntity<Enemy>(id, isEnemy);
     },
-    validateState(state: GameState): void {
+    validateState(state: GameState | null): void {
       const model = gameState(state);
       if (model instanceof ArkErrors) {
         model.throw();
@@ -118,20 +118,25 @@ export const GameStateStore = signalStore(
     },
     updateState(changes: Operation[]): void {
       patchState(store, (oldState) => {
-        if (!oldState.gameState) {
-          throw new Error('Called updateState for null state');
-        }
-
-        const newState = produce(oldState.gameState, (draft) => {
-          const results = applyPatch(draft, changes);
-          const errors = results.filter((r) => r !== null);
-          if (errors.length > 0) {
-            throw new Error(
-              'Error applying changes to game state: ' +
-                errors.map((e) => e.message).join('; '),
-            );
-          }
-        });
+        let newState: GameState | null;
+        if (
+          oldState.gameState === null &&
+          changes.length === 1 &&
+          changes[0]?.op === 'replace' &&
+          changes[0].path === ''
+        ) {
+          newState = changes[0].value as GameState;
+        } else
+          newState = produce(oldState.gameState, (draft) => {
+            const results = applyPatch(draft, changes);
+            const errors = results.filter((r) => r !== null);
+            if (errors.length > 0) {
+              throw new Error(
+                'Error applying changes to game state: ' +
+                  errors.map((e) => e.message).join('; '),
+              );
+            }
+          });
 
         store.validateState(newState);
         return { gameState: newState };

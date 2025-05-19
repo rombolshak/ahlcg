@@ -9,10 +9,7 @@ import {
   InvestigatorS,
 } from 'shared/domain/test/entities/test-investigators';
 import { GameStateStore } from '../../../store/game-state.store';
-import {
-  testEnemy,
-  testEnemy2,
-} from '../../../../../shared/domain/test/entities/test-enemies';
+import { testGameState } from '../../../../../shared/domain/test/test-game-state';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -25,13 +22,7 @@ describe('LocationComponent', () => {
     }).compileComponents();
 
     const store = TestBed.inject(GameStateStore);
-    store.addEntities([
-      testLocation,
-      InvestigatorS,
-      InvestigatorG,
-      testEnemy,
-      testEnemy2,
-    ]);
+    store.setState(testGameState);
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('locationId', testLocation.id);
