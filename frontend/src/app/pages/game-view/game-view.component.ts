@@ -46,13 +46,9 @@ export class GameViewComponent implements OnInit {
         './debug-panel/debug-panel.component'
       );
 
-      const debugPanel = this.debugPanel();
-      if (!debugPanel) {
-        return;
-      }
-
-      debugPanel.clear();
-      debugPanel.createComponent(DebugPanelComponent);
+      this.debugPanel()?.createComponent(DebugPanelComponent);
+    } else {
+      this.debugPanel()?.clear();
     }
   }
 }
