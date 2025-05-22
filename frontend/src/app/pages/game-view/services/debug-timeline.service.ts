@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { GameStateStore } from '../store/game-state.store';
 import { createPatch, Operation } from 'rfc6902';
 import { GameState } from 'shared/domain/game-state';
@@ -8,12 +8,22 @@ import { GameState } from 'shared/domain/game-state';
 })
 export class DebugTimelineService {
   private readonly store = inject(GameStateStore);
-  private originalState = this.store.gameState();
+  private originalState: GameState | null = null;
   private lastUpdatedState = this.originalState;
 
   public readonly patches = signal<Operation[][]>([]);
   public readonly totalPatchesRecorded = computed(() => this.patches().length);
   public readonly currentAppliedPatch = signal(0);
+
+  constructor() {
+    effect(() => {
+      const state = this.store.gameState();
+      if (state !== null && this.originalState === null) {
+        this.originalState = state;
+        this.lastUpdatedState = this.originalState;
+      }
+    });
+  }
 
   recordChanges(newModel: GameState): void {
     const patch = createPatch(this.lastUpdatedState, newModel);
