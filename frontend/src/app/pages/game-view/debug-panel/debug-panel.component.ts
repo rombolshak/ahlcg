@@ -12,6 +12,7 @@ import { GameStateStore } from '../store/game-state.store';
 import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
 import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
 import { createPatch } from 'rfc6902';
+import { DebugTimelineService } from '../services/debug-timeline.service';
 
 @Component({
   selector: 'ah-debug-panel',
@@ -25,6 +26,7 @@ import { createPatch } from 'rfc6902';
 })
 export class DebugPanelComponent {
   private readonly gameStateService = inject(GameStateStore);
+  readonly timelineService = inject(DebugTimelineService);
 
   readonly originalGameState = signal(this.gameStateService.gameState());
   readonly gameState = linkedSignal(() => this.gameStateService.gameState());
@@ -52,6 +54,23 @@ export class DebugPanelComponent {
     return [];
   }
 
+  savePatch() {
+    const data = this.gameState();
+    if (!data) {
+      return;
+    }
+
+    const stateErrors = this.validateState(data);
+    this.stateErrors = stateErrors
+      .map((e) => `${e.path.toString()}: ${e.message}`)
+      .join('\n');
+    if (stateErrors.length > 0) {
+      return;
+    }
+
+    this.timelineService.recordChanges(data);
+  }
+
   updateGameState() {
     this.stateErrors = '';
     try {
@@ -59,6 +78,9 @@ export class DebugPanelComponent {
       this.stateErrors = stateErrors
         .map((e) => `${e.path.toString()}: ${e.message}`)
         .join('\n');
+      if (stateErrors.length > 0) {
+        return;
+      }
 
       const patch = createPatch(
         this.gameStateService.gameState(),

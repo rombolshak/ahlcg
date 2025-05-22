@@ -6,7 +6,7 @@ import { GameState } from 'shared/domain/game-state';
 @Injectable({
   providedIn: 'root',
 })
-export class DebugTimelineServiceService {
+export class DebugTimelineService {
   private readonly store = inject(GameStateStore);
   private originalState = this.store.gameState();
   private lastUpdatedState = this.originalState;
@@ -17,6 +17,9 @@ export class DebugTimelineServiceService {
 
   recordChanges(newModel: GameState): void {
     const patch = createPatch(this.lastUpdatedState, newModel);
+    if (patch.length === 0) {
+      return;
+    }
     this.patches.push(patch);
     this.lastUpdatedState = newModel;
     this.totalPatchesRecorded.set(this.patches.length);
@@ -33,7 +36,7 @@ export class DebugTimelineServiceService {
     }
   }
 
-  resetOriginalState(): void {
+  setOriginalStateFromStore(): void {
     this.originalState = this.store.gameState();
     this.lastUpdatedState = this.originalState;
     this.patches = [];
@@ -44,6 +47,7 @@ export class DebugTimelineServiceService {
   restoreOriginalState(): void {
     if (this.originalState) {
       this.store.setState(this.originalState);
+      this.currentAppliedPatch.set(0);
     }
   }
 }

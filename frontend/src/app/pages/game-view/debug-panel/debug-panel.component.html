@@ -21,7 +21,7 @@
       />
     </div>
 
-    <input type="radio" name="debug-tabs" class="tab" aria-label="Entities" />
+    <input type="radio" name="debug-tabs" class="tab" aria-label="Timeline" />
     <div class="tab-content bg-base-100 border-base-300 p-6"></div>
   </div>
 
@@ -33,11 +33,33 @@
       <span class="whitespace-pre-wrap">{{ stateErrors }}</span>
     </div>
   }
-  <button
-    type="submit"
-    class="btn btn-primary mt-4"
-    (click)="updateGameState()"
-  >
-    Update
-  </button>
+  <p>Total patches: {{ timelineService.totalPatchesRecorded() }}</p>
+  <p>Applied patches: {{ timelineService.currentAppliedPatch() }}</p>
+
+  <div class="mt-4 *:mr-2">
+    <button type="submit" class="btn btn-primary" (click)="savePatch()">
+      Save patch
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="timelineService.applyNextPatch()"
+    >
+      Apply next patch
+    </button>
+    <button
+      type="reset"
+      class="btn btn-secondary"
+      (click)="timelineService.restoreOriginalState()"
+    >
+      Revert to original
+    </button>
+    <button
+      type="reset"
+      class="btn btn-error"
+      (click)="timelineService.setOriginalStateFromStore()"
+    >
+      Set current state as original
+    </button>
+  </div>
 </div>

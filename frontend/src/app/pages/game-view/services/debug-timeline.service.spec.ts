@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DebugTimelineServiceService } from './debug-timeline-service.service';
+import { DebugTimelineService } from './debug-timeline.service';
 import { GameStateStore } from '../store/game-state.store';
 import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { InvestigatorS } from '../../../shared/domain/test/entities/test-investigators';
@@ -24,7 +24,7 @@ const testGameState3 = {
 };
 
 describe('GameDebugTimelineServiceService', () => {
-  let service: DebugTimelineServiceService;
+  let service: DebugTimelineService;
 
   let mockStore: jasmine.SpyObj<InstanceType<typeof GameStateStore>>;
   beforeEach(() => {
@@ -39,11 +39,11 @@ describe('GameDebugTimelineServiceService', () => {
     TestBed.configureTestingModule({
       providers: [
         provideExperimentalZonelessChangeDetection(),
-        DebugTimelineServiceService,
+        DebugTimelineService,
         { provide: GameStateStore, useValue: mockStore },
       ],
     });
-    service = TestBed.inject(DebugTimelineServiceService);
+    service = TestBed.inject(DebugTimelineService);
   });
 
   it('should initialize with the original state from the store', () => {
@@ -90,7 +90,7 @@ describe('GameDebugTimelineServiceService', () => {
     service.applyNextPatch();
 
     mockStore.gameState.and.returnValue(testGameState3);
-    service.resetOriginalState();
+    service.setOriginalStateFromStore();
 
     expect(service.totalPatchesRecorded()).toBe(0);
     expect(service.currentAppliedPatch()).toBe(0);
