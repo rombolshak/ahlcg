@@ -21,8 +21,35 @@
       />
     </div>
 
-    <input type="radio" name="debug-tabs" class="tab" aria-label="Entities" />
-    <div class="tab-content bg-base-100 border-base-300 p-6"></div>
+    <input type="radio" name="debug-tabs" class="tab" aria-label="Timeline" />
+    <div class="tab-content bg-base-100 border-base-300 p-6">
+      <div class="flex">
+        <ul class="menu w-40 bg-base-200 rounded-box flex-none">
+          @for (_ of timelineService.patches(); track $index) {
+            <li
+              [class.bg-success]="
+                $index < timelineService.currentAppliedPatch()
+              "
+              [class.text-success-content]="
+                $index < timelineService.currentAppliedPatch()
+              "
+            >
+              <a
+                href="#"
+                [class.menu-active]="$index === selectedPatch"
+                (click)="selectedPatch = $index"
+              >
+                Patch {{ $index + 1 }}
+              </a>
+            </li>
+          }
+        </ul>
+        <ah-json-editor
+          class="block h-150 flex-grow"
+          [data]="timelineService.patches()[selectedPatch]!"
+        />
+      </div>
+    </div>
   </div>
 
   @if (stateErrors) {
@@ -33,11 +60,38 @@
       <span class="whitespace-pre-wrap">{{ stateErrors }}</span>
     </div>
   }
-  <button
-    type="submit"
-    class="btn btn-primary mt-4"
-    (click)="updateGameState()"
-  >
-    Update
-  </button>
+  <p>Total patches: {{ timelineService.totalPatchesRecorded() }}</p>
+  <p>Applied patches: {{ timelineService.currentAppliedPatch() }}</p>
+
+  <div class="mt-4 *:mr-2">
+    <button type="submit" class="btn btn-primary" (click)="savePatch()">
+      Save patch
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="
+        timelineService.currentAppliedPatch() ===
+        timelineService.totalPatchesRecorded()
+      "
+      (click)="timelineService.applyNextPatch()"
+    >
+      Apply next patch
+    </button>
+    <button
+      type="reset"
+      class="btn btn-secondary"
+      [disabled]="timelineService.currentAppliedPatch() === 0"
+      (click)="timelineService.restoreOriginalState()"
+    >
+      Revert to original
+    </button>
+    <button
+      type="reset"
+      class="btn btn-error"
+      (click)="timelineService.setOriginalStateFromStore()"
+    >
+      Set current state as original
+    </button>
+  </div>
 </div>

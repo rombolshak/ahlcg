@@ -12,6 +12,7 @@ import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
 import { GameStateStore } from './store/game-state.store';
+import { DebugTimelineService } from './services/debug-timeline.service';
 
 @Component({
   selector: 'ah-game-view',
@@ -23,11 +24,9 @@ import { GameStateStore } from './store/game-state.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent implements OnInit {
-  constructor() {
-    console.log(JSON.stringify(testGameState));
-  }
-
   readonly gameState = inject(GameStateStore);
+  readonly timelineService = inject(DebugTimelineService);
+
   private readonly debugPanel = viewChild('debugPanel', {
     read: ViewContainerRef,
   });
@@ -50,5 +49,17 @@ export class GameViewComponent implements OnInit {
     } else {
       this.debugPanel()?.clear();
     }
+  }
+
+  @HostListener('body:keydown.f10', ['$event'])
+  applyNextPatch($event: KeyboardEvent) {
+    $event.preventDefault();
+    this.timelineService.applyNextPatch();
+  }
+
+  @HostListener('body:keydown.f9', ['$event'])
+  revertToOriginalState($event: KeyboardEvent) {
+    $event.preventDefault();
+    this.timelineService.restoreOriginalState();
   }
 }
