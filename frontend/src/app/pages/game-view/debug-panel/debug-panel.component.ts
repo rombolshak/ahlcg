@@ -3,6 +3,7 @@ import {
   Component,
   inject,
   linkedSignal,
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GameState, gameState } from 'shared/domain/game-state';
@@ -25,6 +26,7 @@ import { createPatch } from 'rfc6902';
 export class DebugPanelComponent {
   private readonly gameStateService = inject(GameStateStore);
 
+  readonly originalGameState = signal(this.gameStateService.gameState());
   readonly gameState = linkedSignal(() => this.gameStateService.gameState());
   stateErrors = '';
 
