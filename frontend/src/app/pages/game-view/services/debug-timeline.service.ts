@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { GameStateStore } from '../store/game-state.store';
 import { createPatch, Operation } from 'rfc6902';
 import { GameState } from 'shared/domain/game-state';
@@ -10,9 +10,9 @@ export class DebugTimelineService {
   private readonly store = inject(GameStateStore);
   private originalState = this.store.gameState();
   private lastUpdatedState = this.originalState;
-  private patches: Operation[][] = [];
 
-  public readonly totalPatchesRecorded = signal(0);
+  public readonly patches = signal<Operation[][]>([]);
+  public readonly totalPatchesRecorded = computed(() => this.patches().length);
   public readonly currentAppliedPatch = signal(0);
 
   recordChanges(newModel: GameState): void {
@@ -20,15 +20,16 @@ export class DebugTimelineService {
     if (patch.length === 0) {
       return;
     }
-    this.patches.push(patch);
+    this.patches.update((p) => [...p, patch]);
     this.lastUpdatedState = newModel;
-    this.totalPatchesRecorded.set(this.patches.length);
   }
 
   applyNextPatch(): void {
     const nextIndex = this.currentAppliedPatch();
-    if (nextIndex < this.patches.length) {
-      const patch = this.patches[nextIndex];
+    console.log(nextIndex);
+    if (nextIndex < this.patches().length) {
+      const patch = this.patches()[nextIndex];
+      console.log(patch);
       if (patch) {
         this.store.updateState(patch);
         this.currentAppliedPatch.set(nextIndex + 1);
@@ -39,8 +40,7 @@ export class DebugTimelineService {
   setOriginalStateFromStore(): void {
     this.originalState = this.store.gameState();
     this.lastUpdatedState = this.originalState;
-    this.patches = [];
-    this.totalPatchesRecorded.set(0);
+    this.patches.set([]);
     this.currentAppliedPatch.set(0);
   }
 

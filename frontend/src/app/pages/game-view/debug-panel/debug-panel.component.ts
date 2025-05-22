@@ -31,6 +31,7 @@ export class DebugPanelComponent {
   readonly originalGameState = signal(this.gameStateService.gameState());
   readonly gameState = linkedSignal(() => this.gameStateService.gameState());
   stateErrors = '';
+  selectedPatch = 0;
 
   validateState(data: GameState | null): ValidationError[] {
     const newState = gameState(data);

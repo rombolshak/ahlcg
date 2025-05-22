@@ -22,7 +22,34 @@
     </div>
 
     <input type="radio" name="debug-tabs" class="tab" aria-label="Timeline" />
-    <div class="tab-content bg-base-100 border-base-300 p-6"></div>
+    <div class="tab-content bg-base-100 border-base-300 p-6">
+      <div class="flex">
+        <ul class="menu w-40 bg-base-200 rounded-box flex-none">
+          @for (_ of timelineService.patches(); track $index) {
+            <li
+              [class.bg-success]="
+                $index < timelineService.currentAppliedPatch()
+              "
+              [class.text-success-content]="
+                $index < timelineService.currentAppliedPatch()
+              "
+            >
+              <a
+                href="#"
+                [class.menu-active]="$index === selectedPatch"
+                (click)="selectedPatch = $index"
+              >
+                Patch {{ $index + 1 }}
+              </a>
+            </li>
+          }
+        </ul>
+        <ah-json-editor
+          class="block h-150 flex-grow"
+          [data]="timelineService.patches()[selectedPatch]!"
+        />
+      </div>
+    </div>
   </div>
 
   @if (stateErrors) {
@@ -43,6 +70,10 @@
     <button
       type="button"
       class="btn btn-secondary"
+      [disabled]="
+        timelineService.currentAppliedPatch() ===
+        timelineService.totalPatchesRecorded()
+      "
       (click)="timelineService.applyNextPatch()"
     >
       Apply next patch
@@ -50,6 +81,7 @@
     <button
       type="reset"
       class="btn btn-secondary"
+      [disabled]="timelineService.currentAppliedPatch() === 0"
       (click)="timelineService.restoreOriginalState()"
     >
       Revert to original
