@@ -6,7 +6,10 @@ import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { InvestigatorS } from '../../../shared/domain/test/entities/test-investigators';
 import { createPatch } from 'rfc6902';
 import { Enemy } from '../../../shared/domain/entities/enemy.model';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import {
+  provideExperimentalZonelessChangeDetection,
+  signal,
+} from '@angular/core';
 
 const testGameState2 = {
   ...testGameState,
@@ -26,24 +29,29 @@ const testGameState3 = {
 describe('GameDebugTimelineServiceService', () => {
   let service: DebugTimelineService;
 
-  let mockStore: jasmine.SpyObj<InstanceType<typeof GameStateStore>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockStore: any;
   beforeEach(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    mockStore = jasmine.createSpyObj('GameStateStore', [
-      'updateState',
-      'setState',
-      'gameState',
-    ]);
+    const setState = jasmine.createSpy('setState');
+    const updateState = jasmine.createSpy('updateState');
+    mockStore = {
+      gameState: signal(testGameState),
+      setState,
+      updateState,
+    };
 
-    mockStore.gameState.and.returnValue(testGameState);
     TestBed.configureTestingModule({
       providers: [
         provideExperimentalZonelessChangeDetection(),
         DebugTimelineService,
-        { provide: GameStateStore, useValue: mockStore },
+        {
+          provide: GameStateStore,
+          useValue: mockStore as InstanceType<typeof GameStateStore>,
+        },
       ],
     });
     service = TestBed.inject(DebugTimelineService);
+    service.setOriginalStateFromStore();
   });
 
   it('should initialize with the original state from the store', () => {
@@ -89,7 +97,8 @@ describe('GameDebugTimelineServiceService', () => {
     service.recordChanges(testGameState2);
     service.applyNextPatch();
 
-    mockStore.gameState.and.returnValue(testGameState3);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    mockStore.gameState.set(testGameState3);
     service.setOriginalStateFromStore();
 
     expect(service.totalPatchesRecorded()).toBe(0);
