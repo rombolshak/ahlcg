@@ -94,7 +94,10 @@
         [ngSrc]="imagesService.getSimpleOverlay('clue')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
+      <span
+        class="text-slate-700 font-[Teutonic] text-4xl mr-2"
+        [ahAnimateNumericChange]="investigator().tokens?.clue ?? 0"
+      >
         {{ investigator().tokens?.clue ?? 0 }}
       </span>
     </div>

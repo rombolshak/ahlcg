@@ -17,6 +17,7 @@ import { DisplayOptions } from 'shared/domain/display.options';
 import { CardAbilitiesComponent } from 'shared/ui/components/cards/card-parts/card-abilities/card-abilities.component';
 import { InvestigatorAvatarComponent } from '../../components/investigator-avatar/investigator-avatar.component';
 import { InvestigatorSkillComponent } from './investigator-skill/investigator-skill.component';
+import { AnimateNumericChangeDirective } from '../../../../shared/ui/directives/animate-numeric-change.directive';
 
 @Component({
   selector: 'ah-investigator',
@@ -28,6 +29,7 @@ import { InvestigatorSkillComponent } from './investigator-skill/investigator-sk
     CardAbilitiesComponent,
     InvestigatorAvatarComponent,
     InvestigatorSkillComponent,
+    AnimateNumericChangeDirective,
   ],
   templateUrl: './investigator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
