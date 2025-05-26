@@ -6,19 +6,20 @@
   // words - list of words to be always considered correct
   "words": [
     "ahlcg",
+    "Arkham",
+    "arktype",
+    "arnopro",
+    "bazel",
+    "Conkordia",
+    "doesnt",
+    "gsap",
+    "jsoneditor",
     "lintstagedrc",
     "ngrx",
     "panzoom",
-    "Arkham",
-    "arnopro",
-    "Conkordia",
+    "prefersdark",
     "rombolshak",
-    "bazel",
-    "doesnt",
-    "arktype",
-    "twoarcane",
-    "jsoneditor",
-    "prefersdark"
+    "twoarcane"
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.
