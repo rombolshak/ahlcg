@@ -12,11 +12,12 @@
   </div>
   <div
     class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
-      *:rounded-full *:text-5xl *:font-[Teutonic] *:relative"
+      *:rounded-full *:text-5xl *:relative"
   >
-    <div class="bg-stone-900 text-white">
-      {{ location()!.shroud }}
-    </div>
+    <ah-numeric-text
+      class="bg-stone-900 text-white"
+      [value]="location()!.shroud"
+    />
 
     <div>
       <img
@@ -25,7 +26,12 @@
         alt="location-clues"
         [ngSrc]="imageService.getSimpleOverlay('clue')"
       />
-      <ah-text-with-overlay [text]="location()!.clues" />
+      <ah-numeric-text-with-overlay
+        class="z-0"
+        increaseColor="var(--color-error-rgb)"
+        decreaseColor="var(--color-success-rgb)"
+        [value]="location()!.clues"
+      />
     </div>
   </div>
 

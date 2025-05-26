@@ -70,9 +70,10 @@
         [ngSrc]="imagesService.getSimpleOverlay('resource')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
-        {{ investigator().tokens?.resource ?? 0 }}
-      </span>
+      <ah-numeric-text
+        class="text-slate-700 text-4xl mr-2"
+        [value]="investigator().tokens?.resource ?? 0"
+      />
     </div>
 
     <div class="relative flex w-[5rem] h-14 justify-between items-center">

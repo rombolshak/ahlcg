@@ -14,8 +14,7 @@ import { pairwise } from 'rxjs';
 
 @Component({
   selector: 'ah-numeric-text',
-  imports: [],
-  templateUrl: './numeric-text.component.html',
+  template: '{{ value() }}',
   host: {
     class: 'font-[Teutonic]',
   },
@@ -23,8 +22,11 @@ import { pairwise } from 'rxjs';
 })
 export class NumericTextComponent implements OnInit {
   public readonly value = input.required<number>();
+  public readonly increaseColor = input('var(--color-success)');
+  public readonly decreaseColor = input('var(--color-error)');
+
   public readonly animationCompleted = output();
-  private readonly element = inject(ElementRef);
+  private readonly element = inject(ElementRef<HTMLElement>);
   private readonly changes = toSignal(
     toObservable(this.value).pipe(pairwise()),
   );
@@ -39,31 +41,33 @@ export class NumericTextComponent implements OnInit {
       const [prev, curr] = changes;
       const diff = Math.abs(prev - curr);
 
-      gsap.to(this.element.nativeElement as HTMLElement, {
+      const tl = gsap.timeline();
+      tl.to(this.element.nativeElement as HTMLElement, {
         keyframes: [
           {
-            duration: 0.2,
-            color: curr > prev ? 'var(--color-success)' : 'var(--color-error)',
+            duration: 0.1,
+            color: curr > prev ? this.increaseColor() : this.decreaseColor(),
           },
           {
-            duration: Math.log1p(diff),
+            duration: Math.log1p(diff) / 2,
             scale: curr > prev ? 1.2 : 0.8,
           },
-          {
-            duration: 0.2,
-            scale: 1,
-            color: 'unset',
-          },
         ],
-
-        duration: Math.log1p(diff),
-        ease: 'power1.inOut',
-        textContent: curr,
-        snap: 'textContent',
-        onComplete: () => {
-          this.animationCompleted.emit();
+        repeat: 1,
+        yoyo: true,
+      }).to(
+        this.element.nativeElement as HTMLElement,
+        {
+          duration: Math.log1p(diff),
+          ease: 'power1.inOut',
+          textContent: curr,
+          snap: 'textContent',
+          onComplete: () => {
+            this.animationCompleted.emit();
+          },
         },
-      });
+        '<',
+      );
     });
   }
 
