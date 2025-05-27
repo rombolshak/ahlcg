@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -22,11 +23,18 @@ import { pairwise } from 'rxjs';
 })
 export class NumericTextComponent implements OnInit {
   public readonly value = input.required<number>();
-  public readonly increaseColor = input('var(--color-success)');
-  public readonly decreaseColor = input('var(--color-error)');
+  public readonly increaseColor = input('var(--color-success-rgb)');
+  public readonly decreaseColor = input('var(--color-error-rgb)');
+  public readonly invertColors = input(false);
 
   public readonly animationCompleted = output();
   private readonly element = inject(ElementRef<HTMLElement>);
+  private readonly _increaseColor = computed(() =>
+    this.invertColors() ? this.decreaseColor() : this.increaseColor(),
+  );
+  private readonly _decreaseColor = computed(() =>
+    this.invertColors() ? this.increaseColor() : this.decreaseColor(),
+  );
   private readonly changes = toSignal(
     toObservable(this.value).pipe(pairwise()),
   );
@@ -46,7 +54,7 @@ export class NumericTextComponent implements OnInit {
         keyframes: [
           {
             duration: 0.1,
-            color: curr > prev ? this.increaseColor() : this.decreaseColor(),
+            color: curr > prev ? this._increaseColor() : this._decreaseColor(),
           },
           {
             duration: Math.log1p(diff) / 2,

@@ -14,10 +14,9 @@
     class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
       *:rounded-full *:text-5xl *:relative"
   >
-    <ah-numeric-text
-      class="bg-stone-900 text-white"
-      [value]="location()!.shroud"
-    />
+    <div class="bg-stone-900 text-white">
+      <ah-numeric-text [value]="location()!.shroud" [invertColors]="true" />
+    </div>
 
     <div>
       <img
@@ -28,9 +27,8 @@
       />
       <ah-numeric-text-with-overlay
         class="z-0"
-        increaseColor="var(--color-error-rgb)"
-        decreaseColor="var(--color-success-rgb)"
         [value]="location()!.clues"
+        [invertColors]="true"
       />
     </div>
   </div>

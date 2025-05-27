@@ -17,7 +17,8 @@ import { NumericTextComponent } from './numeric-text.component';
 })
 export class NumericTextWithOverlayComponent {
   public readonly value = input.required<number>();
-  public readonly increaseColor = input('var(--color-success');
-  public readonly decreaseColor = input('var(--color-error)');
+  public readonly increaseColor = input('var(--color-success-rgb)');
+  public readonly decreaseColor = input('var(--color-error-rgb)');
+  public readonly invertColors = input(false);
   public readonly animationCompleted = output();
 }
