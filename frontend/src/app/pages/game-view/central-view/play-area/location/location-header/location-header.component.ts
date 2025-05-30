@@ -7,15 +7,17 @@ import {
 import { CardDetailsTextComponent } from '../../../../components/card-details-text/card-details-text.component';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { Location } from 'shared/domain/entities/location.model';
-import { TextWithOverlayComponent } from 'shared/ui/components/text-with-overlay/text-with-overlay.component';
 import { NgOptimizedImage } from '@angular/common';
+import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
+import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
 
 @Component({
   selector: 'ah-location-header',
   imports: [
     CardDetailsTextComponent,
-    TextWithOverlayComponent,
     NgOptimizedImage,
+    NumericTextComponent,
+    NumericTextWithOverlayComponent,
   ],
   templateUrl: './location-header.component.html',
   host: {

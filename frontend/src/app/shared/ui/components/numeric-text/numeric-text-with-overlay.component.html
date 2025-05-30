@@ -1,0 +1,16 @@
+﻿<div class="text-white z-1 flex relative">
+  <ah-numeric-text
+    class="text-white"
+    [increaseColor]="increaseColor()"
+    [decreaseColor]="decreaseColor()"
+    [value]="value()"
+    [invertColors]="invertColors()"
+    (animationCompleted)="animationCompleted.emit()"
+  />
+</div>
+<ah-numeric-text
+  class="stroke z-0 absolute top-0"
+  increaseColor="unset"
+  decreaseColor="unset"
+  [value]="value()"
+/>

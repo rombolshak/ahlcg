@@ -13,10 +13,11 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
+import { NumericTextComponent } from '../../../../../shared/ui/components/numeric-text/numeric-text.component';
 
 @Component({
   selector: 'ah-investigator-skill',
-  imports: [NgOptimizedImage],
+  imports: [NgOptimizedImage, NumericTextComponent],
   templateUrl: './investigator-skill.component.html',
   host: {
     class: 'relative flex w-16 h-10 justify-between items-center pl-2 pr-4',
