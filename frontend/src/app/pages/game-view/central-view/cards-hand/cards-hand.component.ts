@@ -5,6 +5,7 @@ import {
   ElementRef,
   input,
   output,
+  inject,
 } from '@angular/core';
 import {
   animate,
@@ -81,7 +82,7 @@ import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
   ],
 })
 export class CardsHandComponent {
-  constructor(private readonly element: ElementRef) {}
+  private readonly element = inject(ElementRef);
 
   readonly cards = input.required<PlayerCard[]>();
   readonly cardSelected = output<PlayerCardId>();

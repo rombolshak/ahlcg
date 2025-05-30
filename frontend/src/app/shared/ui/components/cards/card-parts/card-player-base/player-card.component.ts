@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  inject,
+} from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { CardSkillsComponent } from '../card-skills/card-skills.component';
 import { cardHeights, cardWidths } from 'shared/domain/card.constants';
@@ -14,7 +19,7 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayerCardComponent {
-  constructor(protected readonly imagesService: ImagesUrlService) {}
+  protected readonly imagesService = inject(ImagesUrlService);
 
   readonly card = input.required<PlayerCardBase>();
   readonly displayOptions = input.required<DisplayOptions>();
