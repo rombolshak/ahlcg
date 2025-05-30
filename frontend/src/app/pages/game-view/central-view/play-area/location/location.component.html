@@ -23,7 +23,11 @@
               : investigator.threatArea.length <= 4
                 ? "basis-74/100"
                 : "basis-100/100";
-        <ah-investigator-avatar [class]="basis" [investigator]="investigator">
+        <ah-investigator-avatar
+          [class]="basis"
+          [investigator]="investigator"
+          [attr.data-flip-id]="`mini-investigator-${investigator.id}`"
+        >
           <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
             @for (engagedEnemy of investigator.threatArea; track engagedEnemy) {
               <ah-enemy-avatar

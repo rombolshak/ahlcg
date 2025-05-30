@@ -7,6 +7,8 @@
   withState,
   WritableStateSource,
 } from '@ngrx/signals';
+import { gsap } from 'gsap';
+import { Flip } from 'gsap/Flip';
 import { gameState, GameState } from 'shared/domain/game-state';
 import { Act } from 'shared/domain/entities/act.model';
 import { Enemy } from 'shared/domain/entities/enemy.model';
@@ -47,6 +49,8 @@ import {
   isPlayerCard,
   isSkill,
 } from 'shared/domain/game-entity';
+
+gsap.registerPlugin(Flip);
 
 interface State {
   isLoading: boolean;
@@ -154,7 +158,16 @@ export const GameStateStore = signalStore(
       });
     },
     updateState(changes: Operation[]): void {
+      const targets = 'ah-investigator-avatar';
+      const state = Flip.getState(targets);
       applyStatePatches(store, changes);
+      requestAnimationFrame(() => {
+        Flip.from(state, {
+          duration: 2,
+          targets: targets,
+          ease: 'power2.inOut',
+        });
+      });
     },
   })),
 );
