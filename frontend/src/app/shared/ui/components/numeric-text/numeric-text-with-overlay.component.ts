@@ -8,9 +8,9 @@ import { NumericTextComponent } from './numeric-text.component';
 
 @Component({
   selector: 'ah-numeric-text-with-overlay',
+  imports: [NumericTextComponent],
   templateUrl: './numeric-text-with-overlay.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NumericTextComponent],
   host: {
     class: 'relative',
   },

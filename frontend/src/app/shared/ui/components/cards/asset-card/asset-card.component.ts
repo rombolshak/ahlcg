@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  inject,
+} from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import {
   CreateOverlay,
@@ -28,7 +33,7 @@ import { DisplayOptions } from 'shared/domain/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetCardComponent {
-  constructor(public imagesService: ImagesUrlService) {}
+  imagesService = inject(ImagesUrlService);
 
   readonly card = input.required<AssetCard>();
   readonly displayOptions = input.required<DisplayOptions>();

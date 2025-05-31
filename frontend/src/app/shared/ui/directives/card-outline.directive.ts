@@ -1,11 +1,13 @@
-import { Directive, effect, ElementRef, input } from '@angular/core';
+import { Directive, effect, ElementRef, input, inject } from '@angular/core';
 import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',
 })
 export class CardOutlineDirective {
-  constructor(private readonly el: ElementRef) {
+  private readonly el = inject(ElementRef);
+
+  constructor() {
     (this.el.nativeElement as HTMLElement).classList.add(
       'outline',
       'outline-2',

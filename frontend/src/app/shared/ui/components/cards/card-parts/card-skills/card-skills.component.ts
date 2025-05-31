@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   input,
+  inject,
 } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import {
@@ -22,7 +23,7 @@ import { DisplayOptions } from 'shared/domain/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardSkillsComponent {
-  constructor(protected imagesService: ImagesUrlService) {}
+  protected imagesService = inject(ImagesUrlService);
 
   readonly card = input.required<PlayerCardBase>();
   readonly displayOptions = input.required<DisplayOptions>();
