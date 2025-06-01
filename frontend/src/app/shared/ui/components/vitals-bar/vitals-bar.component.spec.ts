@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { VitalsBarComponent } from './vitals-bar.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('VitalsBarComponent', () => {
   let component: VitalsBarComponent;
@@ -9,7 +9,7 @@ describe('VitalsBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [VitalsBarComponent],
     }).compileComponents();
 

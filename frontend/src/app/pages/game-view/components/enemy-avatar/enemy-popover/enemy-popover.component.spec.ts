@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnemyPopoverComponent } from './enemy-popover.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 
 describe('EnemyPopoverComponent', () => {
@@ -11,7 +11,7 @@ describe('EnemyPopoverComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EnemyPopoverComponent],
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnemyPopoverComponent);

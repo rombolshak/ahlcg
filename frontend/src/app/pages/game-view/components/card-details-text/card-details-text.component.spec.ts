@@ -6,7 +6,7 @@ import {
   testLocation2,
 } from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('CardDetailsTextComponent', () => {
   let component: CardDetailsTextComponent;
@@ -14,7 +14,7 @@ describe('CardDetailsTextComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [CardDetailsTextComponent],
     }).compileComponents();
 

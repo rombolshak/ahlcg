@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NumericTextComponent } from './numeric-text.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('NumericTextComponent', () => {
   let component: NumericTextComponent;
@@ -9,7 +9,7 @@ describe('NumericTextComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [NumericTextComponent],
     }).compileComponents();
 
@@ -27,6 +27,6 @@ describe('NumericTextComponent', () => {
     component.animationCompleted.subscribe(done);
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
-    TestBed.flushEffects();
+    TestBed.tick();
   });
 });

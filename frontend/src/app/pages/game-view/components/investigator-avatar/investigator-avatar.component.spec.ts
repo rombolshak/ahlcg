@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorAvatarComponent } from './investigator-avatar.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
 
 describe('InvestigatorAvatarComponent', () => {
@@ -10,7 +10,7 @@ describe('InvestigatorAvatarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [InvestigatorAvatarComponent],
     }).compileComponents();
 

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ControlAreaComponent } from './control-area.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { cardA, cardA3, cardA4 } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 
@@ -11,7 +11,7 @@ describe('ControlAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [ControlAreaComponent],
     }).compileComponents();
 

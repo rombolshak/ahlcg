@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlayerCardComponent } from './player-card.component';
 import { cardA, displayOption } from 'shared/domain/test/entities/test-cards';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('CardPlayerBaseComponent', () => {
   let component: PlayerCardComponent;
@@ -10,7 +10,7 @@ describe('CardPlayerBaseComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [PlayerCardComponent],
     }).compileComponents();
 

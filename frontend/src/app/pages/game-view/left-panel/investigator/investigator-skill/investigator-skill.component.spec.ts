@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorSkillComponent } from './investigator-skill.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('InvestigatorSkillComponent', () => {
   let component: InvestigatorSkillComponent;
@@ -9,7 +9,7 @@ describe('InvestigatorSkillComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [InvestigatorSkillComponent],
     }).compileComponents();
 

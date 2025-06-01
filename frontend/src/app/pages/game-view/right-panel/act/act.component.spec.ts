@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ActComponent } from './act.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { testAct } from 'shared/domain/test/entities/test-act';
 import { By } from '@angular/platform-browser';
 
@@ -12,7 +12,7 @@ describe('ActComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ActComponent],
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActComponent);
