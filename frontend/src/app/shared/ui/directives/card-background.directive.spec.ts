@@ -2,7 +2,7 @@ import { CardBackgroundDirective } from './card-background.directive';
 import {
   Component,
   input,
-  provideExperimentalZonelessChangeDetection,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -23,7 +23,7 @@ describe('CardBackgroundDirective', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [TestComponent],
     }).compileComponents();
 

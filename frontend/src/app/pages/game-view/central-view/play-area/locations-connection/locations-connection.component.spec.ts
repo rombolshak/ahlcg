@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationsConnectionComponent } from './locations-connection.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { testGameMap } from '../../../../../shared/domain/test/test-game-map';
 
@@ -12,7 +12,7 @@ describe('LocationsConnectionComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LocationsConnectionComponent],
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     const d1 = document.createElement('div');

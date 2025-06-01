@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationHeaderComponent } from './location-header.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
 
@@ -11,7 +11,7 @@ describe('LocationHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [LocationHeaderComponent],
     }).compileComponents();
 

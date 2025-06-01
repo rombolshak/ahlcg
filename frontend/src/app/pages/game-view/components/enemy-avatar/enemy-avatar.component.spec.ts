@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnemyAvatarComponent } from './enemy-avatar.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 
 describe('EnemyAvatarComponent', () => {
@@ -11,7 +11,7 @@ describe('EnemyAvatarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EnemyAvatarComponent],
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnemyAvatarComponent);

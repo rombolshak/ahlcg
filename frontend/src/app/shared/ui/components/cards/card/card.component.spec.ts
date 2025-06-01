@@ -9,7 +9,7 @@ import {
   displayOption,
 } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -17,7 +17,7 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [CardComponent, NoopAnimationsModule],
     }).compileComponents();
 

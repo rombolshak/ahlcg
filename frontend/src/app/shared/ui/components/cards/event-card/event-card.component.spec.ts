@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EventCardComponent } from './event-card.component';
 import { cardE, displayOption } from 'shared/domain/test/entities/test-cards';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('EventCardComponent', () => {
   let component: EventCardComponent;
@@ -10,7 +10,7 @@ describe('EventCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [EventCardComponent],
     }).compileComponents();
 

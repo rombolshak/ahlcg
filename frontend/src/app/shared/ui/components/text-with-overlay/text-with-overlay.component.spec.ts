@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TextWithOverlayComponent } from './text-with-overlay.component';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('TextWithOverlayComponent', () => {
   let component: TextWithOverlayComponent;
@@ -10,7 +10,7 @@ describe('TextWithOverlayComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [TextWithOverlayComponent],
     }).compileComponents();
 

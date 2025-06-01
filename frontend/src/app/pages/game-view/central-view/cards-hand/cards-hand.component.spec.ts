@@ -4,7 +4,7 @@ import { CardsHandComponent } from './cards-hand.component';
 import { cardA, cardE, cardS } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('CardsHandComponent', () => {
   let component: CardsHandComponent;
@@ -12,7 +12,7 @@ describe('CardsHandComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [CardsHandComponent, NoopAnimationsModule],
     }).compileComponents();
 

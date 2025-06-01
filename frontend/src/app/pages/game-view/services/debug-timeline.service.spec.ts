@@ -6,10 +6,7 @@ import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { InvestigatorS } from '../../../shared/domain/test/entities/test-investigators';
 import { createPatch } from 'rfc6902';
 import { Enemy } from '../../../shared/domain/entities/enemy.model';
-import {
-  provideExperimentalZonelessChangeDetection,
-  signal,
-} from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 
 const testGameState2 = {
   ...testGameState,
@@ -42,7 +39,7 @@ describe('GameDebugTimelineServiceService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        provideExperimentalZonelessChangeDetection(),
+        provideZonelessChangeDetection(),
         DebugTimelineService,
         {
           provide: GameStateStore,
