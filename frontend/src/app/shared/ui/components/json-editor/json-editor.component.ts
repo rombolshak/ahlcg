@@ -42,7 +42,11 @@ export class JsonEditorComponent<T> implements OnDestroy {
             content: { text: '' },
             validator: this.validateFn(),
             onChange: (content: Content) => {
-              this.update.emit(toJSONContent(content).json as T);
+              try {
+                this.update.emit(toJSONContent(content).json as T);
+              } catch {
+                console.warn('Invalid json content');
+              }
             },
           },
         });
