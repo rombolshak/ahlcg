@@ -1,5 +1,6 @@
 {
   "name": "ahlcg",
+  "type": "module",
   "version": "0.0.0",
   "commitlint": {
     "extends": [
@@ -25,7 +26,8 @@
     "lint:all": "npm run lint:tsc:all && npm run lint && npm run lint:style && npm run lint:spelling && npm run lint:format",
     "ci:all": "npm run lint:all && npm run test:ci",
     "shove": "git config push.autoSetupRemote true && git add . && git commit -m 'wip: shoved' --no-verify && git push --no-verify",
-    "prepare": "husky"
+    "prepare": "husky",
+    "generate-i18n": "node --experimental-strip-types scripts/generate-cards-i18n.js"
   },
   "private": true,
   "dependencies": {
@@ -93,5 +95,11 @@
     "tsc-files": "^1.1.4",
     "typescript": "~5.8.3",
     "typescript-eslint": "8.33.1"
+  },
+  "overrides": {
+    "@ngrx/signals": {
+      "@angular/common": "$@angular/common",
+      "@angular/core": "$@angular/core"
+    }
   }
 }

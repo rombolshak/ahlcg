@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title", "flavor"],
+  "traits": ["innate", "cursed"],
+  "abilities": 1,
+  "copyright": {
+    "illustrator": "David Hovey",
+    "ffg": "2024"
+  }
+}

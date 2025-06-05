@@ -13,7 +13,7 @@ export default config(
       "dist/*",
       "coverage/*",
       "eslint.config.js",
-      "karma.conf.js",
+      "karma.conf.cjs",
     ],
   },
   {
