@@ -1,4 +1,11 @@
-﻿{
+{
+  "traits_insight": "Insight",
+  "traits_tactic": "Tactic",
+  "traits_item": "Item",
+  "traits_book": "Book",
+  "traits_science": "Science",
+  "traits_innate": "Innate",
+  "traits_cursed": "Cursed",
   "cards_02_107_title": "\"I've got a plan!\"",
   "cards_02_107_flavor": "\"That's the worst plan I've ever heard.\n Well, what are we waiting for?\"",
   "cards_02_107_a1": "<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).",
@@ -7,5 +14,5 @@
   "cards_09_045_a2": "#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.",
   "cards_10_095_title": "Accursed",
   "cards_10_095_flavor": "Not all who wander are lost.",
-  "cards_10_095_title_a1": "When you commit Accursed to a skill test, add up to 3 #Z# tokens to the chaos bag. During this skill test, treat the modifier of each #Z# token revealed as 0."
+  "cards_10_095_a1": "When you commit Accursed to a skill test, add up to 3 #Z# tokens to the chaos bag. During this skill test, treat the modifier of each #Z# token revealed as 0."
 }
