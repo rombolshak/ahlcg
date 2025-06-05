@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title"],
+  "traits": ["item", "book", "science"],
+  "abilities": 2,
+  "copyright": {
+    "illustrator": "Pixoloid Studious",
+    "ffg": "2022"
+  }
+}

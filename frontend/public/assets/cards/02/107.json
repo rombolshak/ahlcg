@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title", "flavor"],
+  "traits": ["insight", "tactic"],
+  "abilities": 1,
+  "copyright": {
+    "illustrator": "Robert Laskey",
+    "ffg": "2016"
+  }
+}
