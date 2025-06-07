@@ -5,8 +5,8 @@ import { mkdirSync, readdir, readFileSync, writeFileSync } from "fs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = dirname(__dirname);
 const assets = join(root, "public", "assets");
-const generated = join(assets, "generated");
-const i18n = join(assets, "i18n");
+const generated = join(assets, "i18n", "generated");
+const i18n = join(root, "src", "cards-i18n");
 
 function createDirectoryStructure(loc, filename, basePath = ".") {
   // Separate string entries and nested objects
