@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
   ErrorHandler,
+  isDevMode,
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
@@ -11,6 +12,8 @@ import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
 import { provideHttpClient } from '@angular/common/http';
+import { TranslocoHttpLoader } from './transloco-loader';
+import { provideTransloco } from '@jsverse/transloco';
 
 Bugsnag.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
 BugsnagPerformance.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
@@ -29,5 +32,28 @@ export const appConfig: ApplicationConfig = {
       provide: ErrorHandler,
       useFactory: errorHandlerFactory,
     },
+    provideHttpClient(),
+    provideTransloco({
+      config: {
+        availableLangs: [
+          'en',
+          'ru',
+          'fr',
+          'de',
+          'it',
+          'ko',
+          'pl',
+          'pt',
+          'es',
+          'uk',
+          'zh',
+        ],
+        defaultLang: 'en',
+        // Remove this option if your application doesn't support changing language in runtime.
+        reRenderOnLangChange: true,
+        prodMode: !isDevMode(),
+      },
+      loader: TranslocoHttpLoader,
+    }),
   ],
 };

@@ -14,11 +14,13 @@
     "doesnt",
     "gsap",
     "jsoneditor",
+    "jsverse",
     "lintstagedrc",
     "ngrx",
     "panzoom",
     "prefersdark",
     "rombolshak",
+    "transloco",
     "twoarcane",
     "yoyo"
   ],
@@ -48,6 +50,6 @@
     "softwareTerms",
     "typescript"
   ],
-  "ignorePaths": ["*test*", "assets"],
+  "ignorePaths": ["*test*", "*spec.ts", "assets"],
   "import": ["@cspell/dict-ru_ru/cspell-ext.json"]
 }

@@ -24,7 +24,9 @@ describe('NumericTextComponent', () => {
   });
 
   it('should fire event after animation', (done) => {
-    component.animationCompleted.subscribe(done);
+    component.animationCompleted.subscribe(() => {
+      done();
+    });
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
     TestBed.tick();
