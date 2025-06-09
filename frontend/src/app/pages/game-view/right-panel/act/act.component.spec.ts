@@ -4,6 +4,8 @@ import { ActComponent } from './act.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testAct } from 'shared/domain/test/entities/test-act';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('ActComponent', () => {
   let component: ActComponent;
@@ -11,8 +13,8 @@ describe('ActComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ActComponent],
-      providers: [provideZonelessChangeDetection()],
+      imports: [ActComponent, getTranslocoModule()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ActComponent);
@@ -69,7 +71,7 @@ describe('ActComponent', () => {
   it('should display act title', () => {
     expect(
       (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain('Прорываясь вперёд');
+    ).toContain('Обиталище Зверя');
   });
 
   it('should calc max lines for objective', async () => {

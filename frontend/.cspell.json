@@ -50,6 +50,6 @@
     "softwareTerms",
     "typescript"
   ],
-  "ignorePaths": ["*test*", "*spec.ts", "assets", "cards-i18n"],
+  "ignorePaths": ["*test*", "*spec.ts", "assets"],
   "import": ["@cspell/dict-ru_ru/cspell-ext.json"]
 }

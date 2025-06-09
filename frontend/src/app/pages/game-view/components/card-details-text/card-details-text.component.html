@@ -1,29 +1,34 @@
-@if (cardInfo()) {
-  @if (showTitle()) {
-    <p class="font-[Conkordia] text-lg/5 text-center mb-0" data-testId="title">
-      {{ cardInfo()!.title }}
-    </p>
-  }
-  @if (cardInfo()!.subtitle) {
-    <p class="font-[ArnoPro] text-sm text-center mb-1" data-testId="subtitle">
-      {{ cardInfo()!.subtitle }}
-    </p>
-  }
-  <p
-    class="font-[ArnoProBold] italic text-sm text-center mb-1"
-    data-testId="traits"
-  >
-    @for (trait of cardInfo()!.traits; track $index) {
-      <span>{{ trait }}.</span>
+<ng-container *transloco="let t">
+  @if (cardInfo()) {
+    @if (showTitle()) {
+      <p
+        class="font-[Conkordia] text-lg/5 text-center mb-0"
+        data-testId="title"
+      >
+        {{ t(cardInfo()!.title) }}
+      </p>
     }
-  </p>
-  @for (ability of cardInfo()!.abilities; track $index) {
+    @if (cardInfo()!.subtitle) {
+      <p class="font-[ArnoPro] text-sm text-center mb-1" data-testId="subtitle">
+        {{ t(cardInfo()!.subtitle!) }}
+      </p>
+    }
     <p
-      class="mb-1 whitespace-pre-wrap font-[ArnoPro] text-base/4"
-      data-testId="ability"
-      [innerHtml]="ability | withAhSymbols"
-    ></p>
+      class="font-[ArnoProBold] italic text-sm text-center mb-1"
+      data-testId="traits"
+    >
+      @for (trait of cardInfo()!.traits; track $index) {
+        <span class="mr-1">{{ t(trait) }}.</span>
+      }
+    </p>
+    @for (ability of cardInfo()!.abilities; track $index) {
+      <p
+        class="mb-1 whitespace-pre-wrap font-[ArnoPro] text-base/4"
+        data-testId="ability"
+        [innerHtml]="t(ability) | withAhSymbols"
+      ></p>
+    }
   }
-}
 
-<ng-content />
+  <ng-content />
+</ng-container>

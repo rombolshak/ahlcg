@@ -12,6 +12,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
 import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
 import { CardInfoService } from '../../../../../../shared/services/card-info.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-location-header',
@@ -20,6 +21,7 @@ import { CardInfoService } from '../../../../../../shared/services/card-info.ser
     NgOptimizedImage,
     NumericTextComponent,
     NumericTextWithOverlayComponent,
+    TranslocoPipe,
   ],
   templateUrl: './location-header.component.html',
   host: {
@@ -32,7 +34,12 @@ export class LocationHeaderComponent {
   readonly location = input<Location>();
   readonly imageService = inject(ImagesUrlService);
 
-  private readonly cardInfoService = inject(CardInfoService);
-  private readonly cardInfo = this.cardInfoService.getCardInfo(this.location);
-  readonly title = computed(() => this.cardInfo()?.title);
+  private readonly cardInfo = inject(CardInfoService).getCardInfo(
+    this.location,
+  );
+  readonly title = computed(() => {
+    const title = this.cardInfo()?.title;
+    console.log('QQQQQQQQQQQQQQ', title);
+    return title;
+  });
 }

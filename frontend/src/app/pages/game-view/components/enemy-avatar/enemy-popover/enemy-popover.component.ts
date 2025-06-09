@@ -13,10 +13,11 @@ import {
   ImagesUrlService,
 } from 'shared/services/images-url.service';
 import { CardInfoService } from '../../../../../shared/services/card-info.service';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-enemy-popover',
-  imports: [CardDetailsTextComponent, NgOptimizedImage],
+  imports: [CardDetailsTextComponent, NgOptimizedImage, TranslocoDirective],
   templateUrl: './enemy-popover.component.html',
   host: {
     class: 'bg-linear-to-b from-zinc-100 to-zinc-300 rounded px-2 py-1',

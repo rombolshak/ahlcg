@@ -19,6 +19,7 @@ describe('CardCopyrightComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('card', {
       copyright: { illustrator: 'Test Art', ffg: '2015' },
+      setInfo: { set: '01', index: '001' },
     });
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();

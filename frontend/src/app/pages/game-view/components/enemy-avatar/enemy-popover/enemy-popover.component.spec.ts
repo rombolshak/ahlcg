@@ -3,6 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EnemyPopoverComponent } from './enemy-popover.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
+import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('EnemyPopoverComponent', () => {
   let component: EnemyPopoverComponent;
@@ -10,8 +12,8 @@ describe('EnemyPopoverComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EnemyPopoverComponent],
-      providers: [provideZonelessChangeDetection()],
+      imports: [EnemyPopoverComponent, getTranslocoModule()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnemyPopoverComponent);

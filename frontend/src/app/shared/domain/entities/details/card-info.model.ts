@@ -8,11 +8,12 @@ export const setInfo = type({
 export type SetInfo = typeof setInfo.infer;
 
 const _cardInfo = type({
+  'isLoadedWithError?': 'boolean',
   title: 'string',
   'subtitle?': 'string',
   'flavor?': 'string',
   'traits?': 'string[]',
-  abilities: 'string[]',
+  'abilities?': 'string[]',
   copyright: {
     illustrator: 'string',
     ffg: 'string',

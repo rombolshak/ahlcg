@@ -12,6 +12,7 @@ import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
 import { CardInfoService } from 'shared/services/card-info.service';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-act',
@@ -21,6 +22,7 @@ import { CardInfoService } from 'shared/services/card-info.service';
     NgOptimizedImage,
     NgClass,
     SingleBarComponent,
+    TranslocoDirective,
   ],
   templateUrl: './act.component.html',
   host: {

@@ -10,10 +10,16 @@ import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 import { CardInfoService } from 'shared/services/card-info.service';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-agenda',
-  imports: [NgOptimizedImage, NgClass, CardDetailsTextComponent],
+  imports: [
+    NgOptimizedImage,
+    NgClass,
+    CardDetailsTextComponent,
+    TranslocoDirective,
+  ],
   templateUrl: './agenda.component.html',
   host: {
     class:

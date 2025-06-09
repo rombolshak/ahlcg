@@ -5,6 +5,8 @@ import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { InvestigatorS } from '../../../../shared/domain/test/entities/test-investigators';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardDetailsTextComponent', () => {
   let component: CardDetailsTextComponent;
@@ -12,8 +14,8 @@ describe('CardDetailsTextComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [CardDetailsTextComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardDetailsTextComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardDetailsTextComponent);

@@ -7,10 +7,11 @@ import {
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 import { CardInfoService } from 'shared/services/card-info.service';
 import { GameCard } from '../../../../shared/domain/entities/card.model';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-card-details-text',
-  imports: [WithAhSymbolsPipe],
+  imports: [WithAhSymbolsPipe, TranslocoDirective],
   templateUrl: './card-details-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

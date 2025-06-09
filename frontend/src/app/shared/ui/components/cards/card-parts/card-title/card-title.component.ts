@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 import { NgClass } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-card-title',
-  imports: [NgClass],
+  imports: [NgClass, TranslocoPipe],
   template: `
     <div
       class="w-full font-[Conkordia]
@@ -14,7 +15,7 @@ import { NgClass } from '@angular/common';
     group-data-[size=i]:text-lg/[18px]"
       [ngClass]="align() === 'center' ? 'text-center' : 'text-left'"
     >
-      {{ card().title }}
+      {{ card().title | transloco }}
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

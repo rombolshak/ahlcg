@@ -4,6 +4,8 @@ import { ControlAreaComponent } from './control-area.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { cardA, cardA3, cardA4 } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('ControlAreaComponent', () => {
   let component: ControlAreaComponent;
@@ -11,8 +13,8 @@ describe('ControlAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [ControlAreaComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [ControlAreaComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ControlAreaComponent);

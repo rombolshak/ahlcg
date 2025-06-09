@@ -4,6 +4,8 @@ import { CardTraitsComponent } from './card-traits.component';
 import { displayOption } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardTraitsComponent', () => {
   let component: CardTraitsComponent;
@@ -11,8 +13,8 @@ describe('CardTraitsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [CardTraitsComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardTraitsComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardTraitsComponent);
