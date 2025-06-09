@@ -1,14 +1,23 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
-import { CardInfo } from 'shared/domain/entities/details/card-info.model';
+import { CardInfoService } from 'shared/services/card-info.service';
+import { GameCard } from '../../../../shared/domain/entities/card.model';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-card-details-text',
-  imports: [WithAhSymbolsPipe],
+  imports: [WithAhSymbolsPipe, TranslocoDirective],
   templateUrl: './card-details-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardDetailsTextComponent {
-  readonly card = input.required<CardInfo>();
+  private readonly cardInfoService = inject(CardInfoService);
+  readonly card = input.required<GameCard>();
   readonly showTitle = input<boolean>(true);
+  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
 }

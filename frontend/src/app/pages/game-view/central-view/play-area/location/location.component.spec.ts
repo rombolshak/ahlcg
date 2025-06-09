@@ -10,6 +10,9 @@ import {
 } from 'shared/domain/test/entities/test-investigators';
 import { GameStateStore } from '../../../store/game-state.store';
 import { testGameState } from '../../../../../shared/domain/test/test-game-state';
+import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -17,8 +20,12 @@ describe('LocationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [LocationComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+      imports: [LocationComponent, getTranslocoModule()],
     }).compileComponents();
 
     const store = TestBed.inject(GameStateStore);

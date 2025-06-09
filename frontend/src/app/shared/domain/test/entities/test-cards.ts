@@ -10,24 +10,11 @@ export const displayOption: DisplayOptions = { cardSize: 'm', textSize: 'm' };
 
 export const cardE: EventCard = {
   id: eventId.assert('1'),
-  type: 'event',
-  info: {
-    title: '"I\'ve got a plan!"',
-    traits: ['Insight', 'Tactic'],
-    abilities: [
-      '<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).',
-    ],
-    flavor:
-      '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
-    setInfo: {
-      set: '02',
-      index: '107',
-    },
-    copyright: {
-      illustrator: 'Robert Laskey',
-      ffg: '2016',
-    },
+  setInfo: {
+    set: '02',
+    index: '107',
   },
+  cardType: 'event',
   skills: {
     intellect: 1,
     combat: 1,
@@ -38,22 +25,10 @@ export const cardE: EventCard = {
 
 export const cardA: AssetCard = {
   id: assetId.assert('2'),
-  type: 'asset',
-  info: {
-    title: 'Исследовательские заметки',
-    traits: ['Вещь', 'Книга', 'Наука'],
-    abilities: [
-      '#r#: After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.',
-      '#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.',
-    ],
-    setInfo: {
-      set: '09',
-      index: '045',
-    },
-    copyright: {
-      illustrator: 'Pixoloid Studious',
-      ffg: '2022',
-    },
+  cardType: 'asset',
+  setInfo: {
+    set: '09',
+    index: '045',
   },
   class: 'seeker',
   skills: { intellect: 2 },
@@ -66,10 +41,6 @@ export const cardA2: AssetCard = {
   id: assetId.assert('3'),
   class: 'guardian',
   slot: 'ally',
-  info: {
-    ...cardA.info,
-    subtitle: 'Law enforcer',
-  },
   health: {
     max: 2,
     damaged: 0,
@@ -98,22 +69,10 @@ export const cardA5: AssetCard = {
 
 export const cardS: SkillCard = {
   id: skillId.assert('7'),
-  type: 'skill',
-  info: {
-    title: 'Обречённый на проклятья',
-    traits: ['Врождённый', 'Проклятый'],
-    abilities: [
-      'Когда вы добавляете эту карту к проверке, добавьте в мешок хаоса до 3 жетонов #Z#.\n В этой проверке считайте модификатор каждого вытянутого жетона #Z# равным 0.',
-    ],
-    flavor: 'Не всякий скиталец — потерянный',
-    setInfo: {
-      set: '10',
-      index: '095',
-    },
-    copyright: {
-      illustrator: 'David Hovey',
-      ffg: '2024',
-    },
+  cardType: 'skill',
+  setInfo: {
+    set: '10',
+    index: '095',
   },
   class: 'survivor',
   skills: {

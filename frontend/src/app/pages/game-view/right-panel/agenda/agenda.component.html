@@ -1,9 +1,13 @@
-<div class="text-white peer text-center">
-  <p class="text-sm/4 font-[ArnoPro] -my-1">Agenda {{ agenda().stage }}</p>
-  <p class="text-xl font-[Conkordia]">
-    {{ agenda().info.title }}
-  </p>
-</div>
+<ng-container *transloco="let t">
+  <div class="text-white peer text-center">
+    <p class="text-sm/4 font-[ArnoPro] -my-1">
+      {{ t("agenda") }} {{ agenda().stage }}
+    </p>
+    <p class="text-xl font-[Conkordia]">
+      {{ t(title()!) }}
+    </p>
+  </div>
+</ng-container>
 
 <div
   class="grid grid-flow-col gap-1"
@@ -50,6 +54,6 @@
     peer-hover:h-auto peer-hover:opacity-100"
   [class]="hostClasses()"
   [showTitle]="false"
-  [card]="agenda().info"
+  [card]="agenda()"
 />
 <!-- eslint-enable @angular-eslint/template/no-duplicate-attributes -->

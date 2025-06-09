@@ -4,7 +4,7 @@ import { locationId } from './id.model';
 
 const _location = gameCard.and({
   id: locationId,
-  type: "'location'",
+  cardType: "'location'",
   shroud: 'number.integer >= 0',
   clues: 'number.integer >= 0',
   color: 'string',

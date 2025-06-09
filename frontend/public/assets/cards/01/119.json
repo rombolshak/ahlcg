@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title", "flavor"],
+  "traits": ["humanoid", "monster", "ghoul"],
+  "abilities": 1,
+  "copyright": {
+    "ffg": "2016",
+    "illustrator": "Chun Lo"
+  }
+}

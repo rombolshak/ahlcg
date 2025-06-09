@@ -1,63 +1,67 @@
-<div class="peer text-center peer">
-  <p class="text-sm/4 font-[ArnoPro] -my-1">Act {{ act().stage }}</p>
-  <p class="text-xl font-[Conkordia]">
-    {{ act().info.title }}
-  </p>
-</div>
+<ng-container *transloco="let t">
+  <div class="peer text-center peer">
+    <p class="text-sm/4 font-[ArnoPro] -my-1">
+      {{ t("act") }} {{ act().stage }}
+    </p>
+    <p class="text-xl font-[Conkordia]">
+      {{ t(title()!) }}
+    </p>
+  </div>
 
-@for (objective of act().objectives; track $index) {
-  <p
-    data-testId="objective"
-    [innerHTML]="objective.description | withAhSymbols"
-  ></p>
-  @switch (objective.type) {
-    @case ("health") {
-      <ah-single-bar
-        class="h-5 w-full mb-2"
-        goodColor="bg-red-900"
-        badColor="bg-slate-950"
-        [current]="objective.currentValue"
-        [max]="objective.startValue || objective.requiredValue"
-      />
-    }
-    @default {
-      <div
-        class="grid grid-flow-col gap-1 mb-2"
-        [ngClass]="
-          maxLines()[$index] === 1
-            ? 'grid-rows-1'
-            : maxLines()[$index] === 2
-              ? 'grid-rows-2'
-              : 'grid-rows-3'
-        "
-      >
-        @for (_ of [].constructor(objective.currentValue); track $index) {
-          <img
-            width="36"
-            height="36"
-            alt="objective token"
-            class="brightness-125 flex-none"
-            [ngSrc]="imageService.getSimpleOverlay(objective.type)"
-          />
-        }
-        @for (_ of [].constructor(emptySlots()[$index]); track $index) {
-          <img
-            width="36"
-            height="36"
-            alt="objective token"
-            class="brightness-25 flex-none"
-            [ngSrc]="imageService.getSimpleOverlay(objective.type)"
-          />
-        }
-      </div>
+  @for (objective of act().objectives; track $index) {
+    <p
+      data-testId="objective"
+      [innerHTML]="t(objective.description) | withAhSymbols"
+    ></p>
+    @switch (objective.type) {
+      @case ("health") {
+        <ah-single-bar
+          class="h-5 w-full mb-2"
+          goodColor="bg-red-900"
+          badColor="bg-slate-950"
+          [current]="objective.currentValue"
+          [max]="objective.startValue || objective.requiredValue"
+        />
+      }
+      @default {
+        <div
+          class="grid grid-flow-col gap-1 mb-2"
+          [ngClass]="
+            maxLines()[$index] === 1
+              ? 'grid-rows-1'
+              : maxLines()[$index] === 2
+                ? 'grid-rows-2'
+                : 'grid-rows-3'
+          "
+        >
+          @for (_ of [].constructor(objective.currentValue); track $index) {
+            <img
+              width="36"
+              height="36"
+              alt="objective token"
+              class="brightness-125 flex-none"
+              [ngSrc]="imageService.getSimpleOverlay(objective.type)"
+            />
+          }
+          @for (_ of [].constructor(emptySlots()[$index]); track $index) {
+            <img
+              width="36"
+              height="36"
+              alt="objective token"
+              class="brightness-25 flex-none"
+              [ngSrc]="imageService.getSimpleOverlay(objective.type)"
+            />
+          }
+        </div>
+      }
     }
   }
-}
+</ng-container>
 
 <ah-card-details-text
   class="absolute w-full px-2 top-[2.5rem] rounded h-0 opacity-0 peer-hover:h-auto
     peer-hover:opacity-100"
   [showTitle]="false"
-  [card]="act().info"
+  [card]="act()"
   [ngClass]="hostClasses()"
 />

@@ -1,0 +1,8 @@
+﻿{
+  "fields": ["title", "flavor"],
+  "abilities": 1,
+  "copyright": {
+    "illustrator": "Stephen Somers",
+    "ffg": "2016"
+  }
+}

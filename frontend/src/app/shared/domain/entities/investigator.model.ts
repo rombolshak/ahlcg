@@ -6,7 +6,7 @@ import { assetId, enemyId, investigatorId, playerCardId } from './id.model';
 
 const _investigator = gameCard.and({
   id: investigatorId,
-  type: "'investigator'",
+  cardType: "'investigator'",
   health,
   sanity,
   skills: skills.omit('wild'),

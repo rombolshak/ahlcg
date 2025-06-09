@@ -11,6 +11,8 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
+import { CardInfoService } from 'shared/services/card-info.service';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-act',
@@ -20,6 +22,7 @@ import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/s
     NgOptimizedImage,
     NgClass,
     SingleBarComponent,
+    TranslocoDirective,
   ],
   templateUrl: './act.component.html',
   host: {
@@ -32,6 +35,9 @@ import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/s
 export class ActComponent {
   readonly act = input.required<Act>();
   protected readonly imageService = inject(ImagesUrlService);
+
+  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.act);
+  readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptySlots = computed(() =>
     this.act().objectives.map((o) =>

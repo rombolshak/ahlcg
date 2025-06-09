@@ -35,17 +35,17 @@ function validateEntity(
       problem: `${entityType.toString()} '${id}' does not exists in gameEntities.`,
     });
   if (entityType instanceof Array) {
-    if (!entityType.find((v) => v === gameEntities[id]?.type))
+    if (!entityType.find((v) => v === gameEntities[id]?.cardType))
       return ctx.reject({
         path: path,
         expected: entityType.join(' or '),
-        actual: gameEntities[id].type,
+        actual: gameEntities[id].cardType,
       });
-  } else if (gameEntities[id].type !== entityType)
+  } else if (gameEntities[id].cardType !== entityType)
     return ctx.reject({
       path: path,
       expected: entityType,
-      actual: gameEntities[id].type,
+      actual: gameEntities[id].cardType,
     });
 
   return true;

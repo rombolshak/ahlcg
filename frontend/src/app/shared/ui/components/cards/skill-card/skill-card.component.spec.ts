@@ -3,6 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SkillCardComponent } from './skill-card.component';
 import { cardS, displayOption } from 'shared/domain/test/entities/test-cards';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('SkillCardComponent', () => {
   let component: SkillCardComponent;
@@ -10,8 +12,8 @@ describe('SkillCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [SkillCardComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [SkillCardComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SkillCardComponent);

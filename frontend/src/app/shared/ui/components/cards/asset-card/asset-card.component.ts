@@ -1,8 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  input,
   inject,
+  input,
 } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import {
@@ -17,6 +17,7 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
 import { CardAbilitiesComponent } from '../card-parts/card-abilities/card-abilities.component';
 import { CardCopyrightComponent } from '../card-parts/card-copyright/card-copyright.component';
 import { DisplayOptions } from 'shared/domain/display.options';
+import { CardInfoService } from 'shared/services/card-info.service';
 
 @Component({
   selector: 'ah-asset-card',
@@ -33,9 +34,9 @@ import { DisplayOptions } from 'shared/domain/display.options';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetCardComponent {
-  imagesService = inject(ImagesUrlService);
-
   readonly card = input.required<AssetCard>();
+  imagesService = inject(ImagesUrlService);
+  readonly cardInfo = inject(CardInfoService).getCardInfo(this.card);
   readonly displayOptions = input.required<DisplayOptions>();
   slotSizes = {
     l: 64,

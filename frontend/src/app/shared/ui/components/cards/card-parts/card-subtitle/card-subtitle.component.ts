@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CardInfo } from 'shared/domain/entities/details/card-info.model';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-card-subtitle',
-  imports: [],
+  imports: [TranslocoPipe],
   template: `
     <div
       class="w-full font-[ArnoPro] text-center
@@ -12,7 +13,7 @@ import { CardInfo } from 'shared/domain/entities/details/card-info.model';
     group-data-[size=s]:pl-[30px] group-data-[size=s]:pr-[22px] group-data-[size=s]:text-[10px]/[10px]
     group-data-[size=i]:text-xs/[12px]"
     >
-      {{ card().subtitle }}
+      {{ card().subtitle | transloco }}
     </div>
   `,
   styles: ``,

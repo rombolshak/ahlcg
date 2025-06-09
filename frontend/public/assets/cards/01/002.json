@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title", "subtitle"],
+  "traits": ["miskatonic"],
+  "abilities": 2,
+  "copyright": {
+    "ffg": "2016",
+    "illustrator": "Magali Villeneuve"
+  }
+}

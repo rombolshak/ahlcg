@@ -1,0 +1,15 @@
+{
+  "insight": "Insight",
+  "tactic": "Tactic",
+  "item": "Item",
+  "book": "Book",
+  "science": "Science",
+  "innate": "Innate",
+  "cursed": "Cursed",
+  "miskatonic": "Miskatonic",
+  "humanoid": "Humanoid",
+  "monster": "Monster",
+  "ghoul": "Ghoul",
+  "arkham": "Arkham",
+  "ritual": "Ritual"
+}

@@ -1,22 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 
 import { CardInfoService } from './card-info.service';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { BehaviorSubject, catchError, of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { cardE } from '../domain/test/entities/test-cards';
 import { provideHttpClient } from '@angular/common/http';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { cardE } from '../domain/test/entities/test-cards';
 
 describe('CardInfoService', () => {
   let service: CardInfoService;
   let http: HttpTestingController;
   const transloco = {
     langChanges$: new BehaviorSubject('en'),
+    load: () => of({}),
   };
 
   beforeEach(() => {
@@ -42,20 +43,32 @@ describe('CardInfoService', () => {
 
   it('should load json files', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' })).subscribe(
-        (data) => {
-          console.log('CARDINFO', data);
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id)).subscribe((data) => {
+        if (!data) return;
 
-          expect(data).toBeTruthy();
-          expect(data).toEqual(cardE.info);
-          expect(data?.traits?.length ?? 0).toEqual(2);
+        expect(data).toBeTruthy();
+        expect(data).toEqual({
+          title: 'cards02107.title',
+          traits: ['traits.insight', 'traits.tactic'],
+          abilities: ['cards02107.a1'],
+          flavor: 'cards02107.flavor',
+          setInfo: {
+            set: '02',
+            index: '107',
+          },
+          copyright: {
+            illustrator: 'Robert Laskey',
+            ffg: '2016',
+          },
+        });
 
-          http.verify();
-          done();
-        },
-      );
+        http.verify();
+        done();
+      });
     });
 
+    TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
       fields: ['title', 'flavor'],
       traits: ['insight', 'tactic'],
@@ -65,35 +78,25 @@ describe('CardInfoService', () => {
         ffg: '2016',
       },
     });
-    http.expectOne('/assets/i18n/generated/cards/02/107/en.json').flush({
-      title: '"I\'ve got a plan!"',
-      flavor:
-        '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
-      a1: '<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).',
-    });
-    http.expectOne('/assets/i18n/generated/traits/en.json').flush({
-      insight: 'Insight',
-      tactic: 'Tactic',
-    });
   });
 
   it('should throw for incorrect description (non existent field)', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
-        .pipe(
-          catchError((err: Error) => {
-            return of(err);
-          }),
-        )
-        .subscribe((data) => {
-          expect(data).toBeInstanceOf(Error);
-          expect((data as Error).message).toContain('nonexistent');
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id)).subscribe({
+        next: (data) => {
+          if (!data) return;
+
+          expect(data.isLoadedWithError).toBeTrue();
+          expect(data.title).toContain('nonexistent');
 
           http.verify();
           done();
-        });
+        },
+      });
     });
 
+    TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
       fields: ['title', 'flavor', 'nonexistent'],
       traits: ['insight', 'tactic'],
@@ -102,27 +105,23 @@ describe('CardInfoService', () => {
         ffg: '2016',
       },
     });
-    http.expectOne('/assets/i18n/generated/cards/02/107/en.json');
-    http.expectOne('/assets/i18n/generated/traits/en.json');
   });
 
   it('should throw for incorrect description (missing required fields)', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
-        .pipe(
-          catchError((err: Error) => {
-            return of(err);
-          }),
-        )
-        .subscribe((data) => {
-          expect(data).toBeInstanceOf(Error);
-          expect((data as Error).message).toContain('title');
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id)).subscribe((data) => {
+        if (!data) return;
 
-          http.verify();
-          done();
-        });
+        expect(data.isLoadedWithError).toBeTrue();
+        expect(data.title).toContain('title');
+
+        http.verify();
+        done();
+      });
     });
 
+    TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
       fields: ['flavor'],
       traits: ['insight', 'tactic'],
@@ -131,89 +130,6 @@ describe('CardInfoService', () => {
         illustrator: 'Robert Laskey',
         ffg: '2016',
       },
-    });
-    http.expectOne('/assets/i18n/generated/cards/02/107/en.json').flush({
-      title: '"I\'ve got a plan!"',
-      flavor:
-        '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
-      a1: '<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).',
-    });
-    http.expectOne('/assets/i18n/generated/traits/en.json').flush({
-      insight: 'Insight',
-      tactic: 'Tactic',
-    });
-  });
-
-  it('should throw for incorrect strings', (done) => {
-    TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
-        .pipe(
-          catchError((err: Error) => {
-            return of(err);
-          }),
-        )
-        .subscribe((data) => {
-          expect(data).toBeInstanceOf(Error);
-          expect((data as Error).message).toContain('a1');
-
-          http.verify();
-          done();
-        });
-    });
-
-    http.expectOne('/assets/cards/02/107.json').flush({
-      fields: ['title', 'flavor'],
-      traits: ['insight', 'tactic'],
-      abilities: 1,
-      copyright: {
-        illustrator: 'Robert Laskey',
-        ffg: '2016',
-      },
-    });
-    http.expectOne('/assets/i18n/generated/cards/02/107/en.json').flush({
-      title: '"I\'ve got a plan!"',
-      flavor:
-        '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
-    });
-    http.expectOne('/assets/i18n/generated/traits/en.json').flush({
-      insight: 'Insight',
-      tactic: 'Tactic',
-    });
-  });
-
-  it('should throw for missing traits', (done) => {
-    TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
-        .pipe(
-          catchError((err: Error) => {
-            return of(err);
-          }),
-        )
-        .subscribe((data) => {
-          expect(data).toBeInstanceOf(Error);
-          expect((data as Error).message).toContain('tactic');
-
-          http.verify();
-          done();
-        });
-    });
-
-    http.expectOne('/assets/cards/02/107.json').flush({
-      fields: ['title', 'flavor'],
-      traits: ['insight', 'tactic'],
-      abilities: 1,
-      copyright: {
-        illustrator: 'Robert Laskey',
-        ffg: '2016',
-      },
-    });
-    http.expectOne('/assets/i18n/generated/cards/02/107/en.json').flush({
-      title: '"I\'ve got a plan!"',
-      flavor:
-        '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
-    });
-    http.expectOne('/assets/i18n/generated/traits/en.json').flush({
-      insight: 'Insight',
     });
   });
 });

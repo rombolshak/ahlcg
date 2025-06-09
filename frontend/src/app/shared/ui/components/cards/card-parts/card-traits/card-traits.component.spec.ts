@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardTraitsComponent } from './card-traits.component';
-import { cardA, displayOption } from 'shared/domain/test/entities/test-cards';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardTraitsComponent', () => {
   let component: CardTraitsComponent;
@@ -11,13 +13,13 @@ describe('CardTraitsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [CardTraitsComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardTraitsComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardTraitsComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA.info);
+    fixture.componentRef.setInput('card', { traits: ['TraitA', 'TraitB'] });
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });
@@ -27,12 +29,10 @@ describe('CardTraitsComponent', () => {
   });
 
   it('should print traits', () => {
-    expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(
-      cardA.info.traits?.length ?? 0,
-    );
+    expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(2);
 
     expect(
       fixture.debugElement.query(By.css('span')).nativeElement.innerText,
-    ).toContain(cardA.info.traits?.[0]);
+    ).toContain('TraitA');
   });
 });

@@ -5,6 +5,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../shared/domain/test/transloco.testing';
 
 describe('GameViewComponent', () => {
   let component: GameViewComponent;
@@ -13,7 +14,7 @@ describe('GameViewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideHttpClient()],
-      imports: [GameViewComponent, NoopAnimationsModule],
+      imports: [GameViewComponent, NoopAnimationsModule, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GameViewComponent);

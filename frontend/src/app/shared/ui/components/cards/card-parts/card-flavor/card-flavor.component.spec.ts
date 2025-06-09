@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardFlavorComponent } from './card-flavor.component';
-import { cardS } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
 
 describe('CardFlavorComponent', () => {
   let component: CardFlavorComponent;
@@ -11,13 +12,13 @@ describe('CardFlavorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-      imports: [CardFlavorComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardFlavorComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardFlavorComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardS.info);
+    fixture.componentRef.setInput('card', { flavor: 'Test flavor' });
     await fixture.whenStable();
   });
 
@@ -29,6 +30,6 @@ describe('CardFlavorComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(1);
     expect(
       fixture.debugElement.query(By.css('p')).nativeElement.innerText,
-    ).toContain(cardS.info.flavor);
+    ).toContain('Test flavor');
   });
 });

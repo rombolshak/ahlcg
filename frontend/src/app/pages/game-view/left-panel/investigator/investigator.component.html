@@ -17,18 +17,20 @@
       "
     />
 
-    <ah-card-title align="center" [card]="investigator().info" />
-    <ah-card-subtitle [card]="investigator().info" />
-    <ah-card-traits
-      class="mt-0.5"
-      [card]="investigator().info"
-      [displayOptions]="displayOptions"
-    />
-    <ah-card-abilities
-      class="mt-0.5"
-      [card]="investigator().info"
-      [displayOptions]="displayOptions"
-    />
+    @if (info()) {
+      <ah-card-title align="center" [card]="info()!" />
+      <ah-card-subtitle [card]="info()!" />
+      <ah-card-traits
+        class="mt-0.5"
+        [card]="info()!"
+        [displayOptions]="displayOptions"
+      />
+      <ah-card-abilities
+        class="mt-0.5"
+        [card]="info()!"
+        [displayOptions]="displayOptions"
+      />
+    }
   </div>
 
   <div class="flex flex-col justify-center items-center text-center">
