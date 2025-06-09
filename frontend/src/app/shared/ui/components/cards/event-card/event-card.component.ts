@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
 import { EventCard } from 'shared/domain/entities/player-card.model';
 import { CardCopyrightComponent } from '../card-parts/card-copyright/card-copyright.component';
 import { CardFlavorComponent } from '../card-parts/card-flavor/card-flavor.component';
@@ -8,6 +13,7 @@ import { CardTitleComponent } from '../card-parts/card-title/card-title.componen
 import { CardCostComponent } from '../card-parts/card-cost/card-cost.component';
 import { PlayerCardComponent } from '../card-parts/card-player-base/player-card.component';
 import { DisplayOptions } from 'shared/domain/display.options';
+import { CardInfoService } from 'shared/services/card-info.service';
 
 @Component({
   selector: 'ah-event-card',
@@ -25,5 +31,6 @@ import { DisplayOptions } from 'shared/domain/display.options';
 })
 export class EventCardComponent {
   readonly card = input.required<EventCard>();
+  readonly cardInfo = inject(CardInfoService).getCardInfo(this.card);
   readonly displayOptions = input.required<DisplayOptions>();
 }

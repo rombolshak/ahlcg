@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardCopyrightComponent } from './card-copyright.component';
-import { cardA, displayOption } from 'shared/domain/test/entities/test-cards';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 
@@ -17,7 +17,9 @@ describe('CardCopyrightComponent', () => {
 
     fixture = TestBed.createComponent(CardCopyrightComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA.info);
+    fixture.componentRef.setInput('card', {
+      copyright: { illustrator: 'Test Art', ffg: '2015' },
+    });
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });

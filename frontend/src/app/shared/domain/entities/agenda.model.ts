@@ -1,10 +1,10 @@
 ﻿import { type } from 'arktype';
-import { gameCardWithoutTraits } from './card.model';
+import { gameCard } from './card.model';
 import { agendaId } from './id.model';
 
-const _agenda = gameCardWithoutTraits.and({
+const _agenda = gameCard.and({
   id: agendaId,
-  type: "'agenda'",
+  cardType: "'agenda'",
   stage: 'number.integer > 0',
   requiredDoom: 'number.integer >= 0',
   currentDoom: 'number.integer >= 0',

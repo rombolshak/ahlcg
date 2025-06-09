@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
@@ -11,6 +12,7 @@ import {
   CreateOverlay,
   ImagesUrlService,
 } from 'shared/services/images-url.service';
+import { CardInfoService } from '../../../../../shared/services/card-info.service';
 
 @Component({
   selector: 'ah-enemy-popover',
@@ -25,4 +27,8 @@ export class EnemyPopoverComponent {
   readonly enemy = input.required<Enemy>();
   readonly imageService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
+
+  private readonly cardInfoService = inject(CardInfoService);
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.enemy);
+  readonly title = computed(() => this.cardInfo()?.title);
 }

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardAbilitiesComponent } from './card-abilities.component';
-import { cardA, displayOption } from 'shared/domain/test/entities/test-cards';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 
@@ -17,7 +17,9 @@ describe('CardAbilityComponent', () => {
 
     fixture = TestBed.createComponent(CardAbilitiesComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA.info);
+    fixture.componentRef.setInput('card', {
+      abilities: ['test a 1', 'test a 2'],
+    });
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });
@@ -27,8 +29,6 @@ describe('CardAbilityComponent', () => {
   });
 
   it('should print abilities', () => {
-    expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(
-      cardA.info.abilities.length,
-    );
+    expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(2);
   });
 });

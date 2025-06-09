@@ -1,0 +1,9 @@
+﻿{
+  "fields": ["title"],
+  "traits": ["arkham", "ritual"],
+  "abilities": 2,
+  "copyright": {
+    "illustrator": "Preston Stone",
+    "ffg": "2016"
+  }
+}

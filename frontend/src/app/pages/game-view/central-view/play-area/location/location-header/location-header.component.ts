@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
@@ -10,6 +11,7 @@ import { Location } from 'shared/domain/entities/location.model';
 import { NgOptimizedImage } from '@angular/common';
 import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
 import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
+import { CardInfoService } from '../../../../../../shared/services/card-info.service';
 
 @Component({
   selector: 'ah-location-header',
@@ -27,6 +29,10 @@ import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-te
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationHeaderComponent {
-  imageService = inject(ImagesUrlService);
   readonly location = input<Location>();
+  readonly imageService = inject(ImagesUrlService);
+
+  private readonly cardInfoService = inject(CardInfoService);
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.location);
+  readonly title = computed(() => this.cardInfo()?.title);
 }

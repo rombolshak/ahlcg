@@ -110,7 +110,7 @@ export const GameStateStore = signalStore(
       }
 
       if (!guard(model)) {
-        throw new Error(`Entity '${id}' is '${model.type}' type`);
+        throw new Error(`Entity '${id}' is '${model.cardType}' type`);
       }
 
       return model;

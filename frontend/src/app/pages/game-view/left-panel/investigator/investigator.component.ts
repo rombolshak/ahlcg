@@ -17,7 +17,8 @@ import { DisplayOptions } from 'shared/domain/display.options';
 import { CardAbilitiesComponent } from 'shared/ui/components/cards/card-parts/card-abilities/card-abilities.component';
 import { InvestigatorAvatarComponent } from '../../components/investigator-avatar/investigator-avatar.component';
 import { InvestigatorSkillComponent } from './investigator-skill/investigator-skill.component';
-import { NumericTextComponent } from '../../../../shared/ui/components/numeric-text/numeric-text.component';
+import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
+import { CardInfoService } from 'shared/services/card-info.service';
 
 @Component({
   selector: 'ah-investigator',
@@ -40,4 +41,7 @@ export class InvestigatorComponent {
   protected readonly imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
   protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
+
+  private readonly cardInfoService = inject(CardInfoService);
+  readonly info = this.cardInfoService.getCardInfo(this.investigator);
 }

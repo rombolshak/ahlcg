@@ -69,7 +69,7 @@ describe('ActComponent', () => {
   it('should display act title', () => {
     expect(
       (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain(testAct.info.title);
+    ).toContain('Прорываясь вперёд');
   });
 
   it('should calc max lines for objective', async () => {

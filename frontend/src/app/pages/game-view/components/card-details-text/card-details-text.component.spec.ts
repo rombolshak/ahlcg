@@ -1,12 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardDetailsTextComponent } from './card-details-text.component';
-import {
-  testLocation,
-  testLocation2,
-} from 'shared/domain/test/entities/test-locations';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { InvestigatorS } from '../../../../shared/domain/test/entities/test-investigators';
 
 describe('CardDetailsTextComponent', () => {
   let component: CardDetailsTextComponent;
@@ -20,7 +18,7 @@ describe('CardDetailsTextComponent', () => {
 
     fixture = TestBed.createComponent(CardDetailsTextComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', testLocation.info);
+    fixture.componentRef.setInput('card', testLocation);
     await fixture.whenStable();
   });
 
@@ -32,19 +30,17 @@ describe('CardDetailsTextComponent', () => {
     const title = fixture.debugElement.query(By.css('[data-testId=title]'))
       .nativeElement as HTMLElement;
 
-    expect(title.textContent?.trim()).toEqual(testLocation.info.title);
+    expect(title.textContent?.trim()).toEqual('Вход в музей');
   });
 
   it('should display card subtitle if exists', async () => {
-    fixture.componentRef.setInput('card', testLocation2.info);
+    fixture.componentRef.setInput('card', InvestigatorS);
     await fixture.whenStable();
     const subtitle = fixture.debugElement.query(
       By.css('[data-testId=subtitle]'),
     ).nativeElement as HTMLElement;
 
-    expect(subtitle.textContent?.trim()).toEqual(
-      testLocation2.info.subtitle ?? '',
-    );
+    expect(subtitle.textContent?.trim()).toEqual('The Librarian');
   });
 
   it('should not display subtitle if empty', () => {
@@ -59,7 +55,7 @@ describe('CardDetailsTextComponent', () => {
     const traits = fixture.debugElement.query(By.css('[data-testId=traits]'))
       .nativeElement as HTMLElement;
 
-    for (const trait of testLocation.info.traits ?? []) {
+    for (const trait of ['Arkham', 'Ritual']) {
       expect(traits.textContent?.trim()).toContain(trait);
     }
   });
@@ -69,7 +65,7 @@ describe('CardDetailsTextComponent', () => {
       By.css('[data-testId=ability]'),
     );
 
-    expect(abilities.length).toEqual(testLocation.info.abilities.length);
+    expect(abilities.length).toEqual(2);
   });
 
   it('should not display title', async () => {

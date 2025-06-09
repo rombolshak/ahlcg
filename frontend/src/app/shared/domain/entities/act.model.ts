@@ -1,5 +1,5 @@
 ﻿import { type } from 'arktype';
-import { gameCardWithoutTraits } from './card.model';
+import { gameCard } from './card.model';
 import { actId } from './id.model';
 
 const _objective = type({
@@ -17,9 +17,9 @@ export interface Objective extends _Objective {}
 
 const objective: type<Objective> = _objective;
 
-const _act = gameCardWithoutTraits.and({
+const _act = gameCard.and({
   id: actId,
-  type: "'act'",
+  cardType: "'act'",
   stage: 'number.integer > 0',
   objectives: objective.array(),
 });

@@ -11,7 +11,7 @@
     }
   </div>
   <p class="font-[Conkordia] text-xl/6 text-center mb-0" data-testId="title">
-    {{ enemy().info.title }}
+    {{ title() }}
   </p>
   <div class="flex items-center">
     @for (_ of [].constructor(enemy().horrorAttack); track $index) {
@@ -26,7 +26,7 @@
   </div>
 </div>
 
-<ah-card-details-text [card]="enemy().info" [showTitle]="false">
+<ah-card-details-text [card]="enemy()" [showTitle]="false">
   <div class="flex justify-evenly">
     <div class="flex">
       <img

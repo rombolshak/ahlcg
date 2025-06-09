@@ -35,7 +35,7 @@ export type AssetSlot = typeof assetSlot.infer;
 
 const _assetCard = playerCardBase.and({
   id: assetId,
-  type: "'asset'",
+  cardType: "'asset'",
   'slot?': assetSlot,
   'additionalSlot?': assetSlot,
   'health?': health,
@@ -50,7 +50,7 @@ export const assetCard: type<AssetCard> = _assetCard;
 
 const _eventCard = playerCardBase.and({
   id: eventId,
-  type: "'event'",
+  cardType: "'event'",
   cost,
 });
 type _EventCard = typeof _eventCard.infer;
@@ -61,7 +61,7 @@ export const eventCard: type<EventCard> = _eventCard;
 
 const _skillCard = playerCardBase.and({
   id: skillId,
-  type: "'skill'",
+  cardType: "'skill'",
 });
 type _SkillCard = typeof _skillCard.infer;
 

@@ -5,7 +5,7 @@ import { enemyId } from './id.model';
 
 const _enemy = gameCard.and({
   id: enemyId,
-  type: "'enemy'",
+  cardType: "'enemy'",
   health,
   fight: 'number.integer >= 0',
   evade: 'number.integer >= 0',

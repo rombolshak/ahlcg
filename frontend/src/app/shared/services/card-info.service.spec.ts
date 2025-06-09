@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 
 import { CardInfoService } from './card-info.service';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { BehaviorSubject, catchError, of } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { cardE } from '../domain/test/entities/test-cards';
 import { provideHttpClient } from '@angular/common/http';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { cardE } from '../domain/test/entities/test-cards';
 
 describe('CardInfoService', () => {
   let service: CardInfoService;
@@ -42,18 +42,32 @@ describe('CardInfoService', () => {
 
   it('should load json files', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' })).subscribe(
-        (data) => {
-          console.log('CARDINFO', data);
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id)).subscribe((data) => {
+        console.log('CARDINFO', data);
 
-          expect(data).toBeTruthy();
-          expect(data).toEqual(cardE.info);
-          expect(data?.traits?.length ?? 0).toEqual(2);
+        expect(data).toBeTruthy();
+        expect(data).toEqual({
+          title: '"I\'ve got a plan!"',
+          traits: ['Insight', 'Tactic'],
+          abilities: [
+            '<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).',
+          ],
+          flavor:
+            '"That\'s the worst plan I\'ve ever heard.\n Well, what are we waiting for?"',
+          setInfo: {
+            set: '02',
+            index: '107',
+          },
+          copyright: {
+            illustrator: 'Robert Laskey',
+            ffg: '2016',
+          },
+        });
 
-          http.verify();
-          done();
-        },
-      );
+        http.verify();
+        done();
+      });
     });
 
     http.expectOne('/assets/cards/02/107.json').flush({
@@ -79,7 +93,8 @@ describe('CardInfoService', () => {
 
   it('should throw for incorrect description (non existent field)', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id))
         .pipe(
           catchError((err: Error) => {
             return of(err);
@@ -108,7 +123,8 @@ describe('CardInfoService', () => {
 
   it('should throw for incorrect description (missing required fields)', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id))
         .pipe(
           catchError((err: Error) => {
             return of(err);
@@ -146,7 +162,8 @@ describe('CardInfoService', () => {
 
   it('should throw for incorrect strings', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id))
         .pipe(
           catchError((err: Error) => {
             return of(err);
@@ -183,7 +200,8 @@ describe('CardInfoService', () => {
 
   it('should throw for missing traits', (done) => {
     TestBed.runInInjectionContext(() => {
-      toObservable(service.getCardInfo({ set: '02', index: '107' }))
+      const id = signal(cardE);
+      toObservable(service.getCardInfo(id))
         .pipe(
           catchError((err: Error) => {
             return of(err);

@@ -28,7 +28,7 @@ describe('LocationHeaderComponent', () => {
   it('should display location header', () => {
     const text = (fixture.debugElement.nativeElement as HTMLElement).innerText;
 
-    expect(text).toContain(testLocation.info.title);
+    expect(text).toContain('Вход в музей');
   });
 
   it('should display location shroud and clues', () => {

@@ -1,6 +1,6 @@
 ﻿import { type } from 'arktype';
 
-const setInfo = type({
+export const setInfo = type({
   set: 'string',
   index: 'string',
 });
@@ -17,7 +17,7 @@ const _cardInfo = type({
     illustrator: 'string',
     ffg: 'string',
   },
-  setInfo: setInfo,
+  setInfo,
 });
 export type _CardInfo = typeof _cardInfo.infer;
 

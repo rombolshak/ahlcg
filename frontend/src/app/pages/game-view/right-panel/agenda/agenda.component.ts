@@ -9,6 +9,7 @@ import { Agenda } from 'shared/domain/entities/agenda.model';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
+import { CardInfoService } from 'shared/services/card-info.service';
 
 @Component({
   selector: 'ah-agenda',
@@ -24,6 +25,10 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
 export class AgendaComponent {
   readonly agenda = input.required<Agenda>();
   protected readonly imageService = inject(ImagesUrlService);
+
+  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.agenda);
+  readonly title = computed(() => this.cardInfo()?.title);
+
   protected readonly emptyDoomSlots = computed(() =>
     Math.max(
       this.agenda().requiredDoom -

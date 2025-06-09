@@ -1,4 +1,4 @@
-﻿import { cardInfo } from './details/card-info.model';
+﻿import { setInfo } from './details/card-info.model';
 import { type } from 'arktype';
 import { cardTokens } from './details/card.tokens';
 import { entityId } from './id.model';
@@ -10,13 +10,9 @@ export type CardType = typeof cardType.infer;
 
 export const gameCard = type({
   id: entityId,
-  type: cardType,
-  info: cardInfo,
+  cardType,
+  setInfo,
   'tokens?': cardTokens,
-});
-
-export const gameCardWithoutTraits = gameCard.omit('info').and({
-  info: cardInfo.omit('traits'),
 });
 
 export type GameCard = typeof gameCard.infer;

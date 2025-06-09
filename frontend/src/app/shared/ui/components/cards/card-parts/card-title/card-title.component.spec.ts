@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardTitleComponent } from './card-title.component';
-import { cardA } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
 
@@ -17,7 +16,7 @@ describe('CardTitleComponent', () => {
 
     fixture = TestBed.createComponent(CardTitleComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA.info);
+    fixture.componentRef.setInput('card', { title: 'Test title' });
     await fixture.whenStable();
   });
 
@@ -29,6 +28,6 @@ describe('CardTitleComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('div')).length).toEqual(1);
     expect(
       fixture.debugElement.query(By.css('div')).nativeElement.innerText,
-    ).toContain(cardA.info.title);
+    ).toContain('Test title');
   });
 });
