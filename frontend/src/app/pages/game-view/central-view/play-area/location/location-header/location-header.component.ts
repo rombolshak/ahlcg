@@ -37,9 +37,5 @@ export class LocationHeaderComponent {
   private readonly cardInfo = inject(CardInfoService).getCardInfo(
     this.location,
   );
-  readonly title = computed(() => {
-    const title = this.cardInfo()?.title;
-    console.log('QQQQQQQQQQQQQQ', title);
-    return title;
-  });
+  readonly title = computed(() => this.cardInfo()?.title);
 }

@@ -47,13 +47,6 @@ describe('ActComponent', () => {
     });
     await fixture.whenStable();
 
-    console.log(
-      'checking ',
-      fixture.debugElement.classes,
-      'to contain',
-      `to-${progress}-700/80`,
-    );
-
     expect(fixture.debugElement.classes[`to-${progress}-700/80`]).toBeTrue();
   }
 

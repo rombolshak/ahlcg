@@ -36,10 +36,8 @@ export class DebugTimelineService {
 
   applyNextPatch(): void {
     const nextIndex = this.currentAppliedPatch();
-    console.log(nextIndex);
     if (nextIndex < this.patches().length) {
       const patch = this.patches()[nextIndex];
-      console.log(patch);
       if (patch) {
         this.store.updateState(patch);
         this.currentAppliedPatch.set(nextIndex + 1);
