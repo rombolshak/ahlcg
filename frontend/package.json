@@ -63,7 +63,7 @@
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.0.15",
     "@types/jasmine": "~5.1.8",
-    "@typescript-eslint/parser": "^8.32.1",
+    "@typescript-eslint/parser": "^8.34.0",
     "angular-eslint": "19.6.0",
     "cspell": "^9.0.2",
     "daisyui": "^5.0.35",
