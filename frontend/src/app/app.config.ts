@@ -32,7 +32,6 @@ export const appConfig: ApplicationConfig = {
       provide: ErrorHandler,
       useFactory: errorHandlerFactory,
     },
-    provideHttpClient(),
     provideTransloco({
       config: {
         availableLangs: [
