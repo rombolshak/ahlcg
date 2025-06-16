@@ -13,10 +13,17 @@ import { RightPanelComponent } from './right-panel/right-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
 import { GameStateStore } from './store/game-state.store';
 import { DebugTimelineService } from './services/debug-timeline.service';
+import { DialogComponent } from '../../shared/ui/components/dialog/dialog.component';
+import { DialogService } from '../../shared/ui/components/dialog/dialog.service';
 
 @Component({
   selector: 'ah-game-view',
-  imports: [LeftPanelComponent, CentralViewComponent, RightPanelComponent],
+  imports: [
+    LeftPanelComponent,
+    CentralViewComponent,
+    RightPanelComponent,
+    DialogComponent,
+  ],
   templateUrl: './game-view.component.html',
   host: {
     class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
@@ -26,6 +33,7 @@ import { DebugTimelineService } from './services/debug-timeline.service';
 export class GameViewComponent implements OnInit {
   readonly gameState = inject(GameStateStore);
   readonly timelineService = inject(DebugTimelineService);
+  private readonly dialogService = inject(DialogService);
 
   private readonly debugPanel = viewChild('debugPanel', {
     read: ViewContainerRef,
@@ -61,5 +69,11 @@ export class GameViewComponent implements OnInit {
   revertToOriginalState($event: KeyboardEvent) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
+  }
+
+  @HostListener('body:keydown.esc', ['$event'])
+  openSettingsMenu($event: KeyboardEvent) {
+    $event.preventDefault();
+    this.dialogService.toggle('game-menu');
   }
 }
