@@ -25,10 +25,10 @@ import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
   selector: 'ah-cards-hand',
   imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex justify-center',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   animations: [
     trigger('cardsHand', [transition(':enter', [])]),

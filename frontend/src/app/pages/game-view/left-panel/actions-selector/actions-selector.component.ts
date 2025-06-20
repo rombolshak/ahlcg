@@ -6,10 +6,10 @@ import { Actions } from 'shared/domain/action.model';
   selector: 'ah-actions-selector',
   imports: [WithAhSymbolsPipe],
   templateUrl: './actions-selector.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionsSelectorComponent {
   readonly actions = input.required<Actions>();

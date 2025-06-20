@@ -19,10 +19,10 @@ import { TranslocoDirective } from '@jsverse/transloco';
   selector: 'ah-enemy-popover',
   imports: [CardDetailsTextComponent, NgOptimizedImage, TranslocoDirective],
   templateUrl: './enemy-popover.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'bg-linear-to-b from-zinc-100 to-zinc-300 rounded px-2 py-1',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnemyPopoverComponent {
   readonly enemy = input.required<Enemy>();

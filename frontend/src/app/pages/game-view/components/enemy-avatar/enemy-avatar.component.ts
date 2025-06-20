@@ -17,10 +17,10 @@ import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
   selector: 'ah-enemy-avatar',
   imports: [VitalsBarComponent, NgOptimizedImage, EnemyPopoverComponent],
   templateUrl: './enemy-avatar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'relative bg-zinc-900/70',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EnemyAvatarComponent {
   readonly enemy = input<Enemy>();

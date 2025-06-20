@@ -5,10 +5,10 @@ import { NgClass } from '@angular/common';
   selector: 'ah-single-bar',
   imports: [NgClass],
   templateUrl: './single-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SingleBarComponent {
   readonly max = input.required<number>();

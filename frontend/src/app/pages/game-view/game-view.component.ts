@@ -29,12 +29,12 @@ import {
     RightPanelComponent,
     DialogComponent,
   ],
-  providers: [provideUserPreferencesService()],
   templateUrl: './game-view.component.html',
+  providers: [provideUserPreferencesService()],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameViewComponent implements OnInit {
   readonly gameState = inject(GameStateStore);

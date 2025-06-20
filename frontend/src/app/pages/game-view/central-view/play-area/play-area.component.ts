@@ -16,10 +16,10 @@ import { GameStateStore } from '../../store/game-state.store';
   selector: 'ah-play-area',
   imports: [LocationComponent, LocationsConnectionComponent],
   templateUrl: './play-area.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block w-full h-full overflow-hidden',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayAreaComponent implements AfterViewInit {
   private readonly state = inject(GameStateStore);

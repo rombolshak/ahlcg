@@ -24,11 +24,11 @@ import { TranslocoPipe } from '@jsverse/transloco';
     TranslocoPipe,
   ],
   templateUrl: './location-header.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
       'flex items-center justify-between flex-row-reverse w-full bg-linear-to-b from-zinc-50 via-zinc-100 h-16 rounded-t-3xl z-0',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationHeaderComponent {
   readonly location = input<Location>();
