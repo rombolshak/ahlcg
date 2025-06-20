@@ -13,10 +13,10 @@ import { GameStateStore } from '../store/game-state.store';
   selector: 'ah-central-view',
   imports: [CardsHandComponent, ControlAreaComponent, PlayAreaComponent],
   templateUrl: './central-view.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col gap-4',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CentralViewComponent {
   private readonly state = inject(GameStateStore);

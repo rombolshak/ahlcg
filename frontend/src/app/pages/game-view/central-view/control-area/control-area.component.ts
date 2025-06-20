@@ -25,10 +25,10 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
       />
     }
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-wrap',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlAreaComponent {
   readonly assets = input.required<AssetCard[]>();

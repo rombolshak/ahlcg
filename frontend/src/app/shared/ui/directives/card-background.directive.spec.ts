@@ -1,5 +1,6 @@
 import { CardBackgroundDirective } from './card-background.directive';
 import {
+  ChangeDetectionStrategy,
   Component,
   input,
   provideZonelessChangeDetection,
@@ -13,6 +14,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
   template: `
     <div ahCardBackground [cardClass]="cardClass()"></div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
   readonly cardClass = input.required<PlayerCardClassType>();

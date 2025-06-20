@@ -12,10 +12,10 @@ import { GameStateStore } from '../store/game-state.store';
   selector: 'ah-right-panel',
   imports: [AgendaComponent, ActComponent],
   templateUrl: './right-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col gap-4',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RightPanelComponent {
   private readonly state = inject(GameStateStore);

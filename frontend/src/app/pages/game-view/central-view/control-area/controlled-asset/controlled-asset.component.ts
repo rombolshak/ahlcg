@@ -23,10 +23,10 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
     AssetPopoverComponent,
   ],
   templateUrl: './controlled-asset.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'relative',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlledAssetComponent {
   readonly asset = input.required<AssetCard>();

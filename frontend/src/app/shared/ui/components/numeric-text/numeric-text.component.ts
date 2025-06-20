@@ -16,10 +16,10 @@ import { pairwise } from 'rxjs';
 @Component({
   selector: 'ah-numeric-text',
   template: '{{ value() }}',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'font-[Teutonic]',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NumericTextComponent implements OnInit {
   public readonly value = input.required<number>();
