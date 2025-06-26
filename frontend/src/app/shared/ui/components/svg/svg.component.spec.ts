@@ -15,6 +15,7 @@ describe('SvgComponent', () => {
 
     fixture = TestBed.createComponent(SvgComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('name', 'test');
     fixture.detectChanges();
   });
 
