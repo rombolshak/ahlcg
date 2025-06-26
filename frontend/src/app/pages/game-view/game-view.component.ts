@@ -15,11 +15,8 @@ import { GameStateStore } from './store/game-state.store';
 import { DebugTimelineService } from './services/debug-timeline.service';
 import { DialogComponent } from '../../shared/ui/components/dialog/dialog.component';
 import { DialogService } from '../../shared/ui/components/dialog/dialog.service';
-import { SettingsService } from '../../shared/services/settings/settings.service';
-import {
-  provideUserPreferencesService,
-  UserPreferences,
-} from '../../shared/services/settings/user-preferences.service';
+import { SettingsComponent } from './settings/settings.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-game-view',
@@ -28,9 +25,10 @@ import {
     CentralViewComponent,
     RightPanelComponent,
     DialogComponent,
+    SettingsComponent,
+    TranslocoPipe,
   ],
   templateUrl: './game-view.component.html',
-  providers: [provideUserPreferencesService()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
@@ -40,7 +38,6 @@ export class GameViewComponent implements OnInit {
   readonly gameState = inject(GameStateStore);
   readonly timelineService = inject(DebugTimelineService);
   private readonly dialogService = inject(DialogService);
-  readonly userPrefs = inject(SettingsService<UserPreferences>).get();
 
   private readonly debugPanel = viewChild('debugPanel', {
     read: ViewContainerRef,
