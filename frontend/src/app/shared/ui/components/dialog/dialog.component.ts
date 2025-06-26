@@ -9,22 +9,18 @@ import {
   viewChild,
 } from '@angular/core';
 import { DialogService } from './dialog.service';
+import { SvgComponent } from '../svg/svg.component';
 
 @Component({
   selector: 'ah-dialog',
-  imports: [],
-  template: `
-    <dialog #dialog class="modal">
-      <div class="modal-box">
-        <ng-content />
-      </div>
-    </dialog>
-  `,
-  styles: ``,
+  imports: [SvgComponent],
+  templateUrl: './dialog.component.html',
+  styleUrl: './dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogComponent implements AfterViewInit, OnDestroy {
   public readonly id = input.required<string>();
+  public readonly title = input<string>('');
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
   private service = inject(DialogService);
 

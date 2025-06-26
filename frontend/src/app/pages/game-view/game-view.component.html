@@ -13,8 +13,6 @@
 }
 
 <ng-template #debugPanel />
-<ah-dialog id="game-menu">
-  <h1 class="text-5xl text-primary-content text-center">
-    Settings {{ userPrefs().lang }}
-  </h1>
+<ah-dialog id="game-menu" [title]="'settings' | transloco">
+  <ah-settings />
 </ah-dialog>
