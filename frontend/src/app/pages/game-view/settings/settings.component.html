@@ -1,3 +1,12 @@
-<ng-container *transloco="let t">
-  {{ t("settings") }}
-</ng-container>
+<div class="grid grid-cols-2 text-2xl text-center cursor-reset">
+  <p>Language</p>
+  <ah-language-selector
+    [availableLanguages]="availableLanguages"
+    [initialLanguage]="settings().lang"
+    (languageSelected)="setLang($event)"
+  />
+</div>
+
+<button type="submit" class="btn btn-primary" (click)="applySettings()">
+  Apply
+</button>

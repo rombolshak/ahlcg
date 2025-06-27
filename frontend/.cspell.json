@@ -22,7 +22,16 @@
     "rombolshak",
     "transloco",
     "twoarcane",
-    "yoyo"
+    "yoyo",
+    "Español",
+    "Português",
+    "Français",
+    "Deutsch",
+    "Čeština",
+    "Tiếng",
+    "Việt",
+    "Polski",
+    "Українська"
   ],
   // flagWords - list of words to be always considered incorrect
   // This is useful for offensive words and common spelling errors.
