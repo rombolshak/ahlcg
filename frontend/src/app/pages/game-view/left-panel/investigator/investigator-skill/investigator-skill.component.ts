@@ -19,10 +19,10 @@ import { NumericTextComponent } from '../../../../../shared/ui/components/numeri
   selector: 'ah-investigator-skill',
   imports: [NgOptimizedImage, NumericTextComponent],
   templateUrl: './investigator-skill.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'relative flex w-16 h-10 justify-between items-center pl-2 pr-4',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorSkillComponent {
   readonly type = input.required<SkillType>();

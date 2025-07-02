@@ -17,10 +17,10 @@ import { GameStateStore } from '../store/game-state.store';
     ActionsSelectorComponent,
   ],
   templateUrl: './left-panel.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col gap-4',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LeftPanelComponent {
   readonly state = inject(GameStateStore);

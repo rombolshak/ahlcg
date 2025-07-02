@@ -1,5 +1,6 @@
 import { CardOutlineDirective } from './card-outline.directive';
 import {
+  ChangeDetectionStrategy,
   Component,
   input,
   provideZonelessChangeDetection,
@@ -13,6 +14,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
   template: `
     <div ahCardOutline [cardClass]="cardClass()"></div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
   readonly cardClass = input.required<PlayerCardClassType>();

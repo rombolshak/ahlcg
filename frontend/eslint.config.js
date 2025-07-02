@@ -59,7 +59,7 @@ export default config(
           style: "kebab-case",
         },
       ],
-      "@angular-eslint/prefer-on-push-component-change-detection": "off",
+      "@angular-eslint/no-developer-preview": "off",
       "@angular-eslint/template/no-call-expression": "off",
       "@angular-eslint/component-max-inline-declarations": [
         "error",

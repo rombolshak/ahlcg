@@ -21,12 +21,12 @@ import { TranslocoDirective } from '@jsverse/transloco';
     TranslocoDirective,
   ],
   templateUrl: './agenda.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
       'relative flex flex-col w-full items-center p-2 outline outline-2 rounded bg-radial-[at_50%_5%] to-90%',
     '[class]': 'hostClasses()',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AgendaComponent {
   readonly agenda = input.required<Agenda>();

@@ -6,10 +6,10 @@ import { Vitals } from '../../../domain/entities/details/vitals.model';
   selector: 'ah-vitals-bar',
   imports: [SingleBarComponent],
   templateUrl: './vitals-bar.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VitalsBarComponent {
   readonly entity =

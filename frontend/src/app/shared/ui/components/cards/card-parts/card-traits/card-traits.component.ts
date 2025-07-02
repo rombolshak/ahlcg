@@ -7,7 +7,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
   selector: 'ah-card-traits',
   imports: [TranslocoDirective],
   templateUrl: './card-traits.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardTraitsComponent {
   readonly card = input.required<CardInfo>();

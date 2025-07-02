@@ -22,10 +22,10 @@ import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
     EnemyAvatarComponent,
   ],
   templateUrl: './location.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col rounded-3xl outline-2 outline-zinc-400 relative',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationComponent {
   imageService = inject(ImagesUrlService);
