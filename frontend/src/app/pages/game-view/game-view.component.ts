@@ -13,10 +13,7 @@ import { RightPanelComponent } from './right-panel/right-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
 import { GameStateStore } from './store/game-state.store';
 import { DebugTimelineService } from './services/debug-timeline.service';
-import { DialogComponent } from '../../shared/ui/components/dialog/dialog.component';
-import { DialogService } from '../../shared/ui/components/dialog/dialog.service';
 import { SettingsComponent } from './settings/settings.component';
-import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-game-view',
@@ -24,9 +21,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
     LeftPanelComponent,
     CentralViewComponent,
     RightPanelComponent,
-    DialogComponent,
     SettingsComponent,
-    TranslocoPipe,
   ],
   templateUrl: './game-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,7 +32,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class GameViewComponent implements OnInit {
   readonly gameState = inject(GameStateStore);
   readonly timelineService = inject(DebugTimelineService);
-  private readonly dialogService = inject(DialogService);
 
   private readonly debugPanel = viewChild('debugPanel', {
     read: ViewContainerRef,
@@ -73,11 +67,5 @@ export class GameViewComponent implements OnInit {
   revertToOriginalState($event: KeyboardEvent) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
-  }
-
-  @HostListener('body:keydown.esc', ['$event'])
-  openSettingsMenu($event: KeyboardEvent) {
-    $event.preventDefault();
-    this.dialogService.toggle('game-menu');
   }
 }

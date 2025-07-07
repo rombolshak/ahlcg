@@ -11,4 +11,8 @@
     );
     width: 64rem;
   }
+
+  .modal[open] {
+    background: #000d;
+  }
 }
