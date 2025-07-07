@@ -36,10 +36,10 @@ export const appConfig: ApplicationConfig = {
       config: {
         availableLangs: [
           { id: 'en', label: 'English' },
-          // { id: 'zh', label: '中文' },
-          // { id: 'es', label: 'Español' },
-          // { id: 'pt', label: 'Português' },
-          // { id: 'fr', label: 'Français' },
+          { id: 'zh', label: '中文' },
+          { id: 'es', label: 'Español' },
+          { id: 'pt', label: 'Português' },
+          { id: 'fr', label: 'Français' },
           { id: 'ru', label: 'Русский' },
           { id: 'de', label: 'Deutsch' },
           { id: 'cs', label: 'Čeština' },
@@ -50,6 +50,9 @@ export const appConfig: ApplicationConfig = {
         ],
         defaultLang: 'en',
         fallbackLang: 'en',
+        missingHandler: {
+          useFallbackTranslation: true,
+        },
         // Remove this option if your application doesn't support changing language in runtime.
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
