@@ -62,7 +62,7 @@
     "@cspell/dict-ru_ru": "^2.3.0",
     "@html-eslint/parser": "^0.42.0",
     "@tailwindcss/language-server": "latest",
-    "@tailwindcss/postcss": "^4.0.15",
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/jasmine": "~5.1.8",
     "@typescript-eslint/parser": "^8.35.1",
     "angular-eslint": "20.1.0",
