@@ -30,4 +30,9 @@ export class DialogService {
       else element.showModal();
     }
   }
+
+  isOpen(id: string) {
+    const element = this.dialogs.get(id)?.nativeElement;
+    return element?.open ?? false;
+  }
 }
