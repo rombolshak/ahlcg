@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { Orientation } from '../orientation';
 
 @Component({
   selector: 'ah-single-bar',
@@ -16,5 +15,5 @@ export class SingleBarComponent {
   readonly current = input.required<number>();
   readonly goodColor = input.required<string>();
   readonly badColor = input.required<string>();
-  readonly orientation = input<Orientation>(Orientation.Horizontal);
+  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
 }

@@ -8,7 +8,7 @@ import { Vitals } from '../../../domain/entities/details/vitals.model';
   templateUrl: './vitals-bar.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'block h-full w-full',
+    class: 'block grow',
   },
 })
 export class VitalsBarComponent {

@@ -1,6 +1,5 @@
 ﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { VitalsBarComponent } from './vitals-bar.component';
-import { Orientation } from './orientation';
 
 const meta: Meta<VitalsBarComponent> = {
   component: VitalsBarComponent,
@@ -16,11 +15,11 @@ export const Horizontal: Story = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div style="height: 20px; width: 500px; margin: 3em;">${story}</div>`,
+        `<div style="height: 20px; width: 500px; margin: 3em; display: flex; flex-direction: row">${story}</div>`,
     ),
   ],
   args: {
-    orientation: Orientation.Horizontal,
+    orientation: 'horizontal',
     entity: {
       health: {
         max: 10,
@@ -38,11 +37,11 @@ export const Vertical: Story = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div style="width: 20px; height: 500px; margin: 3em;">${story}</div>`,
+        `<div style="width: 20px; height: 500px; margin: 3em; display: flex">${story}</div>`,
     ),
   ],
   args: {
-    orientation: Orientation.Vertical,
+    orientation: 'vertical',
     entity: {
       health: {
         max: 10,
