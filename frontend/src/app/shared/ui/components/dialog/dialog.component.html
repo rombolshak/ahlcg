@@ -1,0 +1,17 @@
+﻿<dialog #dialog class="modal">
+  <div class="modal-box min-h-40 text-primary-content py-4">
+    <ah-svg
+      name="modal-border"
+      class="absolute inset-x-0 top-0 aspect-512/67 -z-50"
+    />
+    <h1 class="text-3xl w-fit place-self-center">
+      {{ title() }}
+      <div class="border-primary-content border-y w-full h-2 mt-1 mb-4"></div>
+    </h1>
+    <ng-content />
+    <ah-svg
+      name="modal-border-r"
+      class="absolute inset-x-0 bottom-0 aspect-512/67 -z-50"
+    />
+  </div>
+</dialog>

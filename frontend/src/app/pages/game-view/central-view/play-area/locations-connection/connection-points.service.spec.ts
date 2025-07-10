@@ -7,14 +7,14 @@ import {
   Plane,
   VerticalConnectorPosition,
 } from './connection-points.service';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('ConnectionPointsService', () => {
   let service: ConnectionPointsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
     });
     service = TestBed.inject(ConnectionPointsService);
   });

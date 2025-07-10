@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardTitleComponent } from './card-title.component';
-import { cardA } from 'shared/domain/test/test-cards';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardTitleComponent', () => {
   let component: CardTitleComponent;
@@ -11,13 +12,13 @@ describe('CardTitleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [CardTitleComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardTitleComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardTitleComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', { title: 'Test title' });
     await fixture.whenStable();
   });
 
@@ -29,6 +30,6 @@ describe('CardTitleComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('div')).length).toEqual(1);
     expect(
       fixture.debugElement.query(By.css('div')).nativeElement.innerText,
-    ).toContain(cardA.title);
+    ).toContain('Test title');
   });
 });

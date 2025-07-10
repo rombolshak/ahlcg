@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
@@ -15,6 +15,7 @@ import { RouterOutlet } from '@angular/router';
     />
     <router-outlet />
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block h-screen w-screen',
   },

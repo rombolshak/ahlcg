@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThreatAreaComponent } from './threat-area.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from 'shared/domain/test/test-enemies';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('ThreatAreaComponent', () => {
   let component: ThreatAreaComponent;
@@ -11,8 +13,8 @@ describe('ThreatAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [ThreatAreaComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [ThreatAreaComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ThreatAreaComponent);

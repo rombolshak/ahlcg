@@ -1,14 +1,15 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { PlayerCardBase } from 'shared/domain/player-card.model';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 import { DisplayOptions } from 'shared/domain/display.options';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-card-traits',
-  imports: [],
+  imports: [TranslocoDirective],
   templateUrl: './card-traits.component.html',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardTraitsComponent {
-  readonly card = input.required<PlayerCardBase>();
+  readonly card = input.required<CardInfo>();
   readonly displayOptions = input.required<DisplayOptions>();
 }

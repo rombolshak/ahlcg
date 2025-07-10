@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationHeaderComponent } from './location-header.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testLocation } from '../../../../../../shared/domain/test/test-locations';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('LocationHeaderComponent', () => {
   let component: LocationHeaderComponent;
@@ -11,8 +13,8 @@ describe('LocationHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [LocationHeaderComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [LocationHeaderComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LocationHeaderComponent);
@@ -26,9 +28,10 @@ describe('LocationHeaderComponent', () => {
   });
 
   it('should display location header', () => {
+    TestBed.tick();
     const text = (fixture.debugElement.nativeElement as HTMLElement).innerText;
 
-    expect(text).toContain(testLocation.title);
+    expect(text).toContain('Вход в музей');
   });
 
   it('should display location shroud and clues', () => {

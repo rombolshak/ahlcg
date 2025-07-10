@@ -1,0 +1,21 @@
+<p>{{ name() }}</p>
+<div class="flex gap-2">
+  <button
+    type="button"
+    class="btn btn-sm font-[Teutonic]"
+    (click)="prevValue.emit()"
+  >
+    ◀
+  </button>
+  <ng-container
+    [ngTemplateOutlet]="template()"
+    [ngTemplateOutletContext]="{ $implicit: currentValue() }"
+  />
+  <button
+    type="button"
+    class="btn btn-sm font-[Teutonic]"
+    (click)="nextValue.emit()"
+  >
+    ▶
+  </button>
+</div>

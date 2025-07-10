@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AgendaComponent } from './agenda.component';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { testAgenda } from 'shared/domain/test/test-agenda';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { testAgenda } from 'shared/domain/test/entities/test-agenda';
 import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('AgendaComponent', () => {
   let component: AgendaComponent;
@@ -11,8 +13,8 @@ describe('AgendaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AgendaComponent],
-      providers: [provideExperimentalZonelessChangeDetection()],
+      imports: [AgendaComponent, getTranslocoModule()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgendaComponent);
@@ -46,7 +48,7 @@ describe('AgendaComponent', () => {
   it('should display agenda title', () => {
     expect(
       (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain(testAgenda.title);
+    ).toContain('Прорываясь вперёд');
   });
 
   async function checkDoom(doom: number, color: string) {

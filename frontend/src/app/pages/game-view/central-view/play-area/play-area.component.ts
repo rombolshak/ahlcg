@@ -4,118 +4,38 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   viewChild,
 } from '@angular/core';
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { LocationComponent } from './location/location.component';
-import { Location } from 'shared/domain/location.model';
-import {
-  testLocation,
-  testLocation2,
-  testLocation3,
-} from 'shared/domain/test/test-locations';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
-import { Enemy } from 'shared/domain/enemy.model';
-import { testEnemy } from 'shared/domain/test/test-enemies';
 import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
+import { GameStateStore } from '../../store/game-state.store';
 
 @Component({
   selector: 'ah-play-area',
   imports: [LocationComponent, LocationsConnectionComponent],
   templateUrl: './play-area.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'block w-full h-full overflow-hidden',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlayAreaComponent implements AfterViewInit {
-  location: Location = testLocation;
+  private readonly state = inject(GameStateStore);
 
-  enemy: Enemy = testEnemy;
-  investigator1 = {
-    ...InvestigatorS,
-    clues: 2,
-    horror: 3,
-    damage: 2,
-    threatArea: [
-      {
-        ...this.enemy,
-        damage: 1,
-        health: 4,
-      },
-    ],
-  };
-  investigator2 = {
-    ...InvestigatorS,
-    clues: 2,
-    horror: 4,
-    damage: 1,
-    threatArea: [],
-  };
-  investigator3 = {
-    ...InvestigatorS,
-    clues: 0,
-    horror: 1,
-    damage: 4,
-    threatArea: [
-      {
-        ...this.enemy,
-        damage: 1,
-      },
-      {
-        ...this.enemy,
-        damage: 2,
-      },
-      {
-        ...this.enemy,
-        damage: 3,
-      },
-    ],
-  };
-  investigators: InvestigatorWithState[] = [
-    this.investigator3,
-    this.investigator2,
-    this.investigator1,
-  ];
-
-  worldMap = {
-    width: 6,
-    height: 6,
-    locations: [
-      {
-        x: 2,
-        y: 3,
-        location: { ...testLocation, id: '1' },
-        investigators: this.investigators,
-      },
-      {
-        x: 4,
-        y: 2,
-        location: { ...testLocation2, id: '2' },
-        investigators: [],
-      },
-      {
-        x: 4,
-        y: 4,
-        location: { ...testLocation3, id: '3' },
-        investigators: [],
-      },
-    ],
-    connections: [
-      { from: '1', to: '2' },
-      { from: '1', to: '3' },
-    ],
-  };
+  readonly gameMap = computed(() => {
+    return this.state.gameState()?.scenarioMap ?? null;
+  });
 
   protected readonly connectionColors = computed(() => {
-    return this.worldMap.connections.map((conn) => {
+    if (!this.gameMap()) {
+      return [];
+    }
+    return this.gameMap()?.connections.map((conn) => {
       return {
-        fromColor: this.worldMap.locations.find(
-          (l) => l.location.id === conn.from,
-        )?.location.color,
-        toColor: this.worldMap.locations.find((l) => l.location.id === conn.to)
-          ?.location.color,
+        fromColor: this.state.getLocation(conn.from).color,
+        toColor: this.state.getLocation(conn.to).color,
       };
     });
   });
@@ -145,7 +65,6 @@ export class PlayAreaComponent implements AfterViewInit {
       this.zoomArea.zoomWithWheel,
     );
 
-    console.log(cx, cy);
     setTimeout(() => {
       this.zoomArea.pan(cx, cy, { animate: true });
     }, 1000);

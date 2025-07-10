@@ -1,0 +1,20 @@
+<img
+  class="-z-20 absolute left-0 h-10"
+  width="73"
+  height="46"
+  alt="investigator-skills-box"
+  [ngSrc]="
+    imagesService.getOverlay(CreateOverlay.skillBox(investigatorClass()))
+  "
+/>
+
+<ah-numeric-text class="text-slate-700 text-2xl" [value]="value()" />
+<img
+  class="max-w-none h-6"
+  width="24"
+  height="25"
+  alt="investigator-skill"
+  increaseColor="var(--color-success)"
+  decreaseColor="var(--color-error)"
+  [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(type()))"
+/>

@@ -1,12 +1,16 @@
-﻿<ah-left-panel class="w-[17rem] flex-none" [investigator]="investigator" />
-<ah-central-view
-  class="min-w-0"
-  [assets]="assets"
-  [assetStates]="assetStates"
-  [cards]="cards()"
-/>
-<ah-right-panel
-  class="w-[17rem] flex-none"
-  [agenda]="testAgenda"
-  [act]="testAct"
-/>
+﻿@if (gameState.isLoading() || gameState.error()) {
+  <div
+    class="h-1/2 w-1/2 flex flex-col items-center justify-center bg-slate-800 text-white
+      m-auto"
+  >
+    <p>Loading...</p>
+    <p class="whitespace-pre-wrap">{{ gameState.error() }}</p>
+  </div>
+} @else {
+  <ah-left-panel class="w-[17rem] flex-none" />
+  <ah-central-view class="min-w-0" />
+  <ah-right-panel class="w-[17rem] flex-none" />
+}
+
+<ng-template #debugPanel />
+<ah-settings />

@@ -1,87 +1,71 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  signal,
-  WritableSignal,
+  HostListener,
+  inject,
+  OnInit,
+  viewChild,
+  ViewContainerRef,
 } from '@angular/core';
-import {
-  cardA,
-  cardA2,
-  cardA3,
-  cardA4,
-  cardA5,
-  cardE,
-  cardS,
-} from 'shared/domain/test/test-cards';
-import { Card } from 'shared/domain/card.model';
-import { AssetState } from 'shared/domain/asset.state';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { AssetCard } from 'shared/domain/player-card.model';
-import { testEnemy } from '../../shared/domain/test/test-enemies';
-import { testAgenda } from '../../shared/domain/test/test-agenda';
-import { testAct } from '../../shared/domain/test/test-act';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { LeftPanelComponent } from './left-panel/left-panel.component';
 import { CentralViewComponent } from './central-view/central-view.component';
 import { RightPanelComponent } from './right-panel/right-panel.component';
+import { testGameState } from '../../shared/domain/test/test-game-state';
+import { GameStateStore } from './store/game-state.store';
+import { DebugTimelineService } from './services/debug-timeline.service';
+import { SettingsComponent } from './settings/settings.component';
 
 @Component({
   selector: 'ah-game-view',
-  imports: [LeftPanelComponent, CentralViewComponent, RightPanelComponent],
+  imports: [
+    LeftPanelComponent,
+    CentralViewComponent,
+    RightPanelComponent,
+    SettingsComponent,
+  ],
   templateUrl: './game-view.component.html',
-  host: {
-    class: 'flex gap-4 p-8 h-screen w-screen',
-  },
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
+  },
 })
-export class GameViewComponent {
-  protected assetState: AssetState = {
-    damage: 2,
-    horror: 1,
-    resources: 6,
-    clues: 3,
-    doom: 0,
-  };
+export class GameViewComponent implements OnInit {
+  readonly gameState = inject(GameStateStore);
+  readonly timelineService = inject(DebugTimelineService);
 
-  enemy = testEnemy;
-  protected investigator: InvestigatorWithState = {
-    ...InvestigatorS,
-    ...this.assetState,
-    threatArea: [
-      {
-        ...this.enemy,
-        damage: 1,
-      },
-      {
-        ...this.enemy,
-        damage: 3,
-      },
-    ],
-  };
+  private readonly debugPanel = viewChild('debugPanel', {
+    read: ViewContainerRef,
+  });
 
-  protected assets: AssetCard[] = [cardA, cardA5, cardA2, cardA, cardA];
-  protected assetStates = new Map<string, AssetState>([
-    [cardA2.id, { damage: 1 }],
-    [cardA4.id, { resources: 3 }],
-    [cardA5.id, { clues: 1 }],
-    [cardA3.id, { doom: 1, resources: 6 }],
-  ]);
-  readonly cards: WritableSignal<Card[]> = signal([
-    {
-      id: 1,
-      cardInfo: cardA,
-    },
-    {
-      id: 2,
-      cardInfo: cardS,
-    },
-    {
-      id: 3,
-      cardInfo: cardE,
-    },
-  ]);
+  showDebug = false;
 
-  protected readonly InvestigatorS = InvestigatorS;
-  protected readonly testAgenda = testAgenda;
-  protected readonly testAct = testAct;
+  public ngOnInit() {
+    this.gameState.setState(testGameState);
+  }
+
+  @HostListener('body:keydown.`')
+  async toggleDebug() {
+    this.showDebug = !this.showDebug;
+    if (this.showDebug) {
+      const { DebugPanelComponent } = await import(
+        './debug-panel/debug-panel.component'
+      );
+
+      this.debugPanel()?.createComponent(DebugPanelComponent);
+    } else {
+      this.debugPanel()?.clear();
+    }
+  }
+
+  @HostListener('body:keydown.f10', ['$event'])
+  applyNextPatch($event: KeyboardEvent) {
+    $event.preventDefault();
+    this.timelineService.applyNextPatch();
+  }
+
+  @HostListener('body:keydown.f9', ['$event'])
+  revertToOriginalState($event: KeyboardEvent) {
+    $event.preventDefault();
+    this.timelineService.restoreOriginalState();
+  }
 }

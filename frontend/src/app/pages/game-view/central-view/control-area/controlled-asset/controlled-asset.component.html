@@ -6,7 +6,7 @@
     [ngSrc]="imagesService.getMiniIllustration(asset().setInfo)"
   />
 
-  <ah-vitals-bar [asset]="asset()" [state]="state()" />
+  <ah-vitals-bar [entity]="asset()" />
   <div class="bg-gray-950/50 flex justify-center items-center">
     <ah-asset-detail-icon
       [detail]="asset().slot"
@@ -21,15 +21,15 @@
       [withoutText]="true"
     />
     <ah-asset-detail-icon
-      [detail]="state()?.resources"
+      [detail]="asset().tokens?.resource"
       [image]="imagesService.getSimpleOverlay('resource')"
     />
     <ah-asset-detail-icon
-      [detail]="state()?.clues"
+      [detail]="asset().tokens?.clue"
       [image]="imagesService.getSimpleOverlay('clue')"
     />
     <ah-asset-detail-icon
-      [detail]="state()?.doom"
+      [detail]="asset().tokens?.doom"
       [image]="imagesService.getSimpleOverlay('doom')"
     />
   </div>

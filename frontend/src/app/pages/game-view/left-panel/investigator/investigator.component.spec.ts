@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvestigatorComponent } from './investigator.component';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('InvestigatorComponent', () => {
   let component: InvestigatorComponent;
@@ -10,8 +12,8 @@ describe('InvestigatorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [InvestigatorComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [InvestigatorComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InvestigatorComponent);

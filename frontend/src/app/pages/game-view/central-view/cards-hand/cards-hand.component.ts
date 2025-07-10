@@ -5,6 +5,7 @@ import {
   ElementRef,
   input,
   output,
+  inject,
 } from '@angular/core';
 import {
   animate,
@@ -15,18 +16,19 @@ import {
   trigger,
 } from '@angular/animations';
 import { CardComponent } from 'shared/ui/components/cards/card/card.component';
-import { Card } from 'shared/domain/card.model';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { cardWidths } from 'shared/domain/card.constants';
+import { PlayerCard } from 'shared/domain/entities/player-card.model';
+import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
 
 @Component({
   selector: 'ah-cards-hand',
   imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex justify-center',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
   animations: [
     trigger('cardsHand', [transition(':enter', [])]),
@@ -80,19 +82,19 @@ import { cardWidths } from 'shared/domain/card.constants';
   ],
 })
 export class CardsHandComponent {
-  constructor(private readonly element: ElementRef) {}
+  private readonly element = inject(ElementRef);
 
-  readonly cards = input.required<Card[]>();
-  readonly cardSelected = output<Card>();
+  readonly cards = input.required<PlayerCard[]>();
+  readonly cardSelected = output<PlayerCardId>();
 
   cardDisplayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
-  focusedCardId: number | undefined;
+  focusedCardId: PlayerCardId | undefined;
   readonly cardOffset = computed(
     () => `${this.calcOffsetFrom(this.cards()).toString()}px`,
   );
   cardWidth = cardWidths.s;
 
-  private calcOffsetFrom(cards: Card[]) {
+  private calcOffsetFrom(cards: unknown[]) {
     let container = (
       this.element.nativeElement as HTMLElement
     ).getBoundingClientRect().width;

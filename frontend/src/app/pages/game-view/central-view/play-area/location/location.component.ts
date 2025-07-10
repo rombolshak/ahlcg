@@ -1,16 +1,17 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { Location } from 'shared/domain/location.model';
 import { LocationHeaderComponent } from './location-header/location-header.component';
-import { InvestigatorWithState } from 'shared/domain/investigator.model';
 import { InvestigatorAvatarComponent } from '../../../components/investigator-avatar/investigator-avatar.component';
 import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-avatar.component';
+import { GameStateStore } from '../../../store/game-state.store';
+import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
 
 @Component({
   selector: 'ah-location',
@@ -21,13 +22,23 @@ import { EnemyAvatarComponent } from '../../../components/enemy-avatar/enemy-ava
     EnemyAvatarComponent,
   ],
   templateUrl: './location.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col rounded-3xl outline-2 outline-zinc-400 relative',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationComponent {
   imageService = inject(ImagesUrlService);
-  readonly location = input.required<Location>();
-  readonly investigators = input.required<InvestigatorWithState[]>();
+  readonly locationId = input.required<LocationId>();
+  readonly investigatorsIds = input.required<InvestigatorId[]>();
+
+  readonly store = inject(GameStateStore);
+
+  protected readonly location = computed(() =>
+    this.store.getLocation(this.locationId()),
+  );
+
+  protected readonly investigators = computed(() =>
+    this.investigatorsIds().map((id) => this.store.getInvestigator(id)),
+  );
 }

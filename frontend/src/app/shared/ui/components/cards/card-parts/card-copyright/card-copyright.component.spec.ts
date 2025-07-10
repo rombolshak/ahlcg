@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardCopyrightComponent } from './card-copyright.component';
-import { cardA, displayOption } from 'shared/domain/test/test-cards';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('CardCopyrightComponent', () => {
   let component: CardCopyrightComponent;
@@ -11,13 +11,16 @@ describe('CardCopyrightComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [CardCopyrightComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardCopyrightComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', cardA);
+    fixture.componentRef.setInput('card', {
+      copyright: { illustrator: 'Test Art', ffg: '2015' },
+      setInfo: { set: '01', index: '001' },
+    });
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });

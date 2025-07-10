@@ -1,4 +1,7 @@
-﻿<ah-investigator-avatar [investigator]="investigator()">
+﻿<ah-investigator-avatar
+  [investigator]="investigator()"
+  [attr.data-flip-id]="`investigator-${investigator().id}`"
+>
   <div
     class="flex flex-col absolute -z-50 left-32 py-1 px-2 group w-0 h-40 overflow-hidden
       transition-all duration-300 peer-hover:w-36 peer-hover:z-10 hover:w-36
@@ -10,53 +13,47 @@
       class="absolute -z-10"
       alt="investigator-details"
       [ngSrc]="
-        imagesService.getTemplate('Investigator-Details', investigator().class)
+        imagesService.getTemplate('investigator-details', investigator().class)
       "
     />
 
-    <ah-card-title align="center" [card]="investigator()" />
-    <ah-card-subtitle [card]="investigator()" />
-    <ah-card-traits
-      class="mt-0.5"
-      [card]="investigator()"
-      [displayOptions]="displayOptions"
-    />
-    <ah-card-abilities
-      class="mt-0.5"
-      [card]="investigator()"
-      [displayOptions]="displayOptions"
-    />
+    @if (info()) {
+      <ah-card-title align="center" [card]="info()!" />
+      <ah-card-subtitle [card]="info()!" />
+      <ah-card-traits
+        class="mt-0.5"
+        [card]="info()!"
+        [displayOptions]="displayOptions"
+      />
+      <ah-card-abilities
+        class="mt-0.5"
+        [card]="info()!"
+        [displayOptions]="displayOptions"
+      />
+    }
   </div>
 
   <div class="flex flex-col justify-center items-center text-center">
-    @for (skill of investigator().skills; track $index) {
-      <div
-        class="relative flex w-16 h-10 justify-between items-center pl-2 pr-4"
-      >
-        <img
-          class="-z-20 absolute left-0 h-10"
-          width="73"
-          height="46"
-          alt="investigator-skills-box"
-          [ngSrc]="
-            imagesService.getOverlay(
-              CreateOverlay.skillBox(investigator().class)
-            )
-          "
-        />
-
-        <span class="text-slate-700 font-[Teutonic] text-2xl">
-          {{ skill[1] }}
-        </span>
-        <img
-          class="max-w-none h-6"
-          width="24"
-          height="25"
-          alt="investigator-skill"
-          [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(skill[0]))"
-        />
-      </div>
-    }
+    <ah-investigator-skill
+      type="willpower"
+      [investigatorClass]="investigator().class"
+      [value]="investigator().skills.willpower"
+    />
+    <ah-investigator-skill
+      type="intellect"
+      [investigatorClass]="investigator().class"
+      [value]="investigator().skills.intellect"
+    />
+    <ah-investigator-skill
+      type="combat"
+      [investigatorClass]="investigator().class"
+      [value]="investigator().skills.combat"
+    />
+    <ah-investigator-skill
+      type="agility"
+      [investigatorClass]="investigator().class"
+      [value]="investigator().skills.agility"
+    />
   </div>
   <div class="flex flex-col justify-center items-center text-center">
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
@@ -78,9 +75,12 @@
         [ngSrc]="imagesService.getSimpleOverlay('resource')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
-        {{ investigator().resources }}
-      </span>
+      <ah-numeric-text
+        class="text-slate-700 text-4xl mr-2"
+        increaseColor="var(--color-success)"
+        decreaseColor="var(--color-error)"
+        [value]="investigator().tokens?.resource ?? 0"
+      />
     </div>
 
     <div class="relative flex w-[5rem] h-14 justify-between items-center">
@@ -102,9 +102,12 @@
         [ngSrc]="imagesService.getSimpleOverlay('clue')"
       />
 
-      <span class="text-slate-700 font-[Teutonic] text-4xl mr-2">
-        {{ investigator().clues }}
-      </span>
+      <ah-numeric-text
+        class="text-slate-700 text-4xl mr-2"
+        increaseColor="var(--color-success)"
+        decreaseColor="var(--color-error)"
+        [value]="investigator().tokens?.clue ?? 0"
+      />
     </div>
   </div>
 </ah-investigator-avatar>

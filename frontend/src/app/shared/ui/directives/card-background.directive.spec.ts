@@ -1,10 +1,11 @@
 import { CardBackgroundDirective } from './card-background.directive';
 import {
+  ChangeDetectionStrategy,
   Component,
   input,
-  provideExperimentalZonelessChangeDetection,
+  provideZonelessChangeDetection,
 } from '@angular/core';
-import { PlayerCardClass } from 'shared/domain/player-card.model';
+import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 @Component({
@@ -13,9 +14,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
   template: `
     <div ahCardBackground [cardClass]="cardClass()"></div>
   `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
-  readonly cardClass = input.required<PlayerCardClass>();
+  readonly cardClass = input.required<PlayerCardClassType>();
 }
 
 describe('CardBackgroundDirective', () => {
@@ -23,12 +25,12 @@ describe('CardBackgroundDirective', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
+      providers: [provideZonelessChangeDetection()],
       imports: [TestComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    fixture.componentRef.setInput('cardClass', PlayerCardClass.Rogue);
+    fixture.componentRef.setInput('cardClass', 'rogue');
     await fixture.whenStable();
   });
 

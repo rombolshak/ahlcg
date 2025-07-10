@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
-  PlayerCardClass,
   AssetSlot,
+  PlayerCardClassType,
   SkillType,
-} from 'shared/domain/player-card.model';
-import { SetInfo } from 'shared/domain/card-info.model';
+} from 'shared/domain/entities/player-card.model';
+import { SetInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Injectable({
   providedIn: 'root',
@@ -41,44 +41,40 @@ export class ImagesUrlService {
 
   private getOverlayInternal(
     type: OverlayType,
-    cardClass: PlayerCardClass | AssetSlot | SkillType,
+    cardClass: PlayerCardClassType | AssetSlot | SkillType,
   ): string {
-    return `/assets/images/card-overlays/${OverlayType[type]}-${cardClass}.png`;
+    return `/assets/images/card-overlays/${type}-${cardClass}.png`;
   }
 }
 
-enum OverlayType {
-  SkillBox,
-  SkillIcon,
-  Slot,
-}
+type OverlayType = 'skill-box' | 'skill-icon' | 'slot';
 
 type Overlay =
   | {
-      type: OverlayType.SkillBox;
-      value: PlayerCardClass;
+      type: 'skill-box';
+      value: PlayerCardClassType;
     }
   | {
-      type: OverlayType.SkillIcon;
+      type: 'skill-icon';
       value: SkillType;
     }
   | {
-      type: OverlayType.Slot;
+      type: 'slot';
       value: AssetSlot;
     };
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class CreateOverlay {
-  static skillBox(value: PlayerCardClass): Overlay {
-    return { type: OverlayType.SkillBox, value: value };
+  static skillBox(value: PlayerCardClassType): Overlay {
+    return { type: 'skill-box', value: value };
   }
 
   static skillIcon(value: SkillType): Overlay {
-    return { type: OverlayType.SkillIcon, value: value };
+    return { type: 'skill-icon', value: value };
   }
 
   static cardSlot(value?: AssetSlot): Overlay | null {
     if (!value) return null;
-    return { type: OverlayType.Slot, value: value };
+    return { type: 'slot', value: value };
   }
 }

@@ -1,38 +1,44 @@
-<div
-  class="font-[Conkordia] text-4xl text-center w-full flex items-center justify-center
-    absolute peer cursor-default"
->
-  <span>{{ location().title }}</span>
+@if (location()) {
   <div
-    class="ml-2 w-[32px] h-[32px] rounded-full text-3xl font-[Teutonic] bg-yellow-400"
+    class="font-[Conkordia] text-4xl text-center w-full flex items-center justify-center
+      absolute peer cursor-default"
   >
-    !
+    <span>{{ title() | transloco }}</span>
+    <div
+      class="ml-2 w-[32px] h-[32px] rounded-full text-3xl font-[Teutonic] bg-yellow-400"
+    >
+      !
+    </div>
   </div>
-</div>
-<div
-  class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
-    *:rounded-full *:text-5xl *:font-[Teutonic] *:relative"
->
-  <div class="bg-stone-900 text-white">
-    {{ location().shroud }}
+  <div
+    class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]
+      *:rounded-full *:text-5xl *:relative"
+  >
+    <div class="bg-stone-900 text-white">
+      <ah-numeric-text [value]="location()!.shroud" [invertColors]="true" />
+    </div>
+
+    <div>
+      <img
+        fill
+        class="-z-0"
+        alt="location-clues"
+        [ngSrc]="imageService.getSimpleOverlay('clue')"
+      />
+      <ah-numeric-text-with-overlay
+        class="z-0"
+        [value]="location()!.clues"
+        [invertColors]="true"
+      />
+    </div>
   </div>
 
-  <div>
-    <img
-      fill
-      class="-z-0"
-      alt="location-clues"
-      [ngSrc]="imageService.getSimpleOverlay('clue')"
-    />
-    <ah-text-with-overlay [text]="location().clues" />
-  </div>
-</div>
-
-<ah-card-details-text
-  class="opacity-0 max-h-0 w-[60%] overflow-hidden bg-zinc-50 px-2 py-1 rounded-t-lg
-    whitespace-pre-wrap font-[ArnoPro] text-lg/5 transition-all absolute left-[20%]
-    bottom-[4rem] -z-50 peer-hover:opacity-100 peer-hover:z-50 peer-hover:max-h-48
-    hover:opacity-100 hover:z-50 hover:max-h-48 duration-300"
-  [card]="location()"
-  [showTitle]="false"
-/>
+  <ah-card-details-text
+    class="opacity-0 max-h-0 w-[60%] overflow-hidden bg-zinc-50 px-2 py-1 rounded-t-lg
+      whitespace-pre-wrap font-[ArnoPro] text-lg/5 transition-all absolute left-[20%]
+      bottom-[4rem] -z-50 peer-hover:opacity-100 peer-hover:z-50 peer-hover:max-h-48
+      hover:opacity-100 hover:z-50 hover:max-h-48 duration-300"
+    [card]="location()!"
+    [showTitle]="false"
+  />
+}

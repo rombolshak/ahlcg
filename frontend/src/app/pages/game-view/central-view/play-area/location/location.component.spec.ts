@@ -1,11 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LocationComponent } from './location.component';
-import { testLocation } from 'shared/domain/test/test-locations';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { InvestigatorS } from 'shared/domain/test/test-investigators';
-import { testEnemy } from 'shared/domain/test/test-enemies';
+import {
+  InvestigatorG,
+  InvestigatorS,
+} from 'shared/domain/test/entities/test-investigators';
+import { GameStateStore } from '../../../store/game-state.store';
+import { testGameState } from '../../../../../shared/domain/test/test-game-state';
+import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;
@@ -13,16 +20,22 @@ describe('LocationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [LocationComponent],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+      imports: [LocationComponent, getTranslocoModule()],
     }).compileComponents();
 
+    const store = TestBed.inject(GameStateStore);
+    store.setState(testGameState);
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('location', testLocation);
-    fixture.componentRef.setInput('investigators', [
-      { ...InvestigatorS, threatArea: [] },
-      { ...InvestigatorS, threatArea: [testEnemy] },
+    fixture.componentRef.setInput('locationId', testLocation.id);
+    fixture.componentRef.setInput('investigatorsIds', [
+      InvestigatorS.id,
+      InvestigatorG.id,
     ]);
     await fixture.whenStable();
   });
@@ -53,6 +66,6 @@ describe('LocationComponent', () => {
   it('should display enemies', () => {
     expect(
       fixture.debugElement.queryAll(By.css('img[alt="enemy"]')).length,
-    ).toBe(1);
+    ).toBe(InvestigatorS.threatArea.length + InvestigatorG.threatArea.length);
   });
 });

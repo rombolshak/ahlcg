@@ -1,13 +1,13 @@
 import { WithAhSymbolsPipe } from './with-ah-symbols.pipe';
 import { TestBed } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('WithAhSymbolsPipe', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [
-        provideExperimentalZonelessChangeDetection(),
+        provideZonelessChangeDetection(),
         {
           provide: DomSanitizer,
           useValue: {
@@ -16,17 +16,18 @@ describe('WithAhSymbolsPipe', () => {
           },
         },
       ],
+      imports: [WithAhSymbolsPipe],
     }).compileComponents();
   });
 
   it('create an instance', () => {
-    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+    const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe).toBeTruthy();
   });
 
   it('replaces symbol if needed', () => {
-    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+    const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe.transform('one symbol #q# is @f@ replaced')).toEqual(
       'one symbol <span class="font-[AHSymbol]">q</span> is <span class="font-[ArnoProBold] italic">f</span> replaced',
@@ -34,7 +35,7 @@ describe('WithAhSymbolsPipe', () => {
   });
 
   it('replaces two symbols if needed', () => {
-    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+    const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe.transform('two consecutive symbols #cc# or @ff@ too')).toEqual(
       'two consecutive symbols <span class="font-[AHSymbol]">cc</span> or <span class="font-[ArnoProBold] italic">ff</span> too',
@@ -42,7 +43,7 @@ describe('WithAhSymbolsPipe', () => {
   });
 
   it('replaces several occurrences if needed', () => {
-    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+    const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(
       pipe.transform(
@@ -54,7 +55,7 @@ describe('WithAhSymbolsPipe', () => {
   });
 
   it('doesnt replace symbol if not needed', () => {
-    const pipe = new WithAhSymbolsPipe(TestBed.inject(DomSanitizer));
+    const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe.transform('abcde')).toEqual('abcde');
   });

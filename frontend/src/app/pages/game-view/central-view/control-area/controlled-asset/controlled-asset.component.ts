@@ -9,8 +9,7 @@ import {
   ImagesUrlService,
 } from 'shared/services/images-url.service';
 import { NgOptimizedImage } from '@angular/common';
-import { AssetCard } from 'shared/domain/player-card.model';
-import { AssetState } from 'shared/domain/asset.state';
+import { AssetCard } from 'shared/domain/entities/player-card.model';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.component';
 import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
@@ -24,14 +23,13 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
     AssetPopoverComponent,
   ],
   templateUrl: './controlled-asset.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'relative',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ControlledAssetComponent {
   readonly asset = input.required<AssetCard>();
-  readonly state = input<AssetState>();
   protected imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
 }

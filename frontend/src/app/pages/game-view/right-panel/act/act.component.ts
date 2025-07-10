@@ -5,12 +5,14 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Act, Objective } from 'shared/domain/act.model';
+import { Act, Objective } from 'shared/domain/entities/act.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
+import { CardInfoService } from 'shared/services/card-info.service';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-act',
@@ -20,18 +22,22 @@ import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/s
     NgOptimizedImage,
     NgClass,
     SingleBarComponent,
+    TranslocoDirective,
   ],
   templateUrl: './act.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
       'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-white bg-radial-[at_50%_5%] to-90%',
     '[class]': 'hostClasses()',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActComponent {
   readonly act = input.required<Act>();
   protected readonly imageService = inject(ImagesUrlService);
+
+  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.act);
+  readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptySlots = computed(() =>
     this.act().objectives.map((o) =>

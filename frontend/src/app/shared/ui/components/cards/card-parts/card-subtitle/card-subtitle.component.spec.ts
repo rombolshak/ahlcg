@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardSubtitleComponent } from './card-subtitle.component';
-import { cardA } from 'shared/domain/test/test-cards';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { cardA } from 'shared/domain/test/entities/test-cards';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardSubtitleComponent', () => {
   let component: CardSubtitleComponent;
@@ -10,8 +12,8 @@ describe('CardSubtitleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [CardSubtitleComponent],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardSubtitleComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardSubtitleComponent);

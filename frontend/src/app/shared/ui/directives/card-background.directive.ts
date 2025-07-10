@@ -1,11 +1,13 @@
-import { Directive, effect, ElementRef, input } from '@angular/core';
-import { PlayerCardClass } from 'shared/domain/player-card.model';
+import { Directive, effect, ElementRef, input, inject } from '@angular/core';
+import { PlayerCardClassType } from '../../domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardBackground]',
 })
 export class CardBackgroundDirective {
-  constructor(private readonly el: ElementRef) {
+  private readonly el = inject(ElementRef);
+
+  constructor() {
     effect(() => {
       if (this.lastColor.length) {
         (this.el.nativeElement as HTMLElement).classList.remove(
@@ -21,21 +23,21 @@ export class CardBackgroundDirective {
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClass>();
+  readonly cardClass = input.required<PlayerCardClassType>();
 
   getColor(cardClass: string) {
     switch (cardClass) {
-      case PlayerCardClass.Guardian.toString():
+      case 'guardian':
         return ['from-blue-200', 'to-blue-300'];
-      case PlayerCardClass.Seeker.toString():
+      case 'seeker':
         return ['from-orange-200', 'to-orange-300'];
-      case PlayerCardClass.Rogue.toString():
+      case 'rogue':
         return ['from-green-200', 'to-green-300'];
-      case PlayerCardClass.Survivor.toString():
+      case 'survivor':
         return ['from-red-200', 'to-red-300'];
-      case PlayerCardClass.Mystic.toString():
+      case 'mystic':
         return ['from-purple-200', 'to-purple-300'];
-      case PlayerCardClass.Neutral.toString():
+      case 'neutral':
         return ['from-gray-200', 'to-gray-300'];
     }
 

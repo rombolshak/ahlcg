@@ -1,0 +1,33 @@
+<ah-dialog *transloco="let t" id="game-menu" [title]="t('settings')">
+  <div class="text-xl text-center">
+    <ah-setting-item
+      #setting
+      name="Language"
+      tabindex="0"
+      [template]="lang"
+      [currentValue]="settings().lang"
+      (nextValue)="nextLang()"
+      (prevValue)="prevLang()"
+    />
+  </div>
+
+  <div class="flex gap-8 items-center justify-center mt-8">
+    <button
+      type="submit"
+      class="btn btn-primary self-center"
+      (click)="applySettings()"
+    >
+      {{ t("Apply") }}
+    </button>
+    <button
+      type="reset"
+      class="btn btn-default self-center"
+      (click)="discardSettings()"
+    >
+      {{ t("Discard") }}
+    </button>
+  </div>
+  <ng-template #lang let-lang>
+    <span class="w-32">{{ getLangDisplay(lang) }}</span>
+  </ng-template>
+</ah-dialog>

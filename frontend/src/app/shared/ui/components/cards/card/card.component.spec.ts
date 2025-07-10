@@ -2,15 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { CardInfo } from 'shared/domain/card-info.model';
 import {
   cardA,
   cardE,
   cardS,
   displayOption,
-} from 'shared/domain/test/test-cards';
+} from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { getTranslocoModule } from '../../../../domain/test/transloco.testing';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('CardComponent', () => {
   let component: CardComponent;
@@ -18,13 +19,13 @@ describe('CardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideExperimentalZonelessChangeDetection()],
-      imports: [CardComponent, NoopAnimationsModule],
+      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      imports: [CardComponent, NoopAnimationsModule, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('card', {} as CardInfo);
+    fixture.componentRef.setInput('card', cardA);
     fixture.componentRef.setInput('displayOptions', displayOption);
     await fixture.whenStable();
   });
