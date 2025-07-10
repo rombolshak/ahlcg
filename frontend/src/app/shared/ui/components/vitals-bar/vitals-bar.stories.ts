@@ -21,13 +21,15 @@ export const Horizontal: Story = {
   ],
   args: {
     orientation: Orientation.Horizontal,
-    asset: {
-      health: 10,
-      sanity: 7,
-    },
-    state: {
-      damage: 4,
-      horror: 2,
+    entity: {
+      health: {
+        max: 10,
+        damaged: 4,
+      },
+      sanity: {
+        max: 7,
+        damaged: 2,
+      },
     },
   },
 };
@@ -41,13 +43,15 @@ export const Vertical: Story = {
   ],
   args: {
     orientation: Orientation.Vertical,
-    asset: {
-      health: 10,
-      sanity: 6,
-    },
-    state: {
-      damage: 4,
-      horror: 2,
+    entity: {
+      health: {
+        max: 10,
+        damaged: 4,
+      },
+      sanity: {
+        max: 7,
+        damaged: 2,
+      },
     },
   },
 };

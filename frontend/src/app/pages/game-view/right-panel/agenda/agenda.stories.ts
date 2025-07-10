@@ -1,9 +1,14 @@
-﻿import { Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { AgendaComponent } from './agenda.component';
-import { testAgenda } from 'shared/domain/test/test-agenda';
+import { testAgenda } from 'shared/domain/test/entities/test-agenda';
 
 const meta: Meta<AgendaComponent> = {
   component: AgendaComponent,
+  decorators: [
+    componentWrapperDecorator(
+      (story) => `<div style="width: 300px; margin: 3em;">${story}</div>`,
+    ),
+  ],
 };
 
 export default meta;

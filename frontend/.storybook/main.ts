@@ -3,16 +3,7 @@ import type { StorybookConfig } from '@storybook/angular';
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   staticDirs: ['../public'],
-  addons: [
-    {
-      name: '@storybook/addon-essentials',
-      options: {
-        docs: false,
-      },
-    },
-    '@chromatic-com/storybook',
-    '@storybook/addon-interactions',
-  ],
+  addons: [],
   framework: {
     name: '@storybook/angular',
     options: {},

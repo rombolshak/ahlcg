@@ -104,7 +104,6 @@
             "browserTarget": "ahlcg:build",
             "styles": ["src/styles.css"],
             "compodoc": false,
-            "compodocArgs": ["-e", "json", "-d", "."],
             "port": 6006
           }
         },
@@ -116,7 +115,6 @@
             "browserTarget": "ahlcg:build",
             "styles": ["src/styles.css"],
             "compodoc": false,
-            "compodocArgs": ["-e", "json", "-d", "."],
             "outputDir": "storybook-static"
           }
         }

@@ -1,6 +1,10 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular';
 import { CardComponent } from './card.component';
-import { cardA, cardE, cardS } from '../../../../domain/test/test-cards';
+import {
+  cardA,
+  cardE,
+  cardS,
+} from '../../../../domain/test/entities/test-cards';
 
 const meta: Meta<CardComponent> = {
   component: CardComponent,

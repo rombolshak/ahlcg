@@ -1,28 +1,34 @@
-﻿import { Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { ActComponent } from './act.component';
-import { testAct } from '../../../../shared/domain/test/test-act';
+import { testAct } from '../../../../shared/domain/test/entities/test-act';
+import { Objective } from '../../../../shared/domain/entities/act.model';
 
 const meta: Meta<ActComponent> = {
   component: ActComponent,
+  decorators: [
+    componentWrapperDecorator(
+      (story) => `<div style="width: 300px; margin: 3em;">${story}</div>`,
+    ),
+  ],
 };
 
 export default meta;
 type Story = StoryObj<ActComponent>;
+
+const clueObj = {
+  description: '',
+  requiredValue: 10,
+  currentValue: 0,
+  startValue: 0,
+  type: 'clue',
+} satisfies Objective;
 
 export const ZeroPercent: Story = {
   name: '0% Clues',
   args: {
     act: {
       ...testAct,
-      objectives: [
-        {
-          description: '',
-          requiredValue: 10,
-          currentValue: 0,
-          startValue: 0,
-          type: 'clue',
-        },
-      ],
+      objectives: [clueObj],
     },
   },
 };
@@ -34,11 +40,8 @@ export const TenPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 1,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -52,11 +55,8 @@ export const TwentyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 2,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -70,11 +70,8 @@ export const ThirtyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 3,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -88,11 +85,8 @@ export const FortyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 4,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -106,11 +100,8 @@ export const FiftyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 5,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -124,11 +115,8 @@ export const SixtyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 6,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -142,11 +130,8 @@ export const SeventyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 7,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -160,11 +145,8 @@ export const EightyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 8,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -178,11 +160,8 @@ export const NinetyPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 9,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -196,11 +175,8 @@ export const HundredPercent: Story = {
       ...testAct,
       objectives: [
         {
-          description: '',
-          requiredValue: 10,
+          ...clueObj,
           currentValue: 10,
-          startValue: 0,
-          type: 'clue',
         },
       ],
     },
@@ -214,8 +190,7 @@ export const ZeroPercentHealth: Story = {
       ...testAct,
       objectives: [
         {
-          description:
-            '<b>Цель — </b> Когда Сайла Бишоп побежден, продвиньтесь.',
+          description: testAct.objectives[0]?.description ?? '<no text>',
           requiredValue: 0,
           currentValue: 10,
           startValue: 10,
@@ -233,8 +208,7 @@ export const FiftyPercentHealth: Story = {
       ...testAct,
       objectives: [
         {
-          description:
-            '<b>Цель — </b> Когда Сайла Бишоп побежден, продвиньтесь.',
+          description: testAct.objectives[0]?.description ?? '<no text>',
           requiredValue: 0,
           currentValue: 5,
           startValue: 10,
@@ -246,14 +220,14 @@ export const FiftyPercentHealth: Story = {
 };
 
 export const HundredPercentHealth: Story = {
+  ...ZeroPercent,
   name: '100% Health',
   args: {
     act: {
       ...testAct,
       objectives: [
         {
-          description:
-            '<b>Цель — </b> Когда Сайла Бишоп побежден, продвиньтесь.',
+          description: testAct.objectives[0]?.description ?? '<no text>',
           requiredValue: 0,
           currentValue: 0,
           startValue: 10,
@@ -265,6 +239,7 @@ export const HundredPercentHealth: Story = {
 };
 
 export const TwoObjectives: Story = {
+  ...ZeroPercent,
   name: 'Two objectives',
   args: {
     act: {
