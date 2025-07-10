@@ -1,4 +1,5 @@
-﻿import eslint from "@eslint/js";
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import eslint from "@eslint/js";
 import { configs as ngConfigs, processInlineTemplates } from "angular-eslint";
 import prettierConfig from "eslint-config-prettier";
 import jasminePlugin from "eslint-plugin-jasmine";
@@ -10,6 +11,7 @@ export default config(
   {
     ignores: [
       ".angular/*",
+      ".storybook/*",
       "dist/*",
       "coverage/*",
       "eslint.config.js",
