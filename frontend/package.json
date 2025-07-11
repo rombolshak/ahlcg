@@ -28,7 +28,8 @@
     "shove": "git config push.autoSetupRemote true && git add . && git commit -m 'wip: shoved' --no-verify && git push --no-verify",
     "prepare": "husky",
     "storybook": "ng run ahlcg:storybook",
-    "build-storybook": "ng run ahlcg:build-storybook"
+    "build-storybook": "ng run ahlcg:build-storybook",
+    "chromatic": "npx chromatic"
   },
   "private": true,
   "dependencies": {
@@ -71,6 +72,7 @@
     "@types/jasmine": "~5.1.8",
     "@typescript-eslint/parser": "^8.35.1",
     "angular-eslint": "20.1.0",
+    "chromatic": "^13.1.2",
     "cspell": "^9.0.2",
     "daisyui": "^5.0.35",
     "eslint": "^9.30.1",

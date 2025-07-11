@@ -37,6 +37,8 @@
 
 <ah-asset-popover
   class="opacity-0 w-60 transition-opacity absolute left-[70%] top-[40%] -z-50
-    peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50"
+    peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50
+    data-[hovered=true]:opacity-100 data-[hovered=true]:z-50"
+  [attr.data-hovered]="hovered()"
   [asset]="asset()"
 />

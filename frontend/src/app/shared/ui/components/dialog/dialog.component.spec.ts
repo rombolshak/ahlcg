@@ -8,7 +8,12 @@ import createSpyObj = jasmine.createSpyObj;
 describe('DialogComponent', () => {
   let component: DialogComponent;
   let fixture: ComponentFixture<DialogComponent>;
-  const service = createSpyObj<DialogService>(['register', 'unregister']);
+  const service = createSpyObj<DialogService>([
+    'register',
+    'unregister',
+    'open',
+    'close',
+  ]);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -33,5 +38,12 @@ describe('DialogComponent', () => {
   it('should register in service', () => {
     expect(service.register.calls.count()).toBe(1);
     expect(service.register.calls.first().args[0]).toEqual('test');
+  });
+
+  it('should be opened by input', () => {
+    fixture.componentRef.setInput('open', true);
+    TestBed.tick();
+
+    expect(service.open.calls.count()).toBe(1);
   });
 });

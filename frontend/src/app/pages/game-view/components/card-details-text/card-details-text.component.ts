@@ -14,6 +14,9 @@ import { TranslocoDirective } from '@jsverse/transloco';
   imports: [WithAhSymbolsPipe, TranslocoDirective],
   templateUrl: './card-details-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'text-neutral-900',
+  },
 })
 export class CardDetailsTextComponent {
   private readonly cardInfoService = inject(CardInfoService);
