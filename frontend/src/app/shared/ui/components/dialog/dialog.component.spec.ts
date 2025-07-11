@@ -8,7 +8,12 @@ import createSpyObj = jasmine.createSpyObj;
 describe('DialogComponent', () => {
   let component: DialogComponent;
   let fixture: ComponentFixture<DialogComponent>;
-  const service = createSpyObj<DialogService>(['register', 'unregister']);
+  const service = createSpyObj<DialogService>([
+    'register',
+    'unregister',
+    'open',
+    'close',
+  ]);
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
