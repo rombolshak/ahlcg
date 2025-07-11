@@ -4,6 +4,9 @@ on:
   push:
     branches-ignore:
       - "dependabot/**" # 👈 Excludes the example branch
+      
+permissions:
+  contents: read
 
 jobs:
   chromatic:
@@ -34,3 +37,4 @@ jobs:
           onlyChanged: true # 👈 Required option to enable TurboSnap
           externals: public/assets/(fonts|images)/**
           skip: "dependabot/**" # 👈 Option to skip Chromatic for certain branches
+          workingDir: 'frontend'

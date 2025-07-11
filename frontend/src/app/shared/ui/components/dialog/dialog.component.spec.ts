@@ -39,4 +39,11 @@ describe('DialogComponent', () => {
     expect(service.register.calls.count()).toBe(1);
     expect(service.register.calls.first().args[0]).toEqual('test');
   });
+
+  it('should be opened by input', () => {
+    fixture.componentRef.setInput('open', true);
+    TestBed.tick();
+
+    expect(service.open.calls.count()).toBe(1);
+  });
 });
