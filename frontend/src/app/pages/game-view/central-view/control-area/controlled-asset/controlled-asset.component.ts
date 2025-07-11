@@ -30,6 +30,7 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 })
 export class ControlledAssetComponent {
   readonly asset = input.required<AssetCard>();
+  readonly hovered = input<boolean>(false);
   protected imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
 }
