@@ -4,11 +4,15 @@
       absolute peer cursor-default"
   >
     <span>{{ title() | transloco }}</span>
-    <div
-      class="ml-2 w-[32px] h-[32px] rounded-full text-3xl font-[Teutonic] bg-yellow-400"
-    >
-      !
-    </div>
+
+    @if (showAbilitiesMark()) {
+      <div
+        class="ml-2 w-[32px] h-[32px] rounded-full text-3xl font-[Teutonic] bg-yellow-400 flex
+          justify-center items-center"
+      >
+        <span class="text-sm" [innerHtml]="'#n#' | withAhSymbols"></span>
+      </div>
+    }
   </div>
   <div
     class="flex m-1 *:flex *:items-center *:justify-center *:ml-1 *:w-[56px] *:h-[56px]

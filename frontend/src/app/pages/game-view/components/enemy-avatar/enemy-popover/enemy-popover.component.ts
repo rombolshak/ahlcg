@@ -21,7 +21,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
   templateUrl: './enemy-popover.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'bg-linear-to-b from-zinc-100 to-zinc-300 rounded px-2 py-1',
+    class:
+      'absolute bg-linear-to-b from-zinc-100 to-zinc-300 rounded px-2 py-1',
   },
 })
 export class EnemyPopoverComponent {

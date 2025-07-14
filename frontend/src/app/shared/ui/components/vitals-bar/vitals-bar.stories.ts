@@ -15,7 +15,7 @@ export const Horizontal: Story = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div style="height: 20px; width: 500px; margin: 3em; display: flex; flex-direction: row">${story}</div>`,
+        `<div style="height: 20px; width: 500px; margin: 3em;">${story}</div>`,
     ),
   ],
   args: {
