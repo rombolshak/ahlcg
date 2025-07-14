@@ -13,6 +13,7 @@ import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-
 import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
 import { CardInfoService } from '../../../../../../shared/services/card-info.service';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { WithAhSymbolsPipe } from '../../../../../../shared/ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-location-header',
@@ -22,12 +23,13 @@ import { TranslocoPipe } from '@jsverse/transloco';
     NumericTextComponent,
     NumericTextWithOverlayComponent,
     TranslocoPipe,
+    WithAhSymbolsPipe,
   ],
   templateUrl: './location-header.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'flex items-center justify-between flex-row-reverse w-full bg-linear-to-b from-zinc-50 via-zinc-100 h-16 rounded-t-3xl z-0',
+      'flex items-center justify-between flex-row-reverse w-full bg-linear-to-b from-zinc-50 via-zinc-100 h-16 rounded-t-3xl z-0 text-neutral-900',
   },
 })
 export class LocationHeaderComponent {
@@ -37,5 +39,9 @@ export class LocationHeaderComponent {
   private readonly cardInfo = inject(CardInfoService).getCardInfo(
     this.location,
   );
-  readonly title = computed(() => this.cardInfo()?.title);
+
+  protected readonly title = computed(() => this.cardInfo()?.title);
+  protected readonly showAbilitiesMark = computed(
+    () => (this.cardInfo()?.abilities?.length ?? 0) > 0,
+  );
 }

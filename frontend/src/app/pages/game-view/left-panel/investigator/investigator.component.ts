@@ -37,11 +37,12 @@ import { CardInfoService } from 'shared/services/card-info.service';
 })
 export class InvestigatorComponent {
   readonly investigator = input.required<Investigator>();
+  readonly hovered = input<boolean>(false);
 
   protected readonly imagesService = inject(ImagesUrlService);
   protected readonly CreateOverlay = CreateOverlay;
   protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 
   private readonly cardInfoService = inject(CardInfoService);
-  readonly info = this.cardInfoService.getCardInfo(this.investigator);
+  protected readonly info = this.cardInfoService.getCardInfo(this.investigator);
 }

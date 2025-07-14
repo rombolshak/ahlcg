@@ -5,8 +5,9 @@
   <div
     class="flex flex-col absolute -z-50 left-32 py-1 px-2 group w-0 h-40 overflow-hidden
       transition-all duration-300 peer-hover:w-36 peer-hover:z-10 hover:w-36
-      hover:z-10"
+      hover:z-10 data-[hovered=true]:w-36 data-[hovered=true]:z-10"
     data-size="i"
+    [attr.data-hovered]="hovered()"
   >
     <img
       fill

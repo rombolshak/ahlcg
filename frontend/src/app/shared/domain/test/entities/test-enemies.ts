@@ -24,3 +24,10 @@ export const testEnemy2: Enemy = {
   id: enemyId.assert('1118'),
   health: { max: 5, damaged: 3 },
 };
+
+export const testMassiveEnemy: Enemy = {
+  ...testEnemy,
+  id: enemyId.assert('1117'),
+  health: { max: 25, damaged: 9 },
+  isMassive: true,
+};
