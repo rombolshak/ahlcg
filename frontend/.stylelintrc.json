@@ -13,7 +13,6 @@
       "extends": ["stylelint-config-standard-scss"],
       "rules": {
         "scss/double-slash-comment-empty-line-before": null,
-        /* cspell:disable-next-line */
         "scss/at-mixin-argumentless-call-parentheses": null,
         "no-empty-source": null
       }
