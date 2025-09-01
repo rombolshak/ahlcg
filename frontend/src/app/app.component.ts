@@ -8,7 +8,7 @@ import { RouterOutlet } from '@angular/router';
   template: `
     <img
       alt="bg"
-      ngSrc="/assets/images/bg-min.jpg"
+      ngSrc="/assets/images/bg-min.png"
       fill
       priority
       class="-z-50"
