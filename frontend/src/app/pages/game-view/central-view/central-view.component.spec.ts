@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CentralViewComponent } from './central-view.component';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 describe('CentralViewComponent', () => {
   let component: CentralViewComponent;
@@ -11,7 +10,7 @@ describe('CentralViewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CentralViewComponent],
-      providers: [provideZonelessChangeDetection(), provideNoopAnimations()],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CentralViewComponent);

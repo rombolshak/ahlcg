@@ -1,7 +1,6 @@
 ﻿<!--suppress CssUnknownProperty -->
 <!--eslint-disable @angular-eslint/template/no-inline-styles -->
 <div
-  @cardsHand
   class="flex ml-[calc(var(--card-offset)_-_160px)]"
   [style.--card-offset]="cardOffset()"
 >
@@ -11,7 +10,6 @@
       [card]="card"
       [displayOptions]="cardDisplayOptions"
       [attr.data-index]="$index"
-      [@cardState]="card.id === focusedCardId ? 'focused' : 'normal'"
       (click)="cardSelected.emit(card.id)"
       (mouseenter)="focusedCardId = card.id"
       (mouseleave)="focusedCardId = undefined"
