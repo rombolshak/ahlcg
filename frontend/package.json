@@ -29,7 +29,8 @@
     "prepare": "husky",
     "storybook": "ng run ahlcg:storybook",
     "build-storybook": "ng run ahlcg:build-storybook",
-    "chromatic": "npx chromatic"
+    "chromatic": "npx chromatic",
+    "push": "npx prettier --write src && git push"
   },
   "private": true,
   "dependencies": {
