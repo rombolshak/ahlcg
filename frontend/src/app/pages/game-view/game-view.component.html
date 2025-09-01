@@ -7,9 +7,19 @@
     <p class="whitespace-pre-wrap">{{ gameState.error() }}</p>
   </div>
 } @else {
-  <ah-left-panel class="w-[17rem] flex-none" />
-  <ah-central-view class="min-w-0" />
-  <ah-right-panel class="w-[17rem] flex-none" />
+  <div
+    class="grid grid-cols-[17rem_1fr_20rem] grid-rows-[3rem_1fr_6rem] gap-4 h-full w-full
+      px-8"
+  >
+    <div class="col-start-1 row-start-1 col-span-3">Header</div>
+    <ah-global-game-info-panel class="col-start-1 row-start-2 row-span-2" />
+    <ah-play-area class="col-start-2 row-start-2 overflow-hidden" />
+    <ah-current-investigator-panel class="col-start-3 row-start-2" />
+    <ah-cards-hand
+      class="col-start-1 row-start-3 col-span-3"
+      [cards]="cards()"
+    />
+  </div>
 }
 
 <ng-template #debugPanel />

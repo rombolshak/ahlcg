@@ -9,15 +9,15 @@ import { ActComponent } from './act/act.component';
 import { GameStateStore } from '../store/game-state.store';
 
 @Component({
-  selector: 'ah-right-panel',
+  selector: 'ah-global-game-info-panel',
   imports: [AgendaComponent, ActComponent],
-  templateUrl: './right-panel.component.html',
+  templateUrl: './global-game-info-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col gap-4',
   },
 })
-export class RightPanelComponent {
+export class GlobalGameInfoPanelComponent {
   private readonly state = inject(GameStateStore);
 
   readonly agendas = computed(() => {

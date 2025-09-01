@@ -1,37 +1,48 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   HostListener,
   inject,
   OnInit,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { LeftPanelComponent } from './left-panel/left-panel.component';
-import { CentralViewComponent } from './central-view/central-view.component';
-import { RightPanelComponent } from './right-panel/right-panel.component';
+import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';
+import { GlobalGameInfoPanelComponent } from './global-game-info-panel/global-game-info-panel.component';
 import { testGameState } from '../../shared/domain/test/test-game-state';
 import { GameStateStore } from './store/game-state.store';
 import { DebugTimelineService } from './services/debug-timeline.service';
 import { SettingsComponent } from './settings/settings.component';
+import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
+import { PlayAreaComponent } from './play-area/play-area.component';
 
 @Component({
   selector: 'ah-game-view',
   imports: [
-    LeftPanelComponent,
-    CentralViewComponent,
-    RightPanelComponent,
+    CurrentInvestigatorPanelComponent,
+    GlobalGameInfoPanelComponent,
     SettingsComponent,
+    CardsHandComponent,
+    PlayAreaComponent,
   ],
   templateUrl: './game-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex gap-4 p-8 h-screen w-screen relative text-neutral-900',
+    class: 'h-screen w-screen text-neutral-900',
   },
 })
 export class GameViewComponent implements OnInit {
   readonly gameState = inject(GameStateStore);
   readonly timelineService = inject(DebugTimelineService);
+
+  readonly cards = computed(() => {
+    return (
+      this.gameState
+        .currentInvestigator()
+        ?.hand.map((card) => this.gameState.getPlayerCard(card)) ?? []
+    );
+  });
 
   private readonly debugPanel = viewChild('debugPanel', {
     read: ViewContainerRef,

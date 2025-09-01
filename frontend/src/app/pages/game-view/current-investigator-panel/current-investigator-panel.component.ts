@@ -6,23 +6,19 @@ import {
 } from '@angular/core';
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
-import { ActionsSelectorComponent } from './actions-selector/actions-selector.component';
 import { GameStateStore } from '../store/game-state.store';
+import { ControlAreaComponent } from './control-area/control-area.component';
 
 @Component({
-  selector: 'ah-left-panel',
-  imports: [
-    ThreatAreaComponent,
-    InvestigatorComponent,
-    ActionsSelectorComponent,
-  ],
-  templateUrl: './left-panel.component.html',
+  selector: 'ah-current-investigator-panel',
+  imports: [ThreatAreaComponent, InvestigatorComponent, ControlAreaComponent],
+  templateUrl: './current-investigator-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col gap-4',
   },
 })
-export class LeftPanelComponent {
+export class CurrentInvestigatorPanelComponent {
   readonly state = inject(GameStateStore);
 
   readonly threatArea = computed(() => {
@@ -36,5 +32,13 @@ export class LeftPanelComponent {
 
   readonly actions = computed(() => {
     return this.state.gameState()?.availableActions ?? [];
+  });
+
+  readonly assets = computed(() => {
+    return (
+      this.state
+        .currentInvestigator()
+        ?.controlledAssets.map((a) => this.state.getAsset(a)) ?? []
+    );
   });
 }

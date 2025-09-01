@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LeftPanelComponent } from './left-panel.component';
+import { GlobalGameInfoPanelComponent } from './global-game-info-panel.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 
-describe('LeftPanelComponent', () => {
-  let component: LeftPanelComponent;
-  let fixture: ComponentFixture<LeftPanelComponent>;
+describe('RightPanelComponent', () => {
+  let component: GlobalGameInfoPanelComponent;
+  let fixture: ComponentFixture<GlobalGameInfoPanelComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
-      imports: [LeftPanelComponent],
+      imports: [GlobalGameInfoPanelComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(LeftPanelComponent);
+    fixture = TestBed.createComponent(GlobalGameInfoPanelComponent);
     component = fixture.componentInstance;
 
     await fixture.whenStable();

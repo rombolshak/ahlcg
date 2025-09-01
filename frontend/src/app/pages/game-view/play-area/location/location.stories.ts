@@ -5,13 +5,13 @@
   StoryObj,
 } from '@storybook/angular';
 import { LocationComponent } from './location.component';
-import { testLocation } from '../../../../../shared/domain/test/entities/test-locations';
-import { GameStateStore } from '../../../store/game-state.store';
-import { testGameState } from '../../../../../shared/domain/test/test-game-state';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { GameStateStore } from '../../store/game-state.store';
+import { testGameState } from 'shared/domain/test/test-game-state';
 import {
   InvestigatorG,
   InvestigatorS,
-} from '../../../../../shared/domain/test/entities/test-investigators';
+} from 'shared/domain/test/entities/test-investigators';
 
 const meta: Meta<LocationComponent> = {
   component: LocationComponent,

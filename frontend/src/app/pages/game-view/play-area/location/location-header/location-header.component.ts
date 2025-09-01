@@ -5,15 +5,15 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { CardDetailsTextComponent } from '../../../../components/card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../../components/card-details-text/card-details-text.component';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { Location } from 'shared/domain/entities/location.model';
 import { NgOptimizedImage } from '@angular/common';
 import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
 import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
-import { CardInfoService } from '../../../../../../shared/services/card-info.service';
+import { CardInfoService } from 'shared/services/card-info.service';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { WithAhSymbolsPipe } from '../../../../../../shared/ui/pipes/with-ah-symbols.pipe';
+import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-location-header',

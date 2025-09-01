@@ -18,7 +18,7 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
   template: `
     @for (asset of assets(); track asset.id) {
       <ah-controlled-asset
-        class="w-[6rem] h-[4.5rem] mr-3 mb-3 rounded-lg"
+        class="w-[6rem] h-[4.5rem] rounded-lg"
         ahCardOutline
         [asset]="asset"
         [cardClass]="asset.class"
@@ -27,7 +27,7 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-wrap',
+    class: 'flex flex-wrap gap-3',
   },
 })
 export class ControlAreaComponent {

@@ -8,9 +8,9 @@ import {
   InvestigatorG,
   InvestigatorS,
 } from 'shared/domain/test/entities/test-investigators';
-import { GameStateStore } from '../../../store/game-state.store';
-import { testGameState } from '../../../../../shared/domain/test/test-game-state';
-import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
+import { GameStateStore } from '../../store/game-state.store';
+import { testGameState } from 'shared/domain/test/test-game-state';
+import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 

@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RightPanelComponent } from './right-panel.component';
+import { CurrentInvestigatorPanelComponent } from './current-investigator-panel.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 
-describe('RightPanelComponent', () => {
-  let component: RightPanelComponent;
-  let fixture: ComponentFixture<RightPanelComponent>;
+describe('LeftPanelComponent', () => {
+  let component: CurrentInvestigatorPanelComponent;
+  let fixture: ComponentFixture<CurrentInvestigatorPanelComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
-      imports: [RightPanelComponent],
+      imports: [CurrentInvestigatorPanelComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(RightPanelComponent);
+    fixture = TestBed.createComponent(CurrentInvestigatorPanelComponent);
     component = fixture.componentInstance;
 
     await fixture.whenStable();
