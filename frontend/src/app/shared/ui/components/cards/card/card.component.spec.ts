@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CardComponent } from './card.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   cardA,
   cardE,
@@ -20,7 +19,7 @@ describe('CardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideHttpClient()],
-      imports: [CardComponent, NoopAnimationsModule, getTranslocoModule()],
+      imports: [CardComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardComponent);

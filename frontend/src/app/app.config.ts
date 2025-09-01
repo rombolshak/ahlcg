@@ -7,7 +7,6 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
@@ -27,7 +26,6 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(),
-    provideAnimationsAsync(),
     {
       provide: ErrorHandler,
       useFactory: errorHandlerFactory,

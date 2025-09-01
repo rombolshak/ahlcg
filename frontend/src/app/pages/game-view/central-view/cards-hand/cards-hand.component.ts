@@ -3,18 +3,10 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   input,
   output,
-  inject,
 } from '@angular/core';
-import {
-  animate,
-  sequence,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
 import { CardComponent } from 'shared/ui/components/cards/card/card.component';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { cardWidths } from 'shared/domain/card.constants';
@@ -29,57 +21,6 @@ import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
   host: {
     class: 'flex justify-center',
   },
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations
-  animations: [
-    trigger('cardsHand', [transition(':enter', [])]),
-    trigger('cardState', [
-      state(
-        'normal',
-        style({
-          width: 'var(--card-offset)',
-        }),
-      ),
-      state(
-        'focused',
-        style({
-          width: '160px',
-          'z-index': 50,
-          scale: '150%',
-          transform: 'translateY(-8rem)',
-        }),
-      ),
-      transition('normal <=> focused', [animate('0.2s ease-in-out')]),
-      transition(':enter', [
-        style({
-          opacity: 0,
-          width: 0,
-          scale: 2.25,
-          transform: 'translate(10rem, -10rem)',
-        }),
-        sequence([
-          animate(
-            '0.5s ease-out',
-            style({
-              opacity: 1,
-              width: 'var(--card-offset)',
-              transform: 'translate(-5vh, -10rem)',
-            }),
-          ),
-          animate('0.5s 0.25s ease-in-out'),
-        ]),
-      ]),
-      transition(':leave', [
-        animate(
-          '0.25s ease-in',
-          style({
-            opacity: 0,
-            transform: 'translate(-10vh, -10rem)',
-            width: 0,
-          }),
-        ),
-      ]),
-    ]),
-  ],
 })
 export class CardsHandComponent {
   private readonly element = inject(ElementRef);

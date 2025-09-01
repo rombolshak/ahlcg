@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardsHandComponent } from './cards-hand.component';
 import { cardA, cardE, cardS } from 'shared/domain/test/entities/test-cards';
 import { By } from '@angular/platform-browser';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
@@ -15,7 +14,7 @@ describe('CardsHandComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideHttpClient()],
-      imports: [CardsHandComponent, NoopAnimationsModule, getTranslocoModule()],
+      imports: [CardsHandComponent, getTranslocoModule()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CardsHandComponent);
