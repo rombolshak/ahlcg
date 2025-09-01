@@ -29,7 +29,8 @@
     "prepare": "husky",
     "storybook": "ng run ahlcg:storybook",
     "build-storybook": "ng run ahlcg:build-storybook",
-    "chromatic": "npx chromatic"
+    "chromatic": "npx chromatic",
+    "push": "npx prettier --write src && git push"
   },
   "private": true,
   "dependencies": {
@@ -98,7 +99,7 @@
     "prettier-plugin-sh": "^0.18.0",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "storybook": "^9.0.16",
-    "stylelint": "^16.19.1",
+    "stylelint": "^16.23.1",
     "stylelint-config-standard": "^38.0.0",
     "stylelint-config-standard-scss": "^15.0.1",
     "tailwindcss": "^4.1.8",
