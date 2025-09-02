@@ -38,3 +38,5 @@ jobs:
           externals: public/assets/(fonts|images)/**
           skip: "dependabot/**" # 👈 Option to skip Chromatic for certain branches
           workingDir: 'frontend'
+          traceChanged: true
+          debug: true
