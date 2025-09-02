@@ -104,7 +104,8 @@
             "browserTarget": "ahlcg:build",
             "styles": ["src/styles.css"],
             "compodoc": false,
-            "port": 6006
+            "port": 6006,
+            "webpackStatsJson": true
           }
         },
         "build-storybook": {
@@ -115,7 +116,8 @@
             "browserTarget": "ahlcg:build",
             "styles": ["src/styles.css"],
             "compodoc": false,
-            "outputDir": "storybook-static"
+            "outputDir": "storybook-static",
+            "webpackStatsJson": true
           }
         }
       }

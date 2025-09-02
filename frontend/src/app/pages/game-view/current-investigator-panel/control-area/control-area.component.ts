@@ -1,0 +1,37 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+} from '@angular/core';
+import { AssetCard } from 'shared/domain/entities/player-card.model';
+import {
+  CreateOverlay,
+  ImagesUrlService,
+} from 'shared/services/images-url.service';
+import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
+import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
+
+@Component({
+  selector: 'ah-control-area',
+  imports: [ControlledAssetComponent, CardOutlineDirective],
+  template: `
+    @for (asset of assets(); track asset.id) {
+      <ah-controlled-asset
+        class="w-[6rem] h-[4.5rem] rounded-lg"
+        ahCardOutline
+        [asset]="asset"
+        [cardClass]="asset.class"
+      />
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex flex-wrap gap-3',
+  },
+})
+export class ControlAreaComponent {
+  readonly assets = input.required<AssetCard[]>();
+  imagesService = inject(ImagesUrlService);
+  protected readonly CreateOverlay = CreateOverlay;
+}

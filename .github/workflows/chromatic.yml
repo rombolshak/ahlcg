@@ -29,6 +29,8 @@ jobs:
       - name: Install dependencies
         # ⚠️ See your package manager's documentation for the correct command to install dependencies in a CI environment.
         run: npm ci
+      - name: Build storybook
+        run: npm run build-storybook
       - name: Run Chromatic
         uses: chromaui/action@latest
         with:
@@ -38,3 +40,6 @@ jobs:
           externals: public/assets/(fonts|images)/**
           skip: "dependabot/**" # 👈 Option to skip Chromatic for certain branches
           workingDir: 'frontend'
+          traceChanged: true
+          debug: true
+          storybookBuildDir: 'storybook-static'
