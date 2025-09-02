@@ -48,7 +48,8 @@ export class ActComponent {
   protected readonly maxLines = computed(() =>
     this.act().objectives.map((o) => {
       const max = Math.max(o.requiredValue, o.currentValue);
-      return max <= 6 ? 1 : max <= 12 ? 2 : 3;
+      const multiRowValue = max <= 12 ? 2 : 3;
+      return max <= 6 ? 1 : multiRowValue;
     }),
   );
 
