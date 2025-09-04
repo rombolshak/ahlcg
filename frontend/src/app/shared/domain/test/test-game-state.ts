@@ -21,6 +21,8 @@ import {
 } from './entities/test-cards';
 
 export const testGameState: GameState = {
+  campaignId: 'notz',
+  scenarioId: 'mm',
   scenarioMap: testGameMap,
   acts: [testAct.id],
   agendas: [testAgenda.id],

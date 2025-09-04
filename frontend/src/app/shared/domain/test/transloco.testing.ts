@@ -30,6 +30,7 @@ export function getTranslocoModule(options: TranslocoTestingOptions = {}) {
     translocoConfig: {
       availableLangs: ['en'],
       defaultLang: 'en',
+      scopes: { keepCasing: true },
     },
     preloadLangs: true,
     ...options,

@@ -287,6 +287,8 @@ function validateConnections(
 }
 
 export const gameState = type({
+  campaignId: 'string > 0',
+  scenarioId: 'string > 0',
   acts: actId.array().atLeastLength(1),
   agendas: agendaId.array().atLeastLength(1),
   investigators: investigatorId.array().atLeastLength(1),

@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-scenario-name',
-  imports: [],
+  imports: [TranslocoDirective],
   templateUrl: './scenario-name.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col items-center justify-center pl-8',
+    class: 'flex flex-col items-center justify-center text-center pl-8',
   },
 })
 export class ScenarioNameComponent {
-  readonly campaignName = input.required<string>();
-  readonly scenarioName = input.required<string>();
+  readonly campaignId = input.required<string>();
+  readonly scenarioId = input.required<string>();
 }
