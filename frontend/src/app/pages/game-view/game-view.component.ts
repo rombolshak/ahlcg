@@ -16,6 +16,7 @@ import { DebugTimelineService } from './services/debug-timeline.service';
 import { SettingsComponent } from './settings/settings.component';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { PlayAreaComponent } from './play-area/play-area.component';
+import { GameHeaderComponent } from './components/game-header/game-header.component';
 
 @Component({
   selector: 'ah-game-view',
@@ -25,6 +26,7 @@ import { PlayAreaComponent } from './play-area/play-area.component';
     SettingsComponent,
     CardsHandComponent,
     PlayAreaComponent,
+    GameHeaderComponent,
   ],
   templateUrl: './game-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

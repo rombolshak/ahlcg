@@ -17,6 +17,7 @@ import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
   selector: 'ah-cards-hand',
   imports: [CardComponent],
   templateUrl: './cards-hand.component.html',
+  styleUrl: './cards-hand.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex justify-center',

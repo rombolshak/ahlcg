@@ -65,6 +65,15 @@ export class SettingsComponent {
     });
   }
 
+  public openSettings() {
+    if (this.dialogService.isOpen('game-menu')) {
+      return;
+    }
+
+    this.dialogService.open('game-menu');
+    this.selectedSettingIndex.set(0);
+  }
+
   protected nextLang(): void {
     const current = this.settings().lang;
     const index = this.availableLanguages.findIndex((l) =>
@@ -165,8 +174,7 @@ export class SettingsComponent {
           this.discardSettings();
           this.selectedSettingIndex.set(-1);
         } else {
-          this.dialogService.open('game-menu');
-          this.selectedSettingIndex.set(0);
+          this.openSettings();
         }
         break;
     }
