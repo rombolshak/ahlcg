@@ -17,10 +17,10 @@ import { GameStateStore } from '../../store/game-state.store';
     GlobalGameActionsComponent,
   ],
   templateUrl: './game-header.component.html',
-  styleUrl: './game-header.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'grid grid-cols-subgrid text-base-content',
+    class:
+      'grid grid-cols-subgrid text-base-content bg-gradient-to-b from-base-200 via-base-200/80 via-[65%] to-base-200/0',
   },
 })
 export class GameHeaderComponent {

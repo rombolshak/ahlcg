@@ -1,1 +1,13 @@
-<button type="button" class="btn" (click)="openMenu()">Menu</button>
+@for (button of buttons; track button.icon) {
+  @if (button.isVisible) {
+    <div class="tooltip tooltip-bottom" [attr.data-tip]="button.tooltip">
+      <button
+        type="button"
+        class="btn btn-square btn-ghost hover:btn-neutral"
+        (click)="button.handler()"
+      >
+        <ah-svg class="w-6 h-6" [name]="button.icon" />
+      </button>
+    </div>
+  }
+}
