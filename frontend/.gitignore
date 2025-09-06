@@ -4,6 +4,7 @@ generated/
 
 # Compiled output
 /dist
+/dist-i18n
 /tmp
 /out-tsc
 /bazel-out
