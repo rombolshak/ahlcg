@@ -1,5 +1,5 @@
 {
-  "title": "Вход в музей",
   "a1": "<b>Forced</b> - When the Ghoul Priest spawns: Spawn it here instead of at its normal location.",
-  "a2": "#n#: Draw 1 card and gain 1 resource. (Limit once per turn.)"
+  "a2": "#n#: Draw 1 card and gain 1 resource. (Limit once per turn.)",
+  "title": "Вход в музей"
 }

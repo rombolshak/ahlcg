@@ -1,15 +1,15 @@
 {
-  "insight": "Insight",
-  "tactic": "Tactic",
-  "item": "Item",
-  "book": "Book",
-  "science": "Science",
-  "innate": "Innate",
-  "cursed": "Cursed",
-  "miskatonic": "Miskatonic",
-  "humanoid": "Humanoid",
-  "monster": "Monster",
-  "ghoul": "Ghoul",
   "arkham": "Arkham",
-  "ritual": "Ritual"
+  "book": "Book",
+  "cursed": "Cursed",
+  "ghoul": "Ghoul",
+  "humanoid": "Humanoid",
+  "innate": "Innate",
+  "insight": "Insight",
+  "item": "Item",
+  "miskatonic": "Miskatonic",
+  "monster": "Monster",
+  "ritual": "Ritual",
+  "science": "Science",
+  "tactic": "Tactic"
 }

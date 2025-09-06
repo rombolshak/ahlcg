@@ -1,5 +1,5 @@
 {
-  "title": "\"I've got a plan!\"",
+  "a1": "<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage).",
   "flavor": "\"That's the worst plan I've ever heard.\n Well, what are we waiting for?\"",
-  "a1": "<b>Fight</b>. This attack uses #i#. You deal +1 damage for this attack for each clue you have (max +3 damage)."
+  "title": "\"I've got a plan!\""
 }

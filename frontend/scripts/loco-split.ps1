@@ -17,6 +17,27 @@ if (-not (Test-Path -Path $OutputRootPath)) {
     New-Item -Path $OutputRootPath -ItemType Directory | Out-Null
 }
 
+function Sort-ObjectProperties {
+    param (
+        [pscustomobject]$Object
+    )
+
+    $ordered = [ordered]@{}
+
+    foreach ($key in ($Object.PSObject.Properties.Name | Sort-Object)) {
+        $value = $Object.$key
+
+        if ($value -is [pscustomobject]) {
+            $ordered[$key] = Sort-ObjectProperties -Object $value
+        }
+        else {
+            $ordered[$key] = $value
+        }
+    }
+
+    return $ordered
+}
+
 function Split-JsonRecursively {
     param (
         [pscustomobject]$JsonObject,
@@ -24,36 +45,40 @@ function Split-JsonRecursively {
         [string]$FileName
     )
 
-    # Prepare hashtable for root-level keys (non-subdirectory keys)
     $rootKeys = @{}
 
     foreach ($key in $JsonObject.PSObject.Properties.Name) {
         $value = $JsonObject.$key
 
-        # Check if value is an object and if it looks like a subdirectory (heuristic: object with properties)
         if ($value -is [pscustomobject]) {
-            # We treat this key as a subdirectory name
+            # Check if subdirectory exists
             $subDirPath = Join-Path -Path $CurrentDir -ChildPath $key
-            if (-not (Test-Path -Path $subDirPath)) {
-                New-Item -Path $subDirPath -ItemType Directory | Out-Null
+            if (Test-Path -Path $subDirPath -PathType Container) {
+                # Subdirectory exists - recurse into it
+                Split-JsonRecursively -JsonObject $value -CurrentDir $subDirPath -FileName $FileName
             }
-
-            # Recursively split the sub-object into files in the subdirectory
-            Split-JsonRecursively -JsonObject $value -CurrentDir $subDirPath -FileName $FileName
+            else {
+                # Subdirectory does NOT exist - flatten this object as root key
+                $rootKeys[$key] = $value
+            }
         }
         else {
-            # Not an object, treat as root-level key
+            # Primitive value, add as root key
             $rootKeys[$key] = $value
         }
     }
 
-    # Save the root-level keys as JSON file in current directory
-    # If there are any root keys, save the JSON file
-    if ($rootKeys.Count -gt 0) {
-        $jsonString = $rootKeys | ConvertTo-Json -Depth 100
+    # Sort root keys alphabetically
+    $sortedRootKeys = Sort-ObjectProperties -Object ([pscustomobject]$rootKeys)
+
+    if ($sortedRootKeys.Count -gt 0) {
+        $jsonString = $sortedRootKeys | ConvertTo-Json -Depth 100
         $outputFile = Join-Path -Path $CurrentDir -ChildPath $FileName
         $jsonString | Out-File -FilePath $outputFile -Encoding UTF8
-        Write-Host "Saved $outputFile"
+        Write-Host "Saved $outputFile with $($sortedRootKeys.Count) props"
+    }
+    else {
+        Write-Host "No root keys in $CurrentDir, skipping JSON file creation."
     }
 }
 
@@ -63,7 +88,7 @@ $mergedFiles = Get-ChildItem -Path $MergedDirPath -Filter *.json -File
 foreach ($mergedFile in $mergedFiles) {
     Write-Host "Processing merged file: $($mergedFile.FullName)"
 
-    # Load merged JSON content
     $mergedJson = Get-Content -Path $mergedFile.FullName -Raw | ConvertFrom-Json
+
     Split-JsonRecursively -JsonObject $mergedJson -CurrentDir $OutputRootPath -FileName $mergedFile.Name
 }
