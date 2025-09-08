@@ -1,7 +1,7 @@
 <ng-container *transloco="let t">
   <div class="peer text-center peer">
     <p class="text-sm/4 font-[ArnoPro] -my-1">
-      {{ t("act") }} {{ act().stage }}
+      {{ t("global_game_info.act") }} {{ act().stage }}
     </p>
     <p class="text-xl font-[Conkordia]">
       {{ t(title()!) }}
@@ -24,6 +24,7 @@
         />
       }
       @default {
+        <!--suppress JSUnusedLocalSymbols -->
         <div
           class="grid grid-flow-col gap-1 mb-2"
           [ngClass]="

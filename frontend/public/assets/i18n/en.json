@@ -13,5 +13,9 @@
       "enemy": "Enemy phase",
       "upkeep": "Upkeep phase"
     }
+  },
+  "global_game_info": {
+    "act": "Act",
+    "agenda": "Agenda"
   }
 }
