@@ -8,13 +8,14 @@
   </div>
 } @else {
   <div
-    class="grid grid-cols-[17rem_1fr_20rem] grid-rows-[3rem_1fr_6rem] gap-4 h-full w-full
-      px-8"
+    class="grid grid-cols-[19rem_1fr_22rem] grid-rows-[3rem_1fr_6rem] gap-4 h-full w-full"
   >
-    <div class="col-start-1 row-start-1 col-span-3">Header</div>
-    <ah-global-game-info-panel class="col-start-1 row-start-2 row-span-2" />
+    <ah-game-header class="col-start-1 row-start-1 col-span-3" />
+    <ah-global-game-info-panel
+      class="col-start-1 row-start-2 row-span-2 pl-8"
+    />
     <ah-play-area class="col-start-2 row-start-2 overflow-hidden" />
-    <ah-current-investigator-panel class="col-start-3 row-start-2" />
+    <ah-current-investigator-panel class="col-start-3 row-start-2 pr-8" />
     <ah-cards-hand
       class="col-start-1 row-start-3 col-span-3"
       [cards]="cards()"

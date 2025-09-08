@@ -1,0 +1,12 @@
+<ng-container *transloco="let t; scope: `campaigns/${campaignId()}`">
+  <ng-container
+    *transloco="let t2; scope: `campaigns/${campaignId()}/${scenarioId()}`"
+  >
+    <span class="text-xs/3">
+      {{ t(`campaigns/${campaignId()}.name`) }}
+    </span>
+    <span class="text-xl/5">
+      {{ t2(`campaigns/${campaignId()}/${scenarioId()}.name`) }}
+    </span>
+  </ng-container>
+</ng-container>

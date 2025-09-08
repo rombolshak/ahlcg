@@ -28,7 +28,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-white bg-radial-[at_50%_5%] to-90%',
+      'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-accent-content bg-radial-[at_50%_5%] to-90%',
     '[class]': 'hostClasses()',
   },
 })

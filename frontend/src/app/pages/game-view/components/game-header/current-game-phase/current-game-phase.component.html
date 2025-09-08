@@ -1,0 +1,20 @@
+<ng-container *transloco="let t">
+  <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
+  <div
+    class="flex flex-col items-center justify-center min-w-80 h-full rounded-full px-4
+      bg-gradient-to-b from-(--baseColor)/50 via-(--accentColor)/70
+      to-(--baseColor)/50"
+    [style.--baseColor]="colorSet().baseColor"
+    [style.--accentColor]="colorSet().accentColor"
+  >
+    <span class="text-xs/3">
+      {{ t("game_header.current_game_phase.round") }} {{ roundNumber() }}
+    </span>
+    <span class="text-xl/5">
+      {{ t(`game_header.current_game_phase.${this.gamePhase()}`) }}
+      @if (actingEntityTitle()) {
+        — {{ t(actingEntityTitle()!) }}
+      }
+    </span>
+  </div>
+</ng-container>

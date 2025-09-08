@@ -119,7 +119,7 @@ export class CardInfoService {
     model.copyright = desc.copyright;
     desc.fields.forEach((field) => {
       // @ts-expect-error construct object manually, then validate via arktype
-      model[field] = `cards${setInfo.set}${setInfo.index}.${field}`;
+      model[field] = `cards/${setInfo.set}/${setInfo.index}.${field}`;
     });
 
     // @ts-expect-error construct object manually, then validate via arktype
@@ -136,7 +136,7 @@ export class CardInfoService {
       // @ts-expect-error construct object manually, then validate via arktype
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
       model.abilities.push(
-        `cards${setInfo.set}${setInfo.index}.a${i.toString()}`,
+        `cards/${setInfo.set}/${setInfo.index}.a${i.toString()}`,
       );
     }
 

@@ -8,13 +8,16 @@
   "
 />
 
-<ah-numeric-text class="text-slate-700 text-2xl" [value]="value()" />
+<ah-numeric-text
+  class="text-slate-700 text-2xl"
+  increaseColor="var(--color-success)"
+  decreaseColor="var(--color-error)"
+  [value]="value()"
+/>
 <img
   class="max-w-none h-6"
   width="24"
   height="25"
   alt="investigator-skill"
-  increaseColor="var(--color-success)"
-  decreaseColor="var(--color-error)"
   [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(type()))"
 />

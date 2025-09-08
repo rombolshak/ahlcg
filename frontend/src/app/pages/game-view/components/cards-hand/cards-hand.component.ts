@@ -19,7 +19,8 @@ import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
   templateUrl: './cards-hand.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex justify-center',
+    class:
+      'flex justify-center bg-gradient-to-t from-base-200 via-base-200/80 via-[65%] to-base-200/0',
   },
 })
 export class CardsHandComponent {

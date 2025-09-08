@@ -36,7 +36,7 @@ export class LocationsConnectionComponent {
     );
 
     if (!location) {
-      console.error(
+      console.debug(
         `No location found for location ${this.from()} or ${this.to()}`,
       );
     }

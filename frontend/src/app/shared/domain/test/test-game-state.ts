@@ -19,8 +19,10 @@ import {
   cardE,
   cardS,
 } from './entities/test-cards';
+import { testMetaInfo } from './test-meta';
 
 export const testGameState: GameState = {
+  metaInfo: testMetaInfo,
   scenarioMap: testGameMap,
   acts: [testAct.id],
   agendas: [testAgenda.id],

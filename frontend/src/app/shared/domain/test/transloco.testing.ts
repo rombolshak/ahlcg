@@ -12,6 +12,8 @@ import beast from '../../../../../public/assets/i18n/cards/02/200/en.json';
 import breakingThrough from '../../../../../public/assets/i18n/cards/02/314/en.json';
 import notes from '../../../../../public/assets/i18n/cards/09/045/en.json';
 import accursed from '../../../../../public/assets/i18n/cards/10/095/en.json';
+import campaign from '../../../../../public/assets/i18n/campaigns/notz/en.json';
+import scenario from '../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
 
 export function getTranslocoModule(options: TranslocoTestingOptions = {}) {
   return TranslocoTestingModule.forRoot({
@@ -26,10 +28,13 @@ export function getTranslocoModule(options: TranslocoTestingOptions = {}) {
       'cards/02/314/en': breakingThrough,
       'cards/09/045/en': notes,
       'cards/10/095/en': accursed,
+      'campaigns/notz/en': campaign,
+      'campaigns/notz/mm/en': scenario,
     },
     translocoConfig: {
       availableLangs: ['en'],
       defaultLang: 'en',
+      scopes: { keepCasing: true },
     },
     preloadLangs: true,
     ...options,

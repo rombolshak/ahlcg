@@ -1,5 +1,21 @@
 {
-  "agenda": "Agenda",
-  "act": "Act",
-  "settings": "Settings"
+  "game_header": {
+    "game_actions": {
+      "chaosbag": "View chaos bag",
+      "mute": "Mute sound",
+      "fullscreen": "Switch to fullscreen",
+      "menu": "Open menu"
+    },
+    "current_game_phase": {
+      "round": "Round",
+      "mythos": "Mythos phase",
+      "investigators": "Investigators phase",
+      "enemy": "Enemy phase",
+      "upkeep": "Upkeep phase"
+    }
+  },
+  "global_game_info": {
+    "act": "Act",
+    "agenda": "Agenda"
+  }
 }

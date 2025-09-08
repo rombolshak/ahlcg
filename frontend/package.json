@@ -30,7 +30,9 @@
     "storybook": "ng run ahlcg:storybook",
     "build-storybook": "ng run ahlcg:build-storybook",
     "chromatic": "npx chromatic",
-    "push": "npx prettier --write src && git push"
+    "push": "npx prettier --write src && git push",
+    "loco-join": "ng g @jsverse/transloco:join",
+    "loco-split": "ng g @jsverse/transloco:split"
   },
   "private": true,
   "dependencies": {

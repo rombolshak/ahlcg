@@ -49,10 +49,10 @@ describe('CardInfoService', () => {
 
         expect(data).toBeTruthy();
         expect(data).toEqual({
-          title: 'cards02107.title',
+          title: 'cards/02/107.title',
           traits: ['traits.insight', 'traits.tactic'],
-          abilities: ['cards02107.a1'],
-          flavor: 'cards02107.flavor',
+          abilities: ['cards/02/107.a1'],
+          flavor: 'cards/02/107.flavor',
           setInfo: {
             set: '02',
             index: '107',
