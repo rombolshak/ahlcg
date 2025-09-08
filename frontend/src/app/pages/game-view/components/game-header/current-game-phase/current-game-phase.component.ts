@@ -1,14 +1,20 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { GamePhase } from 'shared/domain/meta-info';
+import { PhaseColor } from './phase-colors.model';
 
 @Component({
   selector: 'ah-current-game-phase',
-  imports: [],
+  imports: [TranslocoDirective],
   templateUrl: './current-game-phase.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex items-center justify-center',
+    class: 'flex flex-col items-center justify-center font-[Arno]',
   },
 })
 export class CurrentGamePhaseComponent {
-  protected roundNumber = 2;
+  readonly roundNumber = input.required<number>();
+  readonly gamePhase = input.required<GamePhase>();
+  readonly actingEntityTitle = input<string>();
+  readonly colorSet = input.required<PhaseColor>();
 }

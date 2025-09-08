@@ -7,7 +7,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
   templateUrl: './scenario-name.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col items-center justify-center text-center pl-8',
+    class:
+      'flex flex-col items-center justify-center text-center pl-8 font-[Arno]',
   },
 })
 export class ScenarioNameComponent {

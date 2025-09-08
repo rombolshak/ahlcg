@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { DialogService } from 'shared/ui/components/dialog/dialog.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { SvgComponent } from 'shared/ui/components/svg/svg.component';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { ActionButton } from './action-button.model';
 
 @Component({
   selector: 'ah-global-game-actions',
@@ -13,43 +13,5 @@ import { TranslocoDirective } from '@jsverse/transloco';
   },
 })
 export class GlobalGameActionsComponent {
-  private dialogService = inject(DialogService);
-
-  protected buttons = [
-    {
-      icon: 'chaosbag',
-      tooltip: 'chaosbag',
-      isVisible: true,
-      handler: () => {
-        console.log('chaosbag');
-      },
-      svgFill: true,
-    },
-    {
-      icon: 'speaker-wave',
-      tooltip: 'mute',
-      isVisible: true,
-      handler: () => {
-        console.log('mute');
-      },
-    },
-    {
-      icon: 'arrows-out',
-      tooltip: 'fullscreen',
-      isVisible: true,
-      handler: () => {
-        console.log('fullscreen');
-      },
-    },
-    {
-      icon: 'menu',
-      tooltip: 'menu',
-      isVisible: true,
-      handler: this.openMenu.bind(this),
-    },
-  ];
-
-  private openMenu() {
-    this.dialogService.open('game-menu');
-  }
+  readonly actions = input.required<ActionButton[]>();
 }

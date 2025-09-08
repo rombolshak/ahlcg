@@ -14,6 +14,7 @@ import { action } from './action.model';
 import { GameEntity, gameEntity } from './game-entity';
 import { CardType } from './entities/card.model';
 import { Investigator } from './entities/investigator.model';
+import { metaInfo } from './meta-info';
 
 type GameEntities = Record<EntityId, GameEntity>;
 
@@ -287,8 +288,7 @@ function validateConnections(
 }
 
 export const gameState = type({
-  campaignId: 'string > 0',
-  scenarioId: 'string > 0',
+  metaInfo,
   acts: actId.array().atLeastLength(1),
   agendas: agendaId.array().atLeastLength(1),
   investigators: investigatorId.array().atLeastLength(1),

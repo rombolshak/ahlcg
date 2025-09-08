@@ -3,5 +3,11 @@
   [scenarioId]="scenarioId()"
   [campaignId]="campaignId()"
 />
-<ah-current-game-phase class="col-start-2" />
-<ah-global-game-actions class="col-start-3" />
+<ah-current-game-phase
+  class="col-start-2"
+  [roundNumber]="roundNumber()"
+  [gamePhase]="gamePhase()!"
+  [actingEntityTitle]="currentEntityInfo()?.title"
+  [colorSet]="phaseColor"
+/>
+<ah-global-game-actions class="col-start-3" [actions]="actions" />
