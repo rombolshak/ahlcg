@@ -1,13 +1,18 @@
-@for (button of buttons; track button.icon) {
-  @if (button.isVisible) {
-    <div class="tooltip tooltip-bottom" [attr.data-tip]="button.tooltip">
-      <button
-        type="button"
-        class="btn btn-square btn-ghost hover:btn-neutral"
-        (click)="button.handler()"
+<ng-container *transloco="let t">
+  @for (button of buttons; track button.icon) {
+    @if (button.isVisible) {
+      <div
+        class="tooltip tooltip-bottom"
+        [attr.data-tip]="t(`game_header.game_actions.${button.tooltip}`)"
       >
-        <ah-svg class="w-6 h-6" [name]="button.icon" />
-      </button>
-    </div>
+        <button
+          type="button"
+          class="btn btn-square btn-ghost hover:btn-neutral"
+          (click)="button.handler()"
+        >
+          <ah-svg class="w-6 h-6" [name]="button.icon" />
+        </button>
+      </div>
+    }
   }
-}
+</ng-container>

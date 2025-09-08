@@ -1,5 +1,10 @@
 {
-  "act": "Act",
-  "agenda": "Agenda",
-  "settings": "Settings"
+  "game_header": {
+    "game_actions": {
+      "chaosbag": "View chaos bag",
+      "mute": "Mute sound",
+      "fullscreen": "Switch to fullscreen",
+      "menu": "Open menu"
+    }
+  }
 }

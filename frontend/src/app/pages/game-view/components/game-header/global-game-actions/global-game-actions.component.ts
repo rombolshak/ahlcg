@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { DialogService } from 'shared/ui/components/dialog/dialog.service';
 import { SvgComponent } from 'shared/ui/components/svg/svg.component';
+import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-global-game-actions',
-  imports: [SvgComponent],
+  imports: [SvgComponent, TranslocoDirective],
   templateUrl: './global-game-actions.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
