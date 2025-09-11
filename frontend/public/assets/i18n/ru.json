@@ -1,5 +1,21 @@
 {
-  "act": "Акт",
-  "agenda": "Замысел",
-  "settings": "Настройки"
+    "game_header": {
+        "game_actions": {
+            "chaosbag": "Открыть мешок хаоса",
+            "mute": "Отключить звук",
+            "fullscreen": "Развернуть на полный экран",
+            "menu": "Открыть меню"
+        },
+        "current_game_phase": {
+            "round": "Раунд",
+            "mythos": "Фаза Мифа",
+            "investigators": "Фаза сыщиков",
+            "enemy": "Фаза врагов",
+            "upkeep": "Фаза передышки"
+        }
+    },
+    "global_game_info": {
+        "act": "Акт",
+        "agenda": "Замысел"
+    }
 }
