@@ -1,1 +1,13 @@
-{}
+{
+    "game_header": {
+        "game_actions": {
+            "chaosbag": "Vista caos borsa",
+            "mute": "Mute suono",
+            "fullscreen": "Espandi a schermo intero",
+            "menu": "Apri menu"
+        },
+        "current_game_phase": {
+            "round": "Turno"
+        }
+    }
+}
