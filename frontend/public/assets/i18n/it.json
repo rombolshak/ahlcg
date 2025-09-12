@@ -7,7 +7,15 @@
             "menu": "Apri menu"
         },
         "current_game_phase": {
-            "round": "Turno"
+            "round": "Round",
+            "upkeep": "Fase di Gestione",
+            "mythos": "Fase dei Miti",
+            "investigators": "Fase degli Investigatori",
+            "enemy": "Fase dei Nemici"
         }
+    },
+    "global_game_info": {
+        "act": "Capitolo",
+        "agenda": "Trama"
     }
 }
