@@ -1,7 +1,7 @@
 {
     "game_header": {
         "game_actions": {
-            "chaosbag": "Vista caos borsa",
+            "chaosbag": "Mostra Sacchetto del Caos",
             "mute": "Mute suono",
             "fullscreen": "Espandi a schermo intero",
             "menu": "Apri menu"
