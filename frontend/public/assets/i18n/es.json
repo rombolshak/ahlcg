@@ -1,1 +1,21 @@
-{}
+{
+    "game_header": {
+        "game_actions": {
+            "chaosbag": "Ver la bolsa de caos",
+            "mute": "Apagar el sonido",
+            "fullscreen": "Cambiar a pantalla completa",
+            "menu": "Abrir menú"
+        },
+        "current_game_phase": {
+            "round": "Ronda",
+            "mythos": "Fase de Mitos",
+            "investigators": "Fase de Investigación",
+            "enemy": "Fase de Enemigos",
+            "upkeep": "Fase de Mantenimiento"
+        }
+    },
+    "global_game_info": {
+        "act": "Acto",
+        "agenda": "Plan"
+    }
+}

@@ -1,1 +1,21 @@
-{}
+{
+    "game_header": {
+        "game_actions": {
+            "chaosbag": "Voir le réserve du Chaos",
+            "mute": "Muet son",
+            "fullscreen": "Basculer vers plein écran",
+            "menu": "Ouvrir menu"
+        },
+        "current_game_phase": {
+            "round": "Round",
+            "mythos": "La phase du Mythe",
+            "investigators": "La phase d’Investigation",
+            "enemy": "La phase des Ennemis",
+            "upkeep": "La phase d’Entretien"
+        }
+    },
+    "global_game_info": {
+        "act": "Acte",
+        "agenda": "Intrigue"
+    }
+}
