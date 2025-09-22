@@ -6,5 +6,6 @@
     "prettier-plugin-sh",
     "prettier-plugin-classnames",
     "prettier-plugin-tailwindcss"
-  ]
+  ],
+  "tailwindStylesheet": "./src/styles.css"
 }

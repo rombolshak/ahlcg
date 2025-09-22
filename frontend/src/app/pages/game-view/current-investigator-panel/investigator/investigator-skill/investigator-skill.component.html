@@ -1,23 +1,23 @@
 <img
-  class="-z-20 absolute left-0 h-10"
+  class="absolute left-0 -z-20 h-10"
   width="73"
   height="46"
   alt="investigator-skills-box"
   [ngSrc]="
-    imagesService.getOverlay(CreateOverlay.skillBox(investigatorClass()))
+    imagesService.getUrl(['card-overlay', 'skill', 'box', investigatorClass()])
   "
 />
 
 <ah-numeric-text
-  class="text-slate-700 text-2xl"
+  class="text-2xl text-slate-700"
   increaseColor="var(--color-success)"
   decreaseColor="var(--color-error)"
   [value]="value()"
 />
 <img
-  class="max-w-none h-6"
+  class="h-6 max-w-none"
   width="24"
   height="25"
   alt="investigator-skill"
-  [ngSrc]="imagesService.getOverlay(CreateOverlay.skillIcon(type()))"
+  [ngSrc]="imagesService.getUrl(['card-overlay', 'skill', 'icon', type()])"
 />

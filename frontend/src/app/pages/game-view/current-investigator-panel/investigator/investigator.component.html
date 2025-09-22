@@ -1,114 +1,48 @@
 ﻿<ah-investigator-avatar
+  *transloco="let t"
   [investigator]="investigator()"
+  [withoutVitals]="true"
   [attr.data-flip-id]="`investigator-${investigator().id}`"
 >
-  <div
-    class="flex flex-col absolute -z-50 left-32 py-1 px-2 group w-0 h-40 overflow-hidden
-      transition-all duration-300 peer-hover:w-36 peer-hover:z-10 hover:w-36
-      hover:z-10 data-[hovered=true]:w-36 data-[hovered=true]:z-10"
-    data-size="i"
-    [attr.data-hovered]="hovered()"
-  >
-    <img
-      fill
-      class="absolute -z-10"
-      alt="investigator-details"
-      [ngSrc]="
-        imagesService.getTemplate('investigator-details', investigator().class)
-      "
-    />
-
-    @if (info()) {
-      <ah-card-title align="center" [card]="info()!" />
-      <ah-card-subtitle [card]="info()!" />
-      <ah-card-traits
-        class="mt-0.5"
-        [card]="info()!"
-        [displayOptions]="displayOptions"
-      />
-      <ah-card-abilities
-        class="mt-0.5"
-        [card]="info()!"
-        [displayOptions]="displayOptions"
-      />
-    }
-  </div>
-
-  <div class="flex flex-col justify-center items-center text-center">
-    <ah-investigator-skill
-      type="willpower"
-      [investigatorClass]="investigator().class"
-      [value]="investigator().skills.willpower"
-    />
-    <ah-investigator-skill
-      type="intellect"
-      [investigatorClass]="investigator().class"
-      [value]="investigator().skills.intellect"
-    />
-    <ah-investigator-skill
-      type="combat"
-      [investigatorClass]="investigator().class"
-      [value]="investigator().skills.combat"
-    />
-    <ah-investigator-skill
-      type="agility"
-      [investigatorClass]="investigator().class"
-      [value]="investigator().skills.agility"
-    />
-  </div>
-  <div class="flex flex-col justify-center items-center text-center">
-    <div class="relative flex w-[5rem] h-14 justify-between items-center">
+  <div class="flex w-full flex-col">
+    <div class="relative">
       <img
-        class="-z-20 absolute h-14 -scale-x-100 left-1.5"
-        width="73"
-        height="69"
-        alt="investigator-skill-box"
+        class="-z-30"
+        alt="investigator title background"
+        fill
         [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(investigator().class))
+          imagesService.getUrl([
+            'card-overlay',
+            'title',
+            investigator().faction,
+          ])
         "
       />
-
-      <img
-        class="max-w-none h-7 ml-6"
-        width="28"
-        height="28"
-        alt="investigator-resources"
-        [ngSrc]="imagesService.getSimpleOverlay('resource')"
-      />
-
-      <ah-numeric-text
-        class="text-slate-700 text-4xl mr-2"
-        increaseColor="var(--color-success)"
-        decreaseColor="var(--color-error)"
-        [value]="investigator().tokens?.resource ?? 0"
-      />
+      @if (info()) {
+        <p class="text-center font-[Conkordia] text-2xl">
+          {{ t(info()!.title) }}
+        </p>
+      }
     </div>
-
-    <div class="relative flex w-[5rem] h-14 justify-between items-center">
+    <div class="relative mx-4">
       <img
-        class="-z-20 absolute h-14 -scale-x-100 left-1.5"
-        width="73"
-        height="69"
-        alt="investigator-skill-box"
+        class="-z-30"
+        alt="investigator subtitle background"
+        fill
         [ngSrc]="
-          imagesService.getOverlay(CreateOverlay.skillBox(investigator().class))
+          imagesService.getUrl([
+            'card-overlay',
+            'subtitle',
+            investigator().faction,
+          ])
         "
       />
-
-      <img
-        class="max-w-none h-7 ml-6"
-        width="28"
-        height="28"
-        alt="investigator-clues"
-        [ngSrc]="imagesService.getSimpleOverlay('clue')"
-      />
-
-      <ah-numeric-text
-        class="text-slate-700 text-4xl mr-2"
-        increaseColor="var(--color-success)"
-        decreaseColor="var(--color-error)"
-        [value]="investigator().tokens?.clue ?? 0"
-      />
+      @if (info()?.subtitle) {
+        <p class="text-center font-[ArnoPro] text-base">
+          {{ t(info()!.subtitle!) }}
+        </p>
+      }
     </div>
+    <ah-vitals-bar [entity]="investigator()" />
   </div>
 </ah-investigator-avatar>

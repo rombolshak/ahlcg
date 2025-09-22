@@ -1,10 +1,10 @@
-﻿import {
+﻿import { DisplayOptions } from '../../display.options';
+import { assetId, eventId, skillId } from '../../entities/id.model';
+import {
   AssetCard,
   EventCard,
   SkillCard,
 } from '../../entities/player-card.model';
-import { DisplayOptions } from '../../display.options';
-import { assetId, eventId, skillId } from '../../entities/id.model';
 
 export const displayOption: DisplayOptions = { cardSize: 'm', textSize: 'm' };
 
@@ -19,7 +19,7 @@ export const cardE: EventCard = {
     intellect: 1,
     combat: 1,
   },
-  class: 'seeker',
+  faction: 'seeker',
   cost: 3,
 };
 
@@ -30,7 +30,7 @@ export const cardA: AssetCard = {
     set: '09',
     index: '045',
   },
-  class: 'seeker',
+  faction: 'seeker',
   skills: { intellect: 2 },
   cost: 1,
   slot: 'hand',
@@ -39,7 +39,7 @@ export const cardA: AssetCard = {
 export const cardA2: AssetCard = {
   ...cardA,
   id: assetId.assert('3'),
-  class: 'guardian',
+  faction: 'guardian',
   slot: 'ally',
   health: {
     max: 2,
@@ -49,7 +49,7 @@ export const cardA2: AssetCard = {
 export const cardA3: AssetCard = {
   ...cardA,
   id: assetId.assert('4'),
-  class: 'rogue',
+  faction: 'rogue',
   sanity: {
     max: 1,
     damaged: 0,
@@ -59,12 +59,12 @@ export const cardA3: AssetCard = {
 export const cardA4: AssetCard = {
   ...cardA,
   id: assetId.assert('5'),
-  class: 'mystic',
+  faction: 'mystic',
 };
 export const cardA5: AssetCard = {
   ...cardA,
   id: assetId.assert('6'),
-  class: 'neutral',
+  faction: 'neutral',
 };
 
 export const cardS: SkillCard = {
@@ -74,7 +74,7 @@ export const cardS: SkillCard = {
     set: '10',
     index: '095',
   },
-  class: 'survivor',
+  faction: 'survivor',
   skills: {
     wild: 1,
   },

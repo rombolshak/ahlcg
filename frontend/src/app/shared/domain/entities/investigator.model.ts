@@ -1,8 +1,8 @@
-﻿import { gameCard } from './card.model';
-import { playerCardClass, skills } from './player-card.model';
+﻿import { type } from 'arktype';
+import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
-import { type } from 'arktype';
 import { assetId, enemyId, investigatorId, playerCardId } from './id.model';
+import { faction, skills } from './player-card.model';
 
 const _investigator = gameCard.and({
   id: investigatorId,
@@ -10,7 +10,7 @@ const _investigator = gameCard.and({
   health,
   sanity,
   skills: skills.omit('wild'),
-  class: playerCardClass,
+  faction,
   threatArea: enemyId.array(),
   hand: playerCardId.array(),
   controlledAssets: assetId.array(),

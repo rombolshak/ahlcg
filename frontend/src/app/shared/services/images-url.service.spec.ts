@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CreateOverlay, ImagesUrlService } from './images-url.service';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { ImagesUrlService } from './images-url.service';
 
 describe('ImagesUrlService', () => {
   let service: ImagesUrlService;
@@ -18,45 +18,42 @@ describe('ImagesUrlService', () => {
   });
 
   it('should generate card template url', () => {
-    expect(service.getTemplate('asset', 'guardian')).toEqual(
-      `/assets/images/card-templates/asset-guardian.webp`,
+    expect(service.getUrl(['card-template', 'asset', 'guardian'])).toEqual(
+      `/assets/images/card-template/asset/guardian.webp`,
     );
 
-    expect(service.getTemplate('skill', 'mystic')).toEqual(
-      `/assets/images/card-templates/skill-mystic.webp`,
+    expect(service.getUrl(['card-template', 'skill', 'mystic'])).toEqual(
+      `/assets/images/card-template/skill/mystic.webp`,
     );
 
-    expect(service.getTemplate('event', 'neutral')).toEqual(
-      `/assets/images/card-templates/event-neutral.webp`,
+    expect(service.getUrl(['card-template', 'event', 'neutral'])).toEqual(
+      `/assets/images/card-template/event/neutral.webp`,
     );
   });
 
   it('should generate card overlays url', () => {
-    expect(service.getOverlay(CreateOverlay.skillBox('guardian'))).toEqual(
-      `/assets/images/card-overlays/skill-box-guardian.png`,
+    expect(
+      service.getUrl(['card-overlay', 'skill', 'box', 'guardian']),
+    ).toEqual(`/assets/images/card-overlay/skill/box/guardian.webp`);
+
+    expect(service.getUrl(['card-overlay', 'slot', 'ally'])).toEqual(
+      `/assets/images/card-overlay/slot/ally.webp`,
     );
 
-    expect(service.getOverlay(CreateOverlay.cardSlot('ally'))).toEqual(
-      `/assets/images/card-overlays/slot-ally.png`,
-    );
-
-    expect(service.getOverlay(CreateOverlay.skillIcon('agility'))).toEqual(
-      `/assets/images/card-overlays/skill-icon-agility.png`,
-    );
+    expect(
+      service.getUrl(['card-overlay', 'skill', 'icon', 'agility']),
+    ).toEqual(`/assets/images/card-overlay/skill/icon/agility.webp`);
   });
 
   it('should generate set icons', () => {
-    expect(service.getSetIcon('test')).toEqual(
-      `/assets/images/set-icons/test.png`,
+    expect(service.getUrl(['set-icon', 'test'])).toEqual(
+      `/assets/images/set-icon/test.webp`,
     );
   });
 
   it('should generate card illustrations', () => {
-    expect(
-      service.getIllustration({
-        set: 'test',
-        index: '015',
-      }),
-    ).toEqual(`/assets/images/illustrations/test/015.webp`);
+    expect(service.getUrl(['illustration', 'test', '015'])).toEqual(
+      `/assets/images/illustration/test/015.webp`,
+    );
   });
 });

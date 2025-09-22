@@ -1,7 +1,9 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import eslint from "@eslint/js";
+
 import { configs as ngConfigs, processInlineTemplates } from "angular-eslint";
 import prettierConfig from "eslint-config-prettier";
+import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
 import jasminePlugin from "eslint-plugin-jasmine";
 import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
 import globals from "globals";
@@ -98,6 +100,26 @@ export default config(
     plugins: { jasmine: jasminePlugin },
     rules: {
       "@typescript-eslint/no-unsafe-member-access": "off",
+    },
+  },
+  {
+    plugins: {
+      "better-tailwindcss": eslintPluginBetterTailwindcss,
+    },
+    rules: {
+      ...eslintPluginBetterTailwindcss.configs["recommended-warn"].rules,
+      ...eslintPluginBetterTailwindcss.configs["recommended-error"].rules,
+
+      // or configure rules individually
+      "better-tailwindcss/enforce-consistent-line-wrapping": [
+        "warn",
+        { printWidth: 140, preferSingleLine: true },
+      ],
+    },
+    settings: {
+      "better-tailwindcss": {
+        entryPoint: "src/styles.css",
+      },
     },
   },
 );

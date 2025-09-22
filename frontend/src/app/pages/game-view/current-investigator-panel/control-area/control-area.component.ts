@@ -5,12 +5,9 @@ import {
   input,
 } from '@angular/core';
 import { AssetCard } from 'shared/domain/entities/player-card.model';
-import {
-  CreateOverlay,
-  ImagesUrlService,
-} from 'shared/services/images-url.service';
-import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
+import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
+import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
 
 @Component({
   selector: 'ah-control-area',
@@ -18,10 +15,10 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
   template: `
     @for (asset of assets(); track asset.id) {
       <ah-controlled-asset
-        class="w-[6rem] h-[4.5rem] rounded-lg"
+        class="h-[4.5rem] w-[6rem] rounded-lg"
         ahCardOutline
         [asset]="asset"
-        [cardClass]="asset.class"
+        [cardClass]="asset.faction"
       />
     }
   `,
@@ -33,5 +30,4 @@ import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directiv
 export class ControlAreaComponent {
   readonly assets = input.required<AssetCard[]>();
   imagesService = inject(ImagesUrlService);
-  protected readonly CreateOverlay = CreateOverlay;
 }

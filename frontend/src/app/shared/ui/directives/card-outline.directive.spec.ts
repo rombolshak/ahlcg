@@ -1,12 +1,12 @@
-import { CardOutlineDirective } from './card-outline.directive';
 import {
   ChangeDetectionStrategy,
   Component,
   input,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Faction } from 'shared/domain/entities/player-card.model';
+import { CardOutlineDirective } from './card-outline.directive';
 
 @Component({
   selector: 'ah-test',
@@ -17,7 +17,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly cardClass = input.required<Faction>();
 }
 
 describe('CardOutlineDirective', () => {

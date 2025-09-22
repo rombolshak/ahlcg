@@ -1,5 +1,5 @@
-import { Directive, effect, ElementRef, input, inject } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
+import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { Faction } from 'shared/domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',
@@ -22,7 +22,7 @@ export class CardOutlineDirective {
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly cardClass = input.required<Faction>();
 
   getOutlineColor(cardClass: string) {
     switch (cardClass) {

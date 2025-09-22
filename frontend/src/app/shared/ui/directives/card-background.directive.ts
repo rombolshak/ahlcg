@@ -1,5 +1,5 @@
-import { Directive, effect, ElementRef, input, inject } from '@angular/core';
-import { PlayerCardClassType } from '../../domain/entities/player-card.model';
+import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { Faction } from '../../domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardBackground]',
@@ -23,7 +23,7 @@ export class CardBackgroundDirective {
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly cardClass = input.required<Faction>();
 
   getColor(cardClass: string) {
     switch (cardClass) {
