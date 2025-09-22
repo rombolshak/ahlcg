@@ -6,7 +6,7 @@ import {
   SkillType,
 } from '../domain/entities/player-card.model';
 
-type CardTemplateType = PlayerCardType;
+type CardTemplateType = PlayerCardType | 'investigator-details';
 type SetName = string;
 type SetIndex = string;
 type SimpleOverlayType = 'clue' | 'resource' | 'doom' | 'health' | 'sanity';
@@ -16,8 +16,7 @@ type ImageDescriptor =
   | ['illustration' | 'mini-illustration' | 'investigator', SetName, SetIndex]
   | ['set-icon', SetName]
   | ['card-overlay', SimpleOverlayType]
-  | ['card-overlay', 'skill', 'box', Faction]
-  | ['card-overlay', 'skill', 'icon', SkillType]
+  | ['card-overlay', 'skill', SkillType]
   | ['card-overlay', 'slot', AssetSlot]
   | ['card-overlay', 'title' | 'subtitle', Faction];
 

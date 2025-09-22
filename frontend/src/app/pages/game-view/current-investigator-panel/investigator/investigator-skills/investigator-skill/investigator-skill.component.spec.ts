@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InvestigatorSkillComponent } from './investigator-skill.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { InvestigatorSkillComponent } from './investigator-skill.component';
 
 describe('InvestigatorSkillComponent', () => {
   let component: InvestigatorSkillComponent;

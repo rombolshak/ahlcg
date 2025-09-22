@@ -1,12 +1,12 @@
 ﻿<div
   *transloco="let t"
-  class="relative flex rounded-lg p-4"
+  class="relative grid grid-cols-[6.25rem_1fr] grid-rows-[9.625rem_1fr] gap-2 rounded-lg p-4"
   ahCardOutline
   [faction]="investigator().faction"
 >
   <img
     fill
-    class="-z-40 rounded-lg"
+    class="-z-40 rounded-lg brightness-125"
     priority
     alt="investigator background"
     [ngSrc]="
@@ -21,7 +21,7 @@
   <img
     width="100"
     height="154"
-    class="peer"
+    class="peer col-start-1 row-start-1 rounded-l-lg"
     alt="investigator avatar"
     [ngSrc]="
       imagesService.getUrl([
@@ -32,45 +32,35 @@
     "
   />
 
-  <div class="flex w-full flex-col">
-    <div class="relative">
-      <img
-        class="-z-30"
-        alt="investigator title background"
-        fill
-        [ngSrc]="
-          imagesService.getUrl([
-            'card-overlay',
-            'title',
-            investigator().faction,
-          ])
-        "
+  <div class="col-start-2 row-start-1 flex w-full flex-col justify-between">
+    <div class="flex flex-col">
+      <ah-investigator-title
+        [text]="t(info()?.title ?? '')"
+        [faction]="investigator().faction"
       />
-      @if (info()) {
-        <p class="text-center font-[Conkordia] text-2xl">
-          {{ t(info()!.title) }}
-        </p>
-      }
-    </div>
-    <div class="relative mx-4">
-      <img
-        class="-z-30"
-        alt="investigator subtitle background"
-        fill
-        [ngSrc]="
-          imagesService.getUrl([
-            'card-overlay',
-            'subtitle',
-            investigator().faction,
-          ])
-        "
+      <ah-investigator-subtitle
+        [text]="t(info()?.subtitle ?? '')"
+        [faction]="investigator().faction"
       />
-      @if (info()?.subtitle) {
-        <p class="text-center font-[ArnoPro] text-base">
-          {{ t(info()!.subtitle!) }}
-        </p>
-      }
     </div>
-    <ah-vitals-bar class="mt-8" [entity]="investigator()" />
+
+    <ah-investigator-ability
+      [faction]="investigator().faction"
+      [text]="t((info()?.abilities ?? [''])[0]!)"
+    />
+
+    <ah-vitals-bar [entity]="investigator()" />
   </div>
+
+  <ah-investigator-tokens
+    class="col-start-2 row-start-2"
+    [faction]="investigator().faction"
+    [tokens]="investigator().tokens"
+  />
+
+  <ah-investigator-skills
+    class="col-start-1 row-start-2"
+    [faction]="investigator().faction"
+    [skills]="investigator().skills"
+  />
 </div>

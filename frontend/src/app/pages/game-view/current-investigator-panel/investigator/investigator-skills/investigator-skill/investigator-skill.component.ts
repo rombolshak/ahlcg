@@ -15,13 +15,13 @@ import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-
   templateUrl: './investigator-skill.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'relative flex w-16 h-10 justify-between items-center pl-2 pr-4',
+    class: 'relative flex h-8 items-center gap-1',
   },
 })
 export class InvestigatorSkillComponent {
   readonly type = input.required<SkillType>();
   readonly value = input.required<number>();
-  readonly investigatorClass = input.required<Faction>();
+  readonly faction = input.required<Faction>();
 
   protected readonly imagesService = inject(ImagesUrlService);
 }

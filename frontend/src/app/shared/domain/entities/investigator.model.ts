@@ -4,12 +4,15 @@ import { health, sanity } from './details/vitals.model';
 import { assetId, enemyId, investigatorId, playerCardId } from './id.model';
 import { faction, skills } from './player-card.model';
 
+export const investigatorSkills = skills.omit('wild');
+export type InvestigatorSkills = typeof investigatorSkills.infer;
+
 const _investigator = gameCard.and({
   id: investigatorId,
   cardType: "'investigator'",
   health,
   sanity,
-  skills: skills.omit('wild'),
+  skills: investigatorSkills,
   faction,
   threatArea: enemyId.array(),
   hand: playerCardId.array(),
