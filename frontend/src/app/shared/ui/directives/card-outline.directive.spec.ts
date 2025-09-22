@@ -12,7 +12,7 @@ import { CardOutlineDirective } from './card-outline.directive';
   selector: 'ah-test',
   imports: [CardOutlineDirective],
   template: `
-    <div ahCardOutline [cardClass]="cardClass()"></div>
+    <div ahCardOutline [faction]="cardClass()"></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

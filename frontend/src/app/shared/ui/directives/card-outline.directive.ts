@@ -17,12 +17,12 @@ export class CardOutlineDirective {
         (this.el.nativeElement as HTMLElement).classList.remove(this.lastColor);
       }
 
-      this.lastColor = this.getOutlineColor(this.cardClass());
+      this.lastColor = this.getOutlineColor(this.faction());
       (this.el.nativeElement as HTMLElement).classList.add(this.lastColor);
     });
   }
 
-  readonly cardClass = input.required<Faction>();
+  readonly faction = input.required<Faction>();
 
   getOutlineColor(cardClass: string) {
     switch (cardClass) {

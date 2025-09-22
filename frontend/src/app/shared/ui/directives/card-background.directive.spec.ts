@@ -12,7 +12,7 @@ import { CardBackgroundDirective } from './card-background.directive';
   selector: 'ah-test',
   imports: [CardBackgroundDirective],
   template: `
-    <div ahCardBackground [cardClass]="cardClass()"></div>
+    <div ahCardBackground [faction]="cardClass()"></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

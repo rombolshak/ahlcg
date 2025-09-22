@@ -1,9 +1,37 @@
-﻿<ah-investigator-avatar
+﻿<div
   *transloco="let t"
-  [investigator]="investigator()"
-  [withoutVitals]="true"
-  [attr.data-flip-id]="`investigator-${investigator().id}`"
+  class="relative flex rounded-lg p-4"
+  ahCardOutline
+  [faction]="investigator().faction"
 >
+  <img
+    fill
+    class="-z-40 rounded-lg"
+    priority
+    alt="investigator background"
+    [ngSrc]="
+      imagesService.getUrl([
+        'card-template',
+        'investigator',
+        investigator().faction,
+      ])
+    "
+  />
+
+  <img
+    width="100"
+    height="154"
+    class="peer"
+    alt="investigator avatar"
+    [ngSrc]="
+      imagesService.getUrl([
+        'investigator',
+        investigator().setInfo.set,
+        investigator().setInfo.index,
+      ])
+    "
+  />
+
   <div class="flex w-full flex-col">
     <div class="relative">
       <img
@@ -43,6 +71,6 @@
         </p>
       }
     </div>
-    <ah-vitals-bar [entity]="investigator()" />
+    <ah-vitals-bar class="mt-8" [entity]="investigator()" />
   </div>
-</ah-investigator-avatar>
+</div>

@@ -18,7 +18,7 @@ import { ControlledAssetComponent } from './controlled-asset/controlled-asset.co
         class="h-[4.5rem] w-[6rem] rounded-lg"
         ahCardOutline
         [asset]="asset"
-        [cardClass]="asset.faction"
+        [faction]="asset.faction"
       />
     }
   `,

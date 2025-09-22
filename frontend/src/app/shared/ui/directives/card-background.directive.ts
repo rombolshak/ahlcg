@@ -15,7 +15,7 @@ export class CardBackgroundDirective {
         );
       }
 
-      this.lastColor = this.getColor(this.cardClass());
+      this.lastColor = this.getColor(this.faction());
       (this.el.nativeElement as HTMLElement).classList.add(
         ...this.lastColor,
         'bg-linear-to-b',
@@ -23,7 +23,7 @@ export class CardBackgroundDirective {
     });
   }
 
-  readonly cardClass = input.required<Faction>();
+  readonly faction = input.required<Faction>();
 
   getColor(cardClass: string) {
     switch (cardClass) {
