@@ -6,7 +6,6 @@ import {
   input,
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { DisplayOptions } from 'shared/domain/display.options';
 import { Investigator } from 'shared/domain/entities/investigator.model';
 import { CardInfoService } from 'shared/services/card-info.service';
 import { ImagesUrlService } from 'shared/services/images-url.service';
@@ -36,10 +35,8 @@ import { InvestigatorTokensComponent } from './investigator-tokens/investigator-
 })
 export class InvestigatorComponent {
   readonly investigator = input.required<Investigator>();
-  readonly hovered = input<boolean>(false);
 
   protected readonly imagesService = inject(ImagesUrlService);
-  protected displayOptions: DisplayOptions = { cardSize: 's', textSize: 's' };
 
   private readonly cardInfoService = inject(CardInfoService);
   protected readonly info = this.cardInfoService.getCardInfo(this.investigator);
