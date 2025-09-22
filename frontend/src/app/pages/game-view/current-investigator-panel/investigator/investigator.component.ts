@@ -12,7 +12,6 @@ import { CardInfoService } from 'shared/services/card-info.service';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { VitalsBarComponent } from '../../../../shared/ui/components/vitals-bar/vitals-bar.component';
 import { CardOutlineDirective } from '../../../../shared/ui/directives/card-outline.directive';
-import { WithAhSymbolsPipe } from '../../../../shared/ui/pipes/with-ah-symbols.pipe';
 import { InvestigatorAbilityComponent } from './investigator-ability/investigator-ability.component';
 import { InvestigatorSkillsComponent } from './investigator-skills/investigator-skills.component';
 import { InvestigatorSubtitleComponent } from './investigator-subtitle/investigator-subtitle.component';
@@ -28,7 +27,6 @@ import { InvestigatorTokensComponent } from './investigator-tokens/investigator-
     CardOutlineDirective,
     InvestigatorTitleComponent,
     InvestigatorSubtitleComponent,
-    WithAhSymbolsPipe,
     InvestigatorSkillsComponent,
     InvestigatorTokensComponent,
     InvestigatorAbilityComponent,

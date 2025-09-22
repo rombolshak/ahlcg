@@ -32,17 +32,13 @@ describe('ImagesUrlService', () => {
   });
 
   it('should generate card overlays url', () => {
-    expect(
-      service.getUrl(['card-overlay', 'skill', 'box', 'guardian']),
-    ).toEqual(`/assets/images/card-overlay/skill/box/guardian.webp`);
-
     expect(service.getUrl(['card-overlay', 'slot', 'ally'])).toEqual(
       `/assets/images/card-overlay/slot/ally.webp`,
     );
 
-    expect(
-      service.getUrl(['card-overlay', 'skill', 'icon', 'agility']),
-    ).toEqual(`/assets/images/card-overlay/skill/icon/agility.webp`);
+    expect(service.getUrl(['card-overlay', 'skill', 'agility'])).toEqual(
+      `/assets/images/card-overlay/skill/agility.webp`,
+    );
   });
 
   it('should generate set icons', () => {
