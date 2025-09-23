@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GlobalGameActionsComponent } from './global-game-actions.component';
-import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
+import { GlobalGameActionsComponent } from './global-game-actions.component';
 
 describe('GlobalGameActionsComponent', () => {
   let component: GlobalGameActionsComponent;

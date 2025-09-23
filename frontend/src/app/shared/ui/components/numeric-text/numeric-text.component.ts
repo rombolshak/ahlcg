@@ -9,8 +9,8 @@ import {
   OnInit,
   output,
 } from '@angular/core';
-import { gsap } from 'gsap';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { gsap } from 'gsap';
 import { pairwise } from 'rxjs';
 
 @Component({

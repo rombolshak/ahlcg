@@ -5,8 +5,8 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { ConnectionPointsService } from './connection-points.service';
 import { GameMap } from 'shared/domain/game-map.model';
+import { ConnectionPointsService } from './connection-points.service';
 
 @Component({
   selector: 'ah-locations-connection',

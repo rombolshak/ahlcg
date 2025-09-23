@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { VitalsBarComponent } from './vitals-bar.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { VitalsBarComponent } from './vitals-bar.component';
 
 describe('VitalsBarComponent', () => {
   let component: VitalsBarComponent;

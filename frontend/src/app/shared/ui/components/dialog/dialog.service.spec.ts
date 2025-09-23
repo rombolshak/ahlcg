@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DialogService } from './dialog.service';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { DialogService } from './dialog.service';
 
 describe('DialogService', () => {
   let service: DialogService;

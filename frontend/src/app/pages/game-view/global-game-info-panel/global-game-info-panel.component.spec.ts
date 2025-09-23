@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GlobalGameInfoPanelComponent } from './global-game-info-panel.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { GlobalGameInfoPanelComponent } from './global-game-info-panel.component';
 
 describe('RightPanelComponent', () => {
   let component: GlobalGameInfoPanelComponent;

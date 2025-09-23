@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EnemyAvatarComponent } from './enemy-avatar.component';
+import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
-import { provideHttpClient } from '@angular/common/http';
 import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { EnemyAvatarComponent } from './enemy-avatar.component';
 
 describe('EnemyAvatarComponent', () => {
   let component: EnemyAvatarComponent;

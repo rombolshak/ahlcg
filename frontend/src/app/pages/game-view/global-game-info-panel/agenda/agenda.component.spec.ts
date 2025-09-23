@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AgendaComponent } from './agenda.component';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { testAgenda } from 'shared/domain/test/entities/test-agenda';
-import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { testAgenda } from 'shared/domain/test/entities/test-agenda';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { AgendaComponent } from './agenda.component';
 
 describe('AgendaComponent', () => {
   let component: AgendaComponent;

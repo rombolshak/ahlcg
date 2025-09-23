@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardCostComponent } from './card-cost.component';
-import { cardA } from 'shared/domain/test/entities/test-cards';
-import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { cardA } from 'shared/domain/test/entities/test-cards';
+import { CardCostComponent } from './card-cost.component';
 
 describe('CardCostComponent', () => {
   let component: CardCostComponent;

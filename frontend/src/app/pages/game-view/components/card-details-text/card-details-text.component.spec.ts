@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardDetailsTextComponent } from './card-details-text.component';
-import { testLocation } from 'shared/domain/test/entities/test-locations';
-import { By } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { InvestigatorS } from '../../../../shared/domain/test/entities/test-investigators';
 import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
-import { provideHttpClient } from '@angular/common/http';
+import { CardDetailsTextComponent } from './card-details-text.component';
 
 describe('CardDetailsTextComponent', () => {
   let component: CardDetailsTextComponent;

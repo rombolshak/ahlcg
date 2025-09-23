@@ -1,5 +1,5 @@
-﻿import { Location } from '../../entities/location.model';
-import { locationId } from '../../entities/id.model';
+﻿import { locationId } from '../../entities/id.model';
+import { Location } from '../../entities/location.model';
 
 export const testLocation: Location = {
   id: locationId.assert('2126'),

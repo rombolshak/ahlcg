@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from 'shared/domain/entities/details/card-info.model';
-import { DisplayOptions } from 'shared/domain/display.options';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { DisplayOptions } from 'shared/domain/display.options';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Component({
   selector: 'ah-card-traits',

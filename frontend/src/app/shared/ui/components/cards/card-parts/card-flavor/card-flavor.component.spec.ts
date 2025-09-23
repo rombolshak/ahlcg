@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardFlavorComponent } from './card-flavor.component';
-import { By } from '@angular/platform-browser';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { CardFlavorComponent } from './card-flavor.component';
 
 describe('CardFlavorComponent', () => {
   let component: CardFlavorComponent;

@@ -1,6 +1,4 @@
 ﻿/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { gameState } from './game-state';
-import { testGameState } from './test/test-game-state';
 import { ArkErrors } from 'arktype';
 import { produce } from 'immer';
 import {
@@ -12,6 +10,8 @@ import {
   locationId,
 } from './entities/id.model';
 import { Investigator } from './entities/investigator.model';
+import { gameState } from './game-state';
+import { testGameState } from './test/test-game-state';
 
 describe('GameState', () => {
   it('should accept valid state', () => {

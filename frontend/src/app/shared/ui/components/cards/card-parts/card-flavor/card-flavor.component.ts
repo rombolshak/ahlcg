@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 
 @Component({
   selector: 'ah-card-flavor',

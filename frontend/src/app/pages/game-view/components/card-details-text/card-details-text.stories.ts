@@ -1,6 +1,6 @@
 ﻿import { argsToTemplate, Meta, StoryObj } from '@storybook/angular';
-import { CardDetailsTextComponent } from './card-details-text.component';
 import { testLocation } from '../../../../shared/domain/test/entities/test-locations';
+import { CardDetailsTextComponent } from './card-details-text.component';
 
 const meta: Meta<CardDetailsTextComponent> = {
   component: CardDetailsTextComponent,

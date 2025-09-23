@@ -1,7 +1,7 @@
-import { WithAhSymbolsPipe } from './with-ah-symbols.pipe';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { DomSanitizer } from '@angular/platform-browser';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { WithAhSymbolsPipe } from './with-ah-symbols.pipe';
 
 describe('WithAhSymbolsPipe', () => {
   beforeEach(async () => {
