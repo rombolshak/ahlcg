@@ -2,12 +2,17 @@
   <ah-player-card [card]="card()" [displayOptions]="displayOptions()">
     <ah-card-cost [card]="card()" />
     <ah-card-title
-      class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5 group-data-[size=s]:top-[7px]"
+      class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
+        group-data-[size=s]:top-[7px]"
       [card]="cardInfo()!"
     />
 
     <div
-      class="absolute group-data-[size=l]:top-[20rem] group-data-[size=l]:pr-[36px] group-data-[size=l]:pl-[21px] group-data-[size=m]:top-[13.25rem] group-data-[size=m]:pr-[24px] group-data-[size=m]:pl-[14px] group-data-[size=s]:top-[8.5rem] group-data-[size=s]:pr-[10px] group-data-[size=s]:pl-[7px]"
+      class="absolute group-data-[size=l]:top-[20rem] group-data-[size=l]:pr-[36px]
+        group-data-[size=l]:pl-[21px] group-data-[size=m]:top-[13.25rem]
+        group-data-[size=m]:pr-[24px] group-data-[size=m]:pl-[14px]
+        group-data-[size=s]:top-[8.5rem] group-data-[size=s]:pr-[10px]
+        group-data-[size=s]:pl-[7px]"
     >
       <ah-card-traits
         [card]="cardInfo()!"
@@ -21,7 +26,10 @@
 
     @if (card().slot) {
       <div
-        class="absolute flex flex-row-reverse group-data-[size=l]:right-[12px] group-data-[size=l]:bottom-[15px] group-data-[size=m]:right-[8px] group-data-[size=m]:bottom-[10px] group-data-[size=s]:right-[6px] group-data-[size=s]:bottom-[8px]"
+        class="absolute flex flex-row-reverse group-data-[size=l]:right-[12px]
+          group-data-[size=l]:bottom-[15px] group-data-[size=m]:right-[8px]
+          group-data-[size=m]:bottom-[10px] group-data-[size=s]:right-[6px]
+          group-data-[size=s]:bottom-[8px]"
       >
         <img
           alt="card-slot"

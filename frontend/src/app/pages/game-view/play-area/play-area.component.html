@@ -1,8 +1,8 @@
 ﻿<!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
 <div
   #playArea
-  class="relative grid grid-cols-[repeat(var(--cols-count),11rem)]
-    grid-rows-[repeat(var(--rows-count),9rem)] gap-x-[22rem] gap-y-[9rem] w-max"
+  class="relative grid w-max grid-cols-[repeat(var(--cols-count),11rem)]
+    grid-rows-[repeat(var(--rows-count),9rem)] gap-x-[22rem] gap-y-[9rem]"
   [style.--cols-count]="gameMap()?.width ?? 1"
   [style.--rows-count]="gameMap()?.height ?? 1"
 >

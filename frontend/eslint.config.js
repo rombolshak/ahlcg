@@ -115,10 +115,16 @@ export default config(
         "warn",
         { printWidth: 140, preferSingleLine: true },
       ],
+      "better-tailwindcss/no-unregistered-classes": [
+        "warn",
+        {
+          detectComponentClasses: true,
+        },
+      ],
     },
     settings: {
       "better-tailwindcss": {
-        entryPoint: "src/styles.css",
+        entryPoint: "./src/styles.css",
       },
     },
   },

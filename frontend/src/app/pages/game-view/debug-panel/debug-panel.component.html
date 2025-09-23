@@ -1,8 +1,8 @@
 <div
-  class="bg-base-100/80 outline outline-red-200 text-base-content font-[ArnoPro] h-full
-    w-full p-4"
+  class="h-full w-full bg-base-100/80 p-4 font-[ArnoPro] text-base-content outline
+    outline-red-200"
 >
-  <h1 class="text-center text-4xl font-[Conkordia]">Debug panel</h1>
+  <h1 class="text-center font-[Conkordia] text-4xl">Debug panel</h1>
 
   <div class="tabs tabs-box">
     <input
@@ -12,7 +12,7 @@
       aria-label="State editor"
       checked="checked"
     />
-    <div class="tab-content bg-base-100 border-base-300 p-6">
+    <div class="tab-content border-base-300 bg-base-100 p-6">
       <ah-json-editor
         class="block h-150"
         [data]="gameState()!"
@@ -22,9 +22,9 @@
     </div>
 
     <input type="radio" name="debug-tabs" class="tab" aria-label="Timeline" />
-    <div class="tab-content bg-base-100 border-base-300 p-6">
+    <div class="tab-content border-base-300 bg-base-100 p-6">
       <div class="flex">
-        <ul class="menu w-40 bg-base-200 rounded-box flex-none">
+        <ul class="menu w-40 flex-none rounded-box bg-base-200">
           @for (_ of timelineService.patches(); track $index) {
             <li
               [class.bg-success]="
@@ -55,7 +55,7 @@
   @if (stateErrors) {
     <div
       role="alert"
-      class="alert alert-error alert-outline h-30 overflow-scroll"
+      class="alert-outline alert h-30 overflow-scroll alert-error"
     >
       <span class="whitespace-pre-wrap">{{ stateErrors }}</span>
     </div>
