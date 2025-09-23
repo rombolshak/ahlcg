@@ -5,7 +5,8 @@ const meta: Meta<InvestigatorSubtitleComponent> = {
   component: InvestigatorSubtitleComponent,
   decorators: [
     componentWrapperDecorator(
-      (story) => `<div class='w-[12rem] text-neutral-900'>${story}</div>`,
+      (story) =>
+        `<div class='w-[12rem] text-neutral-900 flex flex-col'>${story}</div>`,
     ),
   ],
 };
