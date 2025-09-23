@@ -1,7 +1,6 @@
 ﻿@if (gameState.isLoading() || gameState.error()) {
   <div
-    class="m-auto flex h-1/2 w-1/2 flex-col items-center justify-center bg-slate-800
-      text-white"
+    class="m-auto flex h-1/2 w-1/2 flex-col items-center justify-center bg-slate-800 text-white"
   >
     <p>Loading...</p>
     <p class="whitespace-pre-wrap">{{ gameState.error() }}</p>

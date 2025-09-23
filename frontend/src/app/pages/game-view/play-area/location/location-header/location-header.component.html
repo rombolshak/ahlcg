@@ -1,22 +1,19 @@
 @if (location()) {
   <div
-    class="peer absolute flex w-full cursor-default items-center justify-center text-center
-      font-[Conkordia] text-4xl"
+    class="peer absolute flex w-full cursor-default items-center justify-center text-center font-[Conkordia] text-4xl"
   >
     <span>{{ title() | transloco }}</span>
 
     @if (showAbilitiesMark()) {
       <div
-        class="ml-2 flex h-[32px] w-[32px] items-center justify-center rounded-full
-          bg-yellow-400 font-[Teutonic] text-3xl"
+        class="ml-2 flex h-[32px] w-[32px] items-center justify-center rounded-full bg-yellow-400 font-[Teutonic] text-3xl"
       >
         <span class="text-sm" [innerHtml]="'#n#' | withAhSymbols"></span>
       </div>
     }
   </div>
   <div
-    class="m-1 flex *:relative *:ml-1 *:flex *:h-[56px] *:w-[56px] *:items-center
-      *:justify-center *:rounded-full *:text-5xl"
+    class="m-1 flex *:relative *:ml-1 *:flex *:h-[56px] *:w-[56px] *:items-center *:justify-center *:rounded-full *:text-5xl"
   >
     <div class="bg-stone-900 text-white">
       <ah-numeric-text [value]="location()!.shroud" [invertColors]="true" />
@@ -38,10 +35,7 @@
   </div>
 
   <ah-card-details-text
-    class="absolute bottom-[4rem] left-[20%] -z-50 max-h-0 w-[60%] overflow-hidden
-      rounded-t-lg bg-zinc-50 px-2 py-1 font-[ArnoPro] text-lg/5 whitespace-pre-wrap
-      opacity-0 transition-all duration-300 peer-hover:z-50 peer-hover:max-h-48
-      peer-hover:opacity-100 hover:z-50 hover:max-h-48 hover:opacity-100"
+    class="absolute bottom-[4rem] left-[20%] -z-50 max-h-0 w-[60%] overflow-hidden rounded-t-lg bg-zinc-50 px-2 py-1 font-[ArnoPro] text-lg/5 whitespace-pre-wrap opacity-0 transition-all duration-300 peer-hover:z-50 peer-hover:max-h-48 peer-hover:opacity-100 hover:z-50 hover:max-h-48 hover:opacity-100"
     [card]="location()!"
     [showTitle]="false"
   />
