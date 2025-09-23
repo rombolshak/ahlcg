@@ -36,8 +36,12 @@ describe('ImagesUrlService', () => {
       `/assets/images/card-overlay/slot/ally.webp`,
     );
 
-    expect(service.getUrl(['card-overlay', 'skill', 'agility'])).toEqual(
-      `/assets/images/card-overlay/skill/agility.webp`,
+    expect(service.getUrl(['card-overlay', 'skill', 'icon', 'agility'])).toEqual(
+      `/assets/images/card-overlay/skill/icon/agility.webp`,
+    );
+
+    expect(service.getUrl(['card-overlay', 'skill', 'box', 'seeker'])).toEqual(
+      `/assets/images/card-overlay/skill/box/seeker.webp`,
     );
   });
 

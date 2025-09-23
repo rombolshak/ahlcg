@@ -16,7 +16,8 @@ type ImageDescriptor =
   | ['illustration' | 'mini-illustration' | 'investigator', SetName, SetIndex]
   | ['set-icon', SetName]
   | ['card-overlay', SimpleOverlayType]
-  | ['card-overlay', 'skill', SkillType]
+  | ['card-overlay', 'skill', 'icon', SkillType]
+  | ['card-overlay', 'skill', 'box', Faction]
   | ['card-overlay', 'slot', AssetSlot]
   | ['card-overlay', 'title' | 'subtitle', Faction];
 
