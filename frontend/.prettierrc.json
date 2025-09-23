@@ -5,6 +5,5 @@
     "prettier-plugin-organize-imports",
     "prettier-plugin-sh",
     "prettier-plugin-classnames"
-  ],
-  "tailwindStylesheet": "./src/styles.css"
+  ]
 }
