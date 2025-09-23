@@ -2,19 +2,19 @@
   @if (cardInfo()) {
     @if (showTitle()) {
       <p
-        class="font-[Conkordia] text-lg/5 text-center mb-0"
+        class="mb-0 text-center font-[Conkordia] text-lg/5"
         data-testId="title"
       >
         {{ t(cardInfo()!.title) }}
       </p>
     }
     @if (cardInfo()!.subtitle) {
-      <p class="font-[ArnoPro] text-sm text-center mb-1" data-testId="subtitle">
+      <p class="mb-1 text-center font-[ArnoPro] text-sm" data-testId="subtitle">
         {{ t(cardInfo()!.subtitle!) }}
       </p>
     }
     <p
-      class="font-[ArnoProBold] italic text-sm text-center mb-1"
+      class="mb-1 text-center font-[ArnoProBold] text-sm italic"
       data-testId="traits"
     >
       @for (trait of cardInfo()!.traits; track $index) {
@@ -23,7 +23,7 @@
     </p>
     @for (ability of cardInfo()!.abilities; track $index) {
       <p
-        class="mb-1 whitespace-pre-wrap font-[ArnoPro] text-base/4"
+        class="mb-1 font-[ArnoPro] text-base/4 whitespace-pre-wrap"
         data-testId="ability"
         [innerHtml]="t(ability) | withAhSymbols"
       ></p>

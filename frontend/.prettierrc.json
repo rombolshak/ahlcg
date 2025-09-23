@@ -3,8 +3,6 @@
   "plugins": [
     "prettier-plugin-css-order",
     "prettier-plugin-organize-imports",
-    "prettier-plugin-sh",
-    "prettier-plugin-tailwindcss",
-    "prettier-plugin-classnames"
+    "prettier-plugin-sh"
   ]
 }

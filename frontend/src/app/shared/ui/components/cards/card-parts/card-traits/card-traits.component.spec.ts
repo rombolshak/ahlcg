@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardTraitsComponent } from './card-traits.component';
-import { displayOption } from 'shared/domain/test/entities/test-cards';
-import { By } from '@angular/platform-browser';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { CardTraitsComponent } from './card-traits.component';
 
 describe('CardTraitsComponent', () => {
   let component: CardTraitsComponent;

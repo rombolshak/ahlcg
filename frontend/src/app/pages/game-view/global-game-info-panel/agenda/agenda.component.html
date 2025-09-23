@@ -1,9 +1,9 @@
 <ng-container *transloco="let t">
-  <div class="text-accent-content peer text-center">
-    <p class="text-sm/4 font-[ArnoPro] -my-1">
+  <div class="peer text-center text-accent-content">
+    <p class="-my-1 font-[ArnoPro] text-sm/4">
       {{ t("global_game_info.agenda") }} {{ agenda().stage }}
     </p>
-    <p class="text-xl font-[Conkordia]">
+    <p class="font-[Conkordia] text-xl">
       {{ t(title()!) }}
     </p>
   </div>
@@ -25,8 +25,8 @@
       width="36"
       height="36"
       alt="doom token"
-      class="brightness-125 flex-none"
-      [ngSrc]="imageService.getSimpleOverlay('doom')"
+      class="flex-none brightness-125"
+      [ngSrc]="imageService.getUrl(['card-overlay', 'doom'])"
     />
   }
   @for (_ of [].constructor(agenda().doomOnCards); track $index) {
@@ -35,7 +35,7 @@
       height="36"
       alt="doom token"
       class="brightness-95"
-      [ngSrc]="imageService.getSimpleOverlay('doom_white')"
+      [ngSrc]="imageService.getUrl(['card-overlay', 'doom'])"
     />
   }
 
@@ -45,14 +45,13 @@
       height="36"
       alt="doom token"
       class="brightness-25"
-      [ngSrc]="imageService.getSimpleOverlay('doom')"
+      [ngSrc]="imageService.getUrl(['card-overlay', 'doom'])"
     />
   }
 </div>
 <!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
 <ah-card-details-text
-  class="absolute w-full px-2 top-[2.5rem] text-white rounded h-0 opacity-0
-    peer-hover:h-auto peer-hover:opacity-100"
+  class="absolute top-[2.5rem] h-0 w-full rounded px-2 text-white opacity-0 peer-hover:h-auto peer-hover:opacity-100"
   [class]="hostClasses()"
   [showTitle]="false"
   [card]="agenda()"

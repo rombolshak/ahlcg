@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SingleBarComponent } from './single-bar.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { SingleBarComponent } from './single-bar.component';
 
 describe('SingleBarComponent', () => {
   let component: SingleBarComponent;

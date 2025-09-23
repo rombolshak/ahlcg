@@ -1,16 +1,13 @@
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   input,
 } from '@angular/core';
-import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
-import { NgOptimizedImage } from '@angular/common';
 import { Enemy } from 'shared/domain/entities/enemy.model';
-import {
-  CreateOverlay,
-  ImagesUrlService,
-} from 'shared/services/images-url.service';
+import { ImagesUrlService } from 'shared/services/images-url.service';
+import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
 import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 
 @Component({
@@ -25,5 +22,4 @@ import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 export class EnemyAvatarComponent {
   readonly enemy = input<Enemy>();
   readonly imageService = inject(ImagesUrlService);
-  protected readonly CreateOverlay = CreateOverlay;
 }

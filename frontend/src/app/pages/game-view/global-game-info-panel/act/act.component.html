@@ -1,9 +1,9 @@
 <ng-container *transloco="let t">
-  <div class="peer text-center peer">
-    <p class="text-sm/4 font-[ArnoPro] -my-1">
+  <div class="peer text-center">
+    <p class="-my-1 font-[ArnoPro] text-sm/4">
       {{ t("global_game_info.act") }} {{ act().stage }}
     </p>
-    <p class="text-xl font-[Conkordia]">
+    <p class="font-[Conkordia] text-xl">
       {{ t(title()!) }}
     </p>
   </div>
@@ -16,7 +16,7 @@
     @switch (objective.type) {
       @case ("health") {
         <ah-single-bar
-          class="h-5 w-full mb-2"
+          class="mb-2 h-5 w-full"
           goodColor="bg-red-900"
           badColor="bg-slate-950"
           [current]="objective.currentValue"
@@ -26,7 +26,7 @@
       @default {
         <!--suppress JSUnusedLocalSymbols -->
         <div
-          class="grid grid-flow-col gap-1 mb-2"
+          class="mb-2 grid grid-flow-col gap-1"
           [ngClass]="
             maxLines()[$index] === 1
               ? 'grid-rows-1'
@@ -40,8 +40,8 @@
               width="36"
               height="36"
               alt="objective token"
-              class="brightness-125 flex-none"
-              [ngSrc]="imageService.getSimpleOverlay(objective.type)"
+              class="flex-none brightness-125"
+              [ngSrc]="imageService.getUrl(['card-overlay', objective.type])"
             />
           }
           @for (_ of [].constructor(emptySlots()[$index]); track $index) {
@@ -49,8 +49,8 @@
               width="36"
               height="36"
               alt="objective token"
-              class="brightness-25 flex-none"
-              [ngSrc]="imageService.getSimpleOverlay(objective.type)"
+              class="flex-none brightness-25"
+              [ngSrc]="imageService.getUrl(['card-overlay', objective.type])"
             />
           }
         </div>
@@ -60,8 +60,7 @@
 </ng-container>
 
 <ah-card-details-text
-  class="absolute w-full px-2 top-[2.5rem] rounded h-0 opacity-0 peer-hover:h-auto
-    peer-hover:opacity-100"
+  class="absolute top-[2.5rem] h-0 w-full rounded px-2 opacity-0 peer-hover:h-auto peer-hover:opacity-100"
   [showTitle]="false"
   [card]="act()"
   [ngClass]="hostClasses()"

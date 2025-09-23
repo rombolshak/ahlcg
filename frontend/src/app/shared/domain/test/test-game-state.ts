@@ -1,15 +1,6 @@
 ﻿import { GameState } from '../game-state';
-import { testGameMap } from './test-game-map';
 import { testAct } from './entities/test-act';
 import { testAgenda } from './entities/test-agenda';
-import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
-import { testActions } from './test-actions';
-import {
-  testLocation,
-  testLocation2,
-  testLocation3,
-} from './entities/test-locations';
-import { testEnemy, testEnemy2 } from './entities/test-enemies';
 import {
   cardA,
   cardA2,
@@ -19,6 +10,15 @@ import {
   cardE,
   cardS,
 } from './entities/test-cards';
+import { testEnemy, testEnemy2 } from './entities/test-enemies';
+import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
+import {
+  testLocation,
+  testLocation2,
+  testLocation3,
+} from './entities/test-locations';
+import { testActions } from './test-actions';
+import { testGameMap } from './test-game-map';
 import { testMetaInfo } from './test-meta';
 
 export const testGameState: GameState = {

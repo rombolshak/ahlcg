@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CurrentInvestigatorPanelComponent } from './current-investigator-panel.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { CurrentInvestigatorPanelComponent } from './current-investigator-panel.component';
 
 describe('LeftPanelComponent', () => {
   let component: CurrentInvestigatorPanelComponent;

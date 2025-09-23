@@ -1,5 +1,5 @@
-import { Directive, effect, ElementRef, input, inject } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
+import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { Faction } from 'shared/domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',
@@ -17,12 +17,12 @@ export class CardOutlineDirective {
         (this.el.nativeElement as HTMLElement).classList.remove(this.lastColor);
       }
 
-      this.lastColor = this.getOutlineColor(this.cardClass());
+      this.lastColor = this.getOutlineColor(this.faction());
       (this.el.nativeElement as HTMLElement).classList.add(this.lastColor);
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly faction = input.required<Faction>();
 
   getOutlineColor(cardClass: string) {
     switch (cardClass) {

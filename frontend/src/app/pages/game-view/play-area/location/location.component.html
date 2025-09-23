@@ -1,18 +1,23 @@
 ﻿@if (location()) {
   <ah-location-header class="absolute top-0 z-1" [location]="location()" />
 
-  <div class="flex h-108 relative">
+  <div class="relative flex h-108">
     <img
       alt="location-illustration"
       fill
       priority
       class="-z-50 rounded-3xl"
-      [ngSrc]="imageService.getIllustration(location()!.setInfo)"
+      [ngSrc]="
+        imageService.getUrl([
+          'illustration',
+          location()!.setInfo.set,
+          location()!.setInfo.index,
+        ])
+      "
     />
 
     <div
-      class="w-4/5 p-2 flex flex-row flex-wrap-reverse place-content-start place-self-end
-        gap-2"
+      class="flex w-4/5 flex-row flex-wrap-reverse place-content-start gap-2 place-self-end p-2"
     >
       @for (investigator of investigators(); track investigator.id) {
         @let basis =
@@ -28,7 +33,7 @@
           [investigator]="investigator"
           [attr.data-flip-id]="`mini-investigator-${investigator.id}`"
         >
-          <div class="flex flex-col flex-wrap gap-1 mx-1 h-40">
+          <div class="mx-1 flex h-40 flex-col flex-wrap gap-1">
             @for (engagedEnemy of investigator.threatArea; track engagedEnemy) {
               <ah-enemy-avatar
                 class="w-33"

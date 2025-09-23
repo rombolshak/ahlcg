@@ -1,6 +1,6 @@
-﻿import { LocationHeaderComponent } from './location-header.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { LocationHeaderComponent } from './location-header.component';
 
 const meta: Meta<LocationHeaderComponent> = {
   component: LocationHeaderComponent,

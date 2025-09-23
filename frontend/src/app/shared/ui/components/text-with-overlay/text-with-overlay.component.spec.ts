@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TextWithOverlayComponent } from './text-with-overlay.component';
-import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { TextWithOverlayComponent } from './text-with-overlay.component';
 
 describe('TextWithOverlayComponent', () => {
   let component: TextWithOverlayComponent;

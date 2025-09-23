@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GameViewComponent } from './game-view.component';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '../../shared/domain/test/transloco.testing';
+import { GameViewComponent } from './game-view.component';
 
 describe('GameViewComponent', () => {
   let component: GameViewComponent;

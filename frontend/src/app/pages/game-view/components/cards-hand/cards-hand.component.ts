@@ -7,10 +7,10 @@ import {
   input,
   output,
 } from '@angular/core';
-import { CardComponent } from 'shared/ui/components/cards/card/card.component';
-import { DisplayOptions } from 'shared/domain/display.options';
 import { cardWidths } from 'shared/domain/card.constants';
+import { DisplayOptions } from 'shared/domain/display.options';
 import { PlayerCard } from 'shared/domain/entities/player-card.model';
+import { CardComponent } from 'shared/ui/components/cards/card/card.component';
 import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
 
 @Component({

@@ -8,9 +8,9 @@ import {
   viewChild,
 } from '@angular/core';
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
+import { GameStateStore } from '../store/game-state.store';
 import { LocationComponent } from './location/location.component';
 import { LocationsConnectionComponent } from './locations-connection/locations-connection.component';
-import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-play-area',

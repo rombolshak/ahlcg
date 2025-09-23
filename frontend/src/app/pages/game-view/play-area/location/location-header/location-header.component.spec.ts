@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LocationHeaderComponent } from './location-header.component';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { testLocation } from 'shared/domain/test/entities/test-locations';
-import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
+import { LocationHeaderComponent } from './location-header.component';
 
 describe('LocationHeaderComponent', () => {
   let component: LocationHeaderComponent;

@@ -4,14 +4,14 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { ScenarioNameComponent } from './scenario-name/scenario-name.component';
-import { CurrentGamePhaseComponent } from './current-game-phase/current-game-phase.component';
-import { GlobalGameActionsComponent } from './global-game-actions/global-game-actions.component';
-import { GameStateStore } from '../../store/game-state.store';
-import { DialogService } from '../../../../shared/ui/components/dialog/dialog.service';
-import { ActionButton } from './global-game-actions/action-button.model';
 import { CardInfoService } from '../../../../shared/services/card-info.service';
+import { DialogService } from '../../../../shared/ui/components/dialog/dialog.service';
+import { GameStateStore } from '../../store/game-state.store';
+import { CurrentGamePhaseComponent } from './current-game-phase/current-game-phase.component';
 import { InvestigatorSeeker } from './current-game-phase/phase-colors.model';
+import { ActionButton } from './global-game-actions/action-button.model';
+import { GlobalGameActionsComponent } from './global-game-actions/global-game-actions.component';
+import { ScenarioNameComponent } from './scenario-name/scenario-name.component';
 
 @Component({
   selector: 'ah-game-header',

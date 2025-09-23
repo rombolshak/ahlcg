@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { GameStateStore } from '../store/game-state.store';
 import { createPatch, Operation } from 'rfc6902';
 import { GameState } from 'shared/domain/game-state';
+import { GameStateStore } from '../store/game-state.store';
 
 @Injectable({
   providedIn: 'root',

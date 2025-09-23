@@ -1,12 +1,12 @@
-﻿import { InvestigatorComponent } from './investigator.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
-import { InvestigatorS } from '../../../../shared/domain/test/entities/test-investigators';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
+import { InvestigatorComponent } from './investigator.component';
 
 const meta: Meta<InvestigatorComponent> = {
   component: InvestigatorComponent,
   decorators: [
     componentWrapperDecorator(
-      (story) => `<div class='w-[17rem] text-neutral-900'>${story}</div>`,
+      (story) => `<div class='w-[22rem] text-neutral-900'>${story}</div>`,
     ),
   ],
 };
@@ -14,15 +14,53 @@ const meta: Meta<InvestigatorComponent> = {
 export default meta;
 type Story = StoryObj<InvestigatorComponent>;
 
-export const Normal: Story = {
+export const Seeker: Story = {
   args: {
     investigator: InvestigatorS,
   },
 };
 
-export const Hovered: Story = {
+export const Guardian: Story = {
   args: {
-    investigator: InvestigatorS,
-    hovered: true,
+    investigator: {
+      ...InvestigatorS,
+      faction: 'guardian',
+    },
+  },
+};
+
+export const Rogue: Story = {
+  args: {
+    investigator: {
+      ...InvestigatorS,
+      faction: 'rogue',
+    },
+  },
+};
+
+export const Mystic: Story = {
+  args: {
+    investigator: {
+      ...InvestigatorS,
+      faction: 'mystic',
+    },
+  },
+};
+
+export const Survivor: Story = {
+  args: {
+    investigator: {
+      ...InvestigatorS,
+      faction: 'survivor',
+    },
+  },
+};
+
+export const Neutral: Story = {
+  args: {
+    investigator: {
+      ...InvestigatorS,
+      faction: 'neutral',
+    },
   },
 };

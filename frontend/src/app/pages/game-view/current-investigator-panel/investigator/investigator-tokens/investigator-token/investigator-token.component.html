@@ -1,0 +1,13 @@
+<img
+  class="h-10 max-w-none"
+  width="40"
+  height="40"
+  alt="investigator-skill"
+  [ngSrc]="imagesService.getUrl(['card-overlay', type()])"
+/>
+<ah-numeric-text
+  class="text-4xl text-slate-700"
+  increaseColor="var(--color-success)"
+  decreaseColor="var(--color-error)"
+  [value]="value() ?? 0"
+/>

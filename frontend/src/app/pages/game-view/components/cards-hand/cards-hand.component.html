@@ -1,12 +1,12 @@
 ﻿<!--suppress CssUnknownProperty -->
 <!--eslint-disable @angular-eslint/template/no-inline-styles -->
 <div
-  class="flex ml-[calc(var(--card-offset)_-_160px)]"
+  class="ml-[calc(var(--card-offset)_-_160px)] flex"
   [style.--card-offset]="cardOffset()"
 >
   @for (card of cards(); track card.id) {
     <ah-card
-      class="origin-bottom isolate"
+      class="isolate origin-bottom"
       [card]="card"
       [displayOptions]="cardDisplayOptions"
       [attr.data-index]="$index"

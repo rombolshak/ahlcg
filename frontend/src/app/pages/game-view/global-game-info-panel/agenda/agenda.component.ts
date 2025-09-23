@@ -1,3 +1,4 @@
+import { NgClass, NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,12 +6,11 @@ import {
   inject,
   input,
 } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Agenda } from 'shared/domain/entities/agenda.model';
-import { NgClass, NgOptimizedImage } from '@angular/common';
+import { CardInfoService } from 'shared/services/card-info.service';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { TranslocoDirective } from '@jsverse/transloco';
 
 @Component({
   selector: 'ah-agenda',

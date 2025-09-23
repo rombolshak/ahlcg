@@ -9,8 +9,8 @@ import {
   OnDestroy,
   viewChild,
 } from '@angular/core';
-import { DialogService } from './dialog.service';
 import { SvgComponent } from '../svg/svg.component';
+import { DialogService } from './dialog.service';
 
 @Component({
   selector: 'ah-dialog',

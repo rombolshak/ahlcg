@@ -1,6 +1,6 @@
 ﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
-import { ControlledAssetComponent } from './controlled-asset.component';
 import { cardA } from '../../../../../shared/domain/test/entities/test-cards';
+import { ControlledAssetComponent } from './controlled-asset.component';
 
 const meta: Meta<ControlledAssetComponent> = {
   component: ControlledAssetComponent,
@@ -27,7 +27,7 @@ export const WithSlot: Story = {
   args: {
     asset: {
       ...pureAsset,
-      class: 'mystic',
+      faction: 'mystic',
       slot: slot ?? 'hand',
     },
   },
@@ -37,7 +37,7 @@ export const WithResource: Story = {
   args: {
     asset: {
       ...pureAsset,
-      class: 'mystic',
+      faction: 'mystic',
       tokens: {
         resource: 3,
       },
@@ -60,7 +60,7 @@ export const WithDoom: Story = {
   args: {
     asset: {
       ...pureAsset,
-      class: 'mystic',
+      faction: 'mystic',
       tokens: {
         resource: 1,
       },

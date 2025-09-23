@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,15 +6,11 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Enemy } from 'shared/domain/entities/enemy.model';
-import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
-import { NgOptimizedImage } from '@angular/common';
-import {
-  CreateOverlay,
-  ImagesUrlService,
-} from 'shared/services/images-url.service';
-import { CardInfoService } from '../../../../../shared/services/card-info.service';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { Enemy } from 'shared/domain/entities/enemy.model';
+import { ImagesUrlService } from 'shared/services/images-url.service';
+import { CardInfoService } from '../../../../../shared/services/card-info.service';
+import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-enemy-popover',
@@ -28,7 +25,6 @@ import { TranslocoDirective } from '@jsverse/transloco';
 export class EnemyPopoverComponent {
   readonly enemy = input.required<Enemy>();
   readonly imageService = inject(ImagesUrlService);
-  protected readonly CreateOverlay = CreateOverlay;
 
   private readonly cardInfoService = inject(CardInfoService);
   private readonly cardInfo = this.cardInfoService.getCardInfo(this.enemy);

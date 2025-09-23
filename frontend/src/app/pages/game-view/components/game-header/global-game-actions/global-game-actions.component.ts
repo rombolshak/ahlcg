@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { SvgComponent } from 'shared/ui/components/svg/svg.component';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { SvgComponent } from 'shared/ui/components/svg/svg.component';
 import { ActionButton } from './action-button.model';
 
 @Component({

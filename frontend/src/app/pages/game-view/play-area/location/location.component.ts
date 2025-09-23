@@ -1,3 +1,4 @@
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,13 +6,12 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { ImagesUrlService } from 'shared/services/images-url.service';
-import { NgOptimizedImage } from '@angular/common';
-import { LocationHeaderComponent } from './location-header/location-header.component';
-import { InvestigatorAvatarComponent } from '../../components/investigator-avatar/investigator-avatar.component';
-import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
-import { GameStateStore } from '../../store/game-state.store';
 import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
+import { ImagesUrlService } from 'shared/services/images-url.service';
+import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
+import { InvestigatorAvatarComponent } from '../../components/investigator-avatar/investigator-avatar.component';
+import { GameStateStore } from '../../store/game-state.store';
+import { LocationHeaderComponent } from './location-header/location-header.component';
 
 @Component({
   selector: 'ah-location',

@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CardInfoService } from './card-info.service';
-import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { BehaviorSubject, of } from 'rxjs';
-import { TranslocoService } from '@jsverse/transloco';
-import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { TranslocoService } from '@jsverse/transloco';
+import { BehaviorSubject, of } from 'rxjs';
 import { cardE } from '../domain/test/entities/test-cards';
+import { CardInfoService } from './card-info.service';
 
 describe('CardInfoService', () => {
   let service: CardInfoService;
