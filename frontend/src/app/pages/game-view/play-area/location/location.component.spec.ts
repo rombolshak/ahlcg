@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LocationComponent } from './location.component';
-import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import {
   InvestigatorG,
   InvestigatorS,
 } from 'shared/domain/test/entities/test-investigators';
-import { GameStateStore } from '../../store/game-state.store';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { testGameState } from 'shared/domain/test/test-game-state';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
-import { provideHttpClient } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { GameStateStore } from '../../store/game-state.store';
+import { LocationComponent } from './location.component';
 
 describe('LocationComponent', () => {
   let component: LocationComponent;

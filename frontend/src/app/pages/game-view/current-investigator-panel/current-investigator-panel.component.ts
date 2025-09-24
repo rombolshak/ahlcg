@@ -4,10 +4,10 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { ThreatAreaComponent } from './threat-area/threat-area.component';
-import { InvestigatorComponent } from './investigator/investigator.component';
 import { GameStateStore } from '../store/game-state.store';
 import { ControlAreaComponent } from './control-area/control-area.component';
+import { InvestigatorComponent } from './investigator/investigator.component';
+import { ThreatAreaComponent } from './threat-area/threat-area.component';
 
 @Component({
   selector: 'ah-current-investigator-panel',

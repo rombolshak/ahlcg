@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ThreatAreaComponent } from './threat-area.component';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from 'shared/domain/test/entities/test-enemies';
-import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { testEnemy } from 'shared/domain/test/entities/test-enemies';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { ThreatAreaComponent } from './threat-area.component';
 
 describe('ThreatAreaComponent', () => {
   let component: ThreatAreaComponent;

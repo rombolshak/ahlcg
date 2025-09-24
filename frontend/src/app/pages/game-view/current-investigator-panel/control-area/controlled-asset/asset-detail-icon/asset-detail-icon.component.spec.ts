@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AssetDetailIconComponent } from './asset-detail-icon.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { AssetDetailIconComponent } from './asset-detail-icon.component';
 
 describe('AssetDetailIconComponent', () => {
   let component: AssetDetailIconComponent;

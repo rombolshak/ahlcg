@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SettingsComponent } from './settings.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { getTranslocoModule } from '../../../shared/domain/test/transloco.testing';
+import { SettingsComponent } from './settings.component';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;

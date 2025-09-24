@@ -1,5 +1,5 @@
 <ah-dialog *transloco="let t" id="game-menu" [title]="t('settings')">
-  <div class="text-xl text-center">
+  <div class="text-center text-xl">
     <ah-setting-item
       #setting
       name="Language"
@@ -11,17 +11,17 @@
     />
   </div>
 
-  <div class="flex gap-8 items-center justify-center mt-8">
+  <div class="mt-8 flex items-center justify-center gap-8">
     <button
       type="submit"
-      class="btn btn-primary self-center"
+      class="btn self-center btn-primary"
       (click)="applySettings()"
     >
       {{ t("Apply") }}
     </button>
     <button
       type="reset"
-      class="btn btn-default self-center"
+      class="btn-default btn self-center"
       (click)="discardSettings()"
     >
       {{ t("Discard") }}

@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LocationsConnectionComponent } from './locations-connection.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { testGameMap } from 'shared/domain/test/test-game-map';
+import { LocationsConnectionComponent } from './locations-connection.component';
 
 describe('LocationsConnectionComponent', () => {
   let component: LocationsConnectionComponent;

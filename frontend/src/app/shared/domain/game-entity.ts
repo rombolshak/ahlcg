@@ -1,8 +1,8 @@
 ﻿import { Act, act } from './entities/act.model';
 import { Agenda, agenda } from './entities/agenda.model';
 import { Enemy, enemy } from './entities/enemy.model';
-import { Location, location } from './entities/location.model';
 import { Investigator, investigator } from './entities/investigator.model';
+import { Location, location } from './entities/location.model';
 import {
   AssetCard,
   EventCard,

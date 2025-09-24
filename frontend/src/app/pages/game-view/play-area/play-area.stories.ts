@@ -1,7 +1,7 @@
-﻿import { PlayAreaComponent } from './play-area.component';
-import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
-import { GameStateStore } from '../store/game-state.store';
+﻿import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
 import { testGameState } from 'shared/domain/test/test-game-state';
+import { GameStateStore } from '../store/game-state.store';
+import { PlayAreaComponent } from './play-area.component';
 
 const meta: Meta<PlayAreaComponent> = {
   component: PlayAreaComponent,

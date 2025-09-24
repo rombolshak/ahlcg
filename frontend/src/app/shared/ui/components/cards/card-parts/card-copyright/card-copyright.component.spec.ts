@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardCopyrightComponent } from './card-copyright.component';
-import { displayOption } from 'shared/domain/test/entities/test-cards';
-import { By } from '@angular/platform-browser';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { displayOption } from 'shared/domain/test/entities/test-cards';
+import { CardCopyrightComponent } from './card-copyright.component';
 
 describe('CardCopyrightComponent', () => {
   let component: CardCopyrightComponent;

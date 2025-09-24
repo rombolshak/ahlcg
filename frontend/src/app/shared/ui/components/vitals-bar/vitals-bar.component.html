@@ -1,35 +1,24 @@
 ﻿<div
-  class="group bg-gray-950/70 rounded-l data-[orientation=horizontal]:px-1
-    data-[orientation=vertical]:py-1 data-[orientation=vertical]:flex
-    data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full"
+  class="group flex gap-1 rounded-l bg-gray-950/70 p-1 data-[orientation=horizontal]:w-full data-[orientation=horizontal]:flex-col data-[orientation=vertical]:h-full"
   [attr.data-orientation]="orientation()"
 >
-  @if (entity().sanity) {
-    <ah-single-bar
-      class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
-        group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
-        group-data-[orientation=vertical]:flex
-        group-data-[orientation=vertical]:flex-col
-        group-data-[orientation=vertical]:mr-1 group-data-[orientation=vertical]:ml-1
-        rounded-md"
-      badColor="bg-sky-700"
-      goodColor="bg-sky-300"
-      [max]="entity().sanity!.max"
-      [current]="entity().sanity!.damaged"
-      [orientation]="orientation()"
-    />
-  }
   @if (entity().health) {
     <ah-single-bar
-      class="group-data-[orientation=horizontal]:h-1 group-data-[orientation=horizontal]:mb-1
-        group-data-[orientation=horizontal]:mt-1 group-data-[orientation=vertical]:w-2
-        group-data-[orientation=vertical]:flex
-        group-data-[orientation=vertical]:flex-col
-        group-data-[orientation=vertical]:mr-1 rounded-md"
+      class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
       badColor="bg-red-700"
       goodColor="bg-red-300"
       [max]="entity().health!.max"
       [current]="entity().health!.damaged!"
+      [orientation]="orientation()"
+    />
+  }
+  @if (entity().sanity) {
+    <ah-single-bar
+      class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
+      badColor="bg-sky-700"
+      goodColor="bg-sky-300"
+      [max]="entity().sanity!.max"
+      [current]="entity().sanity!.damaged"
       [orientation]="orientation()"
     />
   }

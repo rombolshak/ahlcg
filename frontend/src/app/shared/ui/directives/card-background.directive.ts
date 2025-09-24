@@ -1,5 +1,5 @@
-import { Directive, effect, ElementRef, input, inject } from '@angular/core';
-import { PlayerCardClassType } from '../../domain/entities/player-card.model';
+import { Directive, effect, ElementRef, inject, input } from '@angular/core';
+import { Faction } from '../../domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardBackground]',
@@ -15,7 +15,7 @@ export class CardBackgroundDirective {
         );
       }
 
-      this.lastColor = this.getColor(this.cardClass());
+      this.lastColor = this.getColor(this.faction());
       (this.el.nativeElement as HTMLElement).classList.add(
         ...this.lastColor,
         'bg-linear-to-b',
@@ -23,7 +23,7 @@ export class CardBackgroundDirective {
     });
   }
 
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly faction = input.required<Faction>();
 
   getColor(cardClass: string) {
     switch (cardClass) {

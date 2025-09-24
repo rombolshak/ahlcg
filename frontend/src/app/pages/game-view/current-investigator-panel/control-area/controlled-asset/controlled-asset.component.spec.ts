@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ControlledAssetComponent } from './controlled-asset.component';
-import { cardA } from 'shared/domain/test/entities/test-cards';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { cardA } from 'shared/domain/test/entities/test-cards';
+import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
+import { ControlledAssetComponent } from './controlled-asset.component';
 
 describe('ControlledAssetComponent', () => {
   let component: ControlledAssetComponent;

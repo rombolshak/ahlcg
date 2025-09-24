@@ -4,13 +4,18 @@
     alt="enemy"
     width="132"
     height="61"
-    class="h-fit w-full peer"
-    [ngSrc]="imageService.getIllustration(enemy()!.setInfo)"
+    class="peer h-fit w-full"
+    [ngSrc]="
+      imageService.getUrl([
+        'illustration',
+        enemy()!.setInfo.set,
+        enemy()!.setInfo.index,
+      ])
+    "
   />
 
   <ah-enemy-popover
-    class="opacity-0 w-70 transition-opacity absolute left-[70%] top-[-40%] -z-50
-      peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50"
+    class="absolute top-[-40%] left-[70%] -z-50 w-70 opacity-0 transition-opacity peer-hover:z-50 peer-hover:opacity-100 hover:z-50 hover:opacity-100"
     [enemy]="enemy()!"
   />
 }

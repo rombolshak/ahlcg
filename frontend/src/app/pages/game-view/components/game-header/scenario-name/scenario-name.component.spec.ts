@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ScenarioNameComponent } from './scenario-name.component';
+import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
 import campaign from '../../../../../../../public/assets/i18n/campaigns/notz/en.json';
 import scenario from '../../../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { ScenarioNameComponent } from './scenario-name.component';
 
 describe('ScenarioNameComponent', () => {
   let component: ScenarioNameComponent;

@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import { DialogComponent } from './dialog.component';
 import { DialogService } from './dialog.service';
-import { provideZonelessChangeDetection } from '@angular/core';
 import createSpyObj = jasmine.createSpyObj;
 
 describe('DialogComponent', () => {

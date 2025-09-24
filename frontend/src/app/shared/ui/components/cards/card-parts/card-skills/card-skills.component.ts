@@ -1,20 +1,17 @@
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  input,
   inject,
+  input,
 } from '@angular/core';
-import { NgOptimizedImage } from '@angular/common';
-import {
-  CreateOverlay,
-  ImagesUrlService,
-} from 'shared/services/images-url.service';
+import { DisplayOptions } from 'shared/domain/display.options';
 import {
   PlayerCardBase,
   SkillType,
 } from 'shared/domain/entities/player-card.model';
-import { DisplayOptions } from 'shared/domain/display.options';
+import { ImagesUrlService } from 'shared/services/images-url.service';
 
 @Component({
   selector: 'ah-card-skills',
@@ -45,5 +42,4 @@ export class CardSkillsComponent {
     m: 16,
     s: 11,
   };
-  protected readonly CreateOverlay = CreateOverlay;
 }

@@ -1,25 +1,21 @@
 ﻿<div
-  class="absolute bottom-px h-3 w-full font-sans text-white
-    group-data-[size=l]:text-[9px] group-data-[size=m]:text-[6px]
-    group-data-[size=s]:text-[4px]"
+  class="absolute bottom-px h-3 w-full font-sans text-white group-data-[size=l]:text-[9px] group-data-[size=m]:text-[6px] group-data-[size=s]:text-[4px]"
 >
   <span
-    class="absolute group-data-[size=l]:left-6 group-data-[size=m]:left-5
-      group-data-[size=s]:left-3 bottom-0"
+    class="absolute bottom-0 group-data-[size=l]:left-6 group-data-[size=m]:left-5 group-data-[size=s]:left-3"
   >
     Illus. {{ card().copyright.illustrator }}
   </span>
-  <span class="absolute left-0 bottom-0 w-full text-center">
+  <span class="absolute bottom-0 left-0 w-full text-center">
     &copy; {{ card().copyright.ffg }} FFG
   </span>
   <span
-    class="absolute group-data-[size=l]:right-6 group-data-[size=m]:right-5
-      group-data-[size=s]:right-3 bottom-0"
+    class="absolute bottom-0 group-data-[size=l]:right-6 group-data-[size=m]:right-5 group-data-[size=s]:right-3"
   >
     <img
       class="inline text-white invert"
       alt="set-icon"
-      [ngSrc]="imagesService.getSetIcon(card().setInfo.set)"
+      [ngSrc]="imagesService.getUrl(['set-icon', card().setInfo.set])"
       [width]="iconSize[displayOptions().cardSize]"
       [height]="iconSize[displayOptions().cardSize]"
     />

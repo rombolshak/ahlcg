@@ -6,13 +6,13 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GameState, gameState } from 'shared/domain/game-state';
 import { ArkErrors } from 'arktype';
-import { GameStateStore } from '../store/game-state.store';
+import { createPatch } from 'rfc6902';
+import { GameState, gameState } from 'shared/domain/game-state';
 import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
 import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
-import { createPatch } from 'rfc6902';
 import { DebugTimelineService } from '../services/debug-timeline.service';
+import { GameStateStore } from '../store/game-state.store';
 
 @Component({
   selector: 'ah-debug-panel',

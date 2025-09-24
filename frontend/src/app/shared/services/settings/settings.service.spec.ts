@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import {
   DEFAULT_SETTINGS,
   SettingsService,
   STORAGE_KEY_SUFFIX,
 } from './settings.service';
-import { provideZonelessChangeDetection } from '@angular/core';
 
 interface TestModel {
   someKey: string;

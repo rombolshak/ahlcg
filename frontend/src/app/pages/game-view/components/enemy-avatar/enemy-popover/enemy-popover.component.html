@@ -7,11 +7,11 @@
           height="24"
           alt="damage"
           class="mr-1"
-          [ngSrc]="imageService.getSimpleOverlay('enemy-damage')"
+          [ngSrc]="imageService.getUrl(['card-overlay', 'health'])"
         />
       }
     </div>
-    <p class="font-[Conkordia] text-xl/6 text-center mb-0" data-testId="title">
+    <p class="mb-0 text-center font-[Conkordia] text-xl/6" data-testId="title">
       {{ t(title()!) }}
     </p>
     <div class="flex items-center">
@@ -21,7 +21,7 @@
           height="20"
           alt="horror"
           class="ml-1"
-          [ngSrc]="imageService.getSimpleOverlay('enemy-horror')"
+          [ngSrc]="imageService.getUrl(['card-overlay', 'sanity'])"
         />
       }
     </div>
@@ -34,18 +34,22 @@
           width="24"
           height="24"
           alt="fight value"
-          [ngSrc]="imageService.getOverlay(CreateOverlay.skillIcon('combat'))"
+          [ngSrc]="
+            imageService.getUrl(['card-overlay', 'skill', 'icon', 'combat'])
+          "
         />
-        <span class="font-[Teutonic] text-2xl/6 ml-1">{{ enemy().fight }}</span>
+        <span class="ml-1 font-[Teutonic] text-2xl/6">{{ enemy().fight }}</span>
       </div>
       <div class="flex">
         <img
           width="24"
           height="24"
           alt="evade value"
-          [ngSrc]="imageService.getOverlay(CreateOverlay.skillIcon('agility'))"
+          [ngSrc]="
+            imageService.getUrl(['card-overlay', 'skill', 'icon', 'agility'])
+          "
         />
-        <span class="font-[Teutonic] text-2xl/6 ml-1">{{ enemy().evade }}</span>
+        <span class="ml-1 font-[Teutonic] text-2xl/6">{{ enemy().evade }}</span>
       </div>
     </div>
   </ah-card-details-text>

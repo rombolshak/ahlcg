@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardSubtitleComponent } from './card-subtitle.component';
-import { cardA } from 'shared/domain/test/entities/test-cards';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { cardA } from 'shared/domain/test/entities/test-cards';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { CardSubtitleComponent } from './card-subtitle.component';
 
 describe('CardSubtitleComponent', () => {
   let component: CardSubtitleComponent;
