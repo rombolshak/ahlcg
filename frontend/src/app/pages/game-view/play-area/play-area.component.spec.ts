@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PlayAreaComponent } from './play-area.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { PlayAreaComponent } from './play-area.component';
 
 describe('PlayAreaComponent', () => {
   let component: PlayAreaComponent;

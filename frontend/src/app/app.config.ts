@@ -6,13 +6,13 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { routes } from './app.routes';
-import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
+import { provideHttpClient } from '@angular/common/http';
 import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
-import { provideHttpClient } from '@angular/common/http';
-import { TranslocoHttpLoader } from './transloco-loader';
+import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import { provideTransloco } from '@jsverse/transloco';
+import { routes } from './app.routes';
+import { TranslocoHttpLoader } from './transloco-loader';
 
 Bugsnag.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
 BugsnagPerformance.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });

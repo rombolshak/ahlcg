@@ -16,7 +16,7 @@ export const Guardian: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'guardian',
+      faction: 'guardian',
     },
   },
 };
@@ -25,7 +25,7 @@ export const Seeker: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'seeker',
+      faction: 'seeker',
     },
   },
 };
@@ -34,7 +34,7 @@ export const Rogue: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'rogue',
+      faction: 'rogue',
     },
   },
 };
@@ -43,7 +43,7 @@ export const Survivor: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'survivor',
+      faction: 'survivor',
     },
   },
 };
@@ -52,7 +52,7 @@ export const Mystic: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'mystic',
+      faction: 'mystic',
     },
   },
 };
@@ -61,7 +61,7 @@ export const Neutral: Story = {
   args: {
     asset: {
       ...cardA,
-      class: 'neutral',
+      faction: 'neutral',
     },
   },
 };

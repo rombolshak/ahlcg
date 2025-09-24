@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import {
   computed,
   effect,
@@ -7,15 +8,14 @@ import {
   Signal,
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { ArkErrors, type } from 'arktype';
+import { combineLatest, map, switchMap } from 'rxjs';
+import { GameCard } from '../domain/entities/card.model';
 import {
   cardInfo,
   CardInfo,
   SetInfo,
 } from '../domain/entities/details/card-info.model';
-import { HttpClient } from '@angular/common/http';
-import { ArkErrors, type } from 'arktype';
-import { combineLatest, map, switchMap } from 'rxjs';
-import { GameCard } from '../domain/entities/card.model';
 
 const cardDescription = type({
   fields: cardInfo.keyof().array(),

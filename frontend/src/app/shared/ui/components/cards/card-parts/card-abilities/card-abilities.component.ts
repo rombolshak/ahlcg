@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { CardInfo } from 'shared/domain/entities/details/card-info.model';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-card-abilities',

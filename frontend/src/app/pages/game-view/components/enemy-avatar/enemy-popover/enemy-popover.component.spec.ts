@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EnemyPopoverComponent } from './enemy-popover.component';
+import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
 import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
-import { provideHttpClient } from '@angular/common/http';
+import { EnemyPopoverComponent } from './enemy-popover.component';
 
 describe('EnemyPopoverComponent', () => {
   let component: EnemyPopoverComponent;

@@ -1,44 +1,48 @@
-﻿<div class="flex flex-col justify-between w-full h-full relative peer">
+﻿<div class="peer relative flex h-full w-full flex-col justify-between">
   <img
     fill
     class="-z-10 rounded"
     alt="mini-investigator"
-    [ngSrc]="imagesService.getMiniIllustration(asset().setInfo)"
+    [ngSrc]="
+      imagesService.getUrl([
+        'mini-illustration',
+        asset().setInfo.set,
+        asset().setInfo.index,
+      ])
+    "
   />
 
   <ah-vitals-bar [entity]="asset()" />
-  <div class="bg-gray-950/50 flex justify-center items-center">
+  <div class="flex items-center justify-center bg-gray-950/50">
     <ah-asset-detail-icon
       [detail]="asset().slot"
-      [image]="imagesService.getOverlay(CreateOverlay.cardSlot(asset().slot))"
+      [image]="imagesService.getUrl(['card-overlay', 'slot', asset().slot!])"
       [withoutText]="true"
     />
     <ah-asset-detail-icon
       [detail]="asset().additionalSlot"
       [image]="
-        imagesService.getOverlay(CreateOverlay.cardSlot(asset().additionalSlot))
+        imagesService.getUrl(['card-overlay', 'slot', asset().additionalSlot!])
       "
       [withoutText]="true"
     />
     <ah-asset-detail-icon
       [detail]="asset().tokens?.resource"
-      [image]="imagesService.getSimpleOverlay('resource')"
+      [image]="imagesService.getUrl(['card-overlay', 'resource'])"
     />
     <ah-asset-detail-icon
       [detail]="asset().tokens?.clue"
-      [image]="imagesService.getSimpleOverlay('clue')"
+      [image]="imagesService.getUrl(['card-overlay', 'clue'])"
     />
     <ah-asset-detail-icon
       [detail]="asset().tokens?.doom"
-      [image]="imagesService.getSimpleOverlay('doom')"
+      [image]="imagesService.getUrl(['card-overlay', 'doom'])"
     />
   </div>
 </div>
 
 <ah-asset-popover
-  class="opacity-0 w-60 transition-opacity absolute right-[70%] top-[40%] -z-50
-    peer-hover:opacity-100 peer-hover:z-50 hover:opacity-100 hover:z-50
-    data-[hovered=true]:opacity-100 data-[hovered=true]:z-50"
+  class="absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity peer-hover:z-50 peer-hover:opacity-100 hover:z-50 hover:opacity-100 data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
   [attr.data-hovered]="hovered()"
   [asset]="asset()"
 />

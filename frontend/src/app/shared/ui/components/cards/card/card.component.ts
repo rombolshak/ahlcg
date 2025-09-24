@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { DisplayOptions } from 'shared/domain/display.options';
 import {
   AssetCard,
   EventCard,
@@ -10,7 +11,6 @@ import { AsPipe } from 'shared/ui/pipes/as.pipe';
 import { AssetCardComponent } from '../asset-card/asset-card.component';
 import { EventCardComponent } from '../event-card/event-card.component';
 import { SkillCardComponent } from '../skill-card/skill-card.component';
-import { DisplayOptions } from 'shared/domain/display.options';
 
 @Component({
   selector: 'ah-card',

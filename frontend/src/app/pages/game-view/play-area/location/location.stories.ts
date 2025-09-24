@@ -4,14 +4,14 @@
   moduleMetadata,
   StoryObj,
 } from '@storybook/angular';
-import { LocationComponent } from './location.component';
-import { testLocation } from 'shared/domain/test/entities/test-locations';
-import { GameStateStore } from '../../store/game-state.store';
-import { testGameState } from 'shared/domain/test/test-game-state';
 import {
   InvestigatorG,
   InvestigatorS,
 } from 'shared/domain/test/entities/test-investigators';
+import { testLocation } from 'shared/domain/test/entities/test-locations';
+import { testGameState } from 'shared/domain/test/test-game-state';
+import { GameStateStore } from '../../store/game-state.store';
+import { LocationComponent } from './location.component';
 
 const meta: Meta<LocationComponent> = {
   component: LocationComponent,

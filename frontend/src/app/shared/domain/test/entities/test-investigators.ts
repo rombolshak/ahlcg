@@ -1,6 +1,5 @@
-﻿import { Investigator } from '../../entities/investigator.model';
-import { investigatorId } from '../../entities/id.model';
-import { testEnemy, testEnemy2 } from './test-enemies';
+﻿import { investigatorId } from '../../entities/id.model';
+import { Investigator } from '../../entities/investigator.model';
 import {
   cardA,
   cardA2,
@@ -10,6 +9,7 @@ import {
   cardE,
   cardS,
 } from './test-cards';
+import { testEnemy, testEnemy2 } from './test-enemies';
 
 export const InvestigatorS: Investigator = {
   id: investigatorId.assert('1002'),
@@ -24,7 +24,7 @@ export const InvestigatorS: Investigator = {
     combat: 1,
     agility: 3,
   },
-  class: 'seeker',
+  faction: 'seeker',
   health: {
     max: 5,
     damaged: 1,
@@ -42,7 +42,7 @@ export const InvestigatorS: Investigator = {
 export const InvestigatorG: Investigator = {
   ...InvestigatorS,
   id: investigatorId.assert('1003'),
-  class: 'guardian',
+  faction: 'guardian',
   threatArea: [testEnemy.id, testEnemy2.id],
   controlledAssets: [
     cardA.id,

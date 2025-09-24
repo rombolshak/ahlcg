@@ -1,5 +1,6 @@
 ﻿import { Traversal, type } from 'arktype';
-import { gameMap } from './game-map.model';
+import { action } from './action.model';
+import { CardType } from './entities/card.model';
 import {
   ActId,
   actId,
@@ -10,10 +11,9 @@ import {
   investigatorId,
   LocationId,
 } from './entities/id.model';
-import { action } from './action.model';
-import { GameEntity, gameEntity } from './game-entity';
-import { CardType } from './entities/card.model';
 import { Investigator } from './entities/investigator.model';
+import { GameEntity, gameEntity } from './game-entity';
+import { gameMap } from './game-map.model';
 import { metaInfo } from './meta-info';
 
 type GameEntities = Record<EntityId, GameEntity>;

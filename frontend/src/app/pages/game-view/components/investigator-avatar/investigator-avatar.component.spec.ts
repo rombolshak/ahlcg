@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InvestigatorAvatarComponent } from './investigator-avatar.component';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
+import { InvestigatorAvatarComponent } from './investigator-avatar.component';
 
 describe('InvestigatorAvatarComponent', () => {
   let component: InvestigatorAvatarComponent;

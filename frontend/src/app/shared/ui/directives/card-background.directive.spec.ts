@@ -1,23 +1,23 @@
-import { CardBackgroundDirective } from './card-background.directive';
 import {
   ChangeDetectionStrategy,
   Component,
   input,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { PlayerCardClassType } from 'shared/domain/entities/player-card.model';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Faction } from 'shared/domain/entities/player-card.model';
+import { CardBackgroundDirective } from './card-background.directive';
 
 @Component({
   selector: 'ah-test',
   imports: [CardBackgroundDirective],
   template: `
-    <div ahCardBackground [cardClass]="cardClass()"></div>
+    <div ahCardBackground [faction]="cardClass()"></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
-  readonly cardClass = input.required<PlayerCardClassType>();
+  readonly cardClass = input.required<Faction>();
 }
 
 describe('CardBackgroundDirective', () => {

@@ -4,9 +4,9 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { AgendaComponent } from './agenda/agenda.component';
-import { ActComponent } from './act/act.component';
 import { GameStateStore } from '../store/game-state.store';
+import { ActComponent } from './act/act.component';
+import { AgendaComponent } from './agenda/agenda.component';
 
 @Component({
   selector: 'ah-global-game-info-panel',

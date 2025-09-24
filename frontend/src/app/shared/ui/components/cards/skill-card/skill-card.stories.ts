@@ -1,6 +1,6 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular';
 import { cardS } from '../../../../domain/test/entities/test-cards';
-import { SkillCardComponent } from '../skill-card/skill-card.component';
+import { SkillCardComponent } from './skill-card.component';
 
 const meta: Meta<SkillCardComponent> = {
   component: SkillCardComponent,
@@ -16,7 +16,7 @@ export const SkillGuardian: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'guardian',
+      faction: 'guardian',
     },
   },
 };
@@ -25,7 +25,7 @@ export const SkillSeeker: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'seeker',
+      faction: 'seeker',
     },
   },
 };
@@ -34,7 +34,7 @@ export const SkillRogue: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'rogue',
+      faction: 'rogue',
     },
   },
 };
@@ -43,7 +43,7 @@ export const SkillSurvivor: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'survivor',
+      faction: 'survivor',
     },
   },
 };
@@ -52,7 +52,7 @@ export const SkillMystic: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'mystic',
+      faction: 'mystic',
     },
   },
 };
@@ -61,7 +61,7 @@ export const SkillNeutral: Story = {
   args: {
     card: {
       ...cardS,
-      class: 'neutral',
+      faction: 'neutral',
     },
   },
 };

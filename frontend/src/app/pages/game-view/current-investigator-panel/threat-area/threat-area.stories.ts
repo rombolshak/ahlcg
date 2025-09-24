@@ -1,10 +1,10 @@
-﻿import { ThreatAreaComponent } from './threat-area.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import {
   testEnemy,
   testEnemy2,
   testMassiveEnemy,
 } from '../../../../shared/domain/test/entities/test-enemies';
+import { ThreatAreaComponent } from './threat-area.component';
 
 const meta: Meta<ThreatAreaComponent> = {
   component: ThreatAreaComponent,

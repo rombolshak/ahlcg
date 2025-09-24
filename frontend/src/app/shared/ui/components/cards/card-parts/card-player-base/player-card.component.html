@@ -1,10 +1,8 @@
 ﻿<div
-  class="data-[size=l]:w-[375px] data-[size=l]:h-[525px] data-[size=m]:w-[250px]
-    data-[size=s]:w-[160px] data-[size=m]:h-[350px] data-[size=s]:h-[224px] group
-    relative block *:w-full rounded-xl text-neutral-900"
+  class="group relative block rounded-xl text-neutral-900 *:w-full data-[size=l]:h-[525px] data-[size=l]:w-[375px] data-[size=m]:h-[350px] data-[size=m]:w-[250px] data-[size=s]:h-[224px] data-[size=s]:w-[160px]"
   ahCardOutline
   [attr.data-size]="displayOptions().cardSize"
-  [cardClass]="card().class"
+  [faction]="card().faction"
 >
   <img
     class="-z-10 rounded-xl"
@@ -12,33 +10,34 @@
     alt="card-template"
     [height]="cardHeights[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    [ngSrc]="imagesService.getTemplate(card().cardType, card().class)"
+    [ngSrc]="
+      imagesService.getUrl(['card-template', card().cardType, card().faction])
+    "
   />
   <img
     class="absolute top-0 -z-20 rounded-xl"
     alt="card-illustration"
     [height]="cardWidths[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    [ngSrc]="imagesService.getIllustration(card().setInfo)"
+    [ngSrc]="
+      imagesService.getUrl([
+        'illustration',
+        card().setInfo.set,
+        card().setInfo.index,
+      ])
+    "
   />
 
   <div>
     <span
-      class="absolute group-data-[size=l]:left-[21px] group-data-[size=l]:top-[60px]
-        group-data-[size=l]:w-9 group-data-[size=l]:text-[12px]
-        group-data-[size=m]:left-[14px] group-data-[size=m]:top-[35px]
-        group-data-[size=m]:w-6 group-data-[size=m]:text-[8px]
-        group-data-[size=s]:left-[10px] group-data-[size=s]:top-[26px]
-        group-data-[size=s]:w-3 group-data-[size=s]:text-[4px] bold uppercase
-        text-center font-[ArnoPro]"
+      class="absolute text-center font-[ArnoPro] font-bold uppercase group-data-[size=l]:top-[60px] group-data-[size=l]:left-[21px] group-data-[size=l]:w-9 group-data-[size=l]:text-[12px] group-data-[size=m]:top-[35px] group-data-[size=m]:left-[14px] group-data-[size=m]:w-6 group-data-[size=m]:text-[8px] group-data-[size=s]:top-[26px] group-data-[size=s]:left-[10px] group-data-[size=s]:w-3 group-data-[size=s]:text-[4px]"
     >
       {{ card().cardType | transloco }}
     </span>
   </div>
 
   <ah-card-skills
-    class="absolute group-data-[size=l]:top-[81px] group-data-[size=m]:top-[54px]
-      group-data-[size=s]:top-[36px]"
+    class="absolute group-data-[size=l]:top-[81px] group-data-[size=m]:top-[54px] group-data-[size=s]:top-[36px]"
     [card]="card()"
     [displayOptions]="displayOptions()"
   />

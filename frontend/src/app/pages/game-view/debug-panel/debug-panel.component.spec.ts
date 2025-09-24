@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DebugPanelComponent } from './debug-panel.component';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { GameStateStore } from '../store/game-state.store';
+import { DebugPanelComponent } from './debug-panel.component';
 
 describe('DebugPanelComponent', () => {
   let component: DebugPanelComponent;

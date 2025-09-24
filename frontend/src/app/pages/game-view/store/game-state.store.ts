@@ -1,4 +1,5 @@
-﻿import {
+﻿import { computed } from '@angular/core';
+import {
   patchState,
   signalStore,
   withComputed,
@@ -7,20 +8,14 @@
   withState,
   WritableStateSource,
 } from '@ngrx/signals';
+import { ArkErrors } from 'arktype';
 import { gsap } from 'gsap';
 import { Flip } from 'gsap/Flip';
-import { gameState, GameState } from 'shared/domain/game-state';
+import { produce } from 'immer';
+import { applyPatch, Operation } from 'rfc6902';
 import { Act } from 'shared/domain/entities/act.model';
-import { Enemy } from 'shared/domain/entities/enemy.model';
-import { Investigator } from 'shared/domain/entities/investigator.model';
 import { Agenda } from 'shared/domain/entities/agenda.model';
-import { Location } from 'shared/domain/entities/location.model';
-import {
-  AssetCard,
-  EventCard,
-  PlayerCard,
-  SkillCard,
-} from 'shared/domain/entities/player-card.model';
+import { Enemy } from 'shared/domain/entities/enemy.model';
 import {
   ActId,
   AgendaId,
@@ -33,10 +28,14 @@ import {
   PlayerCardId,
   SkillId,
 } from 'shared/domain/entities/id.model';
-import { computed } from '@angular/core';
-import { ArkErrors } from 'arktype';
-import { applyPatch, Operation } from 'rfc6902';
-import { produce } from 'immer';
+import { Investigator } from 'shared/domain/entities/investigator.model';
+import { Location } from 'shared/domain/entities/location.model';
+import {
+  AssetCard,
+  EventCard,
+  PlayerCard,
+  SkillCard,
+} from 'shared/domain/entities/player-card.model';
 import {
   GameEntity,
   isAct,
@@ -49,6 +48,7 @@ import {
   isPlayerCard,
   isSkill,
 } from 'shared/domain/game-entity';
+import { gameState, GameState } from 'shared/domain/game-state';
 
 gsap.registerPlugin(Flip);
 

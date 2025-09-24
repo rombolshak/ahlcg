@@ -1,17 +1,12 @@
 ﻿@if (cardInfo()) {
   <ah-player-card [card]="card()" [displayOptions]="displayOptions()">
     <ah-card-title
-      class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5
-        group-data-[size=s]:top-[7px]"
+      class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5 group-data-[size=s]:top-[7px]"
       [card]="cardInfo()!"
     />
 
     <div
-      class="absolute group-data-[size=l]:top-[22rem] group-data-[size=l]:pl-14
-        group-data-[size=l]:pr-8 group-data-[size=m]:top-[14.75rem]
-        group-data-[size=m]:pl-10 group-data-[size=m]:pr-6
-        group-data-[size=s]:top-[9.5rem] group-data-[size=s]:pl-6
-        group-data-[size=s]:pr-4 font-[ArnoPro]"
+      class="absolute font-[ArnoPro] group-data-[size=l]:top-[22rem] group-data-[size=l]:pr-8 group-data-[size=l]:pl-14 group-data-[size=m]:top-[14.75rem] group-data-[size=m]:pr-6 group-data-[size=m]:pl-10 group-data-[size=s]:top-[9.5rem] group-data-[size=s]:pr-4 group-data-[size=s]:pl-6"
     >
       <ah-card-traits
         [card]="cardInfo()!"

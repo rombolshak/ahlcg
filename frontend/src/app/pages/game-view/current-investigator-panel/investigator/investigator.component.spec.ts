@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { InvestigatorComponent } from './investigator.component';
-import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { InvestigatorS } from 'shared/domain/test/entities/test-investigators';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { InvestigatorComponent } from './investigator.component';
 
 describe('InvestigatorComponent', () => {
   let component: InvestigatorComponent;

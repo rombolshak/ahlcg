@@ -1,24 +1,38 @@
 <div
-  class="flex py-0 rounded-lg relative"
+  class="relative flex rounded-lg p-4"
   ahCardOutline
-  [cardClass]="investigator().class"
+  [faction]="investigator().faction"
 >
   <img
     fill
-    class="-z-30"
+    class="-z-30 rounded-lg"
     priority
     alt="investigator-template"
-    [ngSrc]="imagesService.getTemplate('investigator', investigator().class)"
+    [ngSrc]="
+      imagesService.getUrl([
+        'card-template',
+        'investigator',
+        investigator().faction,
+      ])
+    "
   />
 
-  <ah-vitals-bar orientation="vertical" [entity]="investigator()" />
+  @if (!withoutVitals()) {
+    <ah-vitals-bar orientation="vertical" [entity]="investigator()" />
+  }
 
   <img
     width="100"
     height="154"
     class="peer"
     alt="investigator avatar"
-    [ngSrc]="imagesService.getInvestigator(investigator().setInfo)"
+    [ngSrc]="
+      imagesService.getUrl([
+        'investigator',
+        investigator().setInfo.set,
+        investigator().setInfo.index,
+      ])
+    "
   />
 
   <ng-content />

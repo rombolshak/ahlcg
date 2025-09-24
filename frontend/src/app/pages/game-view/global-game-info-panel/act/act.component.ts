@@ -1,3 +1,4 @@
+import { NgClass, NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,14 +6,13 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { Act, Objective } from 'shared/domain/entities/act.model';
-import { ImagesUrlService } from 'shared/services/images-url.service';
-import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
-import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
-import { NgClass, NgOptimizedImage } from '@angular/common';
-import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
-import { CardInfoService } from 'shared/services/card-info.service';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { Act, Objective } from 'shared/domain/entities/act.model';
+import { CardInfoService } from 'shared/services/card-info.service';
+import { ImagesUrlService } from 'shared/services/images-url.service';
+import { SingleBarComponent } from 'shared/ui/components/vitals-bar/single-bar/single-bar.component';
+import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
+import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-act',

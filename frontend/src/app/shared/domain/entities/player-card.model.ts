@@ -1,13 +1,13 @@
 ﻿/* eslint-disable @typescript-eslint/no-empty-object-type */
+import { type } from 'arktype';
 import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
-import { type } from 'arktype';
 import { assetId, eventId, skillId } from './id.model';
 
-export const playerCardClass = type(
+export const faction = type(
   "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
 );
-export type PlayerCardClassType = typeof playerCardClass.infer;
+export type Faction = typeof faction.infer;
 
 export const skills = type({
   willpower: 'number.integer >= 0',
@@ -20,8 +20,14 @@ export const skills = type({
 export const skillType = skills.keyof();
 export type SkillType = typeof skillType.infer;
 
+export const playerCardType = type(
+  "'asset' | 'skill' | 'event' | 'investigator'",
+);
+export type PlayerCardType = typeof playerCardType.infer;
+
 export const playerCardBase = gameCard.and({
-  class: playerCardClass,
+  cardType: playerCardType,
+  faction,
   skills: skills.partial(),
 });
 export type PlayerCardBase = typeof playerCardBase.infer;

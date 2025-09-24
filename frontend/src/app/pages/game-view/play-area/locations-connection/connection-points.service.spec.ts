@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import {
   ConnectionPointsService,
   Connector,
@@ -7,7 +8,6 @@ import {
   Plane,
   VerticalConnectorPosition,
 } from './connection-points.service';
-import { provideZonelessChangeDetection } from '@angular/core';
 
 describe('ConnectionPointsService', () => {
   let service: ConnectionPointsService;

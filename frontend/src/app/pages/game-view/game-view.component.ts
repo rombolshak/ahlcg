@@ -8,15 +8,15 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
+import { testGameState } from '../../shared/domain/test/test-game-state';
+import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
+import { GameHeaderComponent } from './components/game-header/game-header.component';
 import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';
 import { GlobalGameInfoPanelComponent } from './global-game-info-panel/global-game-info-panel.component';
-import { testGameState } from '../../shared/domain/test/test-game-state';
-import { GameStateStore } from './store/game-state.store';
+import { PlayAreaComponent } from './play-area/play-area.component';
 import { DebugTimelineService } from './services/debug-timeline.service';
 import { SettingsComponent } from './settings/settings.component';
-import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
-import { PlayAreaComponent } from './play-area/play-area.component';
-import { GameHeaderComponent } from './components/game-header/game-header.component';
+import { GameStateStore } from './store/game-state.store';
 
 @Component({
   selector: 'ah-game-view',

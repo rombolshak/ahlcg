@@ -57,7 +57,7 @@
     "rfc6902": "^5.1.2",
     "rxjs": "~7.8.2",
     "tslib": "^2.3.0",
-    "vanilla-jsoneditor": "^3.3.1"
+    "vanilla-jsoneditor": "^3.10.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.3.2",
@@ -71,7 +71,7 @@
     "@html-eslint/parser": "^0.42.0",
     "@storybook/angular": "^9.1.5",
     "@tailwindcss/language-server": "latest",
-    "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/postcss": "^4.1.13",
     "@types/jasmine": "~5.1.8",
     "@typescript-eslint/parser": "^8.43.0",
     "angular-eslint": "20.2.0",
@@ -81,6 +81,7 @@
     "eslint": "^9.34.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-formatter-mo": "^2.3.0",
+    "eslint-plugin-better-tailwindcss": "^3.7.9",
     "eslint-plugin-jasmine": "^4.2.2",
     "eslint-plugin-jsonc": "^2.20.1",
     "eslint-plugin-storybook": "^9.0.16",

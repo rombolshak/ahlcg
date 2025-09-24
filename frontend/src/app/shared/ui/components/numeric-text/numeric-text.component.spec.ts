@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { NumericTextComponent } from './numeric-text.component';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { NumericTextComponent } from './numeric-text.component';
 
 describe('NumericTextComponent', () => {
   let component: NumericTextComponent;

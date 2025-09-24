@@ -1,23 +1,22 @@
 ﻿@if (gameState.isLoading() || gameState.error()) {
   <div
-    class="h-1/2 w-1/2 flex flex-col items-center justify-center bg-slate-800 text-white
-      m-auto"
+    class="m-auto flex h-1/2 w-1/2 flex-col items-center justify-center bg-slate-800 text-white"
   >
     <p>Loading...</p>
     <p class="whitespace-pre-wrap">{{ gameState.error() }}</p>
   </div>
 } @else {
   <div
-    class="grid grid-cols-[19rem_1fr_22rem] grid-rows-[3rem_1fr_6rem] gap-4 h-full w-full"
+    class="grid h-full w-full grid-cols-[19rem_1fr_22rem] grid-rows-[3rem_1fr_6rem] gap-4"
   >
-    <ah-game-header class="col-start-1 row-start-1 col-span-3" />
+    <ah-game-header class="col-span-3 col-start-1 row-start-1" />
     <ah-global-game-info-panel
-      class="col-start-1 row-start-2 row-span-2 pl-8"
+      class="col-start-1 row-span-2 row-start-2 pl-8"
     />
     <ah-play-area class="col-start-2 row-start-2 overflow-hidden" />
     <ah-current-investigator-panel class="col-start-3 row-start-2 pr-8" />
     <ah-cards-hand
-      class="col-start-1 row-start-3 col-span-3"
+      class="col-span-3 col-start-1 row-start-3"
       [cards]="cards()"
     />
   </div>

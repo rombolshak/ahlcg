@@ -16,7 +16,7 @@ export const EventGuardian: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'guardian',
+      faction: 'guardian',
     },
   },
 };
@@ -25,7 +25,7 @@ export const EventSeeker: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'seeker',
+      faction: 'seeker',
     },
   },
 };
@@ -34,7 +34,7 @@ export const EventRogue: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'rogue',
+      faction: 'rogue',
     },
   },
 };
@@ -43,7 +43,7 @@ export const EventSurvivor: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'survivor',
+      faction: 'survivor',
     },
   },
 };
@@ -52,7 +52,7 @@ export const EventMystic: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'mystic',
+      faction: 'mystic',
     },
   },
 };
@@ -61,7 +61,7 @@ export const EventNeutral: Story = {
   args: {
     card: {
       ...cardE,
-      class: 'neutral',
+      faction: 'neutral',
     },
   },
 };

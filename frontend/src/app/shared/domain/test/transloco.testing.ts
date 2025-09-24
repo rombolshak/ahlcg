@@ -2,8 +2,8 @@
   TranslocoTestingModule,
   TranslocoTestingOptions,
 } from '@jsverse/transloco';
-import en from '../../../../../public/assets/i18n/en.json';
-import traits from '../../../../../public/assets/i18n/traits/en.json';
+import campaign from '../../../../../public/assets/i18n/campaigns/notz/en.json';
+import scenario from '../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
 import daisyWalker from '../../../../../public/assets/i18n/cards/01/002/en.json';
 import icyGhoul from '../../../../../public/assets/i18n/cards/01/119/en.json';
 import plan from '../../../../../public/assets/i18n/cards/02/107/en.json';
@@ -12,8 +12,8 @@ import beast from '../../../../../public/assets/i18n/cards/02/200/en.json';
 import breakingThrough from '../../../../../public/assets/i18n/cards/02/314/en.json';
 import notes from '../../../../../public/assets/i18n/cards/09/045/en.json';
 import accursed from '../../../../../public/assets/i18n/cards/10/095/en.json';
-import campaign from '../../../../../public/assets/i18n/campaigns/notz/en.json';
-import scenario from '../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
+import en from '../../../../../public/assets/i18n/en.json';
+import traits from '../../../../../public/assets/i18n/traits/en.json';
 
 export function getTranslocoModule(options: TranslocoTestingOptions = {}) {
   return TranslocoTestingModule.forRoot({

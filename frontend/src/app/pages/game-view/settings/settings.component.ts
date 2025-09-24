@@ -10,19 +10,19 @@ import {
   viewChildren,
 } from '@angular/core';
 import {
-  provideUserPreferencesService,
-  UserPreferences,
-} from 'shared/services/settings/user-preferences.service';
-import {
   LangDefinition,
   TranslocoDirective,
   TranslocoService,
 } from '@jsverse/transloco';
-import { SettingsService } from 'shared/services/settings/settings.service';
 import { produce } from 'immer';
-import { SettingItemComponent } from './setting-item/setting-item.component';
+import { SettingsService } from 'shared/services/settings/settings.service';
+import {
+  provideUserPreferencesService,
+  UserPreferences,
+} from 'shared/services/settings/user-preferences.service';
 import { DialogComponent } from '../../../shared/ui/components/dialog/dialog.component';
 import { DialogService } from '../../../shared/ui/components/dialog/dialog.service';
+import { SettingItemComponent } from './setting-item/setting-item.component';
 
 @Component({
   selector: 'ah-settings',

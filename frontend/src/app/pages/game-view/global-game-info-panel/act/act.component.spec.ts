@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ActComponent } from './act.component';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { testAct } from 'shared/domain/test/entities/test-act';
-import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { testAct } from 'shared/domain/test/entities/test-act';
+import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { ActComponent } from './act.component';
 
 describe('ActComponent', () => {
   let component: ActComponent;

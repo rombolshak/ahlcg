@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CardTitleComponent } from './card-title.component';
-import { By } from '@angular/platform-browser';
-import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
 import { provideHttpClient } from '@angular/common/http';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
+import { CardTitleComponent } from './card-title.component';
 
 describe('CardTitleComponent', () => {
   let component: CardTitleComponent;
