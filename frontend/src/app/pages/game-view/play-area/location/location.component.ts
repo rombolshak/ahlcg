@@ -24,7 +24,7 @@ import { LocationHeaderComponent } from './location-header/location-header.compo
   templateUrl: './location.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col rounded-3xl outline-2 outline-zinc-400 relative',
+    class: 'flex flex-col rounded-xl outline-2 outline-zinc-400 relative',
   },
 })
 export class LocationComponent {

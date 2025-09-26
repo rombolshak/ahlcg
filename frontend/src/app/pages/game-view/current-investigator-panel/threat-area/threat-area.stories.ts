@@ -2,8 +2,7 @@
 import {
   testEnemy,
   testEnemy2,
-  testMassiveEnemy,
-} from '../../../../shared/domain/test/entities/test-enemies';
+} from 'shared/domain/test/entities/test-enemies';
 import { ThreatAreaComponent } from './threat-area.component';
 
 const meta: Meta<ThreatAreaComponent> = {
@@ -18,6 +17,12 @@ const meta: Meta<ThreatAreaComponent> = {
 export default meta;
 type Story = StoryObj<ThreatAreaComponent>;
 
+export const NoEnemies: Story = {
+  args: {
+    threatArea: [],
+  },
+};
+
 export const SingleEnemy: Story = {
   args: {
     threatArea: [testEnemy],
@@ -27,11 +32,5 @@ export const SingleEnemy: Story = {
 export const SeveralEnemies: Story = {
   args: {
     threatArea: [testEnemy, testEnemy, testEnemy2],
-  },
-};
-
-export const WithMassiveEnemy: Story = {
-  args: {
-    threatArea: [testEnemy, testMassiveEnemy],
   },
 };

@@ -56,4 +56,10 @@ describe('ImagesUrlService', () => {
       `/assets/images/illustration/test/015.webp`,
     );
   });
+
+  it('should take simple string', () => {
+    expect(service.getUrl('test/image')).toEqual(
+      `/assets/images/test/image.webp`,
+    );
+  });
 });

@@ -29,7 +29,7 @@ import { CardDetailsTextComponent } from '../../../components/card-details-text/
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'flex items-center justify-between flex-row-reverse w-full bg-linear-to-b from-zinc-50 via-zinc-100 h-16 rounded-t-3xl z-0 text-neutral-900',
+      'flex items-center justify-between flex-row-reverse w-full bg-linear-to-b from-zinc-50 via-zinc-100 h-16 rounded-t-xl z-0 text-neutral-900',
   },
 })
 export class LocationHeaderComponent {

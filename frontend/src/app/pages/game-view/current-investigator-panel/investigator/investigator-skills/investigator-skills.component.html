@@ -7,24 +7,8 @@
   "
 />
 <div class="grid grid-cols-2 grid-rows-2 gap-x-1 px-2">
-  <ah-investigator-skill
-    type="willpower"
-    [faction]="faction()"
-    [value]="skills().willpower"
-  />
-  <ah-investigator-skill
-    type="intellect"
-    [faction]="faction()"
-    [value]="skills().intellect"
-  />
-  <ah-investigator-skill
-    type="combat"
-    [faction]="faction()"
-    [value]="skills().combat"
-  />
-  <ah-investigator-skill
-    type="agility"
-    [faction]="faction()"
-    [value]="skills().agility"
-  />
+  <ah-investigator-skill type="willpower" [value]="skills().willpower" />
+  <ah-investigator-skill type="intellect" [value]="skills().intellect" />
+  <ah-investigator-skill type="combat" [value]="skills().combat" />
+  <ah-investigator-skill type="agility" [value]="skills().agility" />
 </div>

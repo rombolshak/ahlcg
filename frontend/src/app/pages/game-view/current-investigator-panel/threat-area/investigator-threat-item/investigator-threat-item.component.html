@@ -1,0 +1,68 @@
+<ng-container *transloco="let t">
+  <img
+    fill
+    alt="threat background"
+    class="-z-35 rounded"
+    [ngSrc]="imagesService.getUrl('threat-enemy')"
+  />
+
+  <img
+    alt="threat image"
+    width="56"
+    height="56"
+    class="rounded-xs"
+    [ngSrc]="
+      imagesService.getUrl([
+        'mini-illustration',
+        enemy().setInfo.set,
+        enemy().setInfo.index,
+      ])
+    "
+  />
+
+  <div class="flex w-full flex-col justify-between">
+    <div class="flex justify-between">
+      <div>
+        <p class="font-[Conkordia] text-xl/5">{{ t(info()?.title ?? "") }}</p>
+        @if (info()?.subtitle) {
+          <p class="font-[ArnoPro] text-sm/3">{{ t(info()?.subtitle!) }}</p>
+        }
+      </div>
+      <div class="flex h-auto gap-0.5">
+        @for (_ of [].constructor(enemy().damageAttack); track _) {
+          <img
+            alt="damage token"
+            width="19"
+            height="24"
+            class="h-[24px] flex-none"
+            [ngSrc]="imagesService.getUrl(['card-overlay', 'health'])"
+          />
+        }
+        @for (_ of [].constructor(enemy().horrorAttack); track _) {
+          <img
+            alt="horror token"
+            width="24"
+            height="20"
+            class="h-[20px] flex-none"
+            [ngSrc]="imagesService.getUrl(['card-overlay', 'sanity'])"
+          />
+        }
+      </div>
+    </div>
+    <div class="flex items-end gap-2">
+      <ah-vitals-bar class="flex-1" [entity]="enemy()" />
+      <div class="flex h-auto gap-1">
+        <ah-investigator-skill
+          class="h-6"
+          type="combat"
+          [value]="enemy().fight"
+        />
+        <ah-investigator-skill
+          class="h-6"
+          type="agility"
+          [value]="enemy().evade"
+        />
+      </div>
+    </div>
+  </div>
+</ng-container>
