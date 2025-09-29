@@ -1,3 +1,7 @@
 @for (enemy of threatArea(); track enemy.id) {
   <ah-investigator-threat-item [enemy]="enemy" />
+} @empty {
+  <p *transloco="let t" class="text-center font-[ArnoPro] text-base-content">
+    {{ t(noThreatsText()) }}
+  </p>
 }

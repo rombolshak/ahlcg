@@ -7,6 +7,7 @@ import {
 import { GameStateStore } from '../store/game-state.store';
 import { ControlAreaComponent } from './control-area/control-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
+import { NoThreatsPhraseService } from './threat-area/no-threats-phrase.service';
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
 
 @Component({
@@ -19,7 +20,8 @@ import { ThreatAreaComponent } from './threat-area/threat-area.component';
   },
 })
 export class CurrentInvestigatorPanelComponent {
-  readonly state = inject(GameStateStore);
+  protected readonly state = inject(GameStateStore);
+  protected readonly noThreatsPhraseService = inject(NoThreatsPhraseService);
 
   readonly threatArea = computed(() => {
     const ids = this.state.currentInvestigator()?.threatArea;

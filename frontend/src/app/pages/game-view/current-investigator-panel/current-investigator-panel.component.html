@@ -1,6 +1,11 @@
 @if (state.currentInvestigator() !== null) {
   <ah-investigator [investigator]="state.currentInvestigator()!" />
-  <ah-threat-area [threatArea]="threatArea()" />
+  <ah-threat-area
+    [threatArea]="threatArea()"
+    [noThreatsText]="
+      noThreatsPhraseService.getPhrase(state.currentInvestigator)!()
+    "
+  />
   <div class="flex-grow"></div>
   <ah-control-area [assets]="assets()" />
 }

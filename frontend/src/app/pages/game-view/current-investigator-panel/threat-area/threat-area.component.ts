@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Enemy } from 'shared/domain/entities/enemy.model';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item/investigator-threat-item.component';
 
 @Component({
   selector: 'ah-threat-area',
-  imports: [InvestigatorThreatItemComponent],
+  imports: [InvestigatorThreatItemComponent, TranslocoDirective],
   templateUrl: './threat-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -14,4 +15,5 @@ import { InvestigatorThreatItemComponent } from './investigator-threat-item/inve
 })
 export class ThreatAreaComponent {
   readonly threatArea = input.required<Enemy[]>();
+  readonly noThreatsText = input.required<string>();
 }
