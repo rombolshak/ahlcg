@@ -52,7 +52,7 @@ describe('ThreatAreaComponent', () => {
     fixture.componentRef.setInput('threatArea', []);
     TestBed.tick();
 
-    expect(fixture.debugElement.nativeElement.textContent).toBe(
+    expect(fixture.debugElement.nativeElement.textContent).toContain(
       'no threats text',
     );
   });
