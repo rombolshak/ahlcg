@@ -67,7 +67,6 @@ export class PlayAreaComponent implements AfterViewInit {
 
     setTimeout(() => {
       this.zoomArea.pan(cx, cy, { animate: true });
-      console.log(this.zoomArea);
     }, 1000);
   }
 
