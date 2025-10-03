@@ -30,7 +30,6 @@ describe('CurrentGamePhaseComponent', () => {
 
   it('displays all values from inputs', () => {
     const elem = fixture.debugElement.nativeElement as HTMLElement;
-    console.log(elem.style);
 
     expect(elem.innerText).toContain('Round 4');
     expect(elem.innerText).toContain('Enemy phase');

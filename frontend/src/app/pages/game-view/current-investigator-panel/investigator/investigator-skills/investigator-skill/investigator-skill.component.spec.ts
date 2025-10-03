@@ -17,7 +17,6 @@ describe('InvestigatorSkillComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('type', 'intellect');
     fixture.componentRef.setInput('value', 3);
-    fixture.componentRef.setInput('faction', 'mystic');
     fixture.detectChanges();
   });
 

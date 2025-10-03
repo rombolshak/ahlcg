@@ -25,7 +25,8 @@ type ImageDescriptor =
   providedIn: 'root',
 })
 export class ImagesUrlService {
-  getUrl(desc: ImageDescriptor): string {
-    return `/assets/images/${desc.join('/')}.webp`;
+  getUrl(desc: ImageDescriptor | string): string {
+    if (Array.isArray(desc)) return `/assets/images/${desc.join('/')}.webp`;
+    return `/assets/images/${desc}.webp`;
   }
 }
