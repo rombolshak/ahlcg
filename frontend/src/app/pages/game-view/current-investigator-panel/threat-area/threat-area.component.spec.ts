@@ -33,6 +33,10 @@ describe('ThreatAreaComponent', () => {
       },
     ]);
     fixture.componentRef.setInput('noThreatsText', 'no threats text');
+    fixture.componentRef.setInput('threatsSeverity', {
+      healthSeverity: 0.5,
+      sanitySeverity: 0.5,
+    });
     await fixture.whenStable();
   });
 
