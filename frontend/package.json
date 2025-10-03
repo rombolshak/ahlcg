@@ -79,7 +79,7 @@
     "cspell": "^9.0.2",
     "daisyui": "^5.0.35",
     "eslint": "^9.34.0",
-    "eslint-config-prettier": "^10.1.1",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-formatter-mo": "^2.3.0",
     "eslint-plugin-better-tailwindcss": "^3.7.9",
     "eslint-plugin-jasmine": "^4.2.2",
