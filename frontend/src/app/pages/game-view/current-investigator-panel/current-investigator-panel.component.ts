@@ -9,6 +9,7 @@ import { ControlAreaComponent } from './control-area/control-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
 import { NoThreatsPhraseService } from './threat-area/no-threats-phrase.service';
 import { ThreatAreaComponent } from './threat-area/threat-area.component';
+import { ThreatsSeverityService } from './threat-area/threats-severity.service';
 
 @Component({
   selector: 'ah-current-investigator-panel',
@@ -21,19 +22,16 @@ import { ThreatAreaComponent } from './threat-area/threat-area.component';
 })
 export class CurrentInvestigatorPanelComponent {
   protected readonly state = inject(GameStateStore);
-  protected readonly noThreatsPhraseService = inject(NoThreatsPhraseService);
+  private readonly noThreatsPhraseService = inject(NoThreatsPhraseService);
+  private readonly threatsSeverityService = inject(ThreatsSeverityService);
 
-  readonly threatArea = computed(() => {
+  readonly threats = computed(() => {
     const ids = this.state.currentInvestigator()?.threatArea;
     if (!ids) {
       return [];
     }
 
     return ids.map((i) => this.state.getEnemy(i));
-  });
-
-  readonly actions = computed(() => {
-    return this.state.gameState()?.availableActions ?? [];
   });
 
   readonly assets = computed(() => {
@@ -43,4 +41,22 @@ export class CurrentInvestigatorPanelComponent {
         ?.controlledAssets.map((a) => this.state.getAsset(a)) ?? []
     );
   });
+
+  readonly noThreatsText = this.noThreatsPhraseService.getPhrase(
+    this.state.currentInvestigator,
+  );
+
+  private readonly investigatorFullModel = computed(() => {
+    const gator = this.state.currentInvestigator();
+    if (!gator) return null;
+    return {
+      ...gator,
+      assets: this.assets(),
+      threats: this.threats(),
+    };
+  });
+
+  readonly threatsSeverity = this.threatsSeverityService.getThreatsSeverity(
+    this.investigatorFullModel,
+  );
 }

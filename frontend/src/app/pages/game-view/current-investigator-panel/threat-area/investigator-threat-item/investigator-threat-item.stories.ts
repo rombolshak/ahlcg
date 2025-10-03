@@ -6,7 +6,8 @@ const meta: Meta<InvestigatorThreatItemComponent> = {
   component: InvestigatorThreatItemComponent,
   decorators: [
     componentWrapperDecorator(
-      (story) => `<div class='w-[17rem] min-h-40'>${story}</div>`,
+      (story) =>
+        `<div class='w-[17rem] min-h-40 text-neutral-900'>${story}</div>`,
     ),
   ],
 };

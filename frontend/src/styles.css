@@ -115,3 +115,55 @@
     color: oklch(1 0 0);
   }
 }
+
+@theme {
+  --animate-blink: blink 8s ease-in-out infinite;
+  --animate-radial-move: radial-move 180s linear infinite;
+  @keyframes radial-move {
+    0%,
+    100% {
+      background-position-x: 0;
+      background-position-y: 50%;
+    }
+    25% {
+      background-position-x: 50%;
+      background-position-y: 0;
+    }
+    50% {
+      background-position-x: 100%;
+      background-position-y: 50%;
+    }
+    75% {
+      background-position-x: 50%;
+      background-position-y: 100%;
+    }
+  }
+
+  @keyframes blink {
+    45%,
+    55% {
+      --tw-gradient-from: color-mix(
+        in oklab,
+        var(--color-blue-600) 70%,
+        transparent
+      );
+      --tw-gradient-to: color-mix(
+        in oklab,
+        var(--color-blue-800) 20%,
+        transparent
+      );
+    }
+    50% {
+      --tw-gradient-from: color-mix(
+        in oklab,
+        var(--color-blue-500) 95%,
+        transparent
+      );
+      --tw-gradient-to: color-mix(
+        in oklab,
+        var(--color-blue-500) 95%,
+        transparent
+      );
+    }
+  }
+}

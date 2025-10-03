@@ -1,4 +1,4 @@
-import { computed, Injectable, Signal } from '@angular/core';
+import { computed, Injectable, signal, Signal } from '@angular/core';
 import { Investigator } from 'shared/domain/entities/investigator.model';
 
 @Injectable({
@@ -30,8 +30,9 @@ export class NoThreatsPhraseService {
 
   getPhrase(investigator: Signal<Investigator | null>) {
     const gator = investigator();
+    const defaultText = signal('');
     if (gator == null) {
-      return undefined;
+      return defaultText;
     }
 
     if (!this.phraseSignals.has(gator.id)) {
@@ -39,7 +40,8 @@ export class NoThreatsPhraseService {
       this.phraseSignals.set(gator.id, phraseSignal);
     }
 
-    return this.phraseSignals.get(gator.id);
+    // eslint-disable-next-line @angular-eslint/no-uncalled-signals
+    return this.phraseSignals.get(gator.id) ?? defaultText;
   }
 
   private getRandomPhrase(bound: number): string {
