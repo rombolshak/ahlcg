@@ -12,7 +12,7 @@ export interface ThreatsSeverity {
   providedIn: 'root',
 })
 export class ThreatsSeverityService {
-  private investigatorsSignals = new Map<
+  private readonly investigatorsSignals = new Map<
     string,
     ReturnType<typeof this.calculate>
   >();
@@ -68,15 +68,15 @@ export class ThreatsSeverityService {
 
       const healthSeverity = Math.min(
         1,
-        incomingDamage !== 0
-          ? (currentDamage + incomingDamage) / totalHealth
-          : 0,
+        incomingDamage === 0
+          ? 0
+          : (currentDamage + incomingDamage) / totalHealth,
       );
       const sanitySeverity = Math.min(
         1,
-        incomingHorror !== 0
-          ? (currentHorror + incomingHorror) / totalSanity
-          : 0,
+        incomingHorror === 0
+          ? 0
+          : (currentHorror + incomingHorror) / totalSanity,
       );
 
       return { healthSeverity, sanitySeverity };

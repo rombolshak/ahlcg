@@ -54,6 +54,10 @@ describe('ThreatAreaComponent', () => {
 
   it('should display text when there are no enemies', () => {
     fixture.componentRef.setInput('threatArea', []);
+    fixture.componentRef.setInput('threatsSeverity', {
+      healthSeverity: 0,
+      sanitySeverity: 0,
+    });
     TestBed.tick();
 
     expect(fixture.debugElement.nativeElement.textContent).toContain(

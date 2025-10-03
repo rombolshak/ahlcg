@@ -8,7 +8,7 @@ export class NoThreatsPhraseService {
   private readonly initialPhrasesCount = 12;
   private readonly totalPhrasesCount = 25;
 
-  private phraseSignals = new Map<
+  private readonly phraseSignals = new Map<
     string,
     ReturnType<typeof this.createPhraseSignal>
   >();
