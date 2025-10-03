@@ -23,14 +23,14 @@ describe('NoThreatsPhraseService', () => {
     const model = signal(InvestigatorS);
     const testee = service.getPhrase(model);
 
-    expect(testee).toBeTruthy();
+    expect(testee()).toBeTruthy();
   });
 
-  it('should provide undefined for null', () => {
+  it('should provide empty string for null', () => {
     const model = signal(null);
     const testee = service.getPhrase(model);
 
-    expect(testee).toBeUndefined();
+    expect(testee()).toBe('');
   });
 
   it('should change string on threats gone', () => {
