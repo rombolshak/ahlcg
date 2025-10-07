@@ -1,10 +1,12 @@
 ﻿<div
-  class="peer relative flex aspect-4/3 h-full w-full flex-col justify-between"
+  class="peer relative aspect-4/3 flex h-full w-full flex-col justify-end"
 >
+
   <img
-    fill
-    class="-z-10 rounded"
-    alt="mini-investigator"
+    width="88"
+    height="66"
+    class="-z-10 rounded absolute top-0"
+    alt="asset art"
     [ngSrc]="
       imagesService.getUrl([
         'mini-illustration',
@@ -13,9 +15,7 @@
       ])
     "
   />
-
-  <ah-vitals-bar [entity]="asset()" />
-  <div class="flex items-center justify-center bg-gray-950/50">
+  <div class="flex flex-wrap items-center justify-center bg-gray-950/50">
     <ah-asset-detail-icon
       [detail]="asset().slot"
       [image]="imagesService.getUrl(['card-overlay', 'slot', asset().slot!])"
@@ -39,7 +39,11 @@
     <ah-asset-detail-icon
       [detail]="asset().tokens?.doom"
       [image]="imagesService.getUrl(['card-overlay', 'doom'])"
-    />
+    />   
+
+    @if (asset().health || asset().sanity) {
+      <ah-vitals-bar [entity]="asset()" class="min-w-full" />
+    }
   </div>
 </div>
 

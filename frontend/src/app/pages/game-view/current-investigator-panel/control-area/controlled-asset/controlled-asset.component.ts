@@ -22,7 +22,7 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
   templateUrl: './controlled-asset.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'relative',
+    class: 'relative flex flex-col',
   },
 })
 export class ControlledAssetComponent {
