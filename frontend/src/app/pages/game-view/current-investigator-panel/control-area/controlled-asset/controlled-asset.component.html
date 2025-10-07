@@ -45,10 +45,10 @@
 
 <ah-asset-popover
   class="
-    absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity
-    peer-hover:z-50 peer-hover:opacity-100
-    hover:z-50 hover:opacity-100
-    data-[hovered=true]:z-50 data-[hovered=true]:opacity-100
+    absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity pointer-events-none
+    peer-hover:z-50 peer-hover:opacity-100 peer-hover:pointer-events-auto
+    hover:z-50 hover:opacity-100 hover:pointer-events-auto
+    data-[hovered=true]:z-50 data-[hovered=true]:opacity-100 data-[hovered=true]:pointer-events-auto
   "
   [attr.data-hovered]="hovered()"
   [asset]="asset()"

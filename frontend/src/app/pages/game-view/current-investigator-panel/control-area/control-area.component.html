@@ -20,7 +20,7 @@
     />
   }
 </div>
-<div class="grid grid-cols-3 gap-3">
+<div class="grid grid-cols-3 auto-rows-fr gap-3">
   @for (asset of activeAssets(); track asset.id) {
     <ah-controlled-asset
       class="rounded-sm"
@@ -30,6 +30,6 @@
     />
   }
   @for (slot of emptySlots(); track slot) {
-    <p>{{ slot }}</p>
+    <ah-empty-slot class="rounded-sm" [slot]="slot" />
   }
 </div>

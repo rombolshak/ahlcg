@@ -14,11 +14,12 @@ import {
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
+import { EmptySlotComponent } from './empty-slot/empty-slot.component';
 import { emptySlots, isActive } from './utils';
 
 @Component({
   selector: 'ah-control-area',
-  imports: [ControlledAssetComponent, CardOutlineDirective, NgOptimizedImage],
+  imports: [ControlledAssetComponent, CardOutlineDirective, EmptySlotComponent, NgOptimizedImage],
   templateUrl: './control-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -42,6 +43,6 @@ export class ControlAreaComponent {
   );
 
   protected readonly emptySlots = computed(() =>
-    Object.entries(emptySlots(this.assets(), this.maxSlotsCounts())),
+    Object.entries(emptySlots(this.assets(), this.maxSlotsCounts())).filter(([_, count]) => count > 0).flatMap(([slot, count]) => new Array(count).fill(slot)),
   );
 }
