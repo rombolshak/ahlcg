@@ -1,4 +1,3 @@
-import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,12 +18,13 @@ import { emptySlots, isActive } from './utils';
 
 @Component({
   selector: 'ah-control-area',
-  imports: [ControlledAssetComponent, CardOutlineDirective, EmptySlotComponent, NgOptimizedImage],
+  imports: [ControlledAssetComponent, CardOutlineDirective, EmptySlotComponent],
   templateUrl: './control-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'flex flex-col gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative',
+      'flex flex-col gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative bg-(image:--bgUrl) bg-cover bg-center',
+    '[style.--bgUrl]': "'url(' + imagesService.getUrl(['card-template', 'investigator', faction()]) + ')'"
   },
 })
 export class ControlAreaComponent {
