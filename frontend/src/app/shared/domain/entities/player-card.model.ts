@@ -34,14 +34,30 @@ export type PlayerCardBase = typeof playerCardBase.infer;
 
 const cost = type('number');
 
-export const assetSlot = type(
-  "'accessory' | 'body' | 'ally' | 'hand' | 'two-hands' | 'arcane' | 'two-arcane' | 'tarot'",
-);
+export const AssetSlots = [
+  'accessory',
+  'body',
+  'ally',
+  'hand',
+  'two-hands',
+  'arcane',
+  'two-arcane',
+  'tarot',
+] as const;
+
+export const assetSlot = type.enumerated(...AssetSlots);
 export type AssetSlot = typeof assetSlot.infer;
+
+export const slotsCount = type.Record(
+  assetSlot.exclude("'two-hands' | 'two-arcane'"),
+  'number',
+);
+export type SlotsCount = typeof slotsCount.infer;
 
 const _assetCard = playerCardBase.and({
   id: assetId,
   cardType: "'asset'",
+  hasAction: 'boolean',
   'slot?': assetSlot,
   'additionalSlot?': assetSlot,
   'health?': health,

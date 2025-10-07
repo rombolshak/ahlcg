@@ -1,33 +1,47 @@
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
-import { AssetCard } from 'shared/domain/entities/player-card.model';
+import {
+  AssetCard,
+  Faction,
+  SlotsCount,
+} from 'shared/domain/entities/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { CardOutlineDirective } from 'shared/ui/directives/card-outline.directive';
 import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
+import { emptySlots, isActive } from './utils';
 
 @Component({
   selector: 'ah-control-area',
-  imports: [ControlledAssetComponent, CardOutlineDirective],
-  template: `
-    @for (asset of assets(); track asset.id) {
-      <ah-controlled-asset
-        class="h-[4.5rem] w-[6rem] rounded-lg"
-        ahCardOutline
-        [asset]="asset"
-        [faction]="asset.faction"
-      />
-    }
-  `,
+  imports: [ControlledAssetComponent, CardOutlineDirective, NgOptimizedImage],
+  templateUrl: './control-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-wrap gap-3',
+    class:
+      'flex flex-col gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative',
   },
 })
 export class ControlAreaComponent {
+  readonly faction = input.required<Faction>();
   readonly assets = input.required<AssetCard[]>();
-  imagesService = inject(ImagesUrlService);
+  readonly maxSlotsCounts = input.required<SlotsCount>();
+
+  protected readonly imagesService = inject(ImagesUrlService);
+
+  protected readonly activeAssets = computed(() =>
+    this.assets().filter((a) => isActive(a)),
+  );
+
+  protected readonly passiveAssets = computed(() =>
+    this.assets().filter((a) => !isActive(a)),
+  );
+
+  protected readonly emptySlots = computed(() =>
+    Object.entries(emptySlots(this.assets(), this.maxSlotsCounts())),
+  );
 }

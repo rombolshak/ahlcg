@@ -7,6 +7,7 @@ import {
   cardA3,
   cardA4,
   cardA5,
+  cardA6,
   cardE,
   cardS,
 } from './entities/test-cards';
@@ -45,6 +46,7 @@ export const testGameState: GameState = {
     '4': cardA3,
     '5': cardA4,
     '6': cardA5,
-    '7': cardS,
+    '7': cardA6,
+    '8': cardS,
   },
 };

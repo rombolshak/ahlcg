@@ -1,15 +1,17 @@
 ﻿import { investigatorId } from '../../entities/id.model';
 import { Investigator } from '../../entities/investigator.model';
-import {
-  cardA,
-  cardA2,
-  cardA3,
-  cardA4,
-  cardA5,
-  cardE,
-  cardS,
-} from './test-cards';
+import { slotsCount, SlotsCount } from '../../entities/player-card.model';
+import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6, cardE, cardS } from './test-cards';
 import { testEnemy, testEnemy2 } from './test-enemies';
+
+export const defaultSlots: SlotsCount = slotsCount.assert({
+  hand: 2,
+  ally: 1,
+  body: 1,
+  accessory: 1,
+  arcane: 2,
+  tarot: 0,
+});
 
 export const InvestigatorS: Investigator = {
   id: investigatorId.assert('1002'),
@@ -37,6 +39,7 @@ export const InvestigatorS: Investigator = {
   threatArea: [],
   hand: [],
   controlledAssets: [],
+  slotsCount: defaultSlots,
 };
 
 export const InvestigatorG: Investigator = {
@@ -50,8 +53,7 @@ export const InvestigatorG: Investigator = {
     cardA2.id,
     cardA3.id,
     cardA4.id,
-    cardA.id,
-    cardA.id,
+    cardA6.id,
   ],
   hand: [cardA.id, cardS.id, cardE.id],
 };

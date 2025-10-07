@@ -1,0 +1,35 @@
+﻿<img
+  fill
+  class="-z-40 rounded"
+  priority
+  alt="investigator background"
+  [ngSrc]="imagesService.getUrl(['card-template', 'investigator', faction()])"
+/>
+<div class="grid grid-cols-6 gap-3">
+  <!-- eslint-disable-next-line -->
+  <div
+    class="col-span-(--empty-places)"
+    [style.--empty-places]="6 - (passiveAssets().length % 6)"
+  ></div>
+  @for (asset of passiveAssets(); track asset.id) {
+    <ah-controlled-asset
+      class="rounded-sm"
+      ahCardOutline
+      [asset]="asset"
+      [faction]="asset.faction"
+    />
+  }
+</div>
+<div class="grid grid-cols-3 gap-3">
+  @for (asset of activeAssets(); track asset.id) {
+    <ah-controlled-asset
+      class="rounded-sm"
+      ahCardOutline
+      [asset]="asset"
+      [faction]="asset.faction"
+    />
+  }
+  @for (slot of emptySlots(); track slot) {
+    <p>{{ slot }}</p>
+  }
+</div>

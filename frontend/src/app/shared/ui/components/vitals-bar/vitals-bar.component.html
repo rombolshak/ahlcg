@@ -1,12 +1,16 @@
 ﻿<div
-  class="group flex gap-1 rounded-l bg-gray-950/70 p-1 data-[orientation=horizontal]:w-full data-[orientation=horizontal]:flex-col data-[orientation=vertical]:h-full"
+  class="
+    group flex gap-1 rounded-l bg-gray-800 p-1
+    data-[orientation=horizontal]:w-full data-[orientation=horizontal]:flex-col
+    data-[orientation=vertical]:h-full
+  "
   [attr.data-orientation]="orientation()"
 >
   @if (entity().health) {
     <ah-single-bar
       class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
-      badColor="bg-red-700"
-      goodColor="bg-red-300"
+      badColor="bg-health-damaged"
+      goodColor="bg-health"
       [max]="entity().health!.max"
       [current]="entity().health!.damaged!"
       [orientation]="orientation()"
@@ -15,8 +19,8 @@
   @if (entity().sanity) {
     <ah-single-bar
       class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
-      badColor="bg-sky-700"
-      goodColor="bg-sky-300"
+      badColor="bg-sanity-damaged"
+      goodColor="bg-sanity"
       [max]="entity().sanity!.max"
       [current]="entity().sanity!.damaged"
       [orientation]="orientation()"

@@ -117,6 +117,11 @@
 }
 
 @theme {
+  --color-sanity: oklch(0.5132 0.2023 264.59);
+  --color-health: oklch(0.536 0.1969 20.79);
+  --color-sanity-damaged: oklch(0.2603 0.1505 264.59);
+  --color-health-damaged: oklch(0.3015 0.1011 20.79);
+
   --animate-blink: blink 8s ease-in-out infinite;
   --animate-radial-move: radial-move 180s linear infinite;
   @keyframes radial-move {

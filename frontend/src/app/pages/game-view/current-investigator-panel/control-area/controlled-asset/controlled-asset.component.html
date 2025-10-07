@@ -1,4 +1,6 @@
-﻿<div class="peer relative flex h-full w-full flex-col justify-between">
+﻿<div
+  class="peer relative flex aspect-4/3 h-full w-full flex-col justify-between"
+>
   <img
     fill
     class="-z-10 rounded"
@@ -42,7 +44,12 @@
 </div>
 
 <ah-asset-popover
-  class="absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity peer-hover:z-50 peer-hover:opacity-100 hover:z-50 hover:opacity-100 data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
+  class="
+    absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity
+    peer-hover:z-50 peer-hover:opacity-100
+    hover:z-50 hover:opacity-100
+    data-[hovered=true]:z-50 data-[hovered=true]:opacity-100
+  "
   [attr.data-hovered]="hovered()"
   [asset]="asset()"
 />
