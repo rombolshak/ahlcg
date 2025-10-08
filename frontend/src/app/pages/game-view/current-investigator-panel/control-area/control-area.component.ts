@@ -45,4 +45,8 @@ export class ControlAreaComponent {
   protected readonly emptySlots = computed(() =>
     Object.entries(emptySlots(this.assets(), this.maxSlotsCounts())).filter(([_, count]) => count > 0).flatMap(([slot, count]) => new Array(count).fill(slot)),
   );
+
+  protected readonly emptyColumnsCount = computed(() => 
+    Math.max(this.emptySlots().length, 6)
+  );
 }

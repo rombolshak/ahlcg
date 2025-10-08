@@ -1,40 +1,37 @@
 ﻿
 @if(passiveAssets().length) {
-  <div class="grid grid-cols-6 gap-3">
+  <div class="grid grid-cols-8 gap-2">
     <!-- eslint-disable-next-line -->
     <div
       class="col-span-(--empty-places)"
-      [style.--empty-places]="6 - (passiveAssets().length % 6)"
+      [style.--empty-places]="8 - (passiveAssets().length % 8)"
     ></div>
     @for (asset of passiveAssets(); track asset.id) {
       <ah-controlled-asset
-        class="rounded-sm"
-        ahCardOutline
+        class="rounded-sm border border-gray-500"
         [asset]="asset"
-        [faction]="asset.faction"
       />
     }
   </div>
 }
 
 @if(activeAssets().length) {
-  <div class="grid grid-cols-3 auto-rows-fr gap-3">
+  <div class="grid grid-cols-4 auto-rows-[4.5rem] gap-2">
     @for (asset of activeAssets(); track asset.id) {
       <ah-controlled-asset
-        class="rounded-sm"
-        ahCardOutline
+        class="rounded-sm border border-gray-500"
         [asset]="asset"
-        [faction]="asset.faction"
+        
       />
     }
   </div>
 }
 
 @if(emptySlots().length) {
-  <div class="grid grid-cols-5 gap-2">
+  <div class="grid grid-cols-[repeat(var(--empty-slot-cols),_minmax(0,_1fr))] gap-2" [style.--empty-slot-cols]="emptyColumnsCount()">
     <div
       class="col-span-(--empty-places)"
-      [style.--empty-places]="5 - (emptySlots().length % 5)"
+      [style.--empty-places]="emptyColumnsCount() - (emptySlots().length % emptyColumnsCount())"
     ></div>
     @for (slot of emptySlots(); track slot) {
       <ah-empty-slot class="rounded-sm" [slot]="slot" />
