@@ -18,7 +18,7 @@ export class CardBackgroundDirective {
       this.lastColor = this.getColor(this.faction());
       (this.el.nativeElement as HTMLElement).classList.add(
         ...this.lastColor,
-        'bg-linear-to-b',
+        'bg-radial-[at_25%_25%]',
       );
     });
   }
@@ -28,17 +28,17 @@ export class CardBackgroundDirective {
   getColor(cardClass: string) {
     switch (cardClass) {
       case 'guardian':
-        return ['from-blue-200', 'to-blue-300'];
+        return ['from-faction-guardian', 'to-faction-guardian-darker'];
       case 'seeker':
-        return ['from-orange-200', 'to-orange-300'];
+        return ['from-faction-seeker-darker', 'to-faction-seeker'];
       case 'rogue':
-        return ['from-green-200', 'to-green-300'];
+        return ['from-faction-rogue', 'to-faction-rogue-darker'];
       case 'survivor':
-        return ['from-red-200', 'to-red-300'];
+        return ['from-faction-survivor', 'to-faction-survivor-darker'];
       case 'mystic':
-        return ['from-purple-200', 'to-purple-300'];
+        return ['from-faction-mystic', 'to-faction-mystic-darker'];
       case 'neutral':
-        return ['from-gray-200', 'to-gray-300'];
+        return ['from-faction-neutral', 'to-faction-neutral-darker'];
     }
 
     return [];

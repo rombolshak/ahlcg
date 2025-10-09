@@ -77,6 +77,8 @@ export const cardA6: AssetCard = {
   ...card,
   id: assetId.assert('7'),
   hasAction: true,
+  slot: 'arcane',
+  additionalSlot: 'accessory',
 };
 
 export const cardS: SkillCard = {

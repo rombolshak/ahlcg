@@ -16,8 +16,10 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       </div>
     }
   `,
-  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.hidden]': '!detail()',
+  },
 })
 export class AssetDetailIconComponent {
   readonly detail = input.required<string | number | undefined>();

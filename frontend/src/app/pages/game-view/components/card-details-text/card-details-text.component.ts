@@ -15,7 +15,7 @@ import { GameCard } from '../../../../shared/domain/entities/card.model';
   templateUrl: './card-details-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'text-neutral-900',
+    class: 'text-accent-content',
   },
 })
 export class CardDetailsTextComponent {

@@ -1,0 +1,16 @@
+@if (assets().length) {
+  <div class="grid auto-rows-[1.8rem] grid-cols-8 gap-2">
+    <!-- eslint-disable-next-line -->
+    <div
+      class="col-span-(--empty-places)"
+      [style.--empty-places]="8 - (assets().length % 8)"
+    ></div>
+    @for (asset of assets(); track asset.id) {
+      <ah-controlled-asset
+        class="rounded-sm border border-gray-500"
+        [asset]="asset"
+        [passive]="true"
+      />
+    }
+  </div>
+}

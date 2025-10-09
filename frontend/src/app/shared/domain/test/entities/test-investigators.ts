@@ -1,7 +1,16 @@
 ﻿import { investigatorId } from '../../entities/id.model';
 import { Investigator } from '../../entities/investigator.model';
 import { slotsCount, SlotsCount } from '../../entities/player-card.model';
-import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6, cardE, cardS } from './test-cards';
+import {
+  cardA,
+  cardA2,
+  cardA3,
+  cardA4,
+  cardA5,
+  cardA6,
+  cardE,
+  cardS,
+} from './test-cards';
 import { testEnemy, testEnemy2 } from './test-enemies';
 
 export const defaultSlots: SlotsCount = slotsCount.assert({
