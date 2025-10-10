@@ -10,6 +10,7 @@ import { Investigator } from 'shared/domain/entities/investigator.model';
 import { CardInfoService } from 'shared/services/card-info.service';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { VitalsBarComponent } from '../../../../shared/ui/components/vitals-bar/vitals-bar.component';
+import { CardFactionBackgroundDirective } from '../../../../shared/ui/directives/card-faction-background.directive';
 import { CardOutlineDirective } from '../../../../shared/ui/directives/card-outline.directive';
 import { InvestigatorAbilityComponent } from './investigator-ability/investigator-ability.component';
 import { InvestigatorSkillsComponent } from './investigator-skills/investigator-skills.component';
@@ -29,6 +30,7 @@ import { InvestigatorTokensComponent } from './investigator-tokens/investigator-
     InvestigatorSkillsComponent,
     InvestigatorTokensComponent,
     InvestigatorAbilityComponent,
+    CardFactionBackgroundDirective,
   ],
   templateUrl: './investigator.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

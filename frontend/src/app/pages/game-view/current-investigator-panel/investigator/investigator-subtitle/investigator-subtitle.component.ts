@@ -1,4 +1,3 @@
-import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,11 +9,13 @@ import { ImagesUrlService } from 'shared/services/images-url.service';
 
 @Component({
   selector: 'ah-investigator-subtitle',
-  imports: [NgOptimizedImage],
+  imports: [],
   templateUrl: './investigator-subtitle.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'relative mx-4',
+    class: 'relative mx-4 bg-(image:--bgUrl) bg-cover bg-center',
+    '[style.--bgUrl]':
+      '"url(" + imagesService.getUrl(["card-overlay", "subtitle", faction()]) + ")"',
   },
 })
 export class InvestigatorSubtitleComponent {

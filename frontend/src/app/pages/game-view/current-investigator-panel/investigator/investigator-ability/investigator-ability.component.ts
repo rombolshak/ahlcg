@@ -1,4 +1,3 @@
-import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,11 +10,13 @@ import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-investigator-ability',
-  imports: [NgOptimizedImage, WithAhSymbolsPipe],
+  imports: [WithAhSymbolsPipe],
   templateUrl: './investigator-ability.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'relative',
+    class: 'relative bg-(image:--bgUrl) bg-cover bg-center',
+    '[style.--bgUrl]':
+      '"url(" + imagesService.getUrl(["card-template", "investigator-details", faction()]) + ")"',
   },
 })
 export class InvestigatorAbilityComponent {
