@@ -1,3 +1,9 @@
-<p class="text-center font-[Conkordia] text-2xl">
+<img
+  alt="investigator title background"
+  fill
+  [ngSrc]="imagesService.getUrl(['card-overlay', 'title', faction()])"
+/>
+
+<p class="relative text-center font-[Conkordia] text-2xl">
   {{ text() }}
 </p>

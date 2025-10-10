@@ -1,6 +1,13 @@
 @if (text()) {
+  <img
+    alt="ability background"
+    fill
+    [ngSrc]="
+      imagesService.getUrl(['card-template', 'investigator-details', faction()])
+    "
+  />
   <p
-    class="p-2 font-[ArnoPro] text-sm/3"
+    class="relative p-2 font-[ArnoPro] text-sm/3"
     [innerHTML]="text() | withAhSymbols"
   ></p>
 }
