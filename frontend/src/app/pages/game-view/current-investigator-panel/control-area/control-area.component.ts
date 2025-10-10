@@ -9,6 +9,7 @@ import {
   AssetCard,
   assetSlot,
   AssetSlot,
+  Faction,
   SlotsCount,
 } from 'shared/domain/entities/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
@@ -36,6 +37,7 @@ import { emptySlots, isActive } from './utils';
   ],
 })
 export class ControlAreaComponent {
+  readonly faction = input.required<Faction>();
   readonly assets = input.required<AssetCard[]>();
   readonly maxSlotsCounts = input.required<SlotsCount>();
 
