@@ -1,5 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { Meta, StoryObj } from '@storybook/angular';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+import { defaultSlots } from '../../../../shared/domain/test/entities/test-investigators';
 import { ControlAreaComponent } from './control-area.component';
 import {
   SeveralIcons,
@@ -12,6 +13,11 @@ import {
 
 const meta: Meta<ControlAreaComponent> = {
   component: ControlAreaComponent,
+  decorators: [
+    componentWrapperDecorator(
+      (story) => `<div class='w-[22rem] text-neutral-900'>${story}</div>`,
+    ),
+  ],
 };
 
 export default meta;
@@ -19,6 +25,7 @@ type Story = StoryObj<ControlAreaComponent>;
 
 export const Simple: Story = {
   args: {
+    faction: 'rogue',
     assets: [
       SimpleAsset.args!.asset!,
       WithSlot.args!.asset!,
@@ -27,5 +34,6 @@ export const Simple: Story = {
       SeveralIcons.args!.asset!,
       WithDoom.args!.asset!,
     ],
+    maxSlotsCounts: defaultSlots,
   },
 };

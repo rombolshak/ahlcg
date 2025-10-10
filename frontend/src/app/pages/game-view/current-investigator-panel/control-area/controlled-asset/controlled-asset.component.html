@@ -11,10 +11,6 @@
   "
 />
 
-@if (asset().health || asset().sanity) {
-  <ah-vitals-bar class="h-full" orientation="vertical" [entity]="asset()" />
-}
-
 @if (!passive()) {
   <div class="flex flex-col flex-wrap justify-between bg-gray-900/70">
     @if (asset().hasAction) {
@@ -36,7 +32,10 @@
       [detail]="asset().tokens?.doom"
       [image]="imagesService.getUrl(['card-overlay', 'doom'])"
     />
-    <div class="flex flex-col">
+    <div
+      class="flex flex-col"
+      [class.hidden]="!asset().slot && !asset().additionalSlot"
+    >
       <ah-asset-detail-icon
         [detail]="asset().slot"
         [image]="imagesService.getUrl(['card-overlay', 'slot', asset().slot!])"
@@ -55,6 +54,10 @@
       />
     </div>
   </div>
+
+  @if (asset().health || asset().sanity) {
+    <ah-vitals-bar class="h-full" orientation="vertical" [entity]="asset()" />
+  }
 }
 
 <ah-asset-popover
