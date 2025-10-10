@@ -6,19 +6,19 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Faction } from 'shared/domain/entities/player-card.model';
-import { CardBackgroundDirective } from './card-background.directive';
+import { CardFactionBackgroundDirective } from './card-faction-background.directive';
 
 @Component({
   selector: 'ah-test',
-  imports: [CardBackgroundDirective],
-  template: ` <div ahCardBackground [faction]="cardClass()"></div> `,
+  imports: [CardFactionBackgroundDirective],
+  template: ` <div ahCardFactionBackground [faction]="cardClass()"></div> `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
   readonly cardClass = input.required<Faction>();
 }
 
-describe('CardBackgroundDirective', () => {
+describe('CardFactionBackgroundDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(async () => {
@@ -28,15 +28,20 @@ describe('CardBackgroundDirective', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    fixture.componentRef.setInput('cardClass', 'survivor');
+    fixture.componentRef.setInput('cardClass', 'mystic');
     await fixture.whenStable();
   });
 
   it('should create an instance', () => {
+    const style = fixture.debugElement.children[0]?.styles['cssText'];
+
     expect(fixture.debugElement.children[0]?.classes).toEqual({
-      'to-faction-survivor-darker': true,
-      'from-faction-survivor': true,
-      'bg-radial-[at_25%_25%]': true,
+      'bg-(image:--bgUrl)': true,
+      'bg-cover': true,
+      'bg-center': true,
     });
+
+    expect(style).toContain('mystic');
+    expect(style).toContain('--bgUrl');
   });
 });
