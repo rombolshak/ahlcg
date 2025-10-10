@@ -4,8 +4,13 @@ import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
 import { assetId, eventId, skillId } from './id.model';
 
-export const faction = type(
-  "'neutral' | 'guardian' | 'seeker' | 'rogue' | 'survivor' | 'mystic'",
+export const faction = type.enumerated(
+  'neutral',
+  'guardian',
+  'seeker',
+  'rogue',
+  'survivor',
+  'mystic',
 );
 export type Faction = typeof faction.infer;
 
@@ -20,8 +25,11 @@ export const skills = type({
 export const skillType = skills.keyof();
 export type SkillType = typeof skillType.infer;
 
-export const playerCardType = type(
-  "'asset' | 'skill' | 'event' | 'investigator'",
+export const playerCardType = type.enumerated(
+  'asset',
+  'skill',
+  'event',
+  'investigator',
 );
 export type PlayerCardType = typeof playerCardType.infer;
 
@@ -34,14 +42,24 @@ export type PlayerCardBase = typeof playerCardBase.infer;
 
 const cost = type('number');
 
-export const assetSlot = type(
-  "'accessory' | 'body' | 'ally' | 'hand' | 'two-hands' | 'arcane' | 'two-arcane' | 'tarot'",
-);
+export const slotsCount = type({
+  accessory: 'number.integer >= 0',
+  body: 'number.integer >= 0',
+  ally: 'number.integer >= 0',
+  hand: 'number.integer >= 0',
+  arcane: 'number.integer >= 0',
+  tarot: 'number.integer >= 0',
+});
+export type SlotsCount = typeof slotsCount.infer;
+
+const doubleSlots = type.enumerated('two-hands', 'two-arcane');
+export const assetSlot = slotsCount.keyof().or(doubleSlots);
 export type AssetSlot = typeof assetSlot.infer;
 
 const _assetCard = playerCardBase.and({
   id: assetId,
   cardType: "'asset'",
+  hasAction: 'boolean',
   'slot?': assetSlot,
   'additionalSlot?': assetSlot,
   'health?': health,

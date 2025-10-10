@@ -61,6 +61,7 @@ interface State {
 function validateState(state: GameState | null): void {
   const model = gameState(state);
   if (model instanceof ArkErrors) {
+    console.error('Main store state is incorrect');
     model.throw();
   }
 }

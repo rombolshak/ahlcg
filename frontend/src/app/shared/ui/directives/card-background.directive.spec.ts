@@ -11,9 +11,7 @@ import { CardBackgroundDirective } from './card-background.directive';
 @Component({
   selector: 'ah-test',
   imports: [CardBackgroundDirective],
-  template: `
-    <div ahCardBackground [faction]="cardClass()"></div>
-  `,
+  template: ` <div ahCardBackground [faction]="cardClass()"></div> `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
@@ -36,9 +34,9 @@ describe('CardBackgroundDirective', () => {
 
   it('should create an instance', () => {
     expect(fixture.debugElement.children[0]?.classes).toEqual({
-      'to-green-300': true,
-      'from-green-200': true,
-      'bg-linear-to-b': true,
+      'to-faction-rogue-darker': true,
+      'from-faction-rogue': true,
+      'bg-radial-[at_25%_25%]': true,
     });
   });
 });

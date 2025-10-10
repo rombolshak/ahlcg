@@ -117,6 +117,32 @@
 }
 
 @theme {
+  --color-sanity: oklch(0.635 0.1614 264.59);
+  --color-health: oklch(0.7294 0.1658 20.79);
+  --color-sanity-damaged: oklch(0.4421 0.2023 264.59);
+  --color-health-damaged: oklch(0.4912 0.1969 20.79);
+
+  --color-faction-guardian: oklch(0.376 0.1153 253.31);
+  --color-faction-seeker: oklch(0.454 0.0867 70.52);
+  --color-faction-rogue: oklch(0.3972 0.0783 154.06);
+  --color-faction-survivor: oklch(0.4339 0.143 21.74);
+  --color-faction-mystic: oklch(0.4481 0.0646 289.3);
+  --color-faction-neutral: oklch(0.451 0.0176 77.29);
+
+  --color-faction-guardian-darker: oklch(0.3279 0.0888 253.31);
+  --color-faction-seeker-darker: oklch(0.403 0.0867 70.52);
+  --color-faction-rogue-darker: oklch(0.3353 0.0783 154.06);
+  --color-faction-survivor-darker: oklch(0.3559 0.143 21.74);
+  --color-faction-mystic-darker: oklch(0.3591 0.0646 289.3);
+  --color-faction-neutral-darker: oklch(0.365 0.0121 70.5);
+
+  --color-faction-guardian-lighter: oklch(0.4866 0.1153 253.31);
+  --color-faction-seeker-lighter: oklch(0.7448 0.1214 70.48);
+  --color-faction-rogue-lighter: oklch(0.5074 0.0783 154.06);
+  --color-faction-survivor-lighter: oklch(0.5134 0.143 21.74);
+  --color-faction-mystic-lighter: oklch(0.5638 0.1186 289.3);
+  --color-faction-neutral-lighter: oklch(0.7359 0.0176 77.29);
+
   --animate-blink: blink 8s ease-in-out infinite;
   --animate-radial-move: radial-move 180s linear infinite;
   @keyframes radial-move {

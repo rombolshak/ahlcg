@@ -6,5 +6,9 @@
     [threatsSeverity]="threatsSeverity()"
   />
   <div class="flex-grow"></div>
-  <ah-control-area [assets]="assets()" />
+  <ah-control-area
+    [assets]="assets()"
+    [faction]="state.currentInvestigator()!.faction"
+    [maxSlotsCounts]="state.currentInvestigator()!.slotsCount"
+  />
 }

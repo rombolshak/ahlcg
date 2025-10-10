@@ -7,7 +7,7 @@ const meta: Meta<ControlledAssetComponent> = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div class="w-[6rem] h-[4.5rem] mr-3 mb-3 rounded-lg outline-primary outline-2">${story}</div>`,
+        `<div class="ml-50 w-[5.5rem] rounded grid grid-cols-1 auto-rows-[5.5rem]">${story}</div>`,
     ),
   ],
 };
@@ -38,6 +38,7 @@ export const WithResource: Story = {
     asset: {
       ...pureAsset,
       faction: 'mystic',
+      hasAction: true,
       tokens: {
         resource: 3,
       },
@@ -62,7 +63,7 @@ export const WithDoom: Story = {
       ...pureAsset,
       faction: 'mystic',
       tokens: {
-        resource: 1,
+        doom: 1,
       },
     },
   },
@@ -82,9 +83,45 @@ export const SeveralIcons: Story = {
   },
 };
 
+export const WithHealth: Story = {
+  args: {
+    asset: {
+      ...pureAsset,
+      health: {
+        max: 3,
+        damaged: 1,
+      },
+    },
+  },
+};
+
+export const WithHealthAndSanity: Story = {
+  args: {
+    asset: {
+      ...pureAsset,
+      health: {
+        max: 3,
+        damaged: 1,
+      },
+      sanity: {
+        max: 1,
+        damaged: 0,
+      },
+      slot: 'ally',
+    },
+  },
+};
+
 export const Hovered: Story = {
   args: {
     ...Simple.args,
     hovered: true,
+  },
+};
+
+export const Passive: Story = {
+  args: {
+    ...SeveralIcons.args,
+    passive: true,
   },
 };

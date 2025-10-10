@@ -23,21 +23,26 @@ export const cardE: EventCard = {
   cost: 3,
 };
 
-export const cardA: AssetCard = {
-  id: assetId.assert('2'),
-  cardType: 'asset',
+const card = {
+  hasAction: false,
+  cardType: 'asset' as const,
   setInfo: {
     set: '09',
     index: '045',
   },
-  faction: 'seeker',
+  faction: 'seeker' as const,
   skills: { intellect: 2 },
   cost: 1,
+};
+
+export const cardA: AssetCard = {
+  ...card,
+  id: assetId.assert('2'),
   slot: 'hand',
 };
 
 export const cardA2: AssetCard = {
-  ...cardA,
+  ...card,
   id: assetId.assert('3'),
   faction: 'guardian',
   slot: 'ally',
@@ -47,7 +52,7 @@ export const cardA2: AssetCard = {
   },
 };
 export const cardA3: AssetCard = {
-  ...cardA,
+  ...card,
   id: assetId.assert('4'),
   faction: 'rogue',
   sanity: {
@@ -57,18 +62,27 @@ export const cardA3: AssetCard = {
   slot: 'accessory',
 };
 export const cardA4: AssetCard = {
-  ...cardA,
+  ...card,
   id: assetId.assert('5'),
   faction: 'mystic',
 };
+
 export const cardA5: AssetCard = {
-  ...cardA,
+  ...card,
   id: assetId.assert('6'),
   faction: 'neutral',
 };
 
+export const cardA6: AssetCard = {
+  ...card,
+  id: assetId.assert('7'),
+  hasAction: true,
+  slot: 'arcane',
+  additionalSlot: 'accessory',
+};
+
 export const cardS: SkillCard = {
-  id: skillId.assert('7'),
+  id: skillId.assert('8'),
   cardType: 'skill',
   setInfo: {
     set: '10',

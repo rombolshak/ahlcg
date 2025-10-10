@@ -1,0 +1,10 @@
+@if (assets().length) {
+  <div class="grid auto-rows-[5.5rem] grid-cols-3 gap-3">
+    @for (asset of assets(); track asset.id) {
+      <ah-controlled-asset
+        class="rounded-sm border border-gray-800"
+        [asset]="asset"
+      />
+    }
+  </div>
+}
