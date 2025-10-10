@@ -11,9 +11,7 @@ import { CardBackgroundDirective } from './card-background.directive';
 @Component({
   selector: 'ah-test',
   imports: [CardBackgroundDirective],
-  template: `
-    <div ahCardBackground [faction]="cardClass()"></div>
-  `,
+  template: ` <div ahCardBackground [faction]="cardClass()"></div> `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {

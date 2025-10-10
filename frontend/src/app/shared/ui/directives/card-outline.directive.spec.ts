@@ -11,9 +11,7 @@ import { CardOutlineDirective } from './card-outline.directive';
 @Component({
   selector: 'ah-test',
   imports: [CardOutlineDirective],
-  template: `
-    <div ahCardOutline [faction]="cardClass()"></div>
-  `,
+  template: ` <div ahCardOutline [faction]="cardClass()"></div> `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
