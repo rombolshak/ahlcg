@@ -143,7 +143,7 @@ describe('GameState', () => {
       const investigator = state.gameEntities['1003'] as Investigator;
 
       expect(investigator).toBeTruthy();
-      investigator.controlledAssets = [assetId.assert('7')];
+      investigator.controlledAssets = [assetId.assert('8')];
     });
 
     const validated = gameState(testState);

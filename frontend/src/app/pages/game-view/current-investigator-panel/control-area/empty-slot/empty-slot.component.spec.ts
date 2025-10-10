@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import { EmptySlotComponent } from './empty-slot.component';
 
 describe('EmptySlotComponent', () => {
@@ -8,11 +9,12 @@ describe('EmptySlotComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EmptySlotComponent]
-    })
-    .compileComponents();
+      providers: [provideZonelessChangeDetection()],
+      imports: [EmptySlotComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(EmptySlotComponent);
+    fixture.componentRef.setInput('slot', 'hand');
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -14,8 +14,6 @@ import {
 } from 'shared/domain/entities/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { ActiveAssetsListComponent } from './active-assets-list/active-assets-list.component';
-import { ControlledAssetComponent } from './controlled-asset/controlled-asset.component';
-import { EmptySlotComponent } from './empty-slot/empty-slot.component';
 import { EmptySlotsListComponent } from './empty-slots-list/empty-slots-list.component';
 import { PassiveAssetsListComponent } from './passive-assets-list/passive-assets-list.component';
 import { emptySlots, isActive } from './utils';
@@ -23,8 +21,6 @@ import { emptySlots, isActive } from './utils';
 @Component({
   selector: 'ah-control-area',
   imports: [
-    ControlledAssetComponent,
-    EmptySlotComponent,
     PassiveAssetsListComponent,
     ActiveAssetsListComponent,
     EmptySlotsListComponent,
