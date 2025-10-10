@@ -5,7 +5,7 @@ const meta: Meta<InvestigatorAbilityComponent> = {
   component: InvestigatorAbilityComponent,
   decorators: [
     componentWrapperDecorator(
-      (story) => `<div class='flex w-[12rem] text-neutral-900'>${story}</div>`,
+      (story) => `<div class='w-[12rem] text-neutral-900'>${story}</div>`,
     ),
   ],
 };
