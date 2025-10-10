@@ -117,10 +117,10 @@
 }
 
 @theme {
-  --color-sanity: oklch(0.5132 0.2023 264.59);
-  --color-health: oklch(0.536 0.1969 20.79);
-  --color-sanity-damaged: oklch(0.2603 0.1505 264.59);
-  --color-health-damaged: oklch(0.3015 0.1011 20.79);
+  --color-sanity: oklch(0.635 0.1614 264.59);
+  --color-health: oklch(0.7294 0.1658 20.79);
+  --color-sanity-damaged: oklch(0.4421 0.2023 264.59);
+  --color-health-damaged: oklch(0.4912 0.1969 20.79);
 
   --color-faction-guardian: oklch(0.376 0.1153 253.31);
   --color-faction-seeker: oklch(0.454 0.0867 70.52);
