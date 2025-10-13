@@ -11,7 +11,7 @@ import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-investigator-ability',
-  imports: [NgOptimizedImage, WithAhSymbolsPipe],
+  imports: [WithAhSymbolsPipe, NgOptimizedImage],
   templateUrl: './investigator-ability.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

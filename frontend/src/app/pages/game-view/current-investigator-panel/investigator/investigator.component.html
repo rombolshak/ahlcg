@@ -2,22 +2,9 @@
   *transloco="let t"
   class="relative grid grid-cols-[6.25rem_1fr] grid-rows-[9.625rem_1fr] gap-2 rounded p-4"
   ahCardOutline
+  ahCardFactionBackground
   [faction]="investigator().faction"
 >
-  <img
-    fill
-    class="-z-40 rounded-lg"
-    priority
-    alt="investigator background"
-    [ngSrc]="
-      imagesService.getUrl([
-        'card-template',
-        'investigator',
-        investigator().faction,
-      ])
-    "
-  />
-
   <img
     width="100"
     height="154"
