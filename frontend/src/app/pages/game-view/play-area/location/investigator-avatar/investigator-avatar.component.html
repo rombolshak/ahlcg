@@ -1,22 +1,9 @@
 <div
   class="relative flex rounded-lg"
   ahCardOutline
+  ahCardFactionBackground
   [faction]="investigator().faction"
 >
-  <img
-    fill
-    class="-z-30 rounded-lg"
-    priority
-    alt="investigator-template"
-    [ngSrc]="
-      imagesService.getUrl([
-        'card-template',
-        'investigator',
-        investigator().faction,
-      ])
-    "
-  />
-
   <ah-vitals-bar orientation="vertical" [entity]="investigator()" />
 
   <div class="relative flex">
