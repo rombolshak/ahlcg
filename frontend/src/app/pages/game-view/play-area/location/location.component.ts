@@ -8,9 +8,9 @@ import {
 } from '@angular/core';
 import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
-import { EnemyAvatarComponent } from '../../components/enemy-avatar/enemy-avatar.component';
-import { InvestigatorAvatarComponent } from '../../components/investigator-avatar/investigator-avatar.component';
 import { GameStateStore } from '../../store/game-state.store';
+import { EnemyAvatarComponent } from './enemy-avatar/enemy-avatar.component';
+import { InvestigatorAvatarComponent } from './investigator-avatar/investigator-avatar.component';
 import { LocationHeaderComponent } from './location-header/location-header.component';
 
 @Component({

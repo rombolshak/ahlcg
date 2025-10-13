@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
-import { testEnemy } from '../../../../../shared/domain/test/entities/test-enemies';
+﻿import { testEnemy } from '@domain/test/entities/test-enemies';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { EnemyPopoverComponent } from './enemy-popover.component';
 
 const meta: Meta<EnemyPopoverComponent> = {

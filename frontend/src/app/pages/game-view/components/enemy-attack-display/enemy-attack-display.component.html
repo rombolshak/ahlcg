@@ -1,0 +1,18 @@
+@for (_ of [].constructor(enemy().damageAttack); track _) {
+  <img
+    alt="damage token"
+    width="19"
+    height="24"
+    class="h-[24px] flex-none"
+    [ngSrc]="imagesService.getUrl(['card-overlay', 'health'])"
+  />
+}
+@for (_ of [].constructor(enemy().horrorAttack); track _) {
+  <img
+    alt="horror token"
+    width="24"
+    height="20"
+    class="h-[20px] flex-none"
+    [ngSrc]="imagesService.getUrl(['card-overlay', 'sanity'])"
+  />
+}
