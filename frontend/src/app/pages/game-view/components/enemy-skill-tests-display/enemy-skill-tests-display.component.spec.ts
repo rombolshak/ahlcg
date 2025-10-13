@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import { EnemySkillTestsDisplayComponent } from './enemy-skill-tests-display.component';
 
 describe('EnemySkillTestsDisplayComponent', () => {
@@ -9,6 +10,7 @@ describe('EnemySkillTestsDisplayComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EnemySkillTestsDisplayComponent],
+      providers: [provideZonelessChangeDetection()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnemySkillTestsDisplayComponent);
