@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
+import { testEnemy } from '@domain/test/entities/test-enemies';
 import { EnemySkillTestsDisplayComponent } from './enemy-skill-tests-display.component';
 
 describe('EnemySkillTestsDisplayComponent', () => {
@@ -15,6 +16,7 @@ describe('EnemySkillTestsDisplayComponent', () => {
 
     fixture = TestBed.createComponent(EnemySkillTestsDisplayComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('enemy', testEnemy);
     fixture.detectChanges();
   });
 
