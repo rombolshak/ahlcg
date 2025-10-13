@@ -3,20 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
-import { EnemyAvatarComponent } from './enemy-avatar.component';
+import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
+import { EnemyPopoverComponent } from './enemy-popover.component';
 
-describe('EnemyAvatarComponent', () => {
-  let component: EnemyAvatarComponent;
-  let fixture: ComponentFixture<EnemyAvatarComponent>;
+describe('EnemyPopoverComponent', () => {
+  let component: EnemyPopoverComponent;
+  let fixture: ComponentFixture<EnemyPopoverComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EnemyAvatarComponent, getTranslocoModule()],
+      imports: [EnemyPopoverComponent, getTranslocoModule()],
       providers: [provideZonelessChangeDetection(), provideHttpClient()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EnemyAvatarComponent);
+    fixture = TestBed.createComponent(EnemyPopoverComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('enemy', testEnemy);
     await fixture.whenStable();

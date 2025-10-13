@@ -1,0 +1,6 @@
+<ah-card-details-text [card]="enemy()" [showTitle]="true" />
+<div class="flex justify-between">
+  <ah-enemy-attack-display [enemy]="enemy()" />
+  <ah-enemy-skill-tests-display [enemy]="enemy()" />
+</div>
+<ah-vitals-bar class="w-[60%] place-self-center" [entity]="enemy()" />

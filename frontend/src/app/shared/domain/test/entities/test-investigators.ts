@@ -65,4 +65,8 @@ export const InvestigatorG: Investigator = {
     cardA6.id,
   ],
   hand: [cardA.id, cardS.id, cardE.id],
+  tokens: {
+    clue: 3,
+    resource: 2,
+  },
 };

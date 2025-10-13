@@ -34,7 +34,8 @@ import { CardDetailsTextComponent } from '../../../components/card-details-text/
 })
 export class LocationHeaderComponent {
   readonly location = input<Location>();
-  readonly imageService = inject(ImagesUrlService);
+  readonly hovered = input<boolean>(false);
+  protected readonly imageService = inject(ImagesUrlService);
 
   private readonly cardInfo = inject(CardInfoService).getCardInfo(
     this.location,

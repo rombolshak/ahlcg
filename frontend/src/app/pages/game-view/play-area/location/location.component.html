@@ -33,7 +33,10 @@
           [investigator]="investigator"
           [attr.data-flip-id]="`mini-investigator-${investigator.id}`"
         >
-          <div class="mx-1 flex h-40 flex-col flex-wrap gap-1">
+          <div
+            class="mx-1 flex h-40 flex-col flex-wrap gap-1"
+            [class.hidden]="!investigator.threatArea.length"
+          >
             @for (engagedEnemy of investigator.threatArea; track engagedEnemy) {
               <ah-enemy-avatar
                 class="w-33"

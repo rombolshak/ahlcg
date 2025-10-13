@@ -4,19 +4,16 @@ import {
   inject,
   input,
 } from '@angular/core';
+import { GameCard } from '@domain/entities/card.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardInfoService } from 'shared/services/card-info.service';
 import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
-import { GameCard } from '../../../../shared/domain/entities/card.model';
 
 @Component({
   selector: 'ah-card-details-text',
   imports: [WithAhSymbolsPipe, TranslocoDirective],
   templateUrl: './card-details-text.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    class: 'text-accent-content',
-  },
 })
 export class CardDetailsTextComponent {
   private readonly cardInfoService = inject(CardInfoService);
