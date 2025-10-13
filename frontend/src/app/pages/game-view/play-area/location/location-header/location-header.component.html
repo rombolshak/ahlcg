@@ -35,8 +35,9 @@
   </div>
 
   <ah-card-details-text
-    class="absolute bottom-[4rem] left-[20%] -z-50 max-h-0 w-[60%] overflow-hidden rounded-t-lg bg-zinc-50 px-2 py-1 font-[ArnoPro] text-lg/5 whitespace-pre-wrap opacity-0 transition-all duration-300 peer-hover:z-50 peer-hover:max-h-48 peer-hover:opacity-100 hover:z-50 hover:max-h-48 hover:opacity-100"
+    class="absolute bottom-[4rem] left-[20%] -z-50 max-h-0 w-[60%] overflow-hidden rounded-t-lg bg-zinc-50 px-2 py-1 font-[ArnoPro] text-lg/5 whitespace-pre-wrap opacity-0 transition-all duration-300 peer-hover:z-50 peer-hover:max-h-48 peer-hover:opacity-100 hover:z-50 hover:max-h-48 hover:opacity-100 data-[hovered=true]:z-50 data-[hovered=true]:max-h-48 data-[hovered=true]:opacity-100"
     [card]="location()!"
     [showTitle]="false"
+    [attr.data-hovered]="hovered()"
   />
 }

@@ -19,3 +19,10 @@ export const Normal: Story = {
     location: testLocation,
   },
 };
+
+export const Hovered: Story = {
+  args: {
+    ...Normal.args,
+    hovered: true,
+  },
+};

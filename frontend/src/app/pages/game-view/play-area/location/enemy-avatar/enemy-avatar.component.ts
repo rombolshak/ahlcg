@@ -21,5 +21,6 @@ import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 })
 export class EnemyAvatarComponent {
   readonly enemy = input<Enemy>();
-  readonly imageService = inject(ImagesUrlService);
+  readonly hovered = input<boolean>(false);
+  protected readonly imageService = inject(ImagesUrlService);
 }

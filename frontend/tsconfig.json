@@ -5,6 +5,12 @@
   "compilerOptions": {
     "resolveJsonModule": true,
     "baseUrl": "src/app",
+    "paths": {
+      "@pages/*": ["pages/*"],
+      "@domain/*": ["shared/domain/*"],
+      "@services/*": ["shared/services/*"],
+      "@shared/*": ["shared/ui/*"]
+    },
     "outDir": "./dist/out-tsc",
     "strict": true,
     "exactOptionalPropertyTypes": true,
