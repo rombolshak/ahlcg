@@ -46,7 +46,7 @@
     "@angular/router": "^20.3.4",
     "@bugsnag/browser-performance": "^2.14.0",
     "@bugsnag/js": "^8.6.0",
-    "@bugsnag/plugin-angular": "^8.4.0",
+    "@bugsnag/plugin-angular": "^8.6.0",
     "@jsverse/transloco": "^8.0.0",
     "@ngrx/signals": "^19.1.0",
     "@panzoom/panzoom": "^4.6.0",
