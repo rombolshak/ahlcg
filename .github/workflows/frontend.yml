@@ -33,8 +33,10 @@ jobs:
     
     - name: Coveralls
       uses: coverallsapp/github-action@v2
+      if: ${{ github.actor != 'dependabot[bot]' }}
     
     - name: SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v6.0.0
+      if: ${{ github.actor != 'dependabot[bot]' }}
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
