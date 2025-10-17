@@ -25,5 +25,6 @@ type Story = StoryObj<AssetsListComponent>;
 export const Simple: Story = {
   args: {
     activeAssets: [cardA, cardA2, cardA3, cardA4, cardA5, cardA6],
+    passiveAssets: [cardA, cardA2, cardA3, cardA4, cardA5, cardA6],
   },
 };
