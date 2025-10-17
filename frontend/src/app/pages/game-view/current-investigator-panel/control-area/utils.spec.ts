@@ -151,11 +151,11 @@ describe('control-area / utils / getTotalPages', () => {
 
 describe('control-area / utils / sliceActiveAssets', () => {
   it('should slice active assets', () => {
-    expect(sliceActiveAssets(3, 750)).toEqual({ start: 21 * 3, end: 22 * 3 });
-    expect(sliceActiveAssets(3, 440)).toEqual({ start: 12 * 3, end: 13 * 3 });
-    expect(sliceActiveAssets(3, 396)).toEqual({ start: 9 * 3, end: 10 * 3 });
-    expect(sliceActiveAssets(3, 240)).toEqual({ start: 6 * 3, end: 7 * 3 });
-    expect(sliceActiveAssets(3, 131)).toEqual({ start: 3 * 3, end: 4 * 3 });
+    expect(sliceActiveAssets(2, 750)).toEqual({ start: 21 * 2, end: 21 * 3 });
+    expect(sliceActiveAssets(2, 440)).toEqual({ start: 12 * 2, end: 12 * 3 });
+    expect(sliceActiveAssets(2, 396)).toEqual({ start: 9 * 2, end: 9 * 3 });
+    expect(sliceActiveAssets(2, 240)).toEqual({ start: 6 * 2, end: 6 * 3 });
+    expect(sliceActiveAssets(2, 131)).toEqual({ start: 3 * 2, end: 3 * 3 });
   });
 });
 
