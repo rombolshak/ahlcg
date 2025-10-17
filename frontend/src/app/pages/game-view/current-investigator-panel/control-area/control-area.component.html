@@ -5,7 +5,10 @@
 />
 <div class="flex items-center justify-end">
   @if (showPager()) {
-    <div class="cursor-reset flex flex-1 justify-center">
+    <div
+      class="cursor-reset flex flex-1 justify-center"
+      data-testId="assets-pager"
+    >
       <div class="join">
         @for (_ of [].constructor(totalPages()); track $index) {
           <button
@@ -20,5 +23,9 @@
       </div>
     </div>
   }
-  <ah-empty-slots-list class="flex-none" [slots]="emptySlots()" />
+  <ah-empty-slots-list
+    class="flex-none"
+    [class.w-full]="!showPager()"
+    [slots]="emptySlots()"
+  />
 </div>

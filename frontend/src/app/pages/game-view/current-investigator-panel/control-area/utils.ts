@@ -40,3 +40,53 @@ export const emptySlots: (
     }),
   ) as SlotsCount;
 };
+
+export const getTotalPages = (
+  activeAssetsCount: number,
+  passiveAssetsCount: number,
+  availableHeight: number,
+) => {
+  const totalNeededRows = Math.ceil(
+    (activeAssetsCount + Math.ceil(passiveAssetsCount / 4)) / 3,
+  );
+  return Math.ceil(totalNeededRows / getAvailableRows(availableHeight));
+};
+
+export const sliceActiveAssets = (
+  currentPage: number,
+  availableHeight: number,
+) => {
+  const pageSize = getPageSize(availableHeight);
+  return {
+    start: currentPage * pageSize,
+    end: currentPage * pageSize + pageSize,
+  };
+};
+
+export const slicePassiveAssets = (
+  activeAssetsCount: number,
+  currentPage: number,
+  availableHeight: number,
+) => {
+  const pageSize = getPageSize(availableHeight);
+  const firstPageIndex = Math.floor(activeAssetsCount / pageSize);
+  if (currentPage < firstPageIndex) return { start: 0, end: 0 };
+
+  const firstPageSize = (pageSize - (activeAssetsCount % pageSize)) * 4;
+  if (currentPage === firstPageIndex) return { start: 0, end: firstPageSize };
+  const start =
+    firstPageSize + (currentPage - firstPageIndex - 1) * pageSize * 4;
+  return { start, end: start + pageSize * 4 };
+};
+
+const getPageSize = (availableHeight: number) =>
+  getAvailableRows(availableHeight) * 3;
+const getAvailableRows = (availableHeight: number) => {
+  const pagerHeight = 42;
+  const rowHeight = 5.5 * 16;
+  const gap = 3 * 4;
+  return Math.max(
+    Math.floor((availableHeight - pagerHeight + gap) / (rowHeight + gap)),
+    1,
+  );
+};

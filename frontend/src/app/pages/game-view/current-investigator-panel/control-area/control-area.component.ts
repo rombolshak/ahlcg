@@ -21,7 +21,13 @@ import {
 } from 'shared/domain/entities/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { EmptySlotsListComponent } from './empty-slots-list/empty-slots-list.component';
-import { emptySlots, isActive } from './utils';
+import {
+  emptySlots,
+  getTotalPages,
+  isActive,
+  sliceActiveAssets,
+  slicePassiveAssets,
+} from './utils';
 
 @Component({
   selector: 'ah-control-area',
@@ -38,7 +44,7 @@ import { emptySlots, isActive } from './utils';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'min-h-0 flex flex-col justify-end gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative',
+      'flex-1 min-h-0 flex flex-col justify-end gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative',
   },
   hostDirectives: [
     { directive: CardFactionBackgroundDirective, inputs: ['faction'] },
@@ -84,28 +90,25 @@ export class ControlAreaComponent implements OnInit, OnDestroy {
     },
   });
   protected readonly totalPages = computed(() =>
-    Math.ceil(this.totalNeededRows() / this.availableRows()),
+    getTotalPages(
+      this.activeAssets().length,
+      this.passiveAssets().length,
+      this.availableHeight(),
+    ),
   );
 
   protected readonly activeAssetsToDisplay = computed(() => {
-    const start = this.currentPage() * this.pageSize();
-    return this.activeAssets().slice(start, start + this.pageSize());
+    const slice = sliceActiveAssets(this.currentPage(), this.availableHeight());
+    return this.activeAssets().slice(slice.start, slice.end);
   });
 
   protected readonly passiveAssetsToDisplay = computed(() => {
-    const firstPageIndex = Math.floor(
-      this.activeAssets().length / this.pageSize(),
+    const slice = slicePassiveAssets(
+      this.activeAssets().length,
+      this.currentPage(),
+      this.availableHeight(),
     );
-    if (this.currentPage() < firstPageIndex) return [];
-
-    const firstPageSize =
-      (this.pageSize() - (this.activeAssets().length % this.pageSize())) * 4;
-    if (this.currentPage() === firstPageIndex)
-      return this.passiveAssets().slice(0, firstPageSize);
-    const start =
-      firstPageSize +
-      (this.currentPage() - firstPageIndex) * this.pageSize() * 4;
-    return this.passiveAssets().slice(start, start + this.pageSize() * 4);
+    return this.passiveAssets().slice(slice.start, slice.end);
   });
 
   private readonly activeAssets = computed(() =>
@@ -115,28 +118,6 @@ export class ControlAreaComponent implements OnInit, OnDestroy {
   private readonly passiveAssets = computed(() =>
     this.assets().filter((a) => !isActive(a)),
   );
-
-  private readonly totalNeededRows = computed(() => {
-    return Math.ceil(
-      (this.activeAssets().length +
-        Math.ceil(this.passiveAssets().length / 4)) /
-        3,
-    );
-  });
-
-  private readonly availableRows = computed(() => {
-    const pagerHeight = 42;
-    const rowHeight = 5.5 * 16;
-    const gap = 3 * 4;
-    return Math.max(
-      Math.floor(
-        (this.availableHeight() - pagerHeight + gap) / (rowHeight + gap),
-      ),
-      1,
-    );
-  });
-
-  private readonly pageSize = computed(() => this.availableRows() * 3);
 
   private resize(entries: ResizeObserverEntry[]) {
     entries.forEach((entry) => {

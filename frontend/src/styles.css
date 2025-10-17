@@ -1,5 +1,6 @@
 /* stylelint-disable */
 @import "tailwindcss";
+@import "@toolwind/anchors";
 @import "vanilla-jsoneditor/themes/jse-theme-dark.css";
 
 @plugin "daisyui";

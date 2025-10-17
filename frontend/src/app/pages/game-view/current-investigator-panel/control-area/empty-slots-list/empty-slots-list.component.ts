@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { AssetSlot } from 'shared/domain/entities/player-card.model';
 import { EmptySlotComponent } from './empty-slot/empty-slot.component';
 
@@ -13,7 +8,7 @@ import { EmptySlotComponent } from './empty-slot/empty-slot.component';
   templateUrl: './empty-slots-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex gap-3',
+    class: 'flex gap-3 justify-end',
   },
 })
 export class EmptySlotsListComponent {

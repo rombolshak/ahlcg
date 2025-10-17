@@ -2,6 +2,7 @@ import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
@@ -25,14 +26,16 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
   templateUrl: './controlled-asset.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'group relative flex gap-1 justify-between',
+    class: 'group relative flex gap-1 justify-between anchor/(--anchor-name)',
     '[class.p-1]': '!passive()',
+    '[style.--anchor-name]': 'anchorName()',
   },
 })
 export class ControlledAssetComponent {
   readonly asset = input.required<AssetCard>();
   readonly passive = input<boolean>(false);
   readonly hovered = input<boolean>(false);
-  protected imagesService = inject(ImagesUrlService);
-  protected info = inject(CardInfoService).getCardInfo(this.asset);
+  protected readonly imagesService = inject(ImagesUrlService);
+  protected readonly info = inject(CardInfoService).getCardInfo(this.asset);
+  protected readonly anchorName = computed(() => `--asset-${this.asset().id}`);
 }

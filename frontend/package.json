@@ -72,6 +72,7 @@
     "@storybook/angular": "^9.1.5",
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.1.13",
+    "@toolwind/anchors": "^1.0.10",
     "@types/jasmine": "~5.1.9",
     "@typescript-eslint/parser": "^8.46.1",
     "angular-eslint": "20.2.0",
