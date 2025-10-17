@@ -1,3 +1,24 @@
-﻿<ah-passive-assets-list [assets]="passiveAssets()" />
-<ah-active-assets-list [assets]="activeAssets()" />
-<ah-empty-slots-list [slots]="emptySlots()" />
+﻿<ah-assets-list
+  class="min-h-0"
+  [activeAssets]="activeAssetsToDisplay()"
+  [passiveAssets]="passiveAssetsToDisplay()"
+/>
+<div class="flex items-center justify-end">
+  @if (showPager()) {
+    <div class="cursor-reset flex flex-1 justify-center">
+      <div class="join">
+        @for (_ of [].constructor(totalPages()); track $index) {
+          <button
+            type="button"
+            class="btn join-item btn-sm"
+            [class.btn-active]="$index === currentPage()"
+            (click)="currentPage.set($index)"
+          >
+            {{ $index + 1 }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+  <ah-empty-slots-list class="flex-none" [slots]="emptySlots()" />
+</div>

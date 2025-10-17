@@ -16,7 +16,7 @@ import { ThreatsSeverity } from './threats-severity.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'flex flex-col gap-2 p-4 -z-45 ' +
+      'flex flex-col gap-2 p-4 -z-45 min-h-26 ' +
       'bg-radial bg-size-[200%_200%] from-red-600/[var(--healthSeverity)] to-blue-600/[var(--sanitySeverity)] ' +
       'data-[empty=true]:from-emerald-900/30 data-[empty=true]:to-emerald-700/30 ' +
       'outline outline-2 outline-gray-600 rounded animate-radial-move',

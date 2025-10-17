@@ -11,8 +11,10 @@ import { EmptySlotComponent } from './empty-slot/empty-slot.component';
   selector: 'ah-empty-slots-list',
   imports: [EmptySlotComponent],
   templateUrl: './empty-slots-list.component.html',
-  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex gap-3',
+  },
 })
 export class EmptySlotsListComponent {
   readonly slots = input.required<AssetSlot[]>();
