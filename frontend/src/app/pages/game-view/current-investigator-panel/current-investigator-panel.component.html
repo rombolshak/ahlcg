@@ -1,12 +1,16 @@
 @if (state.currentInvestigator() !== null) {
-  <ah-investigator [investigator]="state.currentInvestigator()!" />
+  <ah-investigator
+    class="flex-none"
+    [investigator]="state.currentInvestigator()!"
+  />
   <ah-threat-area
+    class="flex-none"
     [threatArea]="threats()"
     [noThreatsText]="noThreatsText()"
     [threatsSeverity]="threatsSeverity()"
   />
-  <div class="flex-grow"></div>
   <ah-control-area
+    class="flex-1"
     [assets]="assets()"
     [faction]="state.currentInvestigator()!.faction"
     [maxSlotsCounts]="state.currentInvestigator()!.slotsCount"

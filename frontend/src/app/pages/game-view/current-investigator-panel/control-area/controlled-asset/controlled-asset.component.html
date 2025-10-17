@@ -60,8 +60,10 @@
   }
 }
 
+<!-- eslint-disable-next-line -->
 <ah-asset-popover
-  class="pointer-events-none absolute top-[40%] right-[70%] -z-50 w-60 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:z-50 group-hover:opacity-100 hover:pointer-events-auto hover:z-50 hover:opacity-100 data-[hovered=true]:pointer-events-auto data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
+  class="pointer-events-none anchored/(--anchor-name) fixed top-anchor-top-6 right-anchor-left-1 -z-50 w-60 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:z-50 group-hover:opacity-100 hover:pointer-events-auto hover:z-50 hover:opacity-100 data-[hovered=true]:pointer-events-auto data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
   [attr.data-hovered]="hovered()"
+  [style.--anchor-name]="anchorName()"
   [asset]="asset()"
 />

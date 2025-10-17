@@ -1,0 +1,17 @@
+@if (activeAssets().length || passiveAssets().length) {
+  <div class="grid auto-rows-[2.375rem] grid-cols-6 gap-3">
+    @for (asset of activeAssets(); track asset.id) {
+      <ah-controlled-asset
+        class="col-span-2 row-span-2 rounded-sm border border-gray-800"
+        [asset]="asset"
+      />
+    }
+    @for (asset of passiveAssets(); track asset.id) {
+      <ah-controlled-asset
+        class="rounded-sm border border-gray-800"
+        [asset]="asset"
+        [passive]="true"
+      />
+    }
+  </div>
+}

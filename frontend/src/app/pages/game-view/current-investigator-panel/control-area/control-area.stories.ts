@@ -15,7 +15,8 @@ const meta: Meta<ControlAreaComponent> = {
   component: ControlAreaComponent,
   decorators: [
     componentWrapperDecorator(
-      (story) => `<div class='w-[22rem] text-neutral-900'>${story}</div>`,
+      (story) =>
+        `<div class='w-[22rem] h-100 flex text-neutral-900'>${story}</div>`,
     ),
   ],
 };
@@ -23,10 +24,45 @@ const meta: Meta<ControlAreaComponent> = {
 export default meta;
 type Story = StoryObj<ControlAreaComponent>;
 
+export const NoAssets: Story = {
+  args: {
+    faction: 'rogue',
+    assets: [],
+    maxSlotsCounts: defaultSlots,
+  },
+};
+
 export const Simple: Story = {
   args: {
     faction: 'rogue',
     assets: [
+      SimpleAsset.args!.asset!,
+      WithSlot.args!.asset!,
+      WithResource.args!.asset!,
+      WithClue.args!.asset!,
+      SeveralIcons.args!.asset!,
+      WithDoom.args!.asset!,
+    ],
+    maxSlotsCounts: defaultSlots,
+  },
+};
+
+export const WithPager: Story = {
+  args: {
+    faction: 'rogue',
+    assets: [
+      SimpleAsset.args!.asset!,
+      WithSlot.args!.asset!,
+      WithResource.args!.asset!,
+      WithClue.args!.asset!,
+      SeveralIcons.args!.asset!,
+      WithDoom.args!.asset!,
+      SimpleAsset.args!.asset!,
+      WithSlot.args!.asset!,
+      WithResource.args!.asset!,
+      WithClue.args!.asset!,
+      SeveralIcons.args!.asset!,
+      WithDoom.args!.asset!,
       SimpleAsset.args!.asset!,
       WithSlot.args!.asset!,
       WithResource.args!.asset!,

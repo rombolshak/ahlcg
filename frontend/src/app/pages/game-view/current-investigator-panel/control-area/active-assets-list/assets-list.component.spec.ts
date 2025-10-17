@@ -3,25 +3,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import {
-  cardA,
-  cardA3,
-} from '../../../../../shared/domain/test/entities/test-cards';
-import { getTranslocoModule } from '../../../../../shared/domain/test/transloco.testing';
-import { ActiveAssetsListComponent } from './active-assets-list.component';
+import { cardA, cardA3, cardA4 } from '@domain/test/entities/test-cards';
+import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { AssetsListComponent } from 'pages/game-view/current-investigator-panel/control-area/active-assets-list/assets-list.component';
 
 describe('ActiveAssetsListComponent', () => {
-  let component: ActiveAssetsListComponent;
-  let fixture: ComponentFixture<ActiveAssetsListComponent>;
+  let component: AssetsListComponent;
+  let fixture: ComponentFixture<AssetsListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideHttpClient()],
-      imports: [ActiveAssetsListComponent, getTranslocoModule()],
+      imports: [AssetsListComponent, getTranslocoModule()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ActiveAssetsListComponent);
-    fixture.componentRef.setInput('assets', [cardA, cardA3]);
+    fixture = TestBed.createComponent(AssetsListComponent);
+    fixture.componentRef.setInput('activeAssets', [cardA, cardA3]);
+    fixture.componentRef.setInput('passiveAssets', [cardA4]);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -33,6 +31,6 @@ describe('ActiveAssetsListComponent', () => {
   it('should display all assets', () => {
     expect(
       fixture.debugElement.queryAll(By.css('ah-controlled-asset')).length,
-    ).toBe(2);
+    ).toBe(3);
   });
 });
