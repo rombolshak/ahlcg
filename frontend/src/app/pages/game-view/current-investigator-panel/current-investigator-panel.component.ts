@@ -4,6 +4,7 @@ import {
   computed,
   inject,
 } from '@angular/core';
+import { ActionsAreaComponent } from '@pages/game-view/current-investigator-panel/actions-area/actions-area.component';
 import { GameStateStore } from '../store/game-state.store';
 import { ControlAreaComponent } from './control-area/control-area.component';
 import { InvestigatorComponent } from './investigator/investigator.component';
@@ -13,7 +14,12 @@ import { ThreatsSeverityService } from './threat-area/threats-severity.service';
 
 @Component({
   selector: 'ah-current-investigator-panel',
-  imports: [ThreatAreaComponent, InvestigatorComponent, ControlAreaComponent],
+  imports: [
+    ThreatAreaComponent,
+    InvestigatorComponent,
+    ControlAreaComponent,
+    ActionsAreaComponent,
+  ],
   templateUrl: './current-investigator-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
