@@ -1,6 +1,7 @@
 ﻿import { investigatorId } from '../../entities/id.model';
 import { Investigator } from '../../entities/investigator.model';
 import { slotsCount, SlotsCount } from '../../entities/player-card.model';
+import { testActions } from '../test-actions';
 import {
   cardA,
   cardA2,
@@ -49,6 +50,7 @@ export const InvestigatorS: Investigator = {
   hand: [],
   controlledAssets: [],
   slotsCount: defaultSlots,
+  actions: testActions,
 };
 
 export const InvestigatorG: Investigator = {

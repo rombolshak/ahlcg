@@ -1,4 +1,5 @@
-﻿import { type } from 'arktype';
+﻿import { investigatorAction } from '@domain/action.model';
+import { type } from 'arktype';
 import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
 import { assetId, enemyId, investigatorId, playerCardId } from './id.model';
@@ -18,6 +19,7 @@ const _investigator = gameCard.and({
   hand: playerCardId.array(),
   controlledAssets: assetId.array(),
   slotsCount,
+  actions: investigatorAction.array(),
 });
 
 type _Investigator = typeof _investigator.infer;

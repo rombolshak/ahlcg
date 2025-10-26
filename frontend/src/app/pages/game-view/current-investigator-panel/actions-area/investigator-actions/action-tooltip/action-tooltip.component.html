@@ -1,0 +1,28 @@
+<ng-container
+  *transloco="
+    let t;
+    prefix: 'game_view.current_investigator_panel.actions_area'
+  "
+>
+  @if (action().originator) {
+    <p>{{ t("given_action", { originator: action().originator! }) }}</p>
+  }
+
+  @if (action().restrictions) {
+    <p
+      [innerHTML]="t(`restrictions.${action().restrictions!}`) | withAhSymbols"
+    ></p>
+  } @else {
+    <p>{{ t("standard_action") }}</p>
+  }
+
+  @if (action().spentOn) {
+    <p>
+      {{
+        t(`spent_on.${action().spentOn!.actionType}`, {
+          target: action().spentOn!.target,
+        })
+      }}
+    </p>
+  }
+</ng-container>

@@ -1,0 +1,23 @@
+<ng-container
+  *transloco="
+    let t;
+    prefix: 'game_view.current_investigator_panel.actions_area.buttons'
+  "
+>
+  @for (button of buttons; track button.icon) {
+    <div class="tooltip">
+      <div
+        class="tooltip-content"
+        [innerHTML]="t(button.tooltip) | withAhSymbols"
+      ></div>
+      <!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
+      <button
+        type="button"
+        class="btn btn-square"
+        [class]="button.enabled ? 'btn-neutral' : 'btn-disabled'"
+      >
+        <ah-svg class="size-10" [name]="button.icon" />
+      </button>
+    </div>
+  }
+</ng-container>

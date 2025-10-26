@@ -18,7 +18,6 @@ import {
   testLocation2,
   testLocation3,
 } from './entities/test-locations';
-import { testActions } from './test-actions';
 import { testGameMap } from './test-game-map';
 import { testMetaInfo } from './test-meta';
 
@@ -28,7 +27,6 @@ export const testGameState: GameState = {
   acts: [testAct.id],
   agendas: [testAgenda.id],
   investigators: [InvestigatorS.id, InvestigatorG.id],
-  availableActions: testActions,
   currentInvestigator: InvestigatorG.id,
   gameEntities: {
     '2200': testAct,
