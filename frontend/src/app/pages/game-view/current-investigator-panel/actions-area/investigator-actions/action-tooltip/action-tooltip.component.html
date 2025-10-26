@@ -4,6 +4,10 @@
     prefix: 'game_view.current_investigator_panel.actions_area'
   "
 >
+  @if (action().originator) {
+    <p>{{ t("given_action", { originator: action().originator! }) }}</p>
+  }
+
   @if (action().restrictions) {
     <p>{{ t(action().restrictions!) }}</p>
   } @else {

@@ -1,4 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { testActions } from '@domain/test/test-actions';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { ActionsAreaComponent } from './actions-area.component';
 
 const meta: Meta<ActionsAreaComponent> = {
@@ -6,7 +7,7 @@ const meta: Meta<ActionsAreaComponent> = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div class='w-[20rem] flex flex-col text-neutral-900'>${story}</div>`,
+        `<div class='w-[20rem] ml-10 mt-10 flex flex-col text-neutral-900'>${story}</div>`,
     ),
   ],
 };
@@ -14,4 +15,8 @@ const meta: Meta<ActionsAreaComponent> = {
 export default meta;
 type Story = StoryObj<ActionsAreaComponent>;
 
-export const Simple: Story = {};
+export const Simple: Story = {
+  args: {
+    actions: testActions,
+  },
+};
