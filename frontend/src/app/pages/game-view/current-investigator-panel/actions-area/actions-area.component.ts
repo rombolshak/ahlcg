@@ -14,7 +14,8 @@ import { InvestigatorActionsComponent } from '@pages/game-view/current-investiga
   templateUrl: './actions-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col justify-between gap-4 p-4 bg-base-200/70 rounded',
+    class:
+      'flex flex-col justify-between gap-4 p-4 bg-base-200/70 rounded font-[ArnoPro]',
   },
 })
 export class ActionsAreaComponent {

@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform, inject } from '@angular/core';
+import { inject, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Pipe({
@@ -11,7 +11,10 @@ export class WithAhSymbolsPipe implements PipeTransform {
   transform(value: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(
       value
-        .replaceAll(/#(.*?)#/g, `<span class="font-[AHSymbol]">$1</span>`)
+        .replaceAll(
+          /#(.*?)#/g,
+          `<span class="font-[AHSymbol] text-xs">$1</span>`,
+        )
         .replaceAll(
           /@(.*?)@/g,
           `<span class="font-[ArnoProBold] italic">$1</span>`,

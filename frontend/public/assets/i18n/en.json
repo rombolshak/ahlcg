@@ -18,34 +18,60 @@
     "act": "Act",
     "agenda": "Agenda"
   },
-  "current_investigator_panel": {
-    "threat_area": {
-      "no_threats": {
-        "1": "The coast is clear... for now.",
-        "2": "You are safe. But not for long.",
-        "3": "All clear. The calm before the storm.",
-        "4": "The path ahead is unguarded.",
-        "5": "The silence is deafening. It is not a comfort, but a prelude.",
-        "6": "A fragile peace. One that could shatter at any moment.",
-        "7": "The air itself holds its breath.",
-        "8": "A stillness that feels unnatural.",
-        "9": "The weight of anticipation hangs heavy.",
-        "10": "Nothing stirs in the immediate gloom.",
-        "11": "A precarious balance, soon to be broken.",
-        "12": "You stand unopposed, but the feeling of being watched persists.",
-        "13": "The darkness recedes, but does not sleep.",
-        "14": "A moment of respite. The shadows are quiet, but watching.",
-        "15": "No immediate threats. Catch your breath.",
-        "16": "The immediate danger has passed.",
-        "17": "A temporary lull in the chaos.",
-        "18": "A brief pause in the horror.",
-        "19": "A chance to regroup.",
-        "20": "For a blessed moment, there is nothing. You dare to hope.",
-        "21": "A lull in the madness. A chance to prepare for what comes next.",
-        "22": "A trick of fate has granted a moment's peace.",
-        "23": "The immediate peril has faded, but dread remains a constant companion.",
-        "24": "A deep breath is taken, the last one perhaps, before it begins again.",
-        "25": "Use this precious time to steel your nerves."
+  "game_view": {
+    "current_investigator_panel": {
+      "actions_area": {
+        "given_action": "Additional action from {{originator}}",
+        "standard_action": "Standard action",
+        "end_turn": "End turn",
+        "buttons": {
+          "draw_card": "#n# Draw 1 card",
+          "take_resource": "#n# Gain 1 resource",
+          "view_discard": "#f# View discard pile"
+        },
+        "spent_on": {
+          "investigate": "Investigated {{target}}",
+          "move": "Moved to {{target}}",
+          "draw": "Draw card",
+          "resource": "Got resource",
+          "play": "Played {{target}}",
+          "activate": "Activated {{target}}",
+          "fight": "Fought {{target}}",
+          "engage": "Engaged {{target}}",
+          "evade": "Attempted to evade {{target}}"
+        },
+        "restrictions": {
+          "evade_only": "Only @Evade@ actions"
+        }
+      },
+      "threat_area": {
+        "no_threats": {
+          "1": "The coast is clear... for now.",
+          "2": "You are safe. But not for long.",
+          "3": "All clear. The calm before the storm.",
+          "4": "The path ahead is unguarded.",
+          "5": "The silence is deafening. It is not a comfort, but a prelude.",
+          "6": "A fragile peace. One that could shatter at any moment.",
+          "7": "The air itself holds its breath.",
+          "8": "A stillness that feels unnatural.",
+          "9": "The weight of anticipation hangs heavy.",
+          "10": "Nothing stirs in the immediate gloom.",
+          "11": "A precarious balance, soon to be broken.",
+          "12": "You stand unopposed, but the feeling of being watched persists.",
+          "13": "The darkness recedes, but does not sleep.",
+          "14": "A moment of respite. The shadows are quiet, but watching.",
+          "15": "No immediate threats. Catch your breath.",
+          "16": "The immediate danger has passed.",
+          "17": "A temporary lull in the chaos.",
+          "18": "A brief pause in the horror.",
+          "19": "A chance to regroup.",
+          "20": "For a blessed moment, there is nothing. You dare to hope.",
+          "21": "A lull in the madness. A chance to prepare for what comes next.",
+          "22": "A trick of fate has granted a moment's peace.",
+          "23": "The immediate peril has faded, but dread remains a constant companion.",
+          "24": "A deep breath is taken, the last one perhaps, before it begins again.",
+          "25": "Use this precious time to steel your nerves."
+        }
       }
     }
   }

@@ -8,7 +8,7 @@ const meta: Meta<ActionTooltipComponent> = {
   decorators: [
     componentWrapperDecorator(
       (story) =>
-        `<div class='w-[20rem] mt-10 ml-10 flex flex-col'>${story}</div>`,
+        `<div class='w-[20rem] mt-10 ml-10 flex flex-col font-[ArnoPro]'>${story}</div>`,
     ),
   ],
 };

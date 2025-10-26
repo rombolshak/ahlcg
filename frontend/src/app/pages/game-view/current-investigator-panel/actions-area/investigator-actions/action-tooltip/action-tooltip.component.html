@@ -9,7 +9,9 @@
   }
 
   @if (action().restrictions) {
-    <p>{{ t(action().restrictions!) }}</p>
+    <p
+      [innerHTML]="t(`restrictions.${action().restrictions!}`) | withAhSymbols"
+    ></p>
   } @else {
     <p>{{ t("standard_action") }}</p>
   }
@@ -17,7 +19,9 @@
   @if (action().spentOn) {
     <p>
       {{
-        t(action().spentOn!.actionType, { target: action().spentOn!.target })
+        t(`spent_on.${action().spentOn!.actionType}`, {
+          target: action().spentOn!.target,
+        })
       }}
     </p>
   }

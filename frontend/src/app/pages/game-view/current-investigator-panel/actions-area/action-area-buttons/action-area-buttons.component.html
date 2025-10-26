@@ -1,11 +1,15 @@
 <ng-container
   *transloco="
     let t;
-    prefix: 'game_view.current_investigator_panel.actions_area'
+    prefix: 'game_view.current_investigator_panel.actions_area.buttons'
   "
 >
   @for (button of buttons; track button.icon) {
-    <div class="tooltip" [attr.data-tip]="t(button.tooltip)">
+    <div class="tooltip">
+      <div
+        class="tooltip-content"
+        [innerHTML]="t(button.tooltip) | withAhSymbols"
+      ></div>
       <!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
       <button
         type="button"
