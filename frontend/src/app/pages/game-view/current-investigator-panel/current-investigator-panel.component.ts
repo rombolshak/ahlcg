@@ -23,7 +23,7 @@ import { ThreatsSeverityService } from './threat-area/threats-severity.service';
   templateUrl: './current-investigator-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'flex flex-col gap-4 overflow-hidden',
+    class: 'flex flex-col gap-4',
   },
 })
 export class CurrentInvestigatorPanelComponent {

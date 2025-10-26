@@ -1,5 +1,4 @@
 ﻿import { Traversal, type } from 'arktype';
-import { action } from './action.model';
 import { CardType } from './entities/card.model';
 import {
   ActId,
@@ -294,7 +293,6 @@ export const gameState = type({
   investigators: investigatorId.array().atLeastLength(1),
   scenarioMap: gameMap,
   currentInvestigator: investigatorId,
-  availableActions: action.array(),
   gameEntities: {
     '[string]': gameEntity,
   },

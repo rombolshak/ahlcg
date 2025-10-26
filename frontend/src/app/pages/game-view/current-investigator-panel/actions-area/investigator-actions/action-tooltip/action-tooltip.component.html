@@ -1,0 +1,20 @@
+<ng-container
+  *transloco="
+    let t;
+    prefix: 'game_view.current_investigator_panel.actions_area'
+  "
+>
+  @if (action().restrictions) {
+    <p>{{ t(action().restrictions!) }}</p>
+  } @else {
+    <p>{{ t("standard_action") }}</p>
+  }
+
+  @if (action().spentOn) {
+    <p>
+      {{
+        t(action().spentOn!.actionType, { target: action().spentOn!.target })
+      }}
+    </p>
+  }
+</ng-container>
