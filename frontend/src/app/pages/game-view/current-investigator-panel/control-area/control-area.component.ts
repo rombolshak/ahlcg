@@ -44,7 +44,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class:
-      'flex-1 min-h-0 flex flex-col justify-end gap-3 p-4 -z-45 outline outline-2 outline-gray-600 rounded relative',
+      'flex-1 min-h-0 flex flex-col justify-end gap-3 p-4 outline outline-2 outline-gray-600 rounded relative',
   },
   hostDirectives: [
     { directive: CardFactionBackgroundDirective, inputs: ['faction'] },

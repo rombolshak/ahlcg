@@ -30,7 +30,7 @@ describe('WithAhSymbolsPipe', () => {
     const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe.transform('one symbol #q# is @f@ replaced')).toEqual(
-      'one symbol <span class="font-[AHSymbol]">q</span> is <span class="font-[ArnoProBold] italic">f</span> replaced',
+      'one symbol <span class="font-[AHSymbol] text-xs">q</span> is <span class="font-[ArnoProBold] italic">f</span> replaced',
     );
   });
 
@@ -38,7 +38,7 @@ describe('WithAhSymbolsPipe', () => {
     const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
     expect(pipe.transform('two consecutive symbols #cc# or @ff@ too')).toEqual(
-      'two consecutive symbols <span class="font-[AHSymbol]">cc</span> or <span class="font-[ArnoProBold] italic">ff</span> too',
+      'two consecutive symbols <span class="font-[AHSymbol] text-xs">cc</span> or <span class="font-[ArnoProBold] italic">ff</span> too',
     );
   });
 
@@ -50,7 +50,7 @@ describe('WithAhSymbolsPipe', () => {
         'several replacements by one symbol #c# and #d# succeeded',
       ),
     ).toEqual(
-      'several replacements by one symbol <span class="font-[AHSymbol]">c</span> and <span class="font-[AHSymbol]">d</span> succeeded',
+      'several replacements by one symbol <span class="font-[AHSymbol] text-xs">c</span> and <span class="font-[AHSymbol] text-xs">d</span> succeeded',
     );
   });
 

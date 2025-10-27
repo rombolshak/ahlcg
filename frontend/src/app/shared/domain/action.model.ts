@@ -1,17 +1,30 @@
-﻿/* eslint-disable @typescript-eslint/no-empty-object-type */
+﻿import { entityId } from '@domain/entities/id.model';
 import { type } from 'arktype';
 
-const _action = type({
-  id: 'number.integer >= 0',
-  title: 'string',
-  cost: 'string',
+export const actionType = type.enumerated(
+  'investigate',
+  'move',
+  'draw',
+  'resource',
+  'play',
+  'activate',
+  'fight',
+  'engage',
+  'evade',
+);
+
+export type ActionType = typeof actionType.infer;
+
+const completedAction = type({
+  actionType,
+  target: entityId,
 });
 
-type _Action = typeof _action.infer;
+export const investigatorAction = type({
+  id: 'number.integer >= 0',
+  'originator?': entityId,
+  'restrictions?': 'string',
+  'spentOn?': completedAction,
+});
 
-export interface Action extends _Action {}
-
-export type Actions = Action[];
-
-export const action: type<Action> = _action;
-export const actions: type<Actions> = _action.array();
+export type InvestigatorAction = typeof investigatorAction.infer;

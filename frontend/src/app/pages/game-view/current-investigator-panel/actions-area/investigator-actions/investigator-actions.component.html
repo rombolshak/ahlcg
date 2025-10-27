@@ -1,0 +1,18 @@
+<!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
+<!-- eslint-disable @angular-eslint/template/no-inline-styles -->
+@for (action of actions(); track action.id) {
+  <div class="tooltip">
+    <div class="tooltip-content">
+      <ah-action-tooltip
+        [action]="action"
+        [style.--anchor-name]="`action-${action.id}`"
+      />
+    </div>
+    <div
+      class="flex size-6 items-center justify-center rounded-sm pt-1 text-xs anchor/(--anchor-name)"
+      [class]="action.spentOn ? 'bg-base-content/30' : 'bg-base-content'"
+      [innerHTML]="'#n#' | withAhSymbols"
+      [style.--anchor-name]="`action-${action.id}`"
+    ></div>
+  </div>
+}

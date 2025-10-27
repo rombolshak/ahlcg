@@ -46,6 +46,6 @@ export class NoThreatsPhraseService {
 
   private getRandomPhrase(bound: number): string {
     const index = Math.floor(Math.random() * bound + 1);
-    return `current_investigator_panel.threat_area.no_threats.${index.toString()}`;
+    return `game_view.current_investigator_panel.threat_area.no_threats.${index.toString()}`;
   }
 }
