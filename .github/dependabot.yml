@@ -22,6 +22,21 @@ updates:
         update-types:
           - "patch"
           - "minor"
+      linters:
+        applies-to: version-updates
+        patterns:
+          - "*lint*"
+          - "*prettier*"
     ignore:
       - dependency-name: "@angular*"
-        update-types: ["version-update:semver-major"]
+        update-types: [ "version-update:semver-major" ]
+
+  - package-ecosystem: "nuget"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "dotnet-sdk"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"

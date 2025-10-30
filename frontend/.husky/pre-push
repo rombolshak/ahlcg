@@ -1,2 +1,16 @@
-cd frontend
-npm run ci:all
+if git diff --cached --quiet -- frontend/src; then
+  echo "No changes in frontend folder. Skipping frontend-specific tasks."
+else
+  echo "Changes detected in frontend folder. Running frontend-specific tasks..."
+  cd frontend
+  npm run ci:all
+fi
+
+if git diff --cached --quiet -- backend/; then
+  echo "No changes in frontend folder. Skipping frontend-specific tasks."
+else
+  echo "Changes detected in frontend folder. Running frontend-specific tasks..."
+  cd backend
+  dotnet build
+  dotnet test
+fi
