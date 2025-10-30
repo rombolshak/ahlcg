@@ -3,7 +3,6 @@ import {
   Component,
   effect,
   ElementRef,
-  HostListener,
   inject,
   linkedSignal,
   signal,
@@ -14,14 +13,14 @@ import {
   TranslocoDirective,
   TranslocoService,
 } from '@jsverse/transloco';
+import { DialogComponent } from '@shared/components/dialog/dialog.component';
+import { DialogService } from '@shared/components/dialog/dialog.service';
 import { produce } from 'immer';
 import { SettingsService } from 'shared/services/settings/settings.service';
 import {
   provideUserPreferencesService,
   UserPreferences,
 } from 'shared/services/settings/user-preferences.service';
-import { DialogComponent } from '../../../shared/ui/components/dialog/dialog.component';
-import { DialogService } from '../../../shared/ui/components/dialog/dialog.service';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 
 @Component({
@@ -33,6 +32,7 @@ import { SettingItemComponent } from './setting-item/setting-item.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'cursor-reset',
+    '(body:keydown)': 'onKeyDown($event)',
   },
 })
 export class SettingsComponent {
@@ -125,7 +125,6 @@ export class SettingsComponent {
     this.dialogService.close(this.dialogId);
   }
 
-  @HostListener('body:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     switch (event.key) {
       case 'ArrowDown':

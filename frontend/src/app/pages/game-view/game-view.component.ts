@@ -2,13 +2,12 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  HostListener,
   inject,
   OnInit,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { testGameState } from '../../shared/domain/test/test-game-state';
+import { testGameState } from '@domain/test/test-game-state';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { GameHeaderComponent } from './components/game-header/game-header.component';
 import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';
@@ -32,6 +31,9 @@ import { GameStateStore } from './store/game-state.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'h-screen w-screen text-neutral-900',
+    '(body:keydown.`)': 'toggleDebug()',
+    '(body:keydown.f10)': 'applyNextPatch($event)',
+    '(body:keydown.f9)': 'revertToOriginalState($event)',
   },
 })
 export class GameViewComponent implements OnInit {
@@ -56,8 +58,7 @@ export class GameViewComponent implements OnInit {
     this.gameState.setState(testGameState);
   }
 
-  @HostListener('body:keydown.`')
-  async toggleDebug() {
+  public async toggleDebug() {
     this.showDebug = !this.showDebug;
     if (this.showDebug) {
       const { DebugPanelComponent } = await import(
@@ -70,13 +71,11 @@ export class GameViewComponent implements OnInit {
     }
   }
 
-  @HostListener('body:keydown.f10', ['$event'])
-  applyNextPatch($event: KeyboardEvent) {
+  protected applyNextPatch($event: KeyboardEvent) {
     $event.preventDefault();
     this.timelineService.applyNextPatch();
   }
 
-  @HostListener('body:keydown.f9', ['$event'])
   revertToOriginalState($event: KeyboardEvent) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
