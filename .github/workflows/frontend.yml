@@ -1,42 +1,55 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Node.js CI
+name: Frontend CI
+permissions:
+  contents: read
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/*.json'
+      - '.github/workflows/frontend.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/*.json'
+      - '.github/workflows/frontend.yml'
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 'frontend' 
-
+        working-directory: 'frontend'
+    
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-    
-    - uses: actions/setup-node@v4
-      with:
-        node-version: latest
-        cache: 'npm'
-        cache-dependency-path: 'frontend/package-lock.json'
-    
-    - run: npm ci --force # tailwind 4 fails to resolve in angular-builder 19.1
-    
-    - run: npm run ci:all
-    
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
-      if: ${{ github.actor != 'dependabot[bot]' }}
-    
-    - name: SonarQube Scan
-      uses: SonarSource/sonarqube-scan-action@v6.0.0
-      if: ${{ github.actor != 'dependabot[bot]' }}
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - run: npm ci --force # tailwind 4 fails to resolve in angular-builder 19.1
+
+      - run: npm run ci:all
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        if: ${{ github.actor != 'dependabot[bot]' }}
+
+      - name: SonarQube Scan
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
+        with:
+          projectBaseDir: 'frontend'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

@@ -1,2 +1,7 @@
-cd frontend
-npx lint-staged
+if git diff --cached --quiet -- frontend/src; then
+      echo "No changes in frontend folder. Skipping frontend-specific tasks."
+else
+  echo "Changes detected in frontend folder. Running frontend-specific tasks..."
+  cd frontend
+  npx lint-staged
+fi
