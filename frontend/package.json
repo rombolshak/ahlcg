@@ -50,7 +50,7 @@
     "@bugsnag/js": "^8.6.0",
     "@bugsnag/plugin-angular": "^8.6.0",
     "@jsverse/transloco": "^8.1.0",
-    "@ngrx/signals": "^19.1.0",
+    "@ngrx/signals": "^20.1.0",
     "@panzoom/panzoom": "^4.6.0",
     "arktype": "^2.1.20",
     "deep-object-diff": "^1.1.9",
