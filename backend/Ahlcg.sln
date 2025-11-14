@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ServiceDefaults", "Ah
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ApiService", "Ahlcg.ApiService\Ahlcg.ApiService.csproj", "{028EC404-D6DA-44A5-8A20-1D9310E9957C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.Migrator", "Ahlcg.Migrator\Ahlcg.Migrator.csproj", "{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
