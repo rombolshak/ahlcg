@@ -18,7 +18,11 @@ builder.Services.AddSignalR().AddHubInstrumentation();
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.ConfigureApplicationCookie(options => options.ExpireTimeSpan = TimeSpan.FromDays(90));
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(90);
+    options.SlidingExpiration = true;
+});
 
 var app = builder.Build();
 app.UseExceptionHandler().UseAuthentication().UseAuthorization();

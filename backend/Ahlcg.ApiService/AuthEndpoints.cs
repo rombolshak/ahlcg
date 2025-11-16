@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 
@@ -10,15 +11,29 @@ public class AppUser : IdentityUser
     public bool IsAnonymous { get; set; }
 }
 
-public record RegisterRequest(
-    [Required] [EmailAddress] string Email,
-    [Required] string Username,
-    [Required] string Password);
-
-public static class AuthService
+public static class AuthEndpoints
 {
+    [PublicAPI]
+    public record RegisterRequest(
+        [Required] [EmailAddress] string Email,
+        [Required] string Username,
+        [Required] string Password);
+
+    [PublicAPI]
+    public record UserDto(string? Email, bool IsAnonymous);
+    
     public static RouteGroupBuilder MapAuthEndpoints(this RouteGroupBuilder group)
     {
+        group.WithDescription("Authentication flow: \n" +
+                              "1) create anonymous account first via /loginAnonymously, \n" +
+                              "2) use it as long as needed on single device, \n" +
+                              "3) call /linkCredentials when needed to create permanent account.");
+
+        group.MapGet("info", GetCurrentUser)
+            .RequireAuthorization()
+            .WithDescription("Returns information of the logged in user.")
+            .Produces(StatusCodes.Status401Unauthorized);
+
         group.MapPost("loginAnonymously", LoginAnonymously)
             .WithDescription(
                 "Creates an anonymous user without password. " +
@@ -33,18 +48,13 @@ public static class AuthService
                 "If user with a specified email already exists, then password is checked, " +
                 "on success current anonymous account will be deleted, transferring all associated data to the permanent");
 
-        group.MapGet("info", GetCurrentUser)
-            .RequireAuthorization()
-            .WithDescription("Returns information of the logged in user.")
-            .Produces(StatusCodes.Status401Unauthorized);
-
         group.MapPost("logout", Logout)
             .WithDescription(
                 "Log out current user. If user is anonymous, it will be deleted with all associated data.");
         return group;
     }
 
-    private static async Task<Results<Ok, BadRequest<IdentityResult>>> LoginAnonymously(
+    public static async Task<Results<Ok, BadRequest<IdentityResult>>> LoginAnonymously(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager)
@@ -52,7 +62,7 @@ public static class AuthService
         var loggedInUser = await userManager.GetUserAsync(principal);
         if (loggedInUser is not null)
             return TypedResults.BadRequest(IdentityResult.Failed(
-                new IdentityError { Description = "Authentication required" }));
+                new IdentityError { Description = "Already logged in" }));
 
         var user = new AppUser
         {
@@ -67,7 +77,7 @@ public static class AuthService
         return TypedResults.Ok();
     }
 
-    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, BadRequest<SignInResult>>>
+    public static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, BadRequest<SignInResult>>>
         LinkCredentials(
             ClaimsPrincipal principal,
             UserManager<AppUser> userManager,
@@ -92,6 +102,27 @@ public static class AuthService
         return TypedResults.Ok();
     }
 
+    public static async Task<Results<Ok<UserDto>, UnauthorizedHttpResult>> GetCurrentUser(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        return user is not null
+            ? TypedResults.Ok(new UserDto(user.Email, user.IsAnonymous))
+            : TypedResults.Unauthorized();
+    }
+
+    public static async Task Logout(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user?.IsAnonymous ?? false) await userManager.DeleteAsync(user);
+
+        await signInManager.SignOutAsync();
+    }
+
     private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, BadRequest<SignInResult>>>
         UpgradeUserToPermanentAsync(UserManager<AppUser> userManager, RegisterRequest request, AppUser loggedInUser)
     {
@@ -106,27 +137,4 @@ public static class AuthService
         if (!updateResult.Succeeded) return TypedResults.BadRequest(updateResult);
         return TypedResults.Ok();
     }
-
-    private static async Task<Results<Ok<UserDto>, UnauthorizedHttpResult>> GetCurrentUser(
-        ClaimsPrincipal principal,
-        UserManager<AppUser> userManager)
-    {
-        var user = await userManager.GetUserAsync(principal);
-        return user is not null
-            ? TypedResults.Ok(new UserDto(user.Email, user.IsAnonymous))
-            : TypedResults.Unauthorized();
-    }
-
-    private static async Task Logout(
-        ClaimsPrincipal principal,
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager)
-    {
-        var user = await userManager.GetUserAsync(principal);
-        if (user?.IsAnonymous ?? false) await userManager.DeleteAsync(user);
-
-        await signInManager.SignOutAsync();
-    }
-
-    private record UserDto(string? Email, bool IsAnonymous);
 }
