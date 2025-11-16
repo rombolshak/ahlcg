@@ -6,6 +6,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ServiceDefaults", "Ah
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ApiService", "Ahlcg.ApiService\Ahlcg.ApiService.csproj", "{028EC404-D6DA-44A5-8A20-1D9310E9957C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.Migrator", "Ahlcg.Migrator\Ahlcg.Migrator.csproj", "{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ApiService.Tests", "unit-tests\Ahlcg.ApiService.Tests\Ahlcg.ApiService.Tests.csproj", "{00C31CFF-924B-4626-A46B-54CB17F530D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{EF1B2283-59D3-4513-9247-C3A997A7FDB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +30,16 @@ Global
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{028EC404-D6DA-44A5-8A20-1D9310E9957C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C10F6B7-4659-4C0B-923E-06A2ED5325C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00C31CFF-924B-4626-A46B-54CB17F530D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00C31CFF-924B-4626-A46B-54CB17F530D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00C31CFF-924B-4626-A46B-54CB17F530D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00C31CFF-924B-4626-A46B-54CB17F530D5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{00C31CFF-924B-4626-A46B-54CB17F530D5} = {EF1B2283-59D3-4513-9247-C3A997A7FDB2}
 	EndGlobalSection
 EndGlobal
