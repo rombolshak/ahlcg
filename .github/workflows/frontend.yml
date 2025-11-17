@@ -6,19 +6,8 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'frontend/src/**'
-      - 'frontend/*.json'
-      - '.github/workflows/frontend.yml'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'frontend/src/**'
-      - 'frontend/*.json'
-      - '.github/workflows/frontend.yml'
-
+  workflow_call:
+    
 
 jobs:
   build:
@@ -45,6 +34,10 @@ jobs:
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          flag-name: 'frontend'
+          parallel: true
+          base-path: ${{ github.workspace }}/frontend
 
       - name: SonarQube Scan
         if: ${{ github.actor != 'dependabot[bot]' }}
