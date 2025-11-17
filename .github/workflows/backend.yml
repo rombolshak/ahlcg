@@ -42,7 +42,7 @@ jobs:
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
