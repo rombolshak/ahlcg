@@ -38,7 +38,7 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Start Sonar
-        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend"
+        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak"
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
