@@ -45,6 +45,8 @@ jobs:
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          flag-name: 'frontend'
 
       - name: SonarQube Scan
         if: ${{ github.actor != 'dependabot[bot]' }}
