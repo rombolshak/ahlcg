@@ -32,9 +32,28 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10
+      - name: Install coverage tool
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      - name: Install Sonar scanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Start Sonar
+        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths=coveragereport/SonarQube.xml
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"trx"
+      - name: Create coverage report
+        run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*" -classfilters:"-*Generated*"
+      - name: Stop Sonar
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        with:
+          file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
+          base-path: ${{ github.workspace }}
+          debug: 'true'
