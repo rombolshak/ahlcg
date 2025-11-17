@@ -6,16 +6,7 @@ permissions:
   contents: read
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yml'
+  workflow_call:
 
 jobs:
   build:
@@ -51,10 +42,11 @@ jobs:
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Coveralls
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@master
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
-          base-path: ${{ github.workspace }}
+          base-path: ${{ github.workspace }}/backend
           debug: 'true'
+          parallel: true
           flag-name: 'backend'
