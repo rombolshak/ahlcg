@@ -38,7 +38,7 @@ jobs:
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Start Sonar
-        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak"
+        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -48,7 +48,7 @@ jobs:
       - name: Create coverage report
         run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,Lcov,SonarQube -filefilters:"-*Generated*" -classfilters:"-*Generated*"
       - name: Stop Sonar
-        run: dotnet sonarscanner end
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
