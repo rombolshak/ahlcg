@@ -54,6 +54,4 @@ jobs:
         uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
-          file: ./coveragereport/Cobertura.xml
-          base-path: 'backend'
-          debug: 'true'
+          file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
