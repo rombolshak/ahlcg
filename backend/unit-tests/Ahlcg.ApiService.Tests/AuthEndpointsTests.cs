@@ -116,6 +116,24 @@ public class AuthEndpointsTests
     }
 
     [Fact]
+    public async Task LinkCredentials_NonExistentUserWithBadEmail_ReturnsBadRequest()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.LinkCredentials(
+            AnonymousPrincipal1,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("bad_mail", "user", "P@ssw0rd"));
+
+        Assert.IsType<BadRequest<IdentityResult>>(result.Result);
+        userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
+        userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()));
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
     public async Task LinkCredentials_ExistentUserWithInvalidPassword_ReturnsForbid()
     {
         var userManager = GetMockUserManager();
@@ -213,10 +231,23 @@ public class AuthEndpointsTests
         signInManager.Verify(manager => manager.SignOutAsync());
     }
 
+    [Fact]
+    public async Task Logout_NotLoggedIn_NothingHappens()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        await AuthEndpoints.Logout(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object);
+
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        signInManager.Verify(manager => manager.SignOutAsync());
+    }
+
     private static Mock<UserManager<AppUser>> GetMockUserManager()
     {
         var mock = new Mock<UserManager<AppUser>>(
             new Mock<IUserStore<AppUser>>().Object,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             null,
             null,
             null,
@@ -225,6 +256,7 @@ public class AuthEndpointsTests
             null,
             null,
             null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         var permanentUser = new AppUser
         {
@@ -271,10 +303,12 @@ public class AuthEndpointsTests
             GetMockUserManager().Object,
             new Mock<IHttpContextAccessor>().Object,
             new Mock<IUserClaimsPrincipalFactory<AppUser>>().Object,
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
             null,
             null,
             null,
             null);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
         return mock;
     }
 
