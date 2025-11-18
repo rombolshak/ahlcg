@@ -37,7 +37,7 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"trx"
       - name: Create coverage report
-        run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*" -classfilters:"-*Generated*"
+        run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
       - name: Stop Sonar
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
