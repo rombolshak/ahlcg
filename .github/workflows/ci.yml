@@ -49,6 +49,7 @@ jobs:
     needs:
       - backend
       - frontend
+    if: always()
     steps:
       - name: Finish parallel build
         uses: coverallsapp/github-action@master
