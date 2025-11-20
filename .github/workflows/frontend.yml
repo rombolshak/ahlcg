@@ -7,7 +7,7 @@ permissions:
 
 on:
   workflow_call:
-    
+
 
 jobs:
   build:
@@ -37,7 +37,6 @@ jobs:
         with:
           flag-name: 'frontend'
           parallel: true
-          base-path: ${{ github.workspace }}/frontend
 
       - name: SonarQube Scan
         if: ${{ github.actor != 'dependabot[bot]' }}

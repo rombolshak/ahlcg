@@ -46,7 +46,6 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
-          base-path: ${{ github.workspace }}/backend
           debug: 'true'
           parallel: true
           flag-name: 'backend'
