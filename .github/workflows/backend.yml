@@ -37,10 +37,7 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"trx"
       - name: Create coverage report
-        run: |
-          reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
-          head -n 20 coveragereport/Cobertura.xml
-          sed -i 's|${{ github.workspace }}/backend||g' coveragereport/Cobertura.xml 
+        run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
       - name: Stop Sonar
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
@@ -49,7 +46,6 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           file: ${{ github.workspace }}/backend/coveragereport/Cobertura.xml
-          base-path: ${{ github.workspace }}/backend
           debug: 'true'
           parallel: true
           flag-name: 'backend'
