@@ -39,7 +39,8 @@ jobs:
       - name: Create coverage report
         run: |
           reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
-          sed -i 's|${{ github.workspace }}||g' coveragereport/Cobertura.xml 
+          head -n 20 coveragereport/Cobertura.xml
+          sed -i 's|${{ github.workspace }}/backend||g' coveragereport/Cobertura.xml 
       - name: Stop Sonar
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 

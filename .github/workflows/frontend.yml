@@ -30,7 +30,7 @@ jobs:
       - run: npm ci --force # tailwind 4 fails to resolve in angular-builder 19.1
 
       - run: npm run ci:all
-      - run: sed -i 's|${{ github.workspace }}||g' coverage/lcov.info
+      - run: echo ${pwd} && sed -i 's|${{ github.workspace }}/frontend||g' coverage/lcov.info
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
