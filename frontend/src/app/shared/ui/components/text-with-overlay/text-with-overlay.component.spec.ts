@@ -28,11 +28,11 @@ describe('TextWithOverlayComponent', () => {
     const p = fixture.debugElement.queryAll(By.css('p'));
 
     expect(p.length).toBe(2);
-    expect((p[0]?.nativeElement as HTMLElement).textContent?.trim()).toBe(
+    expect((p[0]?.nativeElement as HTMLElement).textContent.trim()).toBe(
       'test',
     );
 
-    expect((p[1]?.nativeElement as HTMLElement).textContent?.trim()).toBe(
+    expect((p[1]?.nativeElement as HTMLElement).textContent.trim()).toBe(
       'test',
     );
   });

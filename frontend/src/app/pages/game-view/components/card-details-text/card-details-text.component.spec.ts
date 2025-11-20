@@ -32,7 +32,7 @@ describe('CardDetailsTextComponent', () => {
     const title = fixture.debugElement.query(By.css('[data-testId=title]'))
       .nativeElement as HTMLElement;
 
-    expect(title.textContent?.trim()).toEqual('Вход в музей');
+    expect(title.textContent.trim()).toEqual('Вход в музей');
   });
 
   it('should display card subtitle if exists', async () => {
@@ -42,7 +42,7 @@ describe('CardDetailsTextComponent', () => {
       By.css('[data-testId=subtitle]'),
     ).nativeElement as HTMLElement;
 
-    expect(subtitle.textContent?.trim()).toEqual('The Librarian');
+    expect(subtitle.textContent.trim()).toEqual('The Librarian');
   });
 
   it('should not display subtitle if empty', () => {
@@ -58,7 +58,7 @@ describe('CardDetailsTextComponent', () => {
       .nativeElement as HTMLElement;
 
     for (const trait of ['Arkham', 'Ritual']) {
-      expect(traits.textContent?.trim()).toContain(trait);
+      expect(traits.textContent.trim()).toContain(trait);
     }
   });
 
