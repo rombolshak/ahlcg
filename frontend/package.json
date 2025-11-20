@@ -10,8 +10,6 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start:win32": "ng serve --port %PORT%",
-    "start:default": "ng serve --port $PORT",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "npm run test:ci",
@@ -104,7 +102,6 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-sh": "^0.18.0",
     "prettier-plugin-tailwindcss": "^0.7.1",
-    "run-script-os": "^1.1.6",
     "storybook": "^10.0.2",
     "stylelint": "^16.25.0",
     "stylelint-config-standard": "^39.0.1",
