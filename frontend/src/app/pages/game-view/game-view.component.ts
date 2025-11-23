@@ -30,7 +30,8 @@ import { GameStateStore } from './store/game-state.store';
   templateUrl: './game-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'h-screen w-screen text-neutral-900',
+    class:
+      'h-screen w-screen text-neutral-900 block bg-[url("/assets/images/bg-min.webp")]',
     '(body:keydown.`)': 'toggleDebug()',
     '(body:keydown.f10)': 'applyNextPatch($event)',
     '(body:keydown.f9)': 'revertToOriginalState($event)',
