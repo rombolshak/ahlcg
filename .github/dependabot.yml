@@ -35,8 +35,19 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    groups:
+      dotnet:
+        applies-to: version-updates
+        patterns:
+          - "Microsoft.*"
+          - "AspNetCore.*"
 
   - package-ecosystem: "dotnet-sdk"
     directory: "/backend"
     schedule:
       interval: "weekly"
+    groups:
+      dotnet-sdk:
+        applies-to: version-updates
+        patterns:
+          - "*"
