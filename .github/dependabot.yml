@@ -41,6 +41,11 @@ updates:
         patterns:
           - "Microsoft.*"
           - "AspNetCore.*"
+          - "OpenTelemetry.*"
+      aspire:
+        applies-to: version-updates
+        patterns:
+          - "*Aspire.*"
 
   - package-ecosystem: "dotnet-sdk"
     directory: "/backend"
