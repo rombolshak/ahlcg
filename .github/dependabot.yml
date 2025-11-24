@@ -47,8 +47,8 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
-      groups:
-        dotnet-sdk:
-          applies-to: version-updates
-          patterns:
-            - "*"
+    groups:
+      dotnet-sdk:
+        applies-to: version-updates
+        patterns:
+          - "*"
