@@ -62,6 +62,6 @@
     "softwareTerms",
     "typescript"
   ],
-  "ignorePaths": ["*test*", "*spec.ts", "assets"],
+  "ignorePaths": ["*test*", "*spec.ts", "*.stories.ts", "assets"],
   "import": ["@cspell/dict-ru_ru/cspell-ext.json"]
 }
