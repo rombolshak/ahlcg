@@ -43,7 +43,7 @@
   --noise: 0;
 }
 
-*:not(:is(.cursor-reset, .cursor-reset *)) {
+*:not(:is(.cursor-reset, .cursor-reset *, .cursor-pointer, .btn)) {
   cursor: default;
 }
 

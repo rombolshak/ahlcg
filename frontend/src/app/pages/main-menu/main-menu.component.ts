@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ArtButtonComponent } from '@shared/components/art-button/art-button.component';
 import { ArtPanelComponent } from '@shared/components/art-panel/art-panel.component';
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [ArtPanelComponent],
+  imports: [ArtPanelComponent, ArtButtonComponent],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -11,5 +12,8 @@ import { ArtPanelComponent } from '@shared/components/art-panel/art-panel.compon
       'h-screen w-screen block bg-[url("/assets/images/main-menu.webp")] bg-contain bg-center bg-no-repeat bg-black p-8',
   },
 })
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class MainMenuComponent {}
+export class MainMenuComponent {
+  protected select() {
+    alert('qq');
+  }
+}
