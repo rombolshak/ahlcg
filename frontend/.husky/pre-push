@@ -9,6 +9,7 @@ else
   echo "Changes detected in frontend folder. Running frontend-specific tasks..."
   cd frontend
   npm run ci:all
+  cd ..
 fi
 
 if git diff --name-only --quiet $ref HEAD -- backend/; then
@@ -18,4 +19,5 @@ else
   cd backend
   dotnet build
   dotnet test
+  cd ..
 fi
