@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideZonelessChangeDetection } from '@angular/core';
 import { ArtPanelComponent } from './art-panel.component';
 
 describe('ArtPanelComponent', () => {
@@ -8,6 +9,7 @@ describe('ArtPanelComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
       imports: [ArtPanelComponent],
     }).compileComponents();
 

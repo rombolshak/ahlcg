@@ -15,12 +15,16 @@ export class NoThreatsPhraseService {
 
   private createPhraseSignal(investigator: Signal<Investigator | null>) {
     let currentPhrase = this.getRandomPhrase(this.initialPhrasesCount);
+    let prevPhrase = currentPhrase;
     let previousCount = investigator()?.threatArea.length ?? 0;
 
     return computed(() => {
       const currentCount = investigator()?.threatArea.length ?? 0;
       if (previousCount > 0 && currentCount === 0) {
-        currentPhrase = this.getRandomPhrase(this.totalPhrasesCount);
+        prevPhrase = currentPhrase;
+        while (currentPhrase === prevPhrase) {
+          currentPhrase = this.getRandomPhrase(this.totalPhrasesCount);
+        }
       }
 
       previousCount = currentCount;
