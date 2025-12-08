@@ -11,8 +11,8 @@ import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import { provideTransloco } from '@jsverse/transloco';
-import { routes } from './app.routes';
-import { TranslocoHttpLoader } from './transloco-loader';
+import { routes } from 'app.routes';
+import { TranslocoHttpLoader } from 'transloco-loader';
 
 Bugsnag.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
 BugsnagPerformance.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
@@ -34,17 +34,18 @@ export const appConfig: ApplicationConfig = {
       config: {
         availableLangs: [
           { id: 'en', label: 'English' },
-          { id: 'zh', label: '中文' },
+          //{ id: 'zh', label: '中文' },
           { id: 'es', label: 'Español' },
-          { id: 'pt', label: 'Português' },
+          //{ id: 'pt', label: 'Português' },
           { id: 'fr', label: 'Français' },
           { id: 'ru', label: 'Русский' },
           { id: 'de', label: 'Deutsch' },
-          { id: 'cs', label: 'Čeština' },
-          { id: 'vi', label: 'Tiếng Việt' },
-          { id: 'ko', label: '한국어' },
+          { id: 'it', label: 'Italiano' },
+          //{ id: 'cs', label: 'Čeština' },
+          //{ id: 'vi', label: 'Tiếng Việt' },
+          //{ id: 'ko', label: '한국어' },
           { id: 'pl', label: 'Polski' },
-          { id: 'uk', label: 'Українська' },
+          //{ id: 'uk', label: 'Українська' },
         ],
         defaultLang: 'en',
         fallbackLang: 'en',
