@@ -214,10 +214,9 @@ Avoids CSRF entirely but requires secure token storage:
 
 ```typescript
 // Store JWT in memory (cleared on page close)
-localStorage.setItem('token', jwtToken);  // ⚠️ XSS vulnerable
+let accessToken: string | null = jwtToken;
 
 // Better: Use httpOnly cookie + automatic refresh flow
-```
 
 ---
 
