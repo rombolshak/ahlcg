@@ -2,8 +2,6 @@ name: "Chromatic"
 
 on:
   push:
-    branches-ignore:
-      - "dependabot/**" # 👈 Excludes the example branch
     paths:
       - "frontend/src"
       - "frontend/public/assets/fonts"
@@ -14,6 +12,7 @@ permissions:
 jobs:
   chromatic:
     name: Run Chromatic
+    if: "!startsWith(github.ref, 'refs/heads/dependabot')"
     runs-on: ubuntu-latest
     defaults:
       run:
