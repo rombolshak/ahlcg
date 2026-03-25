@@ -109,7 +109,7 @@ if (!app.Environment.IsDevelopment()) {
 
 **HSTS Header:**
 
-```
+```http
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
@@ -210,13 +210,16 @@ The codebase does not currently expose a dedicated `/auth/csrf-token` endpoint, 
 
 ### Alternative: Header-Based Auth (JWT)
 
-Avoids CSRF entirely but requires secure token storage:
+Avoids CSRF entirely but requires secure token storage and non-persistent storage.
 
 ```typescript
-// Store JWT in memory (cleared on page close)
-localStorage.setItem('token', jwtToken);  // ⚠️ XSS vulnerable
+// Store JWT in memory (non-persistent) and clear on page unload
+let token: string | null = jwtToken;
+window.addEventListener('beforeunload', () => {
+  token = null;
+});
 
-// Better: Use httpOnly cookie + automatic refresh flow
+// Preferred approach: use httpOnly secure cookie + automatic refresh flow
 ```
 
 ---

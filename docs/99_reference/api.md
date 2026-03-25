@@ -36,9 +36,6 @@ Content-Type: application/json
 **Error Responses:**
 - `400 Bad Request` — Already logged in (anonymous or permanent)
 
-**Cookie Side Effect:**
-- Sets `AspNetCore.Identity.Application` cookie (90-day lifetime, sliding expiration)
-
 **Use Cases:**
 - User starts playing without account
 - Anonymous progress preserved until upgrade
@@ -175,7 +172,7 @@ const response = await connection.invoke("Ping");
 ### Authorization
 
 - Hub requires authentication (cookie or token)
-- Anonymous users can access if logged in via `/auth/login-anonymous`
+- Anonymous users can access if logged in via `/auth/loginAnonymously`
 - Connection closes if token expires
 
 ### Connection Lifecycle
@@ -242,7 +239,7 @@ All error responses use RFC 7807 ProblemDetails format:
   "title": "Validation Error",
   "status": 400,
   "detail": "Email is required",
-  "instance": "/auth/link-credentials",
+  "instance": "/auth/linkCredentials",
   "errors": {
     "email": ["Email is required"]
   }
@@ -302,8 +299,8 @@ Current version: v1 (implicit)
 **Example (future):**
 
 ```
-POST /api/v1/auth/login-anonymous
-POST /api/v2/auth/login-anonymous  (breaking changes)
+POST /api/v1/auth/loginAnonymously
+POST /api/v2/auth/loginAnonymously  (breaking changes)
 ```
 
 ---

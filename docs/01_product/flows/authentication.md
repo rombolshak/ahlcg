@@ -159,7 +159,7 @@ Response: 401 Unauthorized (if not logged in)
 1. Player clicks "Logout"
 2. Backend **signs out** (invalidates cookie) but keeps account intact
 3. Save data and decks remain
-4. Player can log back in later with email/password
+4. Player can later return with email/password via `POST /auth/linkCredentials` (if upgrading from anonymous) or future direct login flow when implemented
 
 ### Endpoint
 ```
@@ -231,8 +231,7 @@ Side Effects:
 - **Future:** Configure CORS with `AllowCredentials = true` for cross-origin cookies
 
 ### Session Hijacking Risk?
-- **Current:** Cookies use HTTP-only (secure) + SameSite attributes (TBD in production)
-- **Production:** Must enable HTTPS and configure `Secure` and `SameSite=Lax` or `None` (with Secure)
+- **Current:** Cookies use HTTP-only and Secure with SameSite=Lax (production requires HTTPS; SameSite=None is allowed only with Secure).- **Production:** Must enable HTTPS and configure `Secure` and `SameSite=Lax` or `None` (with Secure)
 
 ---
 

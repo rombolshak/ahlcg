@@ -146,7 +146,7 @@ Local Development Only:
 ### Authentication Flow
 ```
 1. User clicks "Play Now"
-   ├─ Browser: Click handler → axios POST /auth/loginAnonymously
+   ├─ Browser: Click handler → AuthService uses Angular HttpClient.post('/auth/loginAnonymously', ...) and subscribes/awaits observable
    │
 2. HTTP Request
    ├─ Browser → Server: POST /auth/loginAnonymously

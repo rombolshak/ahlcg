@@ -53,7 +53,7 @@ Global styles are in `src/styles.css`:
 
 - Base resets and typography
 - Dark/light theme variables
-- Tailwind directives (`@tailwind base; @tailwind components; @tailwind utilities;`)
+- Tailwind v4 import/plugin approach (e.g. `@import "tailwindcss";`, `@plugin "daisyui";`, `@plugin "daisyui/theme" { ... }` in `src/styles.css`)
 
 ### Example
 

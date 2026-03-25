@@ -9,7 +9,7 @@ Read this to understand how the frontend is organized and how components interac
 ## Related Files
 - [Frontend State Management](../03_implementation/frontend/state_management.md) — How the signals store works
 - [Frontend UI Patterns](../03_implementation/frontend/ui_patterns.md) — Component conventions and patterns
-- [Archive Overview](./overview.md) — How frontend connects to backend
+- [Architecture Overview](./overview.md) — How frontend connects to backend
 - [Frontend Testing](../04_testing/frontend.md) — How to test components
 
 ---
@@ -249,17 +249,17 @@ See [Frontend Testing](../04_testing/frontend.md) for details.
 
 ---
 
-## Real-Time Updates
+## Real-Time Updates (Planned)
 
-**SignalR** handles bi-directional communication:
+**SignalR** is planned for future bi-directional communication (not currently wired in frontend deps; `@microsoft/signalr` is absent from `package.json`).
 
-1. **Connect:** User joins game → SignalR subscribes to `/game` hub
-2. **Receive:** Hub broadcasts updates → Client receives via `on('message', ...)`
-3. **Apply:** SignalR client calls `store.updateState(patch)`
-4. **Animate:** GSAP Flip transition triggers
-5. **Render:** Angular re-renders the updated view
+1. **Connect:** User joins game → SignalR would subscribe to `/game` hub
+2. **Receive:** Hub would broadcast updates → Client would receive via `on('message', ...)`
+3. **Apply:** SignalR client would call `store.updateState(patch)`
+4. **Animate:** GSAP Flip transition would trigger
+5. **Render:** Angular would re-render the updated view
 
-See [Backend Architecture](./backend.md) (SignalR section) for server-side details.
+Note: current implementation has no active SignalR message flow; this is the intended future behavior using `/game` hub + client-side store.patch/GSAP Flip.
 
 ---
 
