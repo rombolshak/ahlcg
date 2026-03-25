@@ -89,7 +89,12 @@ Example location: `backend/unit-tests/Ahlcg.ApiService.Tests/AuthEndpointsTests.
 - Useful for quick testing
 - No persistence between tests
 - Doesn't test EF Core behavior deeply
-- Can use `services.AddInMemoryDatabase("unique-name")`
+- Use DbContext options:
+  ```csharp
+  var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+    .UseInMemoryDatabase("unique-name")
+    .Options;
+  ```
 
 ---
 
@@ -255,7 +260,7 @@ public class DatabaseFixture : IDisposable {
   
   private void Seed() {
     // Add standard test data
-    DbContext.Scenarios.Add(new Scenario { Id: "s-1", Name: "Test" });
+    DbContext.Scenarios.Add(new Scenario { Id = "s-1", Name = "Test" });
     DbContext.SaveChanges();
   }
   

@@ -25,7 +25,7 @@ Read this to understand how the frontend is organized and how components interac
 | Animations | GSAP Flip | Latest |
 | Validation | arktype | Latest |
 | HTTP | Angular HttpClient | Built-in |
-| Real-time | SignalR JS Client | Latest |
+| Real-time | SignalR via GameHub (no client package in deps) | Planned |
 | i18n | Transloco | Latest |
 | Styling | Tailwind CSS | 4 |
 | Testing | Karma + Jasmine | Latest |

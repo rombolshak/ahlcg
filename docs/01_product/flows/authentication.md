@@ -69,7 +69,7 @@ Cookies: Set authentication cookie
 ### What Happens to Save Data
 - ✅ Saved during play session
 - ✅ Recoverable if player logs back in within 90 days
-- ❌ Deleted server-side after 90 days of inactivity (if anon)
+- ⚠️ Planned policy: eligible anonymous accounts would be deleted after 90 days of inactivity, but no automatic background purge exists in current implementation (see TODO).
 - ❌ Deleted if player logs out while anonymous
 
 ---
@@ -96,40 +96,36 @@ Cookies: Set authentication cookie
 ### Endpoint
 ```
 POST /auth/linkCredentials
-Required: Authorization (must be logged in)
+Required: Authorization (must be logged in as anonymous)
 Body:
   email: "player@example.com"
-  password: "newpassword" (for new account)
-  OR
-  linkPassword: "existingpassword" (if merging with existing account)
-Response: 200 OK or 403 Forbidden (if password invalid)
+  username: "playername"
+  password: "newpassword"
+Response: 200 OK or 403 Forbidden (if existing email password invalid)
 ```
 
 ---
 
-## Step 4: Permanent Login
+## Step 4: Permanent Login (as supported today)
 
 ### What Happens
-1. Player returns to app (cookie expired or new device)
-2. Player clicks "Sign In"
-3. Player enters email and password
-4. Backend validates credentials
-5. Backend signs player in (creates new cookie)
+1. For anonymous play, use `POST /auth/loginAnonymously` to get a temporary session.
+2. To persist progress, call `POST /auth/linkCredentials` while logged in as anonymous.
+   - Pass `email`, `username`, `password` to upgrade the same account.
+   - If `email` exists, backend verifies password and merges progress (current behavior for existing users).
+3. Use `GET /auth/info` to inspect current session status.
+4. Use `POST /auth/logout` to sign out; anonymous accounts are deleted, permanent accounts remain.
 
 ### Session
-- Same 90-day expiration + sliding expiration
-- Persistent across devices (can log in from different browsers)
-- Multiple active sessions possible (e.g., on phone and desktop)
+- Cookie lifetime is configured for 90 days with sliding expiration.
+- For anonymous accounts, session is only valid on the device where cookie remains.
+- Permanent accounts are intended to persist across devices once linked.
 
-### Endpoint
-```
-POST /auth/login
-Body:
-  email: "player@example.com"
-  password: "thepassword"
-Response: 200 OK or 401 Unauthorized
-Cookies: Set authentication cookie
-```
+### Relevant Endpoints
+- `POST /auth/loginAnonymously` — create anonymous account + set auth cookie
+- `POST /auth/linkCredentials` — upgrade or merge to permanent account
+- `GET /auth/info` — return `{ email, isAnonymous }`
+- `POST /auth/logout` — sign out current user
 
 ---
 

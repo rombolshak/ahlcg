@@ -58,12 +58,48 @@ Global styles are in `src/styles.css`:
 ### Example
 
 ```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@toolwind/anchors";
+@import "vanilla-jsoneditor/themes/jse-theme-dark.css";
 
-:root {
-  --rounded-md: 0.5rem;
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "abyss";
+  default: true;
+  prefersdark: true;
+  color-scheme: "dark";
+
+  --color-base-100: oklch(20% 0.08 209deg);
+  --color-base-200: oklch(15% 0.08 209deg);
+  --color-base-300: oklch(10% 0.08 209deg);
+  --color-base-content: oklch(90% 0.076 70.697deg);
+  --color-primary: oklch(47% 0.157 37.304deg);
+  --color-primary-content: oklch(90% 0.076 70.697deg);
+  --color-secondary: oklch(43% 0.095 166.913);
+  --color-secondary-content: oklch(95% 0.051 180.801deg);
+  --color-accent: oklch(43% 0 0deg);
+  --color-accent-content: oklch(98% 0.022 95.277deg);
+  --color-neutral: oklch(30% 0.08 209deg);
+  --color-neutral-content: oklch(90% 0.076 70.697deg);
+  --color-info: oklch(74% 0.16 232.661deg);
+  --color-info-content: oklch(29% 0.066 243.157deg);
+  --color-success: oklch(62% 0.194 149.214);
+  --color-success-rgb: #00a43b;
+  --color-success-content: oklch(26% 0.065 152.934deg);
+  --color-warning: oklch(84.8% 0.1962 84.62deg);
+  --color-warning-content: oklch(44.8% 0.1962 84.62deg);
+  --color-error: oklch(65% 0.1985 24.22deg);
+  --color-error-rgb: #f04e4f;
+  --color-error-content: oklch(27% 0.1985 24.22deg);
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
 
 body {

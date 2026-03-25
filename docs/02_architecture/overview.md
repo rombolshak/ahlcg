@@ -167,25 +167,23 @@ Local Development Only:
    ├─ UI redirects to game view
 ```
 
-### Real-Time Game Update
+### Real-Time Game Update (Future Design)
 ```
 1. Player A makes a move
    ├─ Browser: Patch generated locally
    ├─ Store: State updated (optimistic)
-   ├─ Sent to backend via SignalR
+   ├─ Would be sent to backend via SignalR if implemented
    │
-2. Backend Validation
-   ├─ GameHub receives patch
-   ├─ Validates against domain rules
-   ├─ Applies to canonical game state
-   ├─ Saves to PostgreSQL
+2. Backend Validation (not currently implemented in GameHub)
+   ├─ GameHub currently exposes only Ping()
+   ├─ Planned: validate patch and apply to canonical game state
+   ├─ Planned: save to PostgreSQL
    │
-3. Broadcast to Other Players
-   ├─ BackendSends updated state to all connected clients
+3. Broadcast to Other Players (future)
+   ├─ Backend would send updates to connected clients
    │
 4. Other Clients Update
-   ├─ SignalR client receives update
-   ├─ GameStateStore applies patch
+   ├─ SignalR client would apply patch to GameStateStore
    ├─ GSAP Flip animates the transition
    ├─ UI renders new state
 ```

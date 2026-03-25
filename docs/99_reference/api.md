@@ -21,21 +21,17 @@ Base URL: `https://api.example.com/auth` (development: `https://localhost:5001/a
 Creates a temporary anonymous account.
 
 ```
-POST /auth/login-anonymous
+POST /auth/loginAnonymously
 Content-Type: application/json
 ```
 
 **Request Body:** None
 
 **Success Response (200 OK):**
-```json
-{
-  "id": "user-guid-123",
-  "email": null,
-  "userName": "anonymous-user-123",
-  "isAnonymous": true
-}
-```
+- No response body (empty 200 OK)
+
+**Cookie Side Effect:**
+- Sets `AspNetCore.Identity.Application` cookie (90-day lifetime, sliding expiration)
 
 **Error Responses:**
 - `400 Bad Request` — Already logged in (anonymous or permanent)
@@ -54,30 +50,31 @@ Content-Type: application/json
 Upgrades anonymous account or signs into permanent account.
 
 ```
-POST /auth/link-credentials
+POST /auth/linkCredentials
 Content-Type: application/json
 Cookie: AspNetCore.Identity.Application=...
-Authorization: Bearer <not used; uses cookie>
 ```
 
 **Request Body:**
 ```json
 {
   "email": "user@example.com",
+  "username": "playername",
   "password": "SecurePassword123!"
 }
 ```
 
 **Success Response (200 OK):**
+- No response body (200 OK)
 
 **Error Responses:**
 
-- `401 Unauthorized` — Invalid credentials
-- `400 Bad Request` — Not logged in as anonymous
+- `403 Forbidden` — Existing email found, but provided password is invalid
+- `400 Bad Request` — Not logged in as anonymous or invalid registration data
 
 **Behavior:**
-- If email doesn't exist: Upgrade anonymous account
-- If email exists: Validate password, merge into existing account (future enhancement)
+- If email doesn't exist: upgrade current anonymous account to permanent
+- If email exists: validate password and merge, then sign in existing account
 
 ---
 
@@ -139,23 +136,7 @@ Supports both HTTP and WebSocket transports.
 
 ### Hub Methods (Server → Client)
 
-Server can invoke these methods on connected clients:
-
-```typescript
-// Example: Client listens for game state updates
-connection.on("OnGameStateChanged", (patch: JsonPatch[]) => {
-  // Apply RFC6902 patch to local state
-  // Trigger animations
-});
-
-connection.on("OnPlayerJoined", (userId: string) => {
-  // Update UI with new player
-});
-
-connection.on("OnGameEnded", (result: GameResult) => {
-  // Show results screen
-});
-```
+Current GameHub implementation does not emit server-initiated events such as `OnGameStateChanged`, `OnPlayerJoined`, or `OnGameEnded`.
 
 ### Hub Methods (Client → Server)
 
@@ -169,8 +150,12 @@ public async Task Ping() { ... }
 
 ```
 Ping()
-→ Task (completes when server processes)
+→ Task
 ```
+
+**Behavior:**
+- `Ping()` is implemented in `backend/Ahlcg.ApiService/GameHub.cs`.
+- It responds with a ping handshake and a timestamp (or keeps connection alive).
 
 **Example (TypeScript):**
 

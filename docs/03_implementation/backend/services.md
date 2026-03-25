@@ -29,9 +29,11 @@ Implemented in `AuthEndpoints.cs`.
 
 ---
 
-## Service Layer Pattern
+## Service Layer Pattern (Aspirational)
 
-Separate business logic from endpoints:
+The current codebase mostly uses direct endpoint handlers via `MapPost`/`MapGet` patterns (see `AuthEndpoints.cs`, `Program.cs`).
+
+The service layer pattern below is provided as a recommended future refactor to isolate business logic and improve testability.
 
 ```csharp
 public interface IGameService { /* ... */ }
@@ -58,6 +60,8 @@ app.MapPost("games", async (CreateGameRequest req, IGameService gameService, Htt
 .WithName("CreateGame")
 .WithOpenApi();
 ```
+
+**Current implementation style** in this repo uses direct route handlers in `AuthEndpoints.cs`.
 
 ---
 

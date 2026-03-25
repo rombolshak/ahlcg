@@ -93,13 +93,14 @@ Located in `frontend/.husky/` (Node-based hooks).
 
 ### Pre-Commit
 
-Automatically runs for frontend changes:
+Automatically runs for frontend changes via `lint-staged`:
 
 ```bash
-# Staged files in frontend/src are linted and formatted
-npm run lint  # Validates syntax
-npm run format  # Fixes formatting
+# Staged frontend files are linted/formatted by configured tasks
+npx lint-staged
 ```
+
+lint-staged runs commands configured in `package.json`/`.lintstagedrc` (e.g., `npm run lint`, `npm run format`).
 
 **NEVER skip hooks**
 

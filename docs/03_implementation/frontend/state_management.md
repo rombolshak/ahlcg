@@ -18,36 +18,46 @@ Read this when modifying the store, adding new state properties, or debugging st
 
 Location: `frontend/src/app/pages/game-view/store/game-state.store.ts`
 
-The store uses `@ngrx/signals` to provide reactive, type-safe state management:
+The store uses `@ngrx/signals` to provide reactive, type-safe state management using a wrapper type (`isLoading`, `error`, `gameState`):
 
 ```typescript
 export const GameStateStore = signalStore(
   { providedIn: 'root' },
-  
-  // 1. State shape
-  withState<GameState>(initialState),
-  
-  // 2. Computed selectors (memoized)
-  withComputed((state: SignalStoreSlice<GameState>) => ({
-    investigatorCount: computed(() => state.investigators().length),
-    activeInvestigator: computed(() => 
-      state.investigators().find(inv => inv.id === state.currentTurn().investigatorId)
-    ),
+  withState<State>({ isLoading: true, error: null, gameState: null }),
+
+  withComputed((store) => ({
+    currentInvestigator: computed(() => {
+      if (!store.gameState()) return null;
+      const id = store.gameState()!.currentInvestigator;
+      return store.getInvestigator(id);
+    }),
   })),
-  
-  // 3. Methods (synchronous & async)
-  withMethods((store: Readonly<GameState>) => ({
-    setState: (newState: GameState) => patchState(store, newState),
-    updateState: (patches: Operation[]) => {
-      const current = store.toJSON();
-      const updated = applyPatch(current, patches);
-      validateState(updated);
-      patchState(store, updated);
-      animateTransition();
+
+  withMethods((store) => ({
+    setState(state: GameState): void {
+      patchState(store, () => ({ isLoading: false, gameState: state }));
     },
-  }))
+
+    updateState(changes: Operation[]): void {
+      const targets = 'ah-investigator-avatar';
+      const state = Flip.getState(targets);
+      applyStatePatches(store, changes); // includes validateState and patchState on wrapper.gameState
+      requestAnimationFrame(() => {
+        Flip.from(state, {
+          duration: 2,
+          targets,
+          ease: 'power2.inOut',
+        });
+      });
+    },
+  })),
 );
 ```
+
+- `State` shape includes `isLoading`, `error`, `gameState`.
+- `setState` updates the wrapper rather than replacing `GameState` directly.
+- `updateState` applies RFC6902 patches with `applyStatePatches`, then runs animation.
+- `validateState` is invoked from the patch path before persisting.
 
 **Key Concepts:**
 - **Signals:** Reactive primitives that notify subscribers of changes

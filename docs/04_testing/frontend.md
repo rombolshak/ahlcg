@@ -246,9 +246,10 @@ describe('GameStateStore', () => {
   it('should reject invalid state', () => {
     // Arrange
     const invalidState = { ...initialState, investigators: [] };
+    const patches = [{ op: 'replace', path: '', value: invalidState }];
     
     // Act & Assert
-    expect(() => store.setState(invalidState))
+    expect(() => store.updateState(patches))
       .toThrow('At least one investigator required');
   });
 });
@@ -265,7 +266,7 @@ describe('GameStateStore', () => {
 ## Testing with Pipes
 
 ```typescript
-it('should locale in translate pipe', () => {
+it('should locale in translate pipe', async () => {
   TestBed.configureTestingModule({
     imports: [TranslocoModule],
   });
@@ -275,9 +276,8 @@ it('should locale in translate pipe', () => {
   
   // Wait for async translation
   fixture.detectChanges();
-  fixture.whenStable().then(() => {
-    expect(element.nativeElement.textContent).toContain('Game Title');
-  });
+  await fixture.whenStable();
+  expect(element.nativeElement.textContent).toContain('Game Title');
 });
 ```
 

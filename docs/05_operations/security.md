@@ -200,47 +200,13 @@ Prevents unnecessary OPTIONS requests.
 | Cross-origin, `SameSite=None` | High | Must use CSRF token or header auth |
 | GET endpoints | Very Low | GET should not change state |
 
-### CSRF Token Pattern (Cross-Origin)
+### CSRF Controls (Current Implementation)
 
-**Backend Endpoint:**
+The codebase does not currently expose a dedicated `/auth/csrf-token` endpoint, and it does not yet use a custom header-vs-cookie token comparison path. Instead it relies on cookie-based session authentication with `SameSite=Lax`.
 
-```csharp
-app.MapGet("/auth/csrf-token", (HttpContext ctx) => {
-  var token = ctx.Request.Headers["X-CSRF-Token"].ToString();
-  if (string.IsNullOrEmpty(token)) {
-    token = Guid.NewGuid().ToString();
-    ctx.Response.Cookies.Append("X-CSRF-Token", token,
-      new CookieOptions { HttpOnly = false, Secure = true });
-  }
-  return Results.Ok(new { token });
-});
-```
-
-**Frontend Usage:**
-
-```typescript
-// Get token on app init
-const response = await fetch('/auth/csrf-token');
-const { token } = await response.json();
-
-// Include in headers on POST
-fetch('/auth/login-anonymous', {
-  method: 'POST',
-  headers: { 'X-CSRF-Token': token },
-  credentials: 'include'  // Send cookies
-})
-```
-
-**Backend Validation:**
-
-```csharp
-app.MapPost("/auth/login-anonymous", (HttpContext ctx) => {
-  var token = ctx.Request.Headers["X-CSRF-Token"].ToString();
-  var cookie = ctx.Request.Cookies["X-CSRF-Token"];
-  if (token != cookie) return Results.Unauthorized();
-  // Process login
-});
-```
+**Current and recommended settings:**
+- `ConfigureApplicationCookie` sets `HttpOnly = true`, `SecurePolicy = CookieSecurePolicy.Always`, `SameSite = SameSiteMode.Lax`, and a 90-day sliding expiration.
+- For stricter CSRF protection in future, implement `services.AddAntiforgery(...)` and `IAntiforgery.ValidateRequestAsync(ctx)`.
 
 ### Alternative: Header-Based Auth (JWT)
 
