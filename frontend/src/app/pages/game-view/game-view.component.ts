@@ -72,12 +72,12 @@ export class GameViewComponent implements OnInit {
     }
   }
 
-  protected applyNextPatch($event: KeyboardEvent) {
+  protected applyNextPatch($event: Event) {
     $event.preventDefault();
     this.timelineService.applyNextPatch();
   }
 
-  revertToOriginalState($event: KeyboardEvent) {
+  revertToOriginalState($event: Event) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
   }
