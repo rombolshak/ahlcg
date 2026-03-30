@@ -71,6 +71,12 @@ export default config(
           template: 10,
         },
       ],
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        {
+          "ts-ignore": "allow-with-description",
+        },
+      ],
     },
   },
   {
@@ -113,9 +119,9 @@ export default config(
       // or configure rules individually
       "better-tailwindcss/enforce-consistent-line-wrapping": [
         "warn",
-        { printWidth: 140, preferSingleLine: true },
+        { strictness: "loose", preferSingleLine: true },
       ],
-      "better-tailwindcss/no-unregistered-classes": [
+      "better-tailwindcss/no-unknown-classes": [
         "warn",
         {
           detectComponentClasses: true,

@@ -4,23 +4,24 @@
     prefix: 'game_view.current_investigator_panel.actions_area'
   "
 >
-  @if (action().originator) {
-    <p>{{ t("given_action", { originator: action().originator! }) }}</p>
+  @let _action = action();
+  @if (_action.originator) {
+    <p>{{ t("given_action", { originator: _action.originator }) }}</p>
   }
 
-  @if (action().restrictions) {
+  @if (_action.restrictions) {
     <p
-      [innerHTML]="t(`restrictions.${action().restrictions!}`) | withAhSymbols"
+      [innerHTML]="t(`restrictions.${_action.restrictions}`) | withAhSymbols"
     ></p>
   } @else {
     <p>{{ t("standard_action") }}</p>
   }
 
-  @if (action().spentOn) {
+  @if (_action.spentOn) {
     <p>
       {{
-        t(`spent_on.${action().spentOn!.actionType}`, {
-          target: action().spentOn!.target,
+        t(`spent_on.${_action.spentOn.actionType}`, {
+          target: _action.spentOn.target,
         })
       }}
     </p>

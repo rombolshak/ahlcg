@@ -2,23 +2,24 @@
   class="group flex gap-1 rounded-l bg-gray-800 p-1 data-[orientation=horizontal]:w-full data-[orientation=horizontal]:flex-col data-[orientation=vertical]:h-full"
   [attr.data-orientation]="orientation()"
 >
-  @if (entity().health) {
+  @let _entity = entity();
+  @if (_entity.health) {
     <ah-single-bar
       class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
       badColor="bg-health-damaged"
       goodColor="bg-health"
-      [max]="entity().health!.max"
-      [current]="entity().health!.damaged!"
+      [max]="_entity.health.max"
+      [current]="_entity.health.damaged"
       [orientation]="orientation()"
     />
   }
-  @if (entity().sanity) {
+  @if (_entity.sanity) {
     <ah-single-bar
       class="rounded-md group-data-[orientation=horizontal]:h-2 group-data-[orientation=vertical]:w-2"
       badColor="bg-sanity-damaged"
       goodColor="bg-sanity"
-      [max]="entity().sanity!.max"
-      [current]="entity().sanity!.damaged"
+      [max]="_entity.sanity.max"
+      [current]="_entity.sanity.damaged"
       [orientation]="orientation()"
     />
   }

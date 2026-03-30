@@ -1,29 +1,24 @@
-﻿@if (cardInfo()) {
+﻿@let _cardInfo = cardInfo();
+@if (_cardInfo) {
   <ah-player-card [card]="card()" [displayOptions]="displayOptions()">
     <ah-card-cost [card]="card()" />
 
     <ah-card-title
-      class="absolute text-center group-data-[size=l]:top-[19rem] group-data-[size=m]:top-[12.5rem] group-data-[size=s]:top-[8.25rem]"
-      [card]="cardInfo()!"
+      class="absolute text-center group-data-[size=l]:top-76 group-data-[size=m]:top-50 group-data-[size=s]:top-33"
+      [card]="_cardInfo"
     />
 
     <div
-      class="absolute font-[ArnoPro] group-data-[size=l]:top-[21rem] group-data-[size=l]:pr-8 group-data-[size=l]:pl-8 group-data-[size=m]:top-[14rem] group-data-[size=m]:pr-8 group-data-[size=m]:pl-8 group-data-[size=s]:top-[9rem] group-data-[size=s]:pr-4 group-data-[size=s]:pl-4"
+      class="absolute font-[ArnoPro] group-data-[size=l]:top-84 group-data-[size=l]:px-8 group-data-[size=m]:top-56 group-data-[size=m]:px-8 group-data-[size=s]:top-36 group-data-[size=s]:px-4"
     >
-      <ah-card-traits
-        [card]="cardInfo()!"
-        [displayOptions]="displayOptions()"
-      />
+      <ah-card-traits [card]="_cardInfo" [displayOptions]="displayOptions()" />
       <ah-card-abilities
-        [card]="cardInfo()!"
+        [card]="_cardInfo"
         [displayOptions]="displayOptions()"
       />
     </div>
 
-    <ah-card-flavor [card]="cardInfo()!" />
-    <ah-card-copyright
-      [card]="cardInfo()!"
-      [displayOptions]="displayOptions()"
-    />
+    <ah-card-flavor [card]="_cardInfo" />
+    <ah-card-copyright [card]="_cardInfo" [displayOptions]="displayOptions()" />
   </ah-player-card>
 }

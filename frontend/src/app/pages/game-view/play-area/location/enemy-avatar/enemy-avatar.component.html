@@ -1,5 +1,6 @@
-@if (enemy()) {
-  <ah-vitals-bar [entity]="enemy()!" />
+@let _enemy = enemy();
+@if (_enemy) {
+  <ah-vitals-bar [entity]="_enemy" />
   <img
     alt="enemy"
     width="132"
@@ -8,8 +9,8 @@
     [ngSrc]="
       imageService.getUrl([
         'illustration',
-        enemy()!.setInfo.set,
-        enemy()!.setInfo.index,
+        _enemy.setInfo.set,
+        _enemy.setInfo.index,
       ])
     "
   />
@@ -17,6 +18,6 @@
   <ah-enemy-popover
     class="absolute bottom-[70%] left-[-40%] -z-50 w-60 opacity-0 transition-opacity peer-hover:z-50 peer-hover:opacity-100 hover:z-50 hover:opacity-100 data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
     [attr.data-hovered]="hovered()"
-    [enemy]="enemy()!"
+    [enemy]="_enemy"
   />
 }
