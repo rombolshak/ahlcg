@@ -1,14 +1,17 @@
-<ah-art-panel class="h-full w-70 bg-base-200/70 font-[Conkordia]">
-  <button
-    ah-art-button
-    type="button"
-    class="text-xl btn-lg hover:btn-primary"
-    (click)="select()"
-  >
-    Continue game
-  </button>
-</ah-art-panel>
-
-<div class="flex flex-1 flex-col items-center">
-  <ah-title />
+<div class="
+  flex h-full w-2/5 flex-col items-center gap-4 bg-linear-to-r from-zinc-900/80
+  from-75% to-zinc-900/5 font-[Conkordia]
+">
+  <ah-title class="my-16 w-4/5 min-w-80" />
+  @for (item of mainItems; track item) {
+    <button
+      ah-art-button
+      type="button"
+      class="w-70 text-2xl tracking-wide btn-lg hover:btn-primary"
+      (click)="select()"
+    >
+      {{ item }}
+    </button>
+  }
 </div>
+

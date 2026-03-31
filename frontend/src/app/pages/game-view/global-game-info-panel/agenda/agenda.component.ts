@@ -1,4 +1,4 @@
-import { NgClass, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,7 +16,6 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   selector: 'ah-agenda',
   imports: [
     NgOptimizedImage,
-    NgClass,
     CardDetailsTextComponent,
     TranslocoDirective,
   ],
