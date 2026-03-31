@@ -4,7 +4,7 @@
       {{ t("global_game_info.act") }} {{ act().stage }}
     </p>
     <p class="font-[Conkordia] text-xl">
-      {{ t(title()!) }}
+      {{ t(title() ?? "") }}
     </p>
   </div>
 
@@ -24,16 +24,11 @@
         />
       }
       @default {
-        <!--suppress JSUnusedLocalSymbols -->
         <div
           class="mb-2 grid grid-flow-col gap-1"
-          [ngClass]="
-            maxLines()[$index] === 1
-              ? 'grid-rows-1'
-              : maxLines()[$index] === 2
-                ? 'grid-rows-2'
-                : 'grid-rows-3'
-          "
+          [class.grid-rows-1]="maxLines()[$index] === 1"
+          [class.grid-rows-2]="maxLines()[$index] === 2"
+          [class.grid-rows-3]="maxLines()[$index] === 3"
         >
           @for (_ of [].constructor(objective.currentValue); track $index) {
             <img
@@ -59,8 +54,9 @@
   }
 </ng-container>
 
+<!-- eslint-disable @angular-eslint/template/prefer-class-binding -->
 <ah-card-details-text
-  class="absolute top-[2.5rem] h-0 w-full rounded px-2 opacity-0 peer-hover:h-auto peer-hover:opacity-100"
+  class="absolute top-10 h-0 w-full rounded-sm px-2 opacity-0 peer-hover:h-auto peer-hover:opacity-100"
   [showTitle]="false"
   [card]="act()"
   [ngClass]="hostClasses()"

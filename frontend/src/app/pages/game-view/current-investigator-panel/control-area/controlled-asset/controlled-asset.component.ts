@@ -33,8 +33,8 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 })
 export class ControlledAssetComponent {
   readonly asset = input.required<AssetCard>();
-  readonly passive = input<boolean>(false);
-  readonly hovered = input<boolean>(false);
+  readonly passive = input(false);
+  readonly hovered = input(false);
   protected readonly imagesService = inject(ImagesUrlService);
   protected readonly info = inject(CardInfoService).getCardInfo(this.asset);
   protected readonly anchorName = computed(() => `--asset-${this.asset().id}`);

@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   imports: [NgOptimizedImage],
   template: `
     @if (detail()) {
-      <div class="relative flex h-6 w-6 items-center justify-center">
+      <div class="relative flex size-6 items-center justify-center">
         <img fill alt="" [ngSrc]="image()" />
         @if (!withoutText()) {
           <span class="z-10 font-[Teutonic] text-lg text-white">
@@ -23,6 +23,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class AssetDetailIconComponent {
   readonly detail = input.required<string | number | undefined>();
-  readonly withoutText = input<boolean>(false);
+  readonly withoutText = input(false);
   readonly image = input.required<string>();
 }

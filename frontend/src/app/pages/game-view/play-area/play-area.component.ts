@@ -29,10 +29,12 @@ export class PlayAreaComponent implements AfterViewInit {
   });
 
   protected readonly connectionColors = computed(() => {
-    if (!this.gameMap()) {
+    const gameMap = this.gameMap();
+    if (!gameMap) {
       return [];
     }
-    return this.gameMap()?.connections.map((conn) => {
+
+    return gameMap.connections.map((conn) => {
       return {
         fromColor: this.state.getLocation(conn.from).color,
         toColor: this.state.getLocation(conn.to).color,

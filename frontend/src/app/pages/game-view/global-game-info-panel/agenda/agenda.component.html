@@ -4,7 +4,7 @@
       {{ t("global_game_info.agenda") }} {{ agenda().stage }}
     </p>
     <p class="font-[Conkordia] text-xl">
-      {{ t(title()!) }}
+      {{ t(title() ?? "") }}
     </p>
   </div>
 </ng-container>
@@ -12,13 +12,9 @@
 <!--suppress JSUnusedLocalSymbols -->
 <div
   class="grid grid-flow-col gap-1"
-  [ngClass]="
-    agenda().requiredDoom <= 6
-      ? 'grid-rows-1'
-      : agenda().requiredDoom <= 12
-        ? 'grid-rows-2'
-        : 'grid-rows-3'
-  "
+  [class.grid-rows-1]="agenda().requiredDoom <= 6"
+  [class.grid-rows-2]="agenda().requiredDoom <= 12 && agenda().requiredDoom > 6"
+  [class.grid-rows-3]="agenda().requiredDoom > 12"
 >
   @for (_ of [].constructor(agenda().currentDoom); track $index) {
     <img
@@ -51,7 +47,7 @@
 </div>
 <!-- eslint-disable @angular-eslint/template/no-duplicate-attributes -->
 <ah-card-details-text
-  class="absolute top-[2.5rem] h-0 w-full rounded px-2 text-white opacity-0 peer-hover:h-auto peer-hover:opacity-100"
+  class="absolute top-10 h-0 w-full rounded-sm px-2 text-white opacity-0 peer-hover:h-auto peer-hover:opacity-100"
   [class]="hostClasses()"
   [showTitle]="false"
   [card]="agenda()"

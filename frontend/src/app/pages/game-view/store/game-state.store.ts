@@ -10,6 +10,7 @@ import {
 } from '@ngrx/signals';
 import { ArkErrors } from 'arktype';
 import { gsap } from 'gsap';
+// @ts-ignore see issue #637 in gsap 3.14.2
 import { Flip } from 'gsap/Flip';
 import { produce } from 'immer';
 import { applyPatch, Operation } from 'rfc6902';

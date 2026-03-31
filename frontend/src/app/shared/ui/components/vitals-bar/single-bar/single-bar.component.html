@@ -1,7 +1,8 @@
 ﻿<div
-  class="group flex h-full w-full *:flex-1 data-[orientation=horizontal]:flex-row-reverse data-[orientation=vertical]:flex-col"
+  class="group flex size-full *:flex-1 data-[orientation=horizontal]:flex-row-reverse data-[orientation=vertical]:flex-col"
   [attr.data-orientation]="orientation()"
 >
+  <!-- eslint-disable @angular-eslint/template/prefer-class-binding -->
   @for (_ of [].constructor(max()); track $index) {
     @if ($index < current()) {
       <div

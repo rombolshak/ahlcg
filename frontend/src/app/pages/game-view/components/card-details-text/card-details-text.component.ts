@@ -18,6 +18,6 @@ import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
 export class CardDetailsTextComponent {
   private readonly cardInfoService = inject(CardInfoService);
   readonly card = input.required<GameCard>();
-  readonly showTitle = input<boolean>(true);
+  readonly showTitle = input(true);
   readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
 }

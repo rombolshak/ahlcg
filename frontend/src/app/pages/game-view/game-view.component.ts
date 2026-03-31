@@ -62,9 +62,8 @@ export class GameViewComponent implements OnInit {
   public async toggleDebug() {
     this.showDebug = !this.showDebug;
     if (this.showDebug) {
-      const { DebugPanelComponent } = await import(
-        './debug-panel/debug-panel.component'
-      );
+      const { DebugPanelComponent } =
+        await import('./debug-panel/debug-panel.component');
 
       this.debugPanel()?.createComponent(DebugPanelComponent);
     } else {
@@ -72,12 +71,12 @@ export class GameViewComponent implements OnInit {
     }
   }
 
-  protected applyNextPatch($event: KeyboardEvent) {
+  protected applyNextPatch($event: Event) {
     $event.preventDefault();
     this.timelineService.applyNextPatch();
   }
 
-  revertToOriginalState($event: KeyboardEvent) {
+  revertToOriginalState($event: Event) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
   }

@@ -1,5 +1,6 @@
-﻿@if (location()) {
-  <ah-location-header class="absolute top-0 z-1" [location]="location()" />
+﻿@let _location = location();
+@if (_location) {
+  <ah-location-header class="absolute top-0 z-1" [location]="_location" />
 
   <div class="relative flex h-108">
     <img
@@ -10,8 +11,8 @@
       [ngSrc]="
         imageService.getUrl([
           'illustration',
-          location()!.setInfo.set,
-          location()!.setInfo.index,
+          _location.setInfo.set,
+          _location.setInfo.index,
         ])
       "
     />

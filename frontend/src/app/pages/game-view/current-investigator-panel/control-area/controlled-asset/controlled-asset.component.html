@@ -1,19 +1,20 @@
-﻿<img
+﻿@let _asset = asset();
+<img
   fill
-  class="peer -z-1 rounded"
+  class="peer -z-1 rounded-sm"
   alt="asset art"
   [ngSrc]="
     imagesService.getUrl([
       'mini-illustration',
-      asset().setInfo.set,
-      asset().setInfo.index,
+      _asset.setInfo.set,
+      _asset.setInfo.index,
     ])
   "
 />
 
 @if (!passive()) {
   <div class="flex flex-col flex-wrap justify-between bg-gray-900/70">
-    @if (asset().hasAction) {
+    @if (_asset.hasAction) {
       <p
         class="rounded-full border bg-gray-200 px-0.25 pt-1 text-center font-[ArnoPro] text-xs text-gray-500"
         [innerHTML]="'#n#' | withAhSymbols"
@@ -21,42 +22,46 @@
     }
 
     <ah-asset-detail-icon
-      [detail]="asset().tokens?.resource"
+      [detail]="_asset.tokens?.resource"
       [image]="imagesService.getUrl(['card-overlay', 'resource'])"
     />
     <ah-asset-detail-icon
-      [detail]="asset().tokens?.clue"
+      [detail]="_asset.tokens?.clue"
       [image]="imagesService.getUrl(['card-overlay', 'clue'])"
     />
     <ah-asset-detail-icon
-      [detail]="asset().tokens?.doom"
+      [detail]="_asset.tokens?.doom"
       [image]="imagesService.getUrl(['card-overlay', 'doom'])"
     />
     <div
       class="flex flex-col"
-      [class.hidden]="!asset().slot && !asset().additionalSlot"
+      [class.hidden]="!_asset.slot && !_asset.additionalSlot"
     >
-      <ah-asset-detail-icon
-        [detail]="asset().slot"
-        [image]="imagesService.getUrl(['card-overlay', 'slot', asset().slot!])"
-        [withoutText]="true"
-      />
-      <ah-asset-detail-icon
-        [detail]="asset().additionalSlot"
-        [image]="
-          imagesService.getUrl([
-            'card-overlay',
-            'slot',
-            asset().additionalSlot!,
-          ])
-        "
-        [withoutText]="true"
-      />
+      @if (_asset.slot) {
+        <ah-asset-detail-icon
+          [detail]="_asset.slot"
+          [image]="imagesService.getUrl(['card-overlay', 'slot', _asset.slot])"
+          [withoutText]="true"
+        />
+      }
+      @if (_asset.additionalSlot) {
+        <ah-asset-detail-icon
+          [detail]="_asset.additionalSlot"
+          [image]="
+            imagesService.getUrl([
+              'card-overlay',
+              'slot',
+              _asset.additionalSlot,
+            ])
+          "
+          [withoutText]="true"
+        />
+      }
     </div>
   </div>
 
-  @if (asset().health || asset().sanity) {
-    <ah-vitals-bar class="h-full" orientation="vertical" [entity]="asset()" />
+  @if (_asset.health || _asset.sanity) {
+    <ah-vitals-bar class="h-full" orientation="vertical" [entity]="_asset" />
   }
 }
 
@@ -65,5 +70,5 @@
   class="pointer-events-none anchored/(--anchor-name) fixed top-anchor-top-6 right-anchor-left-1 isolate -z-50 w-60 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:z-50 group-hover:opacity-100 hover:pointer-events-auto hover:z-50 hover:opacity-100 data-[hovered=true]:pointer-events-auto data-[hovered=true]:z-50 data-[hovered=true]:opacity-100"
   [attr.data-hovered]="hovered()"
   [style.--anchor-name]="anchorName()"
-  [asset]="asset()"
+  [asset]="_asset"
 />

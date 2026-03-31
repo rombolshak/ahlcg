@@ -44,7 +44,7 @@ export class GameHeaderComponent {
   );
 
   protected readonly gamePhase = computed(
-    () => this.state()?.metaInfo.gamePhase,
+    () => this.state()?.metaInfo.gamePhase ?? 'mythos',
   );
 
   private readonly currentEntityCard = computed(() => {

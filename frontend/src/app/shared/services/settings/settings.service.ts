@@ -22,7 +22,7 @@ export class SettingsService<T extends object> {
   private readonly storageKeySuffix = inject(STORAGE_KEY_SUFFIX);
 
   private readonly storageKey = STORAGE_KEY_PREFIX + this.storageKeySuffix;
-  private readonly settings = signal<T>(this.defaultSettings);
+  private readonly settings = signal(this.defaultSettings);
 
   constructor() {
     this.loadSettings();

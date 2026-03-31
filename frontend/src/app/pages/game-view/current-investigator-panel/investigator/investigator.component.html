@@ -1,6 +1,6 @@
 ﻿<div
   *transloco="let t"
-  class="relative grid grid-cols-[6.25rem_1fr] grid-rows-[9.625rem_1fr] gap-2 rounded p-4"
+  class="relative grid grid-cols-[6.25rem_1fr] grid-rows-[9.625rem_1fr] gap-2 rounded-sm p-4"
   ahCardOutline
   ahCardFactionBackground
   [faction]="investigator().faction"
@@ -33,7 +33,7 @@
 
     <ah-investigator-ability
       [faction]="investigator().faction"
-      [text]="t((info()?.abilities ?? [''])[0]!)"
+      [text]="t(info()?.abilities?.at(0) ?? '')"
     />
 
     <ah-vitals-bar [entity]="investigator()" />
