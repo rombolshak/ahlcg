@@ -2,7 +2,7 @@
   <img
     fill
     alt="threat background"
-    class="-z-35 rounded"
+    class="-z-35 rounded-sm"
     [ngSrc]="imagesService.getUrl('threat-enemy')"
   />
 
@@ -25,7 +25,9 @@
       <div>
         <p class="font-[Conkordia] text-xl/5">{{ t(info()?.title ?? "") }}</p>
         @if (info()?.subtitle) {
-          <p class="font-[ArnoPro] text-sm/3">{{ t(info()?.subtitle!) }}</p>
+          <p class="font-[ArnoPro] text-sm/3">
+            {{ t(info()?.subtitle ?? "") }}
+          </p>
         }
       </div>
       <ah-enemy-attack-display [enemy]="enemy()" />

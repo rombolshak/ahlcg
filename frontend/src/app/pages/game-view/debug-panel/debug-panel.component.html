@@ -1,5 +1,5 @@
 <div
-  class="h-full w-full bg-base-100/80 p-4 font-[ArnoPro] text-base-content outline outline-red-200"
+  class="size-full bg-base-100/80 p-4 font-[ArnoPro] text-base-content outline outline-red-200"
 >
   <h1 class="text-center font-[Conkordia] text-4xl">Debug panel</h1>
 
@@ -14,7 +14,7 @@
     <div class="tab-content border-base-300 bg-base-100 p-6">
       <ah-json-editor
         class="block h-150"
-        [data]="gameState()!"
+        [data]="gameState()"
         [validateFn]="validateState"
         (update)="gameState.set($event)"
       />
@@ -44,8 +44,8 @@
           }
         </ul>
         <ah-json-editor
-          class="block h-150 flex-grow"
-          [data]="timelineService.patches()[selectedPatch]!"
+          class="block h-150 grow"
+          [data]="timelineService.patches()[selectedPatch]"
         />
       </div>
     </div>

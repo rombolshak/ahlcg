@@ -21,8 +21,8 @@ import { DialogService } from './dialog.service';
 })
 export class DialogComponent implements AfterViewInit, OnDestroy {
   public readonly id = input.required<string>();
-  public readonly title = input<string>('');
-  public readonly open = input<boolean>(false);
+  public readonly title = input('');
+  public readonly open = input(false);
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
   private service = inject(DialogService);
 

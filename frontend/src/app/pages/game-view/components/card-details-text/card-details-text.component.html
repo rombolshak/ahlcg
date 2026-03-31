@@ -1,27 +1,28 @@
 <ng-container *transloco="let t">
-  @if (cardInfo()) {
+  @let _cardInfo = cardInfo();
+  @if (_cardInfo) {
     @if (showTitle()) {
       <p
         class="mb-0 text-center font-[Conkordia] text-lg/5"
         data-testId="title"
       >
-        {{ t(cardInfo()!.title) }}
+        {{ t(_cardInfo.title) }}
       </p>
     }
-    @if (cardInfo()!.subtitle) {
+    @if (_cardInfo.subtitle) {
       <p class="mb-1 text-center font-[ArnoPro] text-sm" data-testId="subtitle">
-        {{ t(cardInfo()!.subtitle!) }}
+        {{ t(_cardInfo.subtitle) }}
       </p>
     }
     <p
       class="mb-1 text-center font-[ArnoProBold] text-sm italic"
       data-testId="traits"
     >
-      @for (trait of cardInfo()!.traits; track $index) {
+      @for (trait of _cardInfo.traits; track $index) {
         <span class="mr-1">{{ t(trait) }}.</span>
       }
     </p>
-    @for (ability of cardInfo()!.abilities; track $index) {
+    @for (ability of _cardInfo.abilities; track $index) {
       <p
         class="mb-1 font-[ArnoPro] text-base/4 whitespace-pre-wrap"
         data-testId="ability"
