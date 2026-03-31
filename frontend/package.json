@@ -66,19 +66,19 @@
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
     "@cspell/dict-ru_ru": "^2.3.2",
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@html-eslint/parser": "^0.58.1",
     "@storybook/angular": "^10.3.3",
     "@tailwindcss/language-server": "latest",
     "@tailwindcss/postcss": "^4.2.2",
     "@toolwind/anchors": "^1.0.10",
     "@types/jasmine": "~6.0.0",
-    "@typescript-eslint/parser": "^8.57.2",
+    "@typescript-eslint/parser": "^8.58.0",
     "angular-eslint": "21.3.1",
     "chromatic": "^16.0.0",
     "cspell": "^9.7.0",
     "daisyui": "^5.5.19",
-    "eslint": "^9.39.4",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-formatter-mo": "^2.4.1",
     "eslint-plugin-better-tailwindcss": "^4.3.2",
@@ -108,7 +108,7 @@
     "tailwindcss": "^4.2.2",
     "tsc-files": "^1.1.4",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.57.2"
+    "typescript-eslint": "^8.58.0"
   },
   "overrides": {
     "@ngrx/signals": {
