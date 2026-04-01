@@ -74,5 +74,13 @@
         }
       }
     }
+  },
+  "main_menu": {
+    "continue": "Continue",
+    "new_game": "New investigation",
+    "load_game": "Current cases",
+    "decks": "Investigators dossiers",
+    "settings": "Settings",
+    "quit": "Escape"
   }
 }

@@ -1,17 +1,23 @@
+<ng-container *transloco="let t">
 <div class="
-  flex h-full w-2/5 flex-col items-center gap-4 bg-linear-to-r from-zinc-900/80
-  from-75% to-zinc-900/5 font-[Conkordia]
+  h-full w-52/100 bg-linear-to-r from-zinc-900/90 from-77% to-zinc-900/5
+  font-[Conkordia]
 ">
-  <ah-title class="my-16 w-4/5 min-w-80" />
-  @for (item of mainItems; track item) {
-    <button
-      ah-art-button
-      type="button"
-      class="w-70 text-2xl tracking-wide btn-lg hover:btn-primary"
-      (click)="select()"
-    >
-      {{ item }}
-    </button>
-  }
+  <div class="ml-[8%] flex w-8/13 flex-col items-center gap-4">
+    <ah-title class="my-16 min-w-80" />
+    @for (item of mainItems; track item) {
+      <button
+        ah-art-button
+        type="button"
+        class="
+          w-70 text-2xl tracking-wide transition btn-lg
+          hover:scale-103 hover:btn-primary
+        "
+        (click)="select()"
+      >
+        {{ t(`main_menu.${item}`) }}
+      </button>
+    }
+  </div>
 </div>
-
+</ng-container>

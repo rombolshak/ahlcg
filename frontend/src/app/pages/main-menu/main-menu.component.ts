@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
 import { ArtButtonComponent } from '@shared/components/art-button/art-button.component';
+import { TranslocoDirective } from "@jsverse/transloco";
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [ArtButtonComponent, TitleComponent],
+  imports: [ArtButtonComponent, TitleComponent, TranslocoDirective],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -17,5 +18,5 @@ export class MainMenuComponent {
     alert('qq');
   }
 
-  protected mainItems = ['play', 'investigators', 'settings', 'quit'];
+  protected mainItems = ['continue', 'new_game', 'load_game', 'decks', 'settings', 'quit'];
 }
