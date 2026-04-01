@@ -14,9 +14,29 @@ import { TranslocoDirective } from "@jsverse/transloco";
   },
 })
 export class MainMenuComponent {
-  protected select() {
-    alert('qq');
-  }
 
-  protected mainItems = ['continue', 'new_game', 'load_game', 'decks', 'settings', 'quit'];
+  protected mainItems = [
+    {
+      name: 'continue',
+      tooltip: 'Night of the Zealot\nScenario 1 — The Gathering',
+      process: () => { alert('continue') }
+    }, 
+    {
+      name: 'new_game',
+      process: () => { alert('new game') }
+    }, 
+    {
+      name: 'load_game',
+      process: () => { alert('load game') }
+    }, 
+    {
+      name: 'decks',
+      process: () => { alert('decks') }
+    }, 
+    {
+      name: 'settings',
+      process: () => { alert('settings') }
+    }
+];
+
 }
