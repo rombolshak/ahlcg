@@ -15,6 +15,8 @@ describe('MenuItemsListComponent', () => {
       imports: [MenuItemsListComponent, getTranslocoModule()],
     }).compileComponents();
 
+    calls1 = 0;
+    calls2 = 0;
     fixture = TestBed.createComponent(MenuItemsListComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('items', [

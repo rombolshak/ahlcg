@@ -27,20 +27,22 @@ export class MenuItemsListComponent {
   protected readonly selectedIndex = signal(0);
 
   protected onKeyDown($event: KeyboardEvent) {
-    $event.preventDefault();
     switch ($event.code) {
       case 'ArrowDown':
       case 'KeyS':
+        $event.preventDefault();
         this.selectedIndex.update((i) => (i + 1) % this.items().length);
         break;
       case 'ArrowUp':
       case 'KeyW':
+        $event.preventDefault();
         this.selectedIndex.update(
           (i) => (i - 1 + this.items().length) % this.items().length,
         );
         break;
       case 'Space':
       case 'Enter':
+        $event.preventDefault();
         this.items()[this.selectedIndex()]?.process();
         break;
     }
