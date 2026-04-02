@@ -14,11 +14,7 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
 
 @Component({
   selector: 'ah-agenda',
-  imports: [
-    NgOptimizedImage,
-    CardDetailsTextComponent,
-    TranslocoDirective,
-  ],
+  imports: [NgOptimizedImage, CardDetailsTextComponent, TranslocoDirective],
   templateUrl: './agenda.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
