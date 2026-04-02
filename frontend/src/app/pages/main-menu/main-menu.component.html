@@ -1,50 +1,7 @@
-<ng-container *transloco="let t">
-  <div class="flex size-full bg-zinc-900/20">
-<div class="
-  h-full w-52/100 bg-linear-to-r from-zinc-900/90 from-77% to-zinc-900/5
-  font-[Conkordia]
-">
-  <div class="ml-[8%] flex w-8/13 flex-col items-center gap-6">
-    <ah-title class="my-16 min-w-80" />
-    @for (item of mainItems; track item) {
-      @if(item.tooltip) {
-        <div class="
-          tooltip tooltip-right [--color-neutral-content:oklch(0.92_0.02_95)]
-          [--tt-bg:oklch(0.55_0.06_65)]
-        ">
-          <div class="tooltip-content p-4 font-[ArnoPro] text-xl whitespace-pre-line">
-            {{item.tooltip}}
-          </div>
-          <button
-            ah-art-button
-            type="button"
-            class="
-              w-70 text-2xl tracking-wide transition btn-lg
-              hover:scale-105 hover:[--btn-color:oklch(0.74_0.14_70)]
-              hover:[--btn-fg:oklch(0.20_0.03_80)]
-            "
-            (click)="item.process()"
-          >
-            {{ t(`main_menu.${item.name}`) }}
-          </button>
-        </div>
-      }
-      @else {
-        <button
-            ah-art-button
-            type="button"
-            class="
-              w-70 text-2xl tracking-wide transition btn-lg
-              hover:scale-105 hover:[--btn-color:oklch(0.74_0.14_70)]
-              hover:[--btn-fg:oklch(0.20_0.03_80)]
-            "
-            (click)="item.process()"
-          >
-            {{ t(`main_menu.${item.name}`) }}
-          </button>
-      }
-    }
+<div class="flex size-full bg-zinc-900/20">
+  <div
+    class="h-full w-52/100 bg-linear-to-r from-zinc-900/90 from-77% to-zinc-900/5"
+  >
+    <ah-menu-items-list class="ml-[8%] w-8/13" [items]="mainItems" />
   </div>
 </div>
-</div>
-</ng-container>

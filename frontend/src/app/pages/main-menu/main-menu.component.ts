@@ -1,11 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { TitleComponent } from '@pages/main-menu/title/title.component';
-import { ArtButtonComponent } from '@shared/components/art-button/art-button.component';
-import { TranslocoDirective } from "@jsverse/transloco";
+import { MenuItem } from './menu-item';
+import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [ArtButtonComponent, TitleComponent, TranslocoDirective],
+  imports: [MenuItemsListComponent],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -14,29 +13,37 @@ import { TranslocoDirective } from "@jsverse/transloco";
   },
 })
 export class MainMenuComponent {
-
-  protected mainItems = [
+  protected mainItems: MenuItem[] = [
     {
       name: 'continue',
       tooltip: 'Night of the Zealot\nScenario 1 — The Gathering',
-      process: () => { alert('continue') }
-    }, 
+      process: () => {
+        alert('continue');
+      },
+    },
     {
       name: 'new_game',
-      process: () => { alert('new game') }
-    }, 
+      process: () => {
+        alert('new game');
+      },
+    },
     {
       name: 'load_game',
-      process: () => { alert('load game') }
-    }, 
+      process: () => {
+        alert('load game');
+      },
+    },
     {
       name: 'decks',
-      process: () => { alert('decks') }
-    }, 
+      process: () => {
+        alert('decks');
+      },
+    },
     {
       name: 'settings',
-      process: () => { alert('settings') }
-    }
-];
-
+      process: () => {
+        alert('settings');
+      },
+    },
+  ];
 }

@@ -1,0 +1,38 @@
+<ng-container *transloco="let t">
+  <ah-title class="my-16 min-w-80" />
+  @for (item of items(); track item.name) {
+    @if (item.tooltip) {
+      <div
+        class="tooltip tooltip-right [--color-neutral-content:oklch(0.92_0.02_95)] [--tt-bg:oklch(0.55_0.06_65)]"
+        [class.tooltip-open]="$index === selectedIndex()"
+        (mouseenter)="selectedIndex.set($index)"
+      >
+        <div
+          class="tooltip-content p-4 font-[ArnoPro] text-xl whitespace-pre-line"
+        >
+          {{ item.tooltip }}
+        </div>
+        <button
+          ah-art-button
+          type="button"
+          class="w-70 text-2xl tracking-wide transition btn-lg"
+          [class.active]="$index === selectedIndex()"
+          (click)="item.process()"
+        >
+          {{ t(`main_menu.${item.name}`) }}
+        </button>
+      </div>
+    } @else {
+      <button
+        ah-art-button
+        type="button"
+        class="w-70 text-2xl tracking-wide transition btn-lg"
+        [class.active]="$index === selectedIndex()"
+        (click)="item.process()"
+        (mouseenter)="selectedIndex.set($index)"
+      >
+        {{ t(`main_menu.${item.name}`) }}
+      </button>
+    }
+  }
+</ng-container>
