@@ -175,16 +175,15 @@
       totalDuration += entries.reduce((s, e) => s + e.duration, 0);
       lastLoad = Date.now();
       currentProgress = (totalLoads / expectedLoads) * 100;
-      console.log("progress", currentProgress, entries);
       setProgress(currentProgress);
     });
 
     observer.observe({ type: "resource", buffered: true });
 
     const exitSplash = setInterval(() => {
+      if (totalLoads === 0) return;
       const avgDuration = totalDuration / totalLoads;
       const waiting = Date.now() - lastLoad;
-      console.log(totalLoads, avgDuration, waiting, waiting / avgDuration);
       if (totalDuration > 35 && waiting > avgDuration * 5) {
         clearInterval(exitSplash);
         observer.disconnect();
@@ -192,7 +191,7 @@
           .querySelector("#splash")
           ?.setAttribute("style", "opacity: 0; transition: opacity 1s ease;");
         setTimeout(() => {
-          document.querySelector("#splash").remove();
+          document.querySelector("#splash")?.remove();
         }, 1000);
       }
     }, 200);
