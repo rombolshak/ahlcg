@@ -11,8 +11,190 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Arkham Horror" />
     <link rel="manifest" href="/site.webmanifest" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #0b0d0c;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+
+      #splash {
+        .background {
+          position: absolute;
+          top: 0;
+          z-index: 100;
+          animation: fogMove 18s ease infinite;
+          background:
+            radial-gradient(
+              circle at 30% 40%,
+              rgba(60, 80, 65, 0.25),
+              transparent 60%
+            ),
+            radial-gradient(
+              circle at 70% 60%,
+              rgba(90, 100, 70, 0.18),
+              transparent 65%
+            ),
+            linear-gradient(270deg, #0b0d0c, #111614, #0b0d0c);
+          background-size: 200% 200%;
+          width: 100%;
+          height: 100%;
+        }
+
+        @keyframes fogMove {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        /* Subtle grain overlay */
+        .background::after {
+          position: absolute;
+          opacity: 0.25;
+          inset: 0;
+          background-image: repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.015),
+            rgba(255, 255, 255, 0.015) 1px,
+            transparent 1px,
+            transparent 2px
+          );
+          pointer-events: none;
+          content: "";
+        }
+
+        .container {
+          position: absolute;
+          top: 55%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 101;
+          width: 60%;
+          max-width: 420px;
+        }
+
+        /* Track: worn / dusty */
+        .progress-track {
+          box-shadow:
+            inset 0 0 6px rgba(0, 0, 0, 0.8),
+            0 0 12px rgba(80, 100, 80, 0.15);
+          border-radius: 4px;
+          background: rgba(120, 130, 110, 0.15);
+          width: 100%;
+          height: 6px;
+          overflow: hidden;
+        }
+
+        /* Fill: eldritch green glow */
+        .progress-fill {
+          position: relative;
+          transition: width 0.25s ease;
+          border-radius: 4px;
+          background: linear-gradient(90deg, #4f6b4f, #7a8f5a, #a3b77a);
+          width: 0;
+          height: 100%;
+        }
+
+        /* Uneasy shimmer */
+        .progress-fill::before {
+          position: absolute;
+          mix-blend-mode: screen;
+          animation: shimmer 2.5s infinite;
+          inset: 0;
+          background: linear-gradient(
+            120deg,
+            transparent,
+            rgba(200, 220, 160, 0.25),
+            transparent
+          );
+          content: "";
+        }
+
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+
+        /* Soft eerie glow */
+        .progress-fill::after {
+          position: absolute;
+          opacity: 0.35;
+          z-index: -1;
+          filter: blur(10px);
+          inset: 0;
+          background: inherit;
+          content: "";
+        }
+      }
+    </style>
   </head>
   <body class="overflow-hidden">
     <ah-root></ah-root>
+    <div id="splash">
+      <div class="background"></div>
+
+      <div class="container">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </div>
   </body>
+  <script>
+    const expectedLoads = 50;
+    const progressFill = document.getElementById("progressFill");
+    let totalLoads = 0;
+    let currentProgress = 0;
+    let totalDuration = 0;
+    let lastLoad = Date.now();
+
+    function setProgress(value) {
+      const clamped = Math.max(0, Math.min(100, value));
+      progressFill.style.width = clamped + "%";
+    }
+
+    const observer = new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      if (!entries.length) return;
+
+      totalLoads += entries.length;
+      totalDuration += entries.reduce((s, e) => s + e.duration, 0);
+      lastLoad = Date.now();
+      currentProgress = (totalLoads / expectedLoads) * 100;
+      console.log("progress", currentProgress, entries);
+      setProgress(currentProgress);
+    });
+
+    observer.observe({ type: "resource", buffered: true });
+
+    const exitSplash = setInterval(() => {
+      const avgDuration = totalDuration / totalLoads;
+      const waiting = Date.now() - lastLoad;
+      console.log(totalLoads, avgDuration, waiting, waiting / avgDuration);
+      if (totalDuration > 35 && waiting > avgDuration * 5) {
+        clearInterval(exitSplash);
+        observer.disconnect();
+        document
+          .querySelector("#splash")
+          ?.setAttribute("style", "opacity: 0; transition: opacity 1s ease;");
+        setTimeout(() => {
+          document.querySelector("#splash").remove();
+        }, 1000);
+      }
+    }, 200);
+  </script>
 </html>

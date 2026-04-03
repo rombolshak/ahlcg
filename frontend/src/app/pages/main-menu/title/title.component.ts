@@ -13,7 +13,7 @@ import { ImagesUrlService } from '@services/images-url.service';
   selector: 'ah-title',
   imports: [NgOptimizedImage],
   template:
-    '<img width="781" height="193" alt="Arkham Horror title" [ngSrc]="img()" />',
+    '<img width="781" height="193" alt="Arkham Horror title" priority [ngSrc]="img()" />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TitleComponent {
