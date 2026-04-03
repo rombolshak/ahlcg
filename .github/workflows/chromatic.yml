@@ -3,8 +3,8 @@ name: "Chromatic"
 on:
   push:
     paths:
-      - "frontend/src"
-      - "frontend/public/assets/fonts"
+      - "frontend/src/**"
+      - "frontend/public/assets/fonts/**"
 
 permissions:
   contents: read
