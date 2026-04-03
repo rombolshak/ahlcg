@@ -74,5 +74,12 @@
         }
       }
     }
+  },
+  "main_menu": {
+    "continue": "Continue",
+    "new_game": "New investigation",
+    "load_game": "Case files",
+    "decks": "Dossiers",
+    "settings": "Settings"
   }
 }

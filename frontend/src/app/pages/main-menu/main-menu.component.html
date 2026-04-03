@@ -1,14 +1,7 @@
-<ah-art-panel class="h-full w-70 bg-base-200/70 font-[Conkordia]">
-  <button
-    ah-art-button
-    type="button"
-    class="text-xl btn-lg hover:btn-primary"
-    (click)="select()"
+<div class="flex size-full bg-zinc-900/20">
+  <div
+    class="h-full w-52/100 bg-linear-to-r from-zinc-900/90 from-77% to-zinc-900/5"
   >
-    Continue game
-  </button>
-</ah-art-panel>
-
-<div class="flex flex-1 flex-col items-center">
-  <ah-title />
+    <ah-menu-items-list class="ml-[8%] w-8/13" [items]="mainItems" />
+  </div>
 </div>

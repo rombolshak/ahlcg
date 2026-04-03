@@ -1,4 +1,4 @@
-import { NgClass, NgOptimizedImage } from '@angular/common';
+import { NgOptimizedImage } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,12 +14,7 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
 
 @Component({
   selector: 'ah-agenda',
-  imports: [
-    NgOptimizedImage,
-    NgClass,
-    CardDetailsTextComponent,
-    TranslocoDirective,
-  ],
+  imports: [NgOptimizedImage, CardDetailsTextComponent, TranslocoDirective],
   templateUrl: './agenda.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
