@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, Observable, of } from 'rxjs';
 
 export interface User {
-  email?: string;
+  email: string | null;
   isAnonymous: boolean;
 }
 

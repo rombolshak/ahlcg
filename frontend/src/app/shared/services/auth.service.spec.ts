@@ -31,7 +31,7 @@ describe('AuthService', () => {
   it('should load user model', () => {
     http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
     service.currentUser.subscribe((data) => {
-      expect(data).toEqual({ isAnonymous: true } satisfies User);
+      expect(data).toEqual({ isAnonymous: true, email: null } satisfies User);
     });
   });
 });
