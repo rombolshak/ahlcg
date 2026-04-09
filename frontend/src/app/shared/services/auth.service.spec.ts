@@ -20,14 +20,16 @@ describe('AuthService', () => {
 
   it('should load status on creation', () => {
     expect(service).toBeTruthy();
-    http.expectOne('/api/auth/info').flush(null, { status: 401 });
+    http
+      .expectOne('/api/auth/info')
+      .flush(null, { status: 401, statusText: 'Not Authorized' });
     service.currentUser.subscribe((data) => {
       expect(data).toBeUndefined();
     });
   });
 
   it('should load user model', () => {
-    http.expectOne('/api/auth/login').flush({ isAnonymous: true, email: null });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
     service.currentUser.subscribe((data) => {
       expect(data).toEqual({ isAnonymous: true } satisfies User);
     });
