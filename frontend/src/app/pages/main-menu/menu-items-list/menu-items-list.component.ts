@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
-  signal,
+  linkedSignal,
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
@@ -24,27 +24,48 @@ import { MenuItem } from '../menu-item';
 export class MenuItemsListComponent {
   public readonly items = input.required<MenuItem[]>();
 
-  protected readonly selectedIndex = signal(0);
+  protected readonly selectedIndex = linkedSignal(() => {
+    return this.items().findIndex((item) => !item.disabled);
+  });
 
   protected onKeyDown($event: KeyboardEvent) {
     switch ($event.code) {
       case 'ArrowDown':
-      case 'KeyS':
+      case 'KeyS': {
         $event.preventDefault();
-        this.selectedIndex.update((i) => (i + 1) % this.items().length);
-        break;
-      case 'ArrowUp':
-      case 'KeyW':
-        $event.preventDefault();
-        this.selectedIndex.update(
-          (i) => (i - 1 + this.items().length) % this.items().length,
+        const nextItem = this.items().findIndex(
+          (item, index) => index > this.selectedIndex() && !item.disabled,
         );
+        if (nextItem !== -1) {
+          this.selectedIndex.set(nextItem);
+        } else {
+          this.selectedIndex.set(
+            this.items().findIndex((item) => !item.disabled),
+          );
+        }
         break;
+      }
+      case 'ArrowUp':
+      case 'KeyW': {
+        $event.preventDefault();
+        const prevItem = this.items().findLastIndex(
+          (item, index) => index < this.selectedIndex() && !item.disabled,
+        );
+        if (prevItem !== -1) {
+          this.selectedIndex.set(prevItem);
+        } else {
+          this.selectedIndex.set(
+            this.items().findLastIndex((item) => !item.disabled),
+          );
+        }
+        break;
+      }
       case 'Space':
-      case 'Enter':
+      case 'Enter': {
         $event.preventDefault();
         this.items()[this.selectedIndex()]?.process();
         break;
+      }
     }
   }
 }

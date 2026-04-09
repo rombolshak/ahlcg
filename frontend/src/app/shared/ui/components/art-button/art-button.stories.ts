@@ -18,6 +18,13 @@ export const Normal: Story = {
   }),
 };
 
+export const Disabled: Story = {
+  render: (args) => ({
+    props: args,
+    template: `<button ah-art-button type="button" disabled>Disabled</button>`,
+  }),
+};
+
 export const Colored: Story = {
   render: (args) => ({
     props: args,
