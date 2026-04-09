@@ -76,6 +76,7 @@
     }
   },
   "main_menu": {
+    "login_to_continue": "Sign in to continue",
     "continue": "Continue",
     "new_game": "New investigation",
     "load_game": "Case files",

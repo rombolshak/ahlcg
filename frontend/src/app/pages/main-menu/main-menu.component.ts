@@ -1,5 +1,13 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MenuItem } from './menu-item';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  Signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { MenuItem } from '@pages/main-menu/menu-item';
+import { AuthService } from '@services/auth.service';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
@@ -13,37 +21,71 @@ import { MenuItemsListComponent } from './menu-items-list/menu-items-list.compon
   },
 })
 export class MainMenuComponent {
-  protected mainItems: MenuItem[] = [
-    {
-      name: 'continue',
-      tooltip: 'Night of the Zealot\nScenario 1 — The Gathering',
-      process: () => {
-        alert('continue');
-      },
-    },
-    {
+  private readonly authService = inject(AuthService);
+  private readonly currentUser = toSignal(this.authService.currentUser);
+
+  protected readonly mainItems: Signal<MenuItem[]> = computed(() => {
+    const isAuthenticated = this.currentUser() !== undefined;
+    return [
+      this.createContinueButton(isAuthenticated),
+      this.createNewGameButton(),
+      this.createLoadGameButton(isAuthenticated),
+      this.createDecksButton(),
+      this.createSettingsButton(),
+    ];
+  });
+
+  private createContinueButton(isAuthenticated: boolean) {
+    return isAuthenticated
+      ? {
+          name: 'continue',
+          tooltip: 'Night of the Zealot\nScenario 1 — The Gathering',
+          process: () => {
+            alert('continue');
+          },
+        }
+      : {
+          name: 'login_to_continue',
+          process: () => {
+            alert('login');
+          },
+        };
+  }
+
+  private createNewGameButton() {
+    return {
       name: 'new_game',
       process: () => {
         alert('new game');
       },
-    },
-    {
+    };
+  }
+
+  private createLoadGameButton(isAuthenticated: boolean) {
+    return {
       name: 'load_game',
+      disabled: !isAuthenticated,
       process: () => {
         alert('load game');
       },
-    },
-    {
+    };
+  }
+
+  private createDecksButton() {
+    return {
       name: 'decks',
       process: () => {
         alert('decks');
       },
-    },
-    {
+    };
+  }
+
+  private createSettingsButton() {
+    return {
       name: 'settings',
       process: () => {
         alert('settings');
       },
-    },
-  ];
+    };
+  }
 }

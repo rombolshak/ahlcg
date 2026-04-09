@@ -9,12 +9,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Ahlcg.ApiService\Ahlcg.ApiService.csproj"/>
-        <ProjectReference Include="..\Ahlcg.ServiceDefaults\Ahlcg.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\Ahlcg.ApiService\Ahlcg.ApiService.csproj" />
+        <ProjectReference Include="..\Ahlcg.ServiceDefaults\Ahlcg.ServiceDefaults.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.1"/>
+        <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.2" />
     </ItemGroup>
 
 </Project>

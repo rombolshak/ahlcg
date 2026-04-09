@@ -5,6 +5,7 @@ import { getTranslocoModule } from '@domain/test/transloco.testing';
 import { MenuItemsListComponent } from './menu-items-list.component';
 
 describe('MenuItemsListComponent', () => {
+  let pressAndCheck: (key: string, expectedItem: string) => void;
   let component: MenuItemsListComponent;
   let fixture: ComponentFixture<MenuItemsListComponent>;
   let calls1 = 0;
@@ -35,12 +36,31 @@ describe('MenuItemsListComponent', () => {
       },
       {
         name: 'item3',
+        disabled: true,
+        process: () => {
+          calls2++;
+        },
+      },
+      {
+        name: 'item4',
         process: () => {
           calls2++;
         },
       },
     ]);
     await fixture.whenStable();
+
+    pressAndCheck = (key: string, expectedItem: string) => {
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { code: key }));
+      TestBed.tick();
+
+      expect(
+        (
+          fixture.debugElement.query(By.css('.active'))
+            .nativeElement as HTMLElement
+        ).textContent,
+      ).toContain(expectedItem);
+    };
   });
 
   it('should create', () => {
@@ -74,29 +94,10 @@ describe('MenuItemsListComponent', () => {
       ).textContent,
     ).toContain('item1');
 
-    document.body.dispatchEvent(
-      new KeyboardEvent('keydown', { code: 'ArrowDown' }),
-    );
-    TestBed.tick();
-
-    expect(
-      (
-        fixture.debugElement.query(By.css('.active'))
-          .nativeElement as HTMLElement
-      ).textContent,
-    ).toContain('item2');
-
-    document.body.dispatchEvent(
-      new KeyboardEvent('keydown', { code: 'ArrowUp' }),
-    );
-    TestBed.tick();
-
-    expect(
-      (
-        fixture.debugElement.query(By.css('.active'))
-          .nativeElement as HTMLElement
-      ).textContent,
-    ).toContain('item1');
+    pressAndCheck('ArrowDown', 'item2');
+    pressAndCheck('ArrowDown', 'item4');
+    pressAndCheck('ArrowUp', 'item2');
+    pressAndCheck('ArrowUp', 'item1');
 
     document.body.dispatchEvent(
       new KeyboardEvent('keydown', { code: 'Enter' }),

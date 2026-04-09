@@ -16,7 +16,9 @@
           ah-art-button
           type="button"
           class="w-70 text-2xl tracking-wide transition btn-lg"
+          [data-testId]="item.name"
           [class.active]="$index === selectedIndex()"
+          [disabled]="item.disabled"
           (click)="item.process()"
         >
           {{ t(`main_menu.${item.name}`) }}
@@ -27,7 +29,9 @@
         ah-art-button
         type="button"
         class="w-70 text-2xl tracking-wide transition btn-lg"
+        [data-testId]="item.name"
         [class.active]="$index === selectedIndex()"
+        [disabled]="item.disabled"
         (click)="item.process()"
         (mouseenter)="selectedIndex.set($index)"
       >

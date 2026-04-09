@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   templateUrl: './art-button.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: `btn border-base-content border-y-1 border-x-0 rounded-none px-[calc(var(--size)/2)] mx-(--size) relative font-normal`,
+    class: `btn border-y-1 border-x-0 [--btn-border:var(--color-base-content)] rounded-none px-[calc(var(--size)/2)] mx-(--size) relative font-normal disabled:bg-[oklch(0.29_0.01_0)] disabled:[--btn-border:#72655d]`,
   },
 })
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
