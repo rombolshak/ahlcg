@@ -69,7 +69,7 @@ describe('MenuItemsListComponent', () => {
 
   it('should render items list', () => {
     expect(fixture.debugElement.queryAll(By.css('[type=button]')).length).toBe(
-      3,
+      4,
     );
   });
 

@@ -1,40 +1,36 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
-import { AuthService } from '@services/auth.service';
-import { of } from 'rxjs';
+import { AuthService, User } from '@services/auth.service';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { MainMenuComponent } from './main-menu.component';
+
+class AuthMockService {
+  public readonly _user = new BehaviorSubject<User | undefined>(undefined);
+  public readonly currentUser: Observable<User | undefined> =
+    this._user.asObservable();
+  public refreshCurrentUser() {
+    /* empty */
+  }
+}
 
 describe('MainMenuComponent', () => {
   let component: MainMenuComponent;
   let fixture: ComponentFixture<MainMenuComponent>;
-  let mockAuthService: jasmine.SpyObj<AuthService>;
-  let mockUser: jasmine.Spy;
+  let mockAuthService: AuthMockService;
 
   beforeEach(async () => {
-    const spy = jasmine.createSpyObj(
-      'AuthService',
-      [],
-      ['currentUser'],
-    ) as AuthService;
     await TestBed.configureTestingModule({
       imports: [MainMenuComponent, getTranslocoModule()],
       providers: [
         {
           provide: AuthService,
-          useValue: spy,
+          useClass: AuthMockService,
         },
       ],
     }).compileComponents();
 
-    mockAuthService = TestBed.inject(
-      AuthService,
-    ) as jasmine.SpyObj<AuthService>;
-    mockUser = spyOnProperty(
-      mockAuthService,
-      'currentUser',
-      'get',
-    ).and.returnValue(of(undefined));
+    mockAuthService = TestBed.inject(AuthService) as unknown as AuthMockService;
     fixture = TestBed.createComponent(MainMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -45,8 +41,8 @@ describe('MainMenuComponent', () => {
   });
 
   it('should display login button if not authenticated', () => {
-    mockUser.and.returnValue(of(undefined));
-    fixture.detectChanges();
+    mockAuthService._user.next(undefined);
+    TestBed.tick();
 
     expect(
       fixture.debugElement.query(By.css('[data-testId=login_to_continue]')),
@@ -54,8 +50,8 @@ describe('MainMenuComponent', () => {
   });
 
   it('should display continue button if authenticated', () => {
-    mockUser.and.returnValue(of({ isAnonymous: true }));
-    fixture.detectChanges();
+    mockAuthService._user.next({ isAnonymous: true });
+    TestBed.tick();
 
     expect(
       fixture.debugElement.query(By.css('[data-testId=continue]')),
