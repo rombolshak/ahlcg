@@ -96,6 +96,8 @@ describe('MenuItemsListComponent', () => {
 
     pressAndCheck('ArrowDown', 'item2');
     pressAndCheck('ArrowDown', 'item4');
+    pressAndCheck('ArrowDown', 'item1');
+    pressAndCheck('ArrowUp', 'item4');
     pressAndCheck('ArrowUp', 'item2');
     pressAndCheck('ArrowUp', 'item1');
 

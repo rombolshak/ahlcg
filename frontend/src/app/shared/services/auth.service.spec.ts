@@ -4,7 +4,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { AuthService } from './auth.service';
+import { AuthService, User } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -18,8 +18,18 @@ describe('AuthService', () => {
     service = TestBed.inject(AuthService);
   });
 
-  it('should be created', () => {
+  it('should load status on creation', () => {
     expect(service).toBeTruthy();
-    http.expectOne('/api/auth/info');
+    http.expectOne('/api/auth/info').flush(null, { status: 401 });
+    service.currentUser.subscribe((data) => {
+      expect(data).toBeUndefined();
+    });
+  });
+
+  it('should load user model', () => {
+    http.expectOne('/api/auth/login').flush({ isAnonymous: true, email: null });
+    service.currentUser.subscribe((data) => {
+      expect(data).toEqual({ isAnonymous: true } satisfies User);
+    });
   });
 });
