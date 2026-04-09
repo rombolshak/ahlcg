@@ -50,7 +50,7 @@ describe('MainMenuComponent', () => {
   });
 
   it('should display continue button if authenticated', () => {
-    mockAuthService._user.next({ isAnonymous: true });
+    mockAuthService._user.next({ isAnonymous: true, email: null });
     TestBed.tick();
 
     expect(
