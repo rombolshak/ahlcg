@@ -66,9 +66,7 @@ export class SettingsComponent {
   }
 
   public openSettings() {
-    if (this.dialogService.isOpen('game-menu')) {
-      return;
-    }
+    if (this.dialogService.isOpen('game-menu')) return;
 
     this.dialogService.open('game-menu');
     this.selectedSettingIndex.set(0);
@@ -126,18 +124,17 @@ export class SettingsComponent {
   }
 
   onKeyDown(event: KeyboardEvent): void {
+    if (!this.dialogService.isOpen('game-menu')) return;
+    event.preventDefault();
+
     switch (event.key) {
       case 'ArrowDown':
-        if (!this.dialogService.isOpen('game-menu')) break;
-        event.preventDefault();
         this.selectedSettingIndex.update(
           (value) => (value + 1) % this.settingsElements().length,
         );
         break;
 
       case 'ArrowUp':
-        if (!this.dialogService.isOpen('game-menu')) break;
-        event.preventDefault();
         this.selectedSettingIndex.update(
           (value) =>
             (value - 1 + this.settingsElements().length) %
@@ -146,35 +143,24 @@ export class SettingsComponent {
         break;
 
       case 'ArrowLeft':
-        if (!this.dialogService.isOpen('game-menu')) break;
-        event.preventDefault();
         this.settingsComponents()[
           this.selectedSettingIndex()
         ]?.prevValue.emit();
         break;
 
       case 'ArrowRight':
-        if (!this.dialogService.isOpen('game-menu')) break;
-        event.preventDefault();
         this.settingsComponents()[
           this.selectedSettingIndex()
         ]?.nextValue.emit();
         break;
 
       case 'Enter':
-        if (!this.dialogService.isOpen('game-menu')) break;
-        event.preventDefault();
         this.applySettings();
         break;
 
       case 'Escape':
-        event.preventDefault();
-        if (this.dialogService.isOpen('game-menu')) {
-          this.discardSettings();
-          this.selectedSettingIndex.set(-1);
-        } else {
-          this.openSettings();
-        }
+        this.discardSettings();
+        this.selectedSettingIndex.set(-1);
         break;
     }
   }

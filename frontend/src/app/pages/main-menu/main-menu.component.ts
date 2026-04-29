@@ -4,15 +4,17 @@ import {
   computed,
   inject,
   Signal,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { AuthService } from '@services/auth.service';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
+import { SettingsComponent } from "@shared/components/settings/settings.component";
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [MenuItemsListComponent],
+  imports: [MenuItemsListComponent, SettingsComponent],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -23,6 +25,7 @@ import { MenuItemsListComponent } from './menu-items-list/menu-items-list.compon
 export class MainMenuComponent {
   private readonly authService = inject(AuthService);
   private readonly currentUser = toSignal(this.authService.currentUser);
+  private readonly settingsDialog = viewChild.required<SettingsComponent>('settings');
 
   protected readonly mainItems: Signal<MenuItem[]> = computed(() => {
     const isAuthenticated = this.currentUser() !== undefined;
@@ -84,7 +87,7 @@ export class MainMenuComponent {
     return {
       name: 'settings',
       process: () => {
-        alert('settings');
+        this.settingsDialog().openSettings();
       },
     };
   }

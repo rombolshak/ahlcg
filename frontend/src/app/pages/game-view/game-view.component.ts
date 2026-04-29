@@ -14,7 +14,7 @@ import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/
 import { GlobalGameInfoPanelComponent } from './global-game-info-panel/global-game-info-panel.component';
 import { PlayAreaComponent } from './play-area/play-area.component';
 import { DebugTimelineService } from './services/debug-timeline.service';
-import { SettingsComponent } from './settings/settings.component';
+import { SettingsComponent } from '@shared/components/settings/settings.component';
 import { GameStateStore } from './store/game-state.store';
 
 @Component({
@@ -35,13 +35,15 @@ import { GameStateStore } from './store/game-state.store';
     '(body:keydown.`)': 'toggleDebug()',
     '(body:keydown.f10)': 'applyNextPatch($event)',
     '(body:keydown.f9)': 'revertToOriginalState($event)',
+    '(body:keydown.esc)': 'openMenu($event)'
   },
 })
 export class GameViewComponent implements OnInit {
-  readonly gameState = inject(GameStateStore);
-  readonly timelineService = inject(DebugTimelineService);
+  protected readonly gameState = inject(GameStateStore);
+  protected readonly timelineService = inject(DebugTimelineService);
+  protected readonly settingsDialog = viewChild.required<SettingsComponent>('settings')
 
-  readonly cards = computed(() => {
+  protected readonly cards = computed(() => {
     return (
       this.gameState
         .currentInvestigator()
@@ -53,7 +55,7 @@ export class GameViewComponent implements OnInit {
     read: ViewContainerRef,
   });
 
-  showDebug = false;
+  public showDebug = false;
 
   public ngOnInit() {
     this.gameState.setState(testGameState);
@@ -76,8 +78,13 @@ export class GameViewComponent implements OnInit {
     this.timelineService.applyNextPatch();
   }
 
-  revertToOriginalState($event: Event) {
+  protected revertToOriginalState($event: Event) {
     $event.preventDefault();
     this.timelineService.restoreOriginalState();
+  }
+
+  protected openMenu($event: Event) {
+    $event.preventDefault();
+    this.settingsDialog().openSettings();
   }
 }
