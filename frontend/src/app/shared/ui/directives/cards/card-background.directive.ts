@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-import { Faction } from '../../domain/entities/player-card.model';
+import { Faction } from '@domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardBackground]',

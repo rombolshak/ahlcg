@@ -10,7 +10,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { CardFactionBackgroundDirective } from '@shared/directives/card-faction-background.directive';
+import { CardFactionBackgroundDirective } from '@shared/directives/cards/card-faction-background.directive';
 import { AssetsListComponent } from 'pages/game-view/current-investigator-panel/control-area/active-assets-list/assets-list.component';
 import {
   AssetCard,
