@@ -51,19 +51,19 @@ export class InputManagerService {
 export function eventToCommand(event: KeyboardEvent): InputCommand | undefined {
   switch (event.code) {
     case 'ArrowUp':
-    case 'W':
+    case 'KeyW':
       return 'moveUp';
 
     case 'ArrowDown':
-    case 'S':
+    case 'KeyS':
       return 'moveDown';
 
     case 'ArrowLeft':
-    case 'A':
+    case 'KeyA':
       return 'moveLeft';
 
     case 'ArrowRight':
-    case 'D':
+    case 'KeyD':
       return 'moveRight';
 
     case 'Enter':
