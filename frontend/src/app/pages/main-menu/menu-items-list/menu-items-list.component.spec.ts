@@ -51,15 +51,10 @@ describe('MenuItemsListComponent', () => {
     await fixture.whenStable();
 
     pressAndCheck = (key: string, expectedItem: string) => {
-      document.body.dispatchEvent(new KeyboardEvent('keydown', { code: key }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { code: key }));
       TestBed.tick();
 
-      expect(
-        (
-          fixture.debugElement.query(By.css('.active'))
-            .nativeElement as HTMLElement
-        ).textContent,
-      ).toContain(expectedItem);
+      expect((fixture.debugElement.query(By.css('.active')).nativeElement as HTMLElement).textContent).toContain(expectedItem);
     };
   });
 
@@ -68,9 +63,7 @@ describe('MenuItemsListComponent', () => {
   });
 
   it('should render items list', () => {
-    expect(fixture.debugElement.queryAll(By.css('[type=button]')).length).toBe(
-      4,
-    );
+    expect(fixture.debugElement.queryAll(By.css('[type=button]')).length).toBe(4);
   });
 
   it('should set active element on load', () => {
@@ -81,18 +74,11 @@ describe('MenuItemsListComponent', () => {
   });
 
   it('should display tooltip', () => {
-    expect(fixture.debugElement.queryAll(By.css('.tooltip-open')).length).toBe(
-      1,
-    );
+    expect(fixture.debugElement.queryAll(By.css('.tooltip-open')).length).toBe(1);
   });
 
   it('should react to keyboard events', () => {
-    expect(
-      (
-        fixture.debugElement.query(By.css('.active'))
-          .nativeElement as HTMLElement
-      ).textContent,
-    ).toContain('item1');
+    expect((fixture.debugElement.query(By.css('.active')).nativeElement as HTMLElement).textContent).toContain('item1');
 
     pressAndCheck('ArrowDown', 'item2');
     pressAndCheck('ArrowDown', 'item4');
@@ -101,9 +87,7 @@ describe('MenuItemsListComponent', () => {
     pressAndCheck('ArrowUp', 'item2');
     pressAndCheck('ArrowUp', 'item1');
 
-    document.body.dispatchEvent(
-      new KeyboardEvent('keydown', { code: 'Enter' }),
-    );
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Enter' }));
 
     expect(calls1).toBe(1);
     expect(calls2).toBe(0);

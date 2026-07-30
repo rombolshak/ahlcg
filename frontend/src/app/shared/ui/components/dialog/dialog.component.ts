@@ -1,50 +1,48 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  OnDestroy,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, contentChild, ElementRef, inject, input, OnDestroy, viewChild } from '@angular/core';
+import { InputManagerService } from '@services/input-manager.service';
+import { AH_DIALOG_CONTENT } from '@shared/components/dialog/dialog.content';
+import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { SvgComponent } from '../svg/svg.component';
-import { DialogService } from './dialog.service';
 
 @Component({
   selector: 'ah-dialog',
   imports: [SvgComponent],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.css',
+  providers: [
+    {
+      provide: AH_DIALOG_CONTEXT,
+      useExisting: DialogComponent,
+    },
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DialogComponent implements AfterViewInit, OnDestroy {
-  public readonly id = input.required<string>();
+export class DialogComponent implements OnDestroy {
   public readonly title = input('');
-  public readonly open = input(false);
-  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
-  private service = inject(DialogService);
+  public readonly isOpen = input(false);
 
-  constructor() {
-    effect(() => {
-      if (this.open()) {
-        this.service.open(this.id());
-      } else {
-        this.service.close(this.id());
-      }
+  private readonly inputManager = inject(InputManagerService);
+  private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
+  private readonly content = contentChild.required(AH_DIALOG_CONTENT);
+
+  public open() {
+    this.dialog().nativeElement.showModal();
+    this.content().onOpened?.();
+    this.inputManager.pushLayer({
+      cancel: () => {
+        this.close();
+      },
+      ...this.content().getInputHandlers?.(),
     });
   }
 
-  ngAfterViewInit() {
-    const dialog = this.dialog();
-    if (dialog) {
-      this.service.register(this.id(), dialog);
-      if (this.open()) this.service.open(this.id());
-    }
+  public close() {
+    this.dialog().nativeElement.close();
+    this.inputManager.popLayer();
+    this.content().onClosed?.();
   }
 
   ngOnDestroy() {
-    this.service.unregister(this.id());
+    if (this.dialog().nativeElement.open) this.close();
   }
 }

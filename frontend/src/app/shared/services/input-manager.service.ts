@@ -1,11 +1,11 @@
 import { DOCUMENT, inject, Injectable } from '@angular/core';
 
-type GeneralAction = 'confirm' | 'cancel';
+type GeneralAction = 'confirm' | 'cancel' | 'none';
 type Navigation = 'moveUp' | 'moveDown' | 'moveLeft' | 'moveRight';
 type Debug = 'toggleDebugPanel' | 'resetState' | 'applyPatch';
 export type InputCommand = GeneralAction | Navigation | Debug;
 
-export type InputHandler = () => void;
+export type InputHandler = () => void | Promise<void>;
 export type InputLayer = Partial<Record<InputCommand, InputHandler>>;
 
 @Injectable({
@@ -13,10 +13,32 @@ export type InputLayer = Partial<Record<InputCommand, InputHandler>>;
 })
 export class InputManagerService {
   private readonly layers: InputLayer[] = [];
-  private readonly globalLayer: InputLayer = {};
+  private globalLayer: InputLayer = {};
+  private readonly keyToCommand = new Map<string, InputCommand>([
+    ['Enter', 'confirm'],
+    ['Space', 'confirm'],
+    ['Escape', 'cancel'],
+
+    ['ArrowUp', 'moveUp'],
+    ['KeyW', 'moveUp'],
+    ['ArrowDown', 'moveDown'],
+    ['KeyS', 'moveDown'],
+    ['ArrowLeft', 'moveLeft'],
+    ['KeyA', 'moveLeft'],
+    ['ArrowRight', 'moveRight'],
+    ['KeyD', 'moveRight'],
+
+    ['Backquote', 'toggleDebugPanel'],
+    ['F8', 'resetState'],
+    ['F9', 'applyPatch'],
+    ['Tab', 'none'], // disable tab navigation
+  ]);
 
   constructor() {
-    inject<Document>(DOCUMENT).addEventListener('keydown', this.onKeyDown);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    inject<Document>(DOCUMENT).addEventListener('keydown', async $event => {
+      await this.onKeyDown($event);
+    });
   }
 
   public pushLayer(layer: InputLayer): void {
@@ -27,12 +49,15 @@ export class InputManagerService {
     this.layers.pop();
   }
 
-  public registerGlobal(command: InputCommand, handler: InputHandler): void {
-    this.globalLayer[command] = handler;
+  public registerGlobal(layer: InputLayer): void {
+    this.globalLayer = {
+      ...this.globalLayer,
+      ...layer,
+    };
   }
 
-  private onKeyDown = (event: KeyboardEvent): void => {
-    const command = eventToCommand(event);
+  private onKeyDown = async (event: KeyboardEvent): Promise<void> => {
+    const command = this.keyToCommand.get(event.code);
     if (!command) {
       return;
     }
@@ -41,38 +66,9 @@ export class InputManagerService {
     event.stopPropagation();
 
     const handlers = this.layers.at(-1);
-    const handler = handlers?.[command];
+    const handler = handlers?.[command] ?? this.globalLayer[command];
     if (handler) {
-      handler();
+      await handler();
     }
   };
-}
-
-export function eventToCommand(event: KeyboardEvent): InputCommand | undefined {
-  switch (event.code) {
-    case 'ArrowUp':
-    case 'KeyW':
-      return 'moveUp';
-
-    case 'ArrowDown':
-    case 'KeyS':
-      return 'moveDown';
-
-    case 'ArrowLeft':
-    case 'KeyA':
-      return 'moveLeft';
-
-    case 'ArrowRight':
-    case 'KeyD':
-      return 'moveRight';
-
-    case 'Enter':
-    case 'Space':
-      return 'confirm';
-
-    case 'Esc':
-      return 'cancel';
-  }
-
-  return undefined;
 }

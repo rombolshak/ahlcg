@@ -1,4 +1,4 @@
-<ah-dialog *transloco="let t" id="game-menu" [title]="t('settings')">
+<ng-container *transloco="let t">
   <div class="text-center text-xl">
     <ah-setting-item
       #setting
@@ -12,22 +12,14 @@
   </div>
 
   <div class="mt-8 flex items-center justify-center gap-8">
-    <button
-      type="submit"
-      class="btn self-center btn-primary"
-      (click)="applySettings()"
-    >
+    <button type="submit" class="btn self-center btn-primary" (click)="applySettings()">
       {{ t("Apply") }}
     </button>
-    <button
-      type="reset"
-      class="btn-default btn self-center"
-      (click)="discardSettings()"
-    >
+    <button type="reset" class="btn-default btn self-center" (click)="discardSettings()">
       {{ t("Discard") }}
     </button>
   </div>
   <ng-template #lang let-lang>
     <span class="w-32">{{ getLangDisplay(lang) }}</span>
   </ng-template>
-</ah-dialog>
+</ng-container>
