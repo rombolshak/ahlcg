@@ -25,8 +25,6 @@ describe('EmptySlotsListComponent', () => {
   });
 
   it('should display all slots', () => {
-    expect(fixture.debugElement.queryAll(By.css('ah-empty-slot')).length).toBe(
-      3,
-    );
+    expect(fixture.debugElement.queryAll(By.css('ah-empty-slot')).length).toBe(3);
   });
 });

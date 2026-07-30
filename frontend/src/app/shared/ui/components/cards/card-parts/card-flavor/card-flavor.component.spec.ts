@@ -28,8 +28,6 @@ describe('CardFlavorComponent', () => {
 
   it('should print flavor', () => {
     expect(fixture.debugElement.queryAll(By.css('p')).length).toEqual(1);
-    expect(
-      fixture.debugElement.query(By.css('p')).nativeElement.innerText,
-    ).toContain('Test flavor');
+    expect(fixture.debugElement.query(By.css('p')).nativeElement.innerText).toContain('Test flavor');
   });
 });

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { GameCard } from '@domain/entities/card.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardInfoService } from 'shared/services/card-info.service';

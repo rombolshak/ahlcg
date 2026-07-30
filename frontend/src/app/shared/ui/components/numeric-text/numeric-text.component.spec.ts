@@ -23,7 +23,7 @@ describe('NumericTextComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fire event after animation', (done) => {
+  it('should fire event after animation', done => {
     component.animationCompleted.subscribe(() => {
       done();
     });

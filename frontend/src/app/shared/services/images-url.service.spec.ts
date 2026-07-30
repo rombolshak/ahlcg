@@ -18,48 +18,30 @@ describe('ImagesUrlService', () => {
   });
 
   it('should generate card template url', () => {
-    expect(service.getUrl(['card-template', 'asset', 'guardian'])).toEqual(
-      `/assets/images/card-template/asset/guardian.webp`,
-    );
+    expect(service.getUrl(['card-template', 'asset', 'guardian'])).toEqual(`/assets/images/card-template/asset/guardian.webp`);
 
-    expect(service.getUrl(['card-template', 'skill', 'mystic'])).toEqual(
-      `/assets/images/card-template/skill/mystic.webp`,
-    );
+    expect(service.getUrl(['card-template', 'skill', 'mystic'])).toEqual(`/assets/images/card-template/skill/mystic.webp`);
 
-    expect(service.getUrl(['card-template', 'event', 'neutral'])).toEqual(
-      `/assets/images/card-template/event/neutral.webp`,
-    );
+    expect(service.getUrl(['card-template', 'event', 'neutral'])).toEqual(`/assets/images/card-template/event/neutral.webp`);
   });
 
   it('should generate card overlays url', () => {
-    expect(service.getUrl(['card-overlay', 'slot', 'ally'])).toEqual(
-      `/assets/images/card-overlay/slot/ally.webp`,
-    );
+    expect(service.getUrl(['card-overlay', 'slot', 'ally'])).toEqual(`/assets/images/card-overlay/slot/ally.webp`);
 
-    expect(
-      service.getUrl(['card-overlay', 'skill', 'icon', 'agility']),
-    ).toEqual(`/assets/images/card-overlay/skill/icon/agility.webp`);
+    expect(service.getUrl(['card-overlay', 'skill', 'icon', 'agility'])).toEqual(`/assets/images/card-overlay/skill/icon/agility.webp`);
 
-    expect(service.getUrl(['card-overlay', 'skill', 'box', 'seeker'])).toEqual(
-      `/assets/images/card-overlay/skill/box/seeker.webp`,
-    );
+    expect(service.getUrl(['card-overlay', 'skill', 'box', 'seeker'])).toEqual(`/assets/images/card-overlay/skill/box/seeker.webp`);
   });
 
   it('should generate set icons', () => {
-    expect(service.getUrl(['set-icon', 'test'])).toEqual(
-      `/assets/images/set-icon/test.webp`,
-    );
+    expect(service.getUrl(['set-icon', 'test'])).toEqual(`/assets/images/set-icon/test.webp`);
   });
 
   it('should generate card illustrations', () => {
-    expect(service.getUrl(['illustration', 'test', '015'])).toEqual(
-      `/assets/images/illustration/test/015.webp`,
-    );
+    expect(service.getUrl(['illustration', 'test', '015'])).toEqual(`/assets/images/illustration/test/015.webp`);
   });
 
   it('should take simple string', () => {
-    expect(service.getUrl('test/image')).toEqual(
-      `/assets/images/test/image.webp`,
-    );
+    expect(service.getUrl('test/image')).toEqual(`/assets/images/test/image.webp`);
   });
 });

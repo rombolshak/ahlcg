@@ -29,8 +29,7 @@ describe('CardDetailsTextComponent', () => {
   });
 
   it('should display card title', () => {
-    const title = fixture.debugElement.query(By.css('[data-testId=title]'))
-      .nativeElement as HTMLElement;
+    const title = fixture.debugElement.query(By.css('[data-testId=title]')).nativeElement as HTMLElement;
 
     expect(title.textContent.trim()).toEqual('Вход в музей');
   });
@@ -38,24 +37,19 @@ describe('CardDetailsTextComponent', () => {
   it('should display card subtitle if exists', async () => {
     fixture.componentRef.setInput('card', InvestigatorS);
     await fixture.whenStable();
-    const subtitle = fixture.debugElement.query(
-      By.css('[data-testId=subtitle]'),
-    ).nativeElement as HTMLElement;
+    const subtitle = fixture.debugElement.query(By.css('[data-testId=subtitle]')).nativeElement as HTMLElement;
 
     expect(subtitle.textContent.trim()).toEqual('The Librarian');
   });
 
   it('should not display subtitle if empty', () => {
-    const subtitle = fixture.debugElement.queryAll(
-      By.css('[data-testId=subtitle]'),
-    );
+    const subtitle = fixture.debugElement.queryAll(By.css('[data-testId=subtitle]'));
 
     expect(subtitle.length).toBe(0);
   });
 
   it('should display card traits', () => {
-    const traits = fixture.debugElement.query(By.css('[data-testId=traits]'))
-      .nativeElement as HTMLElement;
+    const traits = fixture.debugElement.query(By.css('[data-testId=traits]')).nativeElement as HTMLElement;
 
     for (const trait of ['Arkham', 'Ritual']) {
       expect(traits.textContent.trim()).toContain(trait);
@@ -63,9 +57,7 @@ describe('CardDetailsTextComponent', () => {
   });
 
   it('should display card abilities', () => {
-    const abilities = fixture.debugElement.queryAll(
-      By.css('[data-testId=ability]'),
-    );
+    const abilities = fixture.debugElement.queryAll(By.css('[data-testId=ability]'));
 
     expect(abilities.length).toEqual(2);
   });

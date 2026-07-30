@@ -3,20 +3,9 @@ import { Agenda, agenda } from './entities/agenda.model';
 import { Enemy, enemy } from './entities/enemy.model';
 import { Investigator, investigator } from './entities/investigator.model';
 import { Location, location } from './entities/location.model';
-import {
-  AssetCard,
-  EventCard,
-  PlayerCard,
-  playerCard,
-  SkillCard,
-} from './entities/player-card.model';
+import { AssetCard, EventCard, PlayerCard, playerCard, SkillCard } from './entities/player-card.model';
 
-export const gameEntity = act
-  .or(agenda)
-  .or(enemy)
-  .or(location)
-  .or(investigator)
-  .or(playerCard);
+export const gameEntity = act.or(agenda).or(enemy).or(location).or(investigator).or(playerCard);
 export type GameEntity = typeof gameEntity.infer;
 
 export function isAct(entity: GameEntity): entity is Act {

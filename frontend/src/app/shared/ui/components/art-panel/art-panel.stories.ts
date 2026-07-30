@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<ArtPanelComponent>;
 
 export const Normal: Story = {
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `<ah-art-panel ${argsToTemplate(args)}>
 <h1>Art Deco Card</h1>

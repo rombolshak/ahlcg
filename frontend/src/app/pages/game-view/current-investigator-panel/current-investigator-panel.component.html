@@ -1,17 +1,7 @@
 @let _investigator = state.currentInvestigator();
 @if (_investigator) {
   <ah-investigator class="flex-none" [investigator]="_investigator" />
-  <ah-threat-area
-    class="flex-none"
-    [threatArea]="threats()"
-    [noThreatsText]="noThreatsText()"
-    [threatsSeverity]="threatsSeverity()"
-  />
-  <ah-control-area
-    class="flex-1"
-    [assets]="assets()"
-    [faction]="_investigator.faction"
-    [maxSlotsCounts]="_investigator.slotsCount"
-  />
+  <ah-threat-area class="flex-none" [threatArea]="threats()" [noThreatsText]="noThreatsText()" [threatsSeverity]="threatsSeverity()" />
+  <ah-control-area class="flex-1" [assets]="assets()" [faction]="_investigator.faction" [maxSlotsCounts]="_investigator.slotsCount" />
   <ah-actions-area class="flex-none" [actions]="_investigator.actions" />
 }

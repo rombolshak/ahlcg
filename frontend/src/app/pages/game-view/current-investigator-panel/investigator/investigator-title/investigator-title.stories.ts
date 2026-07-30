@@ -3,11 +3,7 @@ import { InvestigatorTitleComponent } from './investigator-title.component';
 
 const meta: Meta<InvestigatorTitleComponent> = {
   component: InvestigatorTitleComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='w-[12rem] text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[12rem] text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

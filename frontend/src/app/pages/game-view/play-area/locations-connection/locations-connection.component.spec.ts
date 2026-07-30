@@ -59,13 +59,9 @@ describe('LocationsConnectionComponent', () => {
     expect(svg).toBeTruthy();
     const line = svg.query(By.css('line')).nativeElement as SVGLineElement;
 
-    expect(line.getAttribute('stroke')).toEqual(
-      'url(#gradient-green-var_--color-stone-700_)',
-    );
+    expect(line.getAttribute('stroke')).toEqual('url(#gradient-green-var_--color-stone-700_)');
 
     expect(line.getAttribute('marker-start')).toEqual('url(#arrow-green)');
-    expect(line.getAttribute('marker-end')).toEqual(
-      'url(#arrow-var_--color-stone-700_)',
-    );
+    expect(line.getAttribute('marker-end')).toEqual('url(#arrow-var_--color-stone-700_)');
   });
 });

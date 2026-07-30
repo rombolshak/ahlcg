@@ -7,9 +7,7 @@
         [class.tooltip-open]="$index === selectedIndex()"
         (mouseenter)="selectedIndex.set($index)"
       >
-        <div
-          class="tooltip-content p-4 font-[ArnoPro] text-xl whitespace-pre-line"
-        >
+        <div class="tooltip-content p-4 font-[ArnoPro] text-xl whitespace-pre-line">
           {{ item.tooltip }}
         </div>
         <button

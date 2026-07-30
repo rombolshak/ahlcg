@@ -5,12 +5,7 @@ import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 
 const meta: Meta<ActionTooltipComponent> = {
   component: ActionTooltipComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class='w-[20rem] mt-10 ml-10 flex flex-col font-[ArnoPro]'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[20rem] mt-10 ml-10 flex flex-col font-[ArnoPro]'>${story}</div>`)],
 };
 
 export default meta;

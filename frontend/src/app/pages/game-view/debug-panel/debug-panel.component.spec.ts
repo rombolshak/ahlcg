@@ -15,11 +15,7 @@ describe('DebugPanelComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DebugPanelComponent],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
     mockGameStateService = TestBed.inject(GameStateStore);

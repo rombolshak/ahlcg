@@ -4,9 +4,7 @@ import { AssetPopoverComponent } from './asset-popover.component';
 
 const meta: Meta<AssetPopoverComponent> = {
   component: AssetPopoverComponent,
-  decorators: [
-    componentWrapperDecorator((story) => `<div class="w-60">${story}</div>`),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class="w-60">${story}</div>`)],
 };
 
 export default meta;

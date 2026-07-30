@@ -169,28 +169,12 @@
   @keyframes blink {
     45%,
     55% {
-      --tw-gradient-from: color-mix(
-        in oklab,
-        var(--color-blue-600) 70%,
-        transparent
-      );
-      --tw-gradient-to: color-mix(
-        in oklab,
-        var(--color-blue-800) 20%,
-        transparent
-      );
+      --tw-gradient-from: color-mix(in oklab, var(--color-blue-600) 70%, transparent);
+      --tw-gradient-to: color-mix(in oklab, var(--color-blue-800) 20%, transparent);
     }
     50% {
-      --tw-gradient-from: color-mix(
-        in oklab,
-        var(--color-blue-500) 95%,
-        transparent
-      );
-      --tw-gradient-to: color-mix(
-        in oklab,
-        var(--color-blue-500) 95%,
-        transparent
-      );
+      --tw-gradient-from: color-mix(in oklab, var(--color-blue-500) 95%, transparent);
+      --tw-gradient-to: color-mix(in oklab, var(--color-blue-500) 95%, transparent);
     }
   }
 }

@@ -1,21 +1,6 @@
 <p>{{ name() }}</p>
 <div class="flex gap-2">
-  <button
-    type="button"
-    class="btn font-[Teutonic] btn-sm"
-    (click)="prevValue.emit()"
-  >
-    ◀
-  </button>
-  <ng-container
-    [ngTemplateOutlet]="template()"
-    [ngTemplateOutletContext]="{ $implicit: currentValue() }"
-  />
-  <button
-    type="button"
-    class="btn font-[Teutonic] btn-sm"
-    (click)="nextValue.emit()"
-  >
-    ▶
-  </button>
+  <button type="button" class="btn font-[Teutonic] btn-sm" (click)="prevValue.emit()">◀</button>
+  <ng-container [ngTemplateOutlet]="template()" [ngTemplateOutletContext]="{ $implicit: currentValue() }" />
+  <button type="button" class="btn font-[Teutonic] btn-sm" (click)="nextValue.emit()">▶</button>
 </div>

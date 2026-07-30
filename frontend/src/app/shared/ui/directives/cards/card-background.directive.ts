@@ -10,16 +10,11 @@ export class CardBackgroundDirective {
   constructor() {
     effect(() => {
       if (this.lastColor.length) {
-        (this.el.nativeElement as HTMLElement).classList.remove(
-          ...this.lastColor,
-        );
+        (this.el.nativeElement as HTMLElement).classList.remove(...this.lastColor);
       }
 
       this.lastColor = this.getColor(this.faction());
-      (this.el.nativeElement as HTMLElement).classList.add(
-        ...this.lastColor,
-        'bg-radial-[at_25%_25%]',
-      );
+      (this.el.nativeElement as HTMLElement).classList.add(...this.lastColor, 'bg-radial-[at_25%_25%]');
     });
   }
 

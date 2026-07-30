@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { EnemyAttackDisplayComponent } from '@pages/game-view/components/enemy-attack-display/enemy-attack-display.component';
 import { EnemySkillTestsDisplayComponent } from '@pages/game-view/components/enemy-skill-tests-display/enemy-skill-tests-display.component';
@@ -15,13 +10,7 @@ import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.c
 
 @Component({
   selector: 'ah-investigator-threat-item',
-  imports: [
-    NgOptimizedImage,
-    TranslocoDirective,
-    VitalsBarComponent,
-    EnemyAttackDisplayComponent,
-    EnemySkillTestsDisplayComponent,
-  ],
+  imports: [NgOptimizedImage, TranslocoDirective, VitalsBarComponent, EnemyAttackDisplayComponent, EnemySkillTestsDisplayComponent],
   templateUrl: './investigator-threat-item.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

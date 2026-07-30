@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { GameMap } from 'shared/domain/game-map.model';
 import { ConnectionPointsService } from './connection-points.service';
 
@@ -31,14 +25,10 @@ export class LocationsConnectionComponent {
 
   protected readonly connection = computed(() => {
     // захватываем map(), чтоб срабатывала перерисовка при изменении позиции локации
-    const location = this.map().places.find(
-      (p) => p.location === this.from() || p.location === this.to(),
-    );
+    const location = this.map().places.find(p => p.location === this.from() || p.location === this.to());
 
     if (!location) {
-      console.debug(
-        `No location found for location ${this.from()} or ${this.to()}`,
-      );
+      console.debug(`No location found for location ${this.from()} or ${this.to()}`);
     }
 
     const startElement = document.querySelector(this.from());
@@ -52,10 +42,7 @@ export class LocationsConnectionComponent {
       throw new Error('Could not find element by selector ' + this.to());
     }
 
-    const [from, to] = this.connectionsService.getConnectors(
-      startElement,
-      endElement,
-    );
+    const [from, to] = this.connectionsService.getConnectors(startElement, endElement);
 
     return {
       from: this.connectionsService.getPoint(startElement, from, this.options),
@@ -63,17 +50,10 @@ export class LocationsConnectionComponent {
     };
   });
 
-  protected readonly gradientName = computed(
-    () =>
-      `gradient-${this.sanitize(this.fromColor())}-${this.sanitize(this.toColor())}`,
-  );
+  protected readonly gradientName = computed(() => `gradient-${this.sanitize(this.fromColor())}-${this.sanitize(this.toColor())}`);
 
-  protected readonly markerStartName = computed(
-    () => `arrow-${this.sanitize(this.fromColor())}`,
-  );
-  protected readonly markerEndName = computed(
-    () => `arrow-${this.sanitize(this.toColor())}`,
-  );
+  protected readonly markerStartName = computed(() => `arrow-${this.sanitize(this.fromColor())}`);
+  protected readonly markerEndName = computed(() => `arrow-${this.sanitize(this.toColor())}`);
 
   private sanitize(str: string | undefined): string {
     return str?.replace('(', '_').replace(')', '_') ?? '';

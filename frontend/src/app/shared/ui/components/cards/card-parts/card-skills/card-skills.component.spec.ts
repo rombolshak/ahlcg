@@ -28,11 +28,7 @@ describe('CardSkillsComponent', () => {
 
   it('should print skills', () => {
     expect(fixture.debugElement.queryAll(By.css('div')).length).toEqual(
-      (cardA.skills.agility ?? 0) +
-        (cardA.skills.combat ?? 0) +
-        (cardA.skills.intellect ?? 0) +
-        (cardA.skills.wild ?? 0) +
-        (cardA.skills.willpower ?? 0),
+      (cardA.skills.agility ?? 0) + (cardA.skills.combat ?? 0) + (cardA.skills.intellect ?? 0) + (cardA.skills.wild ?? 0) + (cardA.skills.willpower ?? 0),
     );
   });
 });

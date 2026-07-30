@@ -31,8 +31,6 @@ describe('CardTraitsComponent', () => {
   it('should print traits', () => {
     expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(2);
 
-    expect(
-      fixture.debugElement.query(By.css('span')).nativeElement.innerText,
-    ).toContain('TraitA');
+    expect(fixture.debugElement.query(By.css('span')).nativeElement.innerText).toContain('TraitA');
   });
 });

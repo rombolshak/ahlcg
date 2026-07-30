@@ -12,12 +12,7 @@ export default meta;
 type Story = StoryObj<VitalsBarComponent>;
 
 export const Horizontal: Story = {
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div style="height: 20px; width: 500px; margin: 3em;">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div style="height: 20px; width: 500px; margin: 3em;">${story}</div>`)],
   args: {
     orientation: 'horizontal',
     entity: {
@@ -34,12 +29,7 @@ export const Horizontal: Story = {
 };
 
 export const Vertical: Story = {
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div style="width: 20px; height: 500px; margin: 3em; display: flex">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div style="width: 20px; height: 500px; margin: 3em; display: flex">${story}</div>`)],
   args: {
     orientation: 'vertical',
     entity: {

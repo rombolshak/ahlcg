@@ -1,11 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { AssetCard } from 'shared/domain/entities/player-card.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';
@@ -16,13 +10,7 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 
 @Component({
   selector: 'ah-controlled-asset',
-  imports: [
-    NgOptimizedImage,
-    VitalsBarComponent,
-    AssetDetailIconComponent,
-    AssetPopoverComponent,
-    WithAhSymbolsPipe,
-  ],
+  imports: [NgOptimizedImage, VitalsBarComponent, AssetDetailIconComponent, AssetPopoverComponent, WithAhSymbolsPipe],
   templateUrl: './controlled-asset.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

@@ -1,11 +1,7 @@
 import { Provider } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { type } from 'arktype';
-import {
-  DEFAULT_SETTINGS,
-  SettingsService,
-  STORAGE_KEY_SUFFIX,
-} from './settings.service';
+import { DEFAULT_SETTINGS, SettingsService, STORAGE_KEY_SUFFIX } from './settings.service';
 
 const userPreferences = type({
   lang: 'string',
@@ -20,12 +16,7 @@ export function provideUserPreferencesService(): Provider {
       provide: DEFAULT_SETTINGS,
       useFactory: (transloco: TranslocoService) => {
         const available = transloco.getAvailableLangs();
-        const preferred = navigator.languages.find(
-          (lang) =>
-            available.findIndex((a) =>
-              typeof a === 'string' ? a === lang : a.id === lang,
-            ) !== -1,
-        );
+        const preferred = navigator.languages.find(lang => available.findIndex(a => (typeof a === 'string' ? a === lang : a.id === lang)) !== -1);
 
         return userPreferences.assert({
           lang: preferred ?? transloco.getDefaultLang(),

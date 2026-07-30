@@ -12,7 +12,6 @@ import { SingleBarComponent } from './single-bar/single-bar.component';
   },
 })
 export class VitalsBarComponent {
-  readonly entity =
-    input.required<Partial<{ health: Vitals; sanity: Vitals }>>();
+  readonly entity = input.required<Partial<{ health: Vitals; sanity: Vitals }>>();
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
 }

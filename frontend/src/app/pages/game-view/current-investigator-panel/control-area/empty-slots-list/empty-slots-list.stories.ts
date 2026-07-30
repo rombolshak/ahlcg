@@ -6,11 +6,7 @@ import { EmptySlotsListComponent } from './empty-slots-list.component';
 
 const meta: Meta<ControlledAssetComponent> = {
   component: EmptySlotsListComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class="w-[22rem] text-neutral-900">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class="w-[22rem] text-neutral-900">${story}</div>`)],
 };
 
 export default meta;

@@ -2,16 +2,7 @@
 import { Investigator } from '../../entities/investigator.model';
 import { slotsCount, SlotsCount } from '../../entities/player-card.model';
 import { testActions } from '../test-actions';
-import {
-  cardA,
-  cardA2,
-  cardA3,
-  cardA4,
-  cardA5,
-  cardA6,
-  cardE,
-  cardS,
-} from './test-cards';
+import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6, cardE, cardS } from './test-cards';
 import { testEnemy, testEnemy2 } from './test-enemies';
 
 export const defaultSlots: SlotsCount = slotsCount.assert({
@@ -58,14 +49,7 @@ export const InvestigatorG: Investigator = {
   id: investigatorId.assert('1003'),
   faction: 'guardian',
   threatArea: [testEnemy.id, testEnemy2.id],
-  controlledAssets: [
-    cardA.id,
-    cardA5.id,
-    cardA2.id,
-    cardA3.id,
-    cardA4.id,
-    cardA6.id,
-  ],
+  controlledAssets: [cardA.id, cardA5.id, cardA2.id, cardA3.id, cardA4.id, cardA6.id],
   hand: [cardA.id, cardS.id, cardE.id],
   tokens: {
     clue: 3,

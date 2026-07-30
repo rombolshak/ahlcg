@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'ah-svg',
@@ -17,7 +12,5 @@ export class SvgComponent {
   readonly fill = input('none');
   readonly stroke = input('currentcolor');
 
-  protected readonly link = computed(
-    () => `/assets/images/svg/${this.name()}.svg#${this.name()}`,
-  );
+  protected readonly link = computed(() => `/assets/images/svg/${this.name()}.svg#${this.name()}`);
 }

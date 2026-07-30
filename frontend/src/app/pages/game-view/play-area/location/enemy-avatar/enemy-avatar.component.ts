@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Enemy } from 'shared/domain/entities/enemy.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { VitalsBarComponent } from 'shared/ui/components/vitals-bar/vitals-bar.component';

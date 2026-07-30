@@ -1,13 +1,5 @@
-﻿import {
-  componentWrapperDecorator,
-  Meta,
-  moduleMetadata,
-  StoryObj,
-} from '@storybook/angular';
-import {
-  InvestigatorG,
-  InvestigatorS,
-} from 'shared/domain/test/entities/test-investigators';
+﻿import { componentWrapperDecorator, Meta, moduleMetadata, StoryObj } from '@storybook/angular';
+import { InvestigatorG, InvestigatorS } from 'shared/domain/test/entities/test-investigators';
 import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { testGameState } from 'shared/domain/test/test-game-state';
 import { GameStateStore } from '../../store/game-state.store';
@@ -29,9 +21,7 @@ const meta: Meta<LocationComponent> = {
       ],
     }),
 
-    componentWrapperDecorator(
-      (story) => `<div class='w-[44rem] relative'>${story}</div>`,
-    ),
+    componentWrapperDecorator(story => `<div class='w-[44rem] relative'>${story}</div>`),
   ],
 };
 

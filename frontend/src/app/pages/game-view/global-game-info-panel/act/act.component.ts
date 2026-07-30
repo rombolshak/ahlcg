@@ -1,11 +1,5 @@
 import { NgClass, NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { Act, Objective } from 'shared/domain/entities/act.model';
 import { CardInfoService } from 'shared/services/card-info.service';
@@ -16,19 +10,11 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
 
 @Component({
   selector: 'ah-act',
-  imports: [
-    CardDetailsTextComponent,
-    WithAhSymbolsPipe,
-    NgOptimizedImage,
-    NgClass,
-    SingleBarComponent,
-    TranslocoDirective,
-  ],
+  imports: [CardDetailsTextComponent, WithAhSymbolsPipe, NgOptimizedImage, NgClass, SingleBarComponent, TranslocoDirective],
   templateUrl: './act.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-accent-content bg-radial-[at_50%_5%] to-90%',
+    class: 'relative flex flex-col w-full items-center p-2 outline outline-2 rounded text-accent-content bg-radial-[at_50%_5%] to-90%',
     '[class]': 'hostClasses()',
   },
 })
@@ -39,14 +25,10 @@ export class ActComponent {
   private readonly cardInfo = inject(CardInfoService).getCardInfo(this.act);
   readonly title = computed(() => this.cardInfo()?.title);
 
-  protected readonly emptySlots = computed(() =>
-    this.act().objectives.map((o) =>
-      Math.max(o.requiredValue - o.currentValue, 0),
-    ),
-  );
+  protected readonly emptySlots = computed(() => this.act().objectives.map(o => Math.max(o.requiredValue - o.currentValue, 0)));
 
   protected readonly maxLines = computed(() =>
-    this.act().objectives.map((o) => {
+    this.act().objectives.map(o => {
       const max = Math.max(o.requiredValue, o.currentValue);
       const multiRowValue = max <= 12 ? 2 : 3;
       return max <= 6 ? 1 : multiRowValue;
@@ -54,9 +36,7 @@ export class ActComponent {
   );
 
   protected readonly hostClasses = computed(() => {
-    const maxProgress = Math.max(
-      ...this.act().objectives.map((o) => this.calcObjectiveProgress(o)),
-    );
+    const maxProgress = Math.max(...this.act().objectives.map(o => this.calcObjectiveProgress(o)));
     return {
       'from-lime-500/80': maxProgress >= 1,
       'to-lime-700/80': maxProgress >= 1,

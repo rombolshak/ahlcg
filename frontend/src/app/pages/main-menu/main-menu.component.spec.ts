@@ -7,8 +7,7 @@ import { MainMenuComponent } from './main-menu.component';
 
 class AuthMockService {
   public readonly _user = new BehaviorSubject<User | undefined>(undefined);
-  public readonly currentUser: Observable<User | undefined> =
-    this._user.asObservable();
+  public readonly currentUser: Observable<User | undefined> = this._user.asObservable();
   public refreshCurrentUser() {
     /* empty */
   }
@@ -44,17 +43,13 @@ describe('MainMenuComponent', () => {
     mockAuthService._user.next(undefined);
     TestBed.tick();
 
-    expect(
-      fixture.debugElement.query(By.css('[data-testId=login_to_continue]')),
-    ).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('[data-testId=login_to_continue]'))).toBeTruthy();
   });
 
   it('should display continue button if authenticated', () => {
     mockAuthService._user.next({ isAnonymous: true, email: null });
     TestBed.tick();
 
-    expect(
-      fixture.debugElement.query(By.css('[data-testId=continue]')),
-    ).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('[data-testId=continue]'))).toBeTruthy();
   });
 });

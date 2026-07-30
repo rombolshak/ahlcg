@@ -4,11 +4,7 @@ import { InvestigatorComponent } from './investigator.component';
 
 const meta: Meta<InvestigatorComponent> = {
   component: InvestigatorComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='w-[22rem] text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[22rem] text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

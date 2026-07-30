@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardFactionBackgroundDirective } from '@shared/directives/cards/card-faction-background.directive';
 import { CardOutlineDirective } from '@shared/directives/cards/card-outline.directive';

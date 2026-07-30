@@ -26,21 +26,11 @@ describe('AssetDetailIconComponent', () => {
   });
 
   it('should display image', () => {
-    expect(
-      (
-        fixture.debugElement.query(By.css('img'))
-          .nativeElement as HTMLImageElement
-      ).src,
-    ).toContain('test-image');
+    expect((fixture.debugElement.query(By.css('img')).nativeElement as HTMLImageElement).src).toContain('test-image');
   });
 
   it('should display detail text', () => {
-    expect(
-      (
-        fixture.debugElement.query(By.css('span'))
-          .nativeElement as HTMLSpanElement
-      ).textContent,
-    ).toContain('test-detail');
+    expect((fixture.debugElement.query(By.css('span')).nativeElement as HTMLSpanElement).textContent).toContain('test-detail');
   });
 
   it('should not display detail text', async () => {

@@ -14,7 +14,7 @@ type Story = StoryObj<NumericTextComponent>;
 export const Normal: Story = {
   decorators: [
     componentWrapperDecorator(
-      (story) => `
+      story => `
 <div>Update 'value' input to see component in action</div>
 <div class="text-4xl">${story}</div>`,
     ),

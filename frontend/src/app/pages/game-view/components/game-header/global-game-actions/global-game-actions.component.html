@@ -1,15 +1,8 @@
 <ng-container *transloco="let t">
   @for (button of actions(); track button.icon) {
     @if (button.isVisible) {
-      <div
-        class="tooltip tooltip-bottom"
-        [attr.data-tip]="t(`game_header.game_actions.${button.tooltip}`)"
-      >
-        <button
-          type="button"
-          class="btn btn-square btn-ghost hover:btn-neutral"
-          (click)="button.handler()"
-        >
+      <div class="tooltip tooltip-bottom" [attr.data-tip]="t(`game_header.game_actions.${button.tooltip}`)">
+        <button type="button" class="btn btn-square btn-ghost hover:btn-neutral" (click)="button.handler()">
           <ah-svg class="size-6" [name]="button.icon" />
         </button>
       </div>

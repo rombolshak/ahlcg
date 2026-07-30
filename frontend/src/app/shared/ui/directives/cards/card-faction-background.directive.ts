@@ -16,14 +16,7 @@ export class CardFactionBackgroundDirective {
     html.classList.add('bg-(image:--bgUrl)', 'bg-cover', 'bg-center');
 
     effect(() => {
-      html.style.setProperty(
-        '--bgUrl',
-        `url(${this.imagesService.getUrl([
-          'card-template',
-          'investigator',
-          this.faction(),
-        ])})`,
-      );
+      html.style.setProperty('--bgUrl', `url(${this.imagesService.getUrl(['card-template', 'investigator', this.faction()])})`);
     });
   }
 }

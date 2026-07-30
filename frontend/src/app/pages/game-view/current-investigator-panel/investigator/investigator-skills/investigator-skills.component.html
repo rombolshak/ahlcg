@@ -1,11 +1,4 @@
-<img
-  fill
-  class="brightness-90"
-  alt="skills box"
-  [ngSrc]="
-    imagesService.getUrl(['card-template', 'investigator-details', faction()])
-  "
-/>
+<img fill class="brightness-90" alt="skills box" [ngSrc]="imagesService.getUrl(['card-template', 'investigator-details', faction()])" />
 <div class="grid grid-cols-2 grid-rows-2 gap-x-1 px-2">
   <ah-investigator-skill type="willpower" [value]="skills().willpower" />
   <ah-investigator-skill type="intellect" [value]="skills().intellect" />

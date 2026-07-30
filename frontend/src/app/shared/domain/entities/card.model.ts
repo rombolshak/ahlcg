@@ -3,9 +3,7 @@ import { setInfo } from './details/card-info.model';
 import { cardTokens } from './details/card.tokens';
 import { entityId } from './id.model';
 
-export const cardType = type(
-  "'act' | 'agenda' | 'location' | 'investigator' | 'asset' | 'skill' | 'event' | 'enemy'",
-);
+export const cardType = type("'act' | 'agenda' | 'location' | 'investigator' | 'asset' | 'skill' | 'event' | 'enemy'");
 export type CardType = typeof cardType.infer;
 
 export const gameCard = type({

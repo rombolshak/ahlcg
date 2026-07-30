@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { CardOutlineDirective } from '@shared/directives/cards/card-outline.directive';
 import { cardHeights, cardWidths } from 'shared/domain/card.constants';
@@ -15,12 +10,7 @@ import { CardSkillsComponent } from '../card-skills/card-skills.component';
 
 @Component({
   selector: 'ah-player-card',
-  imports: [
-    NgOptimizedImage,
-    CardSkillsComponent,
-    CardOutlineDirective,
-    TranslocoPipe,
-  ],
+  imports: [NgOptimizedImage, CardSkillsComponent, CardOutlineDirective, TranslocoPipe],
   templateUrl: './player-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -2,23 +2,11 @@
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 import { defaultSlots } from '../../../../shared/domain/test/entities/test-investigators';
 import { ControlAreaComponent } from './control-area.component';
-import {
-  SeveralIcons,
-  Simple as SimpleAsset,
-  WithClue,
-  WithDoom,
-  WithResource,
-  WithSlot,
-} from './controlled-asset/controlled-asset.stories';
+import { SeveralIcons, Simple as SimpleAsset, WithClue, WithDoom, WithResource, WithSlot } from './controlled-asset/controlled-asset.stories';
 
 const meta: Meta<ControlAreaComponent> = {
   component: ControlAreaComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class='w-[22rem] h-100 flex text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[22rem] h-100 flex text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

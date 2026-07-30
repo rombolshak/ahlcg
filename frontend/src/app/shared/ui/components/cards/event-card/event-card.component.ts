@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { EventCard } from 'shared/domain/entities/player-card.model';
 import { CardInfoService } from 'shared/services/card-info.service';

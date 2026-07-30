@@ -28,27 +28,19 @@ describe('AgendaComponent', () => {
   });
 
   it('should display total doom slots', () => {
-    expect(fixture.debugElement.queryAll(By.css('img')).length).toEqual(
-      testAgenda.requiredDoom,
-    );
+    expect(fixture.debugElement.queryAll(By.css('img')).length).toEqual(testAgenda.requiredDoom);
   });
 
   it('should display current doom bright', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('img.brightness-125')).length,
-    ).toEqual(testAgenda.currentDoom);
+    expect(fixture.debugElement.queryAll(By.css('img.brightness-125')).length).toEqual(testAgenda.currentDoom);
   });
 
   it('should display doom on cards', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('img.brightness-95')).length,
-    ).toEqual(testAgenda.doomOnCards);
+    expect(fixture.debugElement.queryAll(By.css('img.brightness-95')).length).toEqual(testAgenda.doomOnCards);
   });
 
   it('should display agenda title', () => {
-    expect(
-      (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain('Прорываясь вперёд');
+    expect((fixture.debugElement.nativeElement as HTMLElement).textContent).toContain('Прорываясь вперёд');
   });
 
   async function checkDoom(doom: number, color: string) {

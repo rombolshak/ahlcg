@@ -4,11 +4,7 @@ import { LocationHeaderComponent } from './location-header.component';
 
 const meta: Meta<LocationHeaderComponent> = {
   component: LocationHeaderComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='w-200 mt-40 relative'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-200 mt-40 relative'>${story}</div>`)],
 };
 
 export default meta;

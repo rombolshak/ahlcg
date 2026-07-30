@@ -1,10 +1,6 @@
 ﻿import { DisplayOptions } from '../../display.options';
 import { assetId, eventId, skillId } from '../../entities/id.model';
-import {
-  AssetCard,
-  EventCard,
-  SkillCard,
-} from '../../entities/player-card.model';
+import { AssetCard, EventCard, SkillCard } from '../../entities/player-card.model';
 
 export const displayOption: DisplayOptions = { cardSize: 'm', textSize: 'm' };
 

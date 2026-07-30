@@ -6,11 +6,7 @@ import { CardDetailsTextComponent } from '../../../../components/card-details-te
 
 @Component({
   selector: 'ah-asset-popover',
-  imports: [
-    CardOutlineDirective,
-    CardBackgroundDirective,
-    CardDetailsTextComponent,
-  ],
+  imports: [CardOutlineDirective, CardBackgroundDirective, CardDetailsTextComponent],
   templateUrl: './asset-popover.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

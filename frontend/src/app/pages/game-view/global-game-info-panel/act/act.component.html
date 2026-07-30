@@ -1,18 +1,13 @@
 <ng-container *transloco="let t">
   <div class="peer text-center">
-    <p class="-my-1 font-[ArnoPro] text-sm/4">
-      {{ t("global_game_info.act") }} {{ act().stage }}
-    </p>
+    <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("global_game_info.act") }} {{ act().stage }}</p>
     <p class="font-[Conkordia] text-xl">
       {{ t(title() ?? "") }}
     </p>
   </div>
 
   @for (objective of act().objectives; track $index) {
-    <p
-      data-testId="objective"
-      [innerHTML]="t(objective.description) | withAhSymbols"
-    ></p>
+    <p data-testId="objective" [innerHTML]="t(objective.description) | withAhSymbols"></p>
     @switch (objective.type) {
       @case ("health") {
         <ah-single-bar
@@ -40,13 +35,7 @@
             />
           }
           @for (_ of [].constructor(emptySlots()[$index]); track $index) {
-            <img
-              width="36"
-              height="36"
-              alt="objective token"
-              class="flex-none brightness-25"
-              [ngSrc]="imageService.getUrl(['card-overlay', objective.type])"
-            />
+            <img width="36" height="36" alt="objective token" class="flex-none brightness-25" [ngSrc]="imageService.getUrl(['card-overlay', objective.type])" />
           }
         </div>
       }

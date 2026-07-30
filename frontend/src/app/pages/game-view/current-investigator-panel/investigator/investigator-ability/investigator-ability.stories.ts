@@ -3,11 +3,7 @@ import { InvestigatorAbilityComponent } from './investigator-ability.component';
 
 const meta: Meta<InvestigatorAbilityComponent> = {
   component: InvestigatorAbilityComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='w-[12rem] text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[12rem] text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

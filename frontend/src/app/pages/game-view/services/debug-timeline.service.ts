@@ -30,7 +30,7 @@ export class DebugTimelineService {
     if (patch.length === 0) {
       return;
     }
-    this.patches.update((p) => [...p, patch]);
+    this.patches.update(p => [...p, patch]);
     this.lastUpdatedState = newModel;
   }
 

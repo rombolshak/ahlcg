@@ -18,8 +18,7 @@ export const testAct: Act = {
       type: 'health',
     },
     {
-      description:
-        '<b>Цель —</b> Если в «Тайной комнате» нет улик, продвиньтесь.',
+      description: '<b>Цель —</b> Если в «Тайной комнате» нет улик, продвиньтесь.',
       requiredValue: 0,
       currentValue: 4,
       startValue: 6,

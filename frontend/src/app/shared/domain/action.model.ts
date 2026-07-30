@@ -1,17 +1,7 @@
 ﻿import { entityId } from '@domain/entities/id.model';
 import { type } from 'arktype';
 
-export const actionType = type.enumerated(
-  'investigate',
-  'move',
-  'draw',
-  'resource',
-  'play',
-  'activate',
-  'fight',
-  'engage',
-  'evade',
-);
+export const actionType = type.enumerated('investigate', 'move', 'draw', 'resource', 'play', 'activate', 'fight', 'engage', 'evade');
 
 export type ActionType = typeof actionType.infer;
 

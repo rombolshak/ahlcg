@@ -6,16 +6,11 @@ import { InvestigatorActionsComponent } from '@pages/game-view/current-investiga
 
 @Component({
   selector: 'ah-actions-area',
-  imports: [
-    TranslocoDirective,
-    InvestigatorActionsComponent,
-    ActionAreaButtonsComponent,
-  ],
+  imports: [TranslocoDirective, InvestigatorActionsComponent, ActionAreaButtonsComponent],
   templateUrl: './actions-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'flex flex-col justify-between gap-4 p-4 bg-base-200/70 rounded font-[ArnoPro]',
+    class: 'flex flex-col justify-between gap-4 p-4 bg-base-200/70 rounded font-[ArnoPro]',
   },
 })
 export class ActionsAreaComponent {
