@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { GameStateStore } from '../store/game-state.store';
 import { ActComponent } from './act/act.component';
 import { AgendaComponent } from './agenda/agenda.component';
@@ -30,7 +25,7 @@ export class GlobalGameInfoPanelComponent {
       throw new Error('No agenda in state');
     }
 
-    return agendas.map((a) => this.state.getAgenda(a));
+    return agendas.map(a => this.state.getAgenda(a));
   });
 
   readonly acts = computed(() => {
@@ -43,6 +38,6 @@ export class GlobalGameInfoPanelComponent {
       throw new Error('No agenda in state');
     }
 
-    return agendas.map((a) => this.state.getAct(a));
+    return agendas.map(a => this.state.getAct(a));
   });
 }

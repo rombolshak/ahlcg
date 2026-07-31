@@ -3,9 +3,7 @@ import { ScenarioNameComponent } from './scenario-name.component';
 
 const meta: Meta<ScenarioNameComponent> = {
   component: ScenarioNameComponent,
-  decorators: [
-    componentWrapperDecorator((story) => `<div class='w-70'>${story}</div>`),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-70'>${story}</div>`)],
 };
 
 export default meta;

@@ -1,13 +1,7 @@
 ﻿import { assetId } from '@domain/entities/id.model';
 import { AssetCard, AssetSlot } from '@domain/entities/player-card.model';
 import { defaultSlots } from '@domain/test/entities/test-investigators';
-import {
-  emptySlots,
-  getTotalPages,
-  isActive,
-  sliceActiveAssets,
-  slicePassiveAssets,
-} from './utils';
+import { emptySlots, getTotalPages, isActive, sliceActiveAssets, slicePassiveAssets } from './utils';
 
 const emptyAsset: AssetCard = {
   id: assetId.assert('1'),
@@ -42,15 +36,11 @@ describe('control-area / utils / isActive', () => {
   });
 
   it('should return true for asset with health', () => {
-    expect(isActive({ ...emptyAsset, health: { max: 1, damaged: 0 } })).toBe(
-      true,
-    );
+    expect(isActive({ ...emptyAsset, health: { max: 1, damaged: 0 } })).toBe(true);
   });
 
   it('should return true for asset with sanity', () => {
-    expect(isActive({ ...emptyAsset, sanity: { max: 1, damaged: 0 } })).toBe(
-      true,
-    );
+    expect(isActive({ ...emptyAsset, sanity: { max: 1, damaged: 0 } })).toBe(true);
   });
 
   it('should return true for asset with resources', () => {
@@ -67,22 +57,13 @@ describe('control-area / utils / isActive', () => {
 });
 
 describe('control-area / utils / emptySlots', () => {
-  const takeSlot: (slot: AssetSlot) => AssetCard = (slot) => ({
+  const takeSlot: (slot: AssetSlot) => AssetCard = slot => ({
     ...emptyAsset,
     slot: slot,
   });
 
   it('should return none if all slots taken', () => {
-    const result = emptySlots(
-      [
-        takeSlot('two-hands'),
-        takeSlot('two-arcane'),
-        takeSlot('body'),
-        takeSlot('ally'),
-        takeSlot('accessory'),
-      ],
-      defaultSlots,
-    );
+    const result = emptySlots([takeSlot('two-hands'), takeSlot('two-arcane'), takeSlot('body'), takeSlot('ally'), takeSlot('accessory')], defaultSlots);
 
     expect(result).toEqual({
       ally: 0,
@@ -101,16 +82,10 @@ describe('control-area / utils / emptySlots', () => {
   });
 
   it('should return excess slots', () => {
-    const result = emptySlots(
-      [
-        takeSlot('two-hands'),
-        takeSlot('two-arcane'),
-        takeSlot('body'),
-        takeSlot('ally'),
-        takeSlot('accessory'),
-      ],
-      { ...defaultSlots, hand: 3 },
-    );
+    const result = emptySlots([takeSlot('two-hands'), takeSlot('two-arcane'), takeSlot('body'), takeSlot('ally'), takeSlot('accessory')], {
+      ...defaultSlots,
+      hand: 3,
+    });
 
     expect(result).toEqual({
       ally: 0,

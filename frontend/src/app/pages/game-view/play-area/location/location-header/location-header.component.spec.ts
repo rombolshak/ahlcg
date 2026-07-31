@@ -42,8 +42,6 @@ describe('LocationHeaderComponent', () => {
   });
 
   it('should contain details card', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('ah-card-details-text')).length,
-    ).toBe(1);
+    expect(fixture.debugElement.queryAll(By.css('ah-card-details-text')).length).toBe(1);
   });
 });

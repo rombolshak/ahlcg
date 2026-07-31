@@ -4,9 +4,7 @@ import { GlobalGameActionsComponent } from './global-game-actions.component';
 
 const meta: Meta<GlobalGameActionsComponent> = {
   component: GlobalGameActionsComponent,
-  decorators: [
-    componentWrapperDecorator((story) => `<div class='w-70'>${story}</div>`),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-70'>${story}</div>`)],
 };
 
 export default meta;

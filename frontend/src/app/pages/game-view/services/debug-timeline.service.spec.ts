@@ -72,18 +72,14 @@ describe('GameDebugTimelineServiceService', () => {
     service.recordChanges(testGameState3);
     service.applyNextPatch();
 
-    expect(mockStore.updateState).toHaveBeenCalledWith(
-      createPatch(testGameState, testGameState2),
-    );
+    expect(mockStore.updateState).toHaveBeenCalledWith(createPatch(testGameState, testGameState2));
 
     expect(service.currentAppliedPatch()).toBe(1);
     expect(service.totalPatchesRecorded()).toBe(2);
 
     service.applyNextPatch();
 
-    expect(mockStore.updateState).toHaveBeenCalledWith(
-      createPatch(testGameState2, testGameState3),
-    );
+    expect(mockStore.updateState).toHaveBeenCalledWith(createPatch(testGameState2, testGameState3));
 
     expect(service.currentAppliedPatch()).toBe(2);
     expect(service.totalPatchesRecorded()).toBe(2);

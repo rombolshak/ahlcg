@@ -1,7 +1,4 @@
-﻿import {
-  TranslocoTestingModule,
-  TranslocoTestingOptions,
-} from '@jsverse/transloco';
+﻿import { TranslocoTestingModule, TranslocoTestingOptions } from '@jsverse/transloco';
 import campaign from '../../../../../public/assets/i18n/campaigns/notz/en.json';
 import scenario from '../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
 import daisyWalker from '../../../../../public/assets/i18n/cards/01/002/en.json';

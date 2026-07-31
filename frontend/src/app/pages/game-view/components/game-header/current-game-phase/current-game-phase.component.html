@@ -5,9 +5,7 @@
     [style.--baseColor]="colorSet().baseColor"
     [style.--accentColor]="colorSet().accentColor"
   >
-    <span class="text-xs/3">
-      {{ t("game_header.current_game_phase.round") }} {{ roundNumber() }}
-    </span>
+    <span class="text-xs/3"> {{ t("game_header.current_game_phase.round") }} {{ roundNumber() }} </span>
     <span class="text-xl/5">
       {{ t(`game_header.current_game_phase.${this.gamePhase()}`) }}
       @let entityTitle = actingEntityTitle();

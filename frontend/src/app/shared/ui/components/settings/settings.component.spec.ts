@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '../../../shared/domain/test/transloco.testing';
+import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { provideUserPreferencesService } from '@services/settings/user-preferences.service';
+import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { SettingsComponent } from './settings.component';
 
 describe('SettingsComponent', () => {
@@ -12,7 +14,23 @@ describe('SettingsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [SettingsComponent, getTranslocoModule()],
       providers: [provideZonelessChangeDetection()],
-    }).compileComponents();
+    })
+      .overrideComponent(SettingsComponent, {
+        set: {
+          providers: [
+            provideUserPreferencesService(),
+            {
+              provide: AH_DIALOG_CONTEXT,
+              useValue: {
+                close: () => {
+                  /* empty */
+                },
+              },
+            },
+          ],
+        },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);
     component = fixture.componentInstance;

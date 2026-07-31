@@ -1,9 +1,4 @@
-<ng-container
-  *transloco="
-    let t;
-    prefix: 'game_view.current_investigator_panel.actions_area'
-  "
->
+<ng-container *transloco="let t; prefix: 'game_view.current_investigator_panel.actions_area'">
   <div class="flex items-center-safe justify-between gap-2">
     <ah-investigator-actions [actions]="actions()" />
     <ah-action-area-buttons />

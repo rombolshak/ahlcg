@@ -3,10 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import {
-  testEnemy,
-  testEnemy2,
-} from 'shared/domain/test/entities/test-enemies';
+import { testEnemy, testEnemy2 } from 'shared/domain/test/entities/test-enemies';
 import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { ThreatAreaComponent } from './threat-area.component';
 
@@ -45,9 +42,7 @@ describe('ThreatAreaComponent', () => {
   });
 
   it('should display all enemies', () => {
-    const enemies = fixture.debugElement.queryAll(
-      By.css('ah-investigator-threat-item'),
-    );
+    const enemies = fixture.debugElement.queryAll(By.css('ah-investigator-threat-item'));
 
     expect(enemies.length).toBe(2);
   });
@@ -60,8 +55,6 @@ describe('ThreatAreaComponent', () => {
     });
     TestBed.tick();
 
-    expect(fixture.debugElement.nativeElement.textContent).toContain(
-      'no threats text',
-    );
+    expect(fixture.debugElement.nativeElement.textContent).toContain('no threats text');
   });
 });

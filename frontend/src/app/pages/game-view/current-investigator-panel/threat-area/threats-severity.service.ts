@@ -12,16 +12,9 @@ export interface ThreatsSeverity {
   providedIn: 'root',
 })
 export class ThreatsSeverityService {
-  private readonly investigatorsSignals = new Map<
-    string,
-    ReturnType<typeof this.calculate>
-  >();
+  private readonly investigatorsSignals = new Map<string, ReturnType<typeof this.calculate>>();
 
-  getThreatsSeverity(
-    investigator: Signal<
-      (Investigator & { assets: AssetCard[]; threats: Enemy[] }) | null
-    >,
-  ): Signal<ThreatsSeverity> {
+  getThreatsSeverity(investigator: Signal<(Investigator & { assets: AssetCard[]; threats: Enemy[] }) | null>): Signal<ThreatsSeverity> {
     const gator = investigator();
     const defaultValue = signal({ healthSeverity: 0, sanitySeverity: 0 });
     if (gator == null) {
@@ -36,57 +29,28 @@ export class ThreatsSeverityService {
     return this.investigatorsSignals.get(gator.id) ?? defaultValue;
   }
 
-  private calculate(
-    investigator: Signal<
-      (Investigator & { assets: AssetCard[]; threats: Enemy[] }) | null
-    >,
-  ) {
+  private calculate(investigator: Signal<(Investigator & { assets: AssetCard[]; threats: Enemy[] }) | null>) {
     return computed(() => {
       const gator = investigator();
       if (gator == null) return { healthSeverity: 0, sanitySeverity: 0 };
 
-      const totalHealth =
-        gator.health.max + this.calcAssets(gator.assets, (a) => a.health?.max);
-      const totalSanity =
-        gator.sanity.max + this.calcAssets(gator.assets, (a) => a.sanity?.max);
+      const totalHealth = gator.health.max + this.calcAssets(gator.assets, a => a.health?.max);
+      const totalSanity = gator.sanity.max + this.calcAssets(gator.assets, a => a.sanity?.max);
 
-      const currentDamage =
-        gator.health.damaged +
-        this.calcAssets(gator.assets, (a) => a.health?.damaged);
-      const currentHorror =
-        gator.sanity.damaged +
-        this.calcAssets(gator.assets, (a) => a.sanity?.damaged);
+      const currentDamage = gator.health.damaged + this.calcAssets(gator.assets, a => a.health?.damaged);
+      const currentHorror = gator.sanity.damaged + this.calcAssets(gator.assets, a => a.sanity?.damaged);
 
-      const incomingDamage = gator.threats.reduce(
-        (acc, threat) => acc + threat.damageAttack,
-        0,
-      );
-      const incomingHorror = gator.threats.reduce(
-        (acc, threat) => acc + threat.horrorAttack,
-        0,
-      );
+      const incomingDamage = gator.threats.reduce((acc, threat) => acc + threat.damageAttack, 0);
+      const incomingHorror = gator.threats.reduce((acc, threat) => acc + threat.horrorAttack, 0);
 
-      const healthSeverity = Math.min(
-        1,
-        incomingDamage === 0
-          ? 0
-          : (currentDamage + incomingDamage) / totalHealth,
-      );
-      const sanitySeverity = Math.min(
-        1,
-        incomingHorror === 0
-          ? 0
-          : (currentHorror + incomingHorror) / totalSanity,
-      );
+      const healthSeverity = Math.min(1, incomingDamage === 0 ? 0 : (currentDamage + incomingDamage) / totalHealth);
+      const sanitySeverity = Math.min(1, incomingHorror === 0 ? 0 : (currentHorror + incomingHorror) / totalSanity);
 
       return { healthSeverity, sanitySeverity };
     });
   }
 
-  private calcAssets(
-    assets: AssetCard[],
-    selector: (asset: AssetCard) => number | undefined,
-  ): number {
+  private calcAssets(assets: AssetCard[], selector: (asset: AssetCard) => number | undefined): number {
     return assets.reduce((acc, asset) => acc + (selector(asset) ?? 0), 0);
   }
 }

@@ -1,11 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-} from '@angular/core';
-import { CardInfoService } from '../../../../shared/services/card-info.service';
-import { DialogService } from '../../../../shared/ui/components/dialog/dialog.service';
+import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
+import { CardInfoService } from '@services/card-info.service';
 import { GameStateStore } from '../../store/game-state.store';
 import { CurrentGamePhaseComponent } from './current-game-phase/current-game-phase.component';
 import { InvestigatorSeeker } from './current-game-phase/phase-colors.model';
@@ -15,37 +9,25 @@ import { ScenarioNameComponent } from './scenario-name/scenario-name.component';
 
 @Component({
   selector: 'ah-game-header',
-  imports: [
-    ScenarioNameComponent,
-    CurrentGamePhaseComponent,
-    GlobalGameActionsComponent,
-  ],
+  imports: [ScenarioNameComponent, CurrentGamePhaseComponent, GlobalGameActionsComponent],
   templateUrl: './game-header.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'grid grid-cols-subgrid text-base-content bg-gradient-to-b from-base-200 via-base-200/80 via-[65%] to-base-200/0',
+    class: 'grid grid-cols-subgrid text-base-content bg-gradient-to-b from-base-200 via-base-200/80 via-[65%] to-base-200/0',
   },
 })
 export class GameHeaderComponent {
   private readonly state = inject(GameStateStore).gameState;
   private readonly cardInfoProvider = inject(CardInfoService);
-  private dialogService = inject(DialogService);
 
-  protected readonly campaignId = computed(
-    () => this.state()?.metaInfo.campaignId ?? '<unknown campaign>',
-  );
-  protected readonly scenarioId = computed(
-    () => this.state()?.metaInfo.scenarioId ?? '<unknown scenario>',
-  );
+  public readonly menuRequested = output();
 
-  protected readonly roundNumber = computed(
-    () => this.state()?.metaInfo.roundNumber ?? 0,
-  );
+  protected readonly campaignId = computed(() => this.state()?.metaInfo.campaignId ?? '<unknown campaign>');
+  protected readonly scenarioId = computed(() => this.state()?.metaInfo.scenarioId ?? '<unknown scenario>');
 
-  protected readonly gamePhase = computed(
-    () => this.state()?.metaInfo.gamePhase ?? 'mythos',
-  );
+  protected readonly roundNumber = computed(() => this.state()?.metaInfo.roundNumber ?? 0);
+
+  protected readonly gamePhase = computed(() => this.state()?.metaInfo.gamePhase ?? 'mythos');
 
   private readonly currentEntityCard = computed(() => {
     const id = this.state()?.currentInvestigator ?? '';
@@ -53,9 +35,7 @@ export class GameHeaderComponent {
     return this.state()?.gameEntities[id];
   });
 
-  protected readonly currentEntityInfo = this.cardInfoProvider.getCardInfo(
-    this.currentEntityCard,
-  );
+  protected readonly currentEntityInfo = this.cardInfoProvider.getCardInfo(this.currentEntityCard);
 
   protected readonly phaseColor = InvestigatorSeeker;
 
@@ -94,6 +74,6 @@ export class GameHeaderComponent {
   ];
 
   private openMenu() {
-    this.dialogService.open('game-menu');
+    this.menuRequested.emit();
   }
 }

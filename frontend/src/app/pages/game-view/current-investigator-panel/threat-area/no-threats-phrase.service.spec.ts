@@ -37,9 +37,9 @@ describe('NoThreatsPhraseService', () => {
     const model = signal(InvestigatorS);
     const testee = service.getPhrase(model);
 
-    model.update((gator) => ({ ...gator, threatArea: [testEnemy.id] }));
+    model.update(gator => ({ ...gator, threatArea: [testEnemy.id] }));
     const initial = testee();
-    model.update((gator) => ({ ...gator, threatArea: [] }));
+    model.update(gator => ({ ...gator, threatArea: [] }));
     const final = testee();
 
     expect(final).not.toEqual(initial);
@@ -49,10 +49,10 @@ describe('NoThreatsPhraseService', () => {
     const model = signal(InvestigatorS);
     const testee = service.getPhrase(model);
 
-    model.update((gator) => ({ ...gator, threatArea: [testEnemy.id] }));
-    model.update((gator) => ({ ...gator, threatArea: [] }));
+    model.update(gator => ({ ...gator, threatArea: [testEnemy.id] }));
+    model.update(gator => ({ ...gator, threatArea: [] }));
     const initial = testee();
-    model.update((gator) => ({ ...gator, tokens: { clue: 3 } }));
+    model.update(gator => ({ ...gator, tokens: { clue: 3 } }));
     const final = testee();
 
     expect(final).toEqual(initial);

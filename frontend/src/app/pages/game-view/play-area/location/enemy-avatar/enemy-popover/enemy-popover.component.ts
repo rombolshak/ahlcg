@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Enemy } from '@domain/entities/enemy.model';
 import { CardDetailsTextComponent } from '@pages/game-view/components/card-details-text/card-details-text.component';
 import { EnemyAttackDisplayComponent } from '@pages/game-view/components/enemy-attack-display/enemy-attack-display.component';
@@ -15,17 +9,11 @@ import { VitalsBarComponent } from '@shared/components/vitals-bar/vitals-bar.com
 
 @Component({
   selector: 'ah-enemy-popover',
-  imports: [
-    CardDetailsTextComponent,
-    EnemyAttackDisplayComponent,
-    EnemySkillTestsDisplayComponent,
-    VitalsBarComponent,
-  ],
+  imports: [CardDetailsTextComponent, EnemyAttackDisplayComponent, EnemySkillTestsDisplayComponent, VitalsBarComponent],
   templateUrl: './enemy-popover.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'flex flex-col gap-1 bg-linear-to-b from-zinc-100 to-zinc-300 rounded p-2',
+    class: 'flex flex-col gap-1 bg-linear-to-b from-zinc-100 to-zinc-300 rounded p-2',
   },
 })
 export class EnemyPopoverComponent {

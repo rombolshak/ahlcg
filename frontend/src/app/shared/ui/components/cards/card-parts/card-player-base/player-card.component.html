@@ -10,22 +10,14 @@
     alt="card-template"
     [height]="cardHeights[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    [ngSrc]="
-      imagesService.getUrl(['card-template', card().cardType, card().faction])
-    "
+    [ngSrc]="imagesService.getUrl(['card-template', card().cardType, card().faction])"
   />
   <img
     class="absolute top-0 -z-20 rounded-xl"
     alt="card-illustration"
     [height]="cardWidths[displayOptions().cardSize]"
     [width]="cardWidths[displayOptions().cardSize]"
-    [ngSrc]="
-      imagesService.getUrl([
-        'illustration',
-        card().setInfo.set,
-        card().setInfo.index,
-      ])
-    "
+    [ngSrc]="imagesService.getUrl(['illustration', card().setInfo.set, card().setInfo.index])"
   />
 
   <div>

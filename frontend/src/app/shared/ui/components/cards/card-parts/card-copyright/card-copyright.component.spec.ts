@@ -31,9 +31,6 @@ describe('CardCopyrightComponent', () => {
 
   it('should print copyright', () => {
     expect(fixture.debugElement.queryAll(By.css('span')).length).toEqual(3);
-    expect(
-      fixture.debugElement.query(By.css('span:nth-child(2)')).nativeElement
-        .innerText,
-    ).toContain('FFG');
+    expect(fixture.debugElement.query(By.css('span:nth-child(2)')).nativeElement.innerText).toContain('FFG');
   });
 });

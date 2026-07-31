@@ -3,12 +3,7 @@ import { InvestigatorSubtitleComponent } from './investigator-subtitle.component
 
 const meta: Meta<InvestigatorSubtitleComponent> = {
   component: InvestigatorSubtitleComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class='w-[12rem] text-neutral-900 flex flex-col'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[12rem] text-neutral-900 flex flex-col'>${story}</div>`)],
 };
 
 export default meta;

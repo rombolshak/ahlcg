@@ -1,10 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  AssetSlot,
-  Faction,
-  PlayerCardType,
-  SkillType,
-} from '../domain/entities/player-card.model';
+import { AssetSlot, Faction, PlayerCardType, SkillType } from '../domain/entities/player-card.model';
 
 type CardTemplateType = PlayerCardType | 'investigator-details';
 type SetName = string;

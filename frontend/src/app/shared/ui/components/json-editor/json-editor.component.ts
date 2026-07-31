@@ -1,27 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  ElementRef,
-  input,
-  OnDestroy,
-  output,
-  viewChild,
-} from '@angular/core';
-import {
-  Content,
-  createJSONEditor,
-  JsonEditor,
-  toJSONContent,
-  ValidationError,
-} from 'vanilla-jsoneditor';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, input, OnDestroy, output, viewChild } from '@angular/core';
+import { Content, createJSONEditor, JsonEditor, toJSONContent, ValidationError } from 'vanilla-jsoneditor';
 
 @Component({
   selector: 'ah-json-editor',
   imports: [],
   templateUrl: './json-editor.component.html',
-  styles:
-    ':host { .jse-theme-dark { --jse-theme-color: var(--color-neutral); }}',
+  styles: ':host { .jse-theme-dark { --jse-theme-color: var(--color-neutral); }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JsonEditorComponent<T> implements OnDestroy {

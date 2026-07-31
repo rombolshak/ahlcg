@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { AssetCard } from 'shared/domain/entities/player-card.model';
 import { CardInfoService } from 'shared/services/card-info.service';
@@ -18,15 +13,7 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
 
 @Component({
   selector: 'ah-asset-card',
-  imports: [
-    NgOptimizedImage,
-    PlayerCardComponent,
-    CardCostComponent,
-    CardTitleComponent,
-    CardTraitsComponent,
-    CardAbilitiesComponent,
-    CardCopyrightComponent,
-  ],
+  imports: [NgOptimizedImage, PlayerCardComponent, CardCostComponent, CardTitleComponent, CardTraitsComponent, CardAbilitiesComponent, CardCopyrightComponent],
   templateUrl: './asset-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

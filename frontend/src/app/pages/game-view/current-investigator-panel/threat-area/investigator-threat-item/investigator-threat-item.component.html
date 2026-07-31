@@ -1,23 +1,12 @@
 <ng-container *transloco="let t">
-  <img
-    fill
-    alt="threat background"
-    class="-z-35 rounded-sm"
-    [ngSrc]="imagesService.getUrl('threat-enemy')"
-  />
+  <img fill alt="threat background" class="-z-35 rounded-sm" [ngSrc]="imagesService.getUrl('threat-enemy')" />
 
   <img
     alt="threat avatar"
     width="56"
     height="56"
     class="rounded-xs"
-    [ngSrc]="
-      imagesService.getUrl([
-        'mini-illustration',
-        enemy().setInfo.set,
-        enemy().setInfo.index,
-      ])
-    "
+    [ngSrc]="imagesService.getUrl(['mini-illustration', enemy().setInfo.set, enemy().setInfo.index])"
   />
 
   <div class="flex w-full flex-col justify-between">

@@ -1,28 +1,25 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  Signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, Signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { AuthService } from '@services/auth.service';
+import { DialogComponent } from '@shared/components/dialog/dialog.component';
+import { SettingsComponent } from '@shared/components/settings/settings.component';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [MenuItemsListComponent],
+  imports: [MenuItemsListComponent, SettingsComponent, DialogComponent, TranslocoDirective],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'h-screen w-screen flex items-center bg-[url("/assets/images/main-menu.webp")] bg-cover bg-center bg-no-repeat bg-black',
+    class: 'h-screen w-screen flex items-center bg-[url("/assets/images/main-menu.webp")] bg-cover bg-center bg-no-repeat bg-black',
   },
 })
 export class MainMenuComponent {
   private readonly authService = inject(AuthService);
   private readonly currentUser = toSignal(this.authService.currentUser);
+  private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
 
   protected readonly mainItems: Signal<MenuItem[]> = computed(() => {
     const isAuthenticated = this.currentUser() !== undefined;
@@ -84,7 +81,7 @@ export class MainMenuComponent {
     return {
       name: 'settings',
       process: () => {
-        alert('settings');
+        this.settingsDialog().open();
       },
     };
   }

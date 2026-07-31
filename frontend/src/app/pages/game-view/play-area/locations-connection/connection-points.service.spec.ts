@@ -1,13 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
-import {
-  ConnectionPointsService,
-  Connector,
-  HorizontalConnectorPosition,
-  Plane,
-  VerticalConnectorPosition,
-} from './connection-points.service';
+import { ConnectionPointsService, Connector, HorizontalConnectorPosition, Plane, VerticalConnectorPosition } from './connection-points.service';
 
 describe('ConnectionPointsService', () => {
   let service: ConnectionPointsService;
@@ -37,10 +31,7 @@ describe('ConnectionPointsService', () => {
     validateVerticalPoints(12, Plane.Right);
   });
 
-  function validateHorizontalPoints(
-    y: number,
-    plane: Plane.Top | Plane.Bottom,
-  ) {
+  function validateHorizontalPoints(y: number, plane: Plane.Top | Plane.Bottom) {
     const box = {
       offsetTop: 0,
       offsetLeft: 0,
@@ -158,11 +149,7 @@ describe('ConnectionPointsService', () => {
     ).toEqual({ x: x, y: 8.04 });
   }
 
-  function validateHorizontalConnectors(
-    y: number,
-    fromPlane: Plane.Top | Plane.Bottom,
-    toPlane: Plane.Top | Plane.Bottom,
-  ) {
+  function validateHorizontalConnectors(y: number, fromPlane: Plane.Top | Plane.Bottom, toPlane: Plane.Top | Plane.Bottom) {
     validateConnectors(
       -16,
       y,
@@ -229,11 +216,7 @@ describe('ConnectionPointsService', () => {
     );
   }
 
-  function validateVerticalConnectors(
-    x: number,
-    fromPlane: Plane.Left | Plane.Right,
-    toPlane: Plane.Left | Plane.Right,
-  ) {
+  function validateVerticalConnectors(x: number, fromPlane: Plane.Left | Plane.Right, toPlane: Plane.Left | Plane.Right) {
     validateConnectors(
       x,
       -8,
@@ -274,12 +257,7 @@ describe('ConnectionPointsService', () => {
     );
   }
 
-  function validateConnectors(
-    x: number,
-    y: number,
-    from: Connector,
-    to: Connector,
-  ) {
+  function validateConnectors(x: number, y: number, from: Connector, to: Connector) {
     const centralBox = {
       offsetTop: 0,
       offsetLeft: 0,

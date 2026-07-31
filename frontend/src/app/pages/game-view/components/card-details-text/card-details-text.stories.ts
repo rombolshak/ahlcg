@@ -28,7 +28,7 @@ export const WithAdditionalContent: Story = {
     card: testLocation,
     showTitle: true,
   },
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `<ah-card-details-text ${argsToTemplate(args)}><span class="text-lime-700 font-bold">Additional content</span></ah-card-details-text>`,
   }),

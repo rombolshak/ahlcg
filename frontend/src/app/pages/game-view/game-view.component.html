@@ -1,28 +1,19 @@
 ﻿@if (gameState.isLoading() || gameState.error()) {
-  <div
-    class="m-auto flex size-1/2 flex-col items-center justify-center bg-slate-800 text-white"
-  >
+  <div class="m-auto flex size-1/2 flex-col items-center justify-center bg-slate-800 text-white">
     <p>Loading...</p>
     <p class="whitespace-pre-wrap">{{ gameState.error() }}</p>
   </div>
 } @else {
-  <div
-    class="grid size-full grid-cols-[19rem_1fr_22rem] grid-rows-[3rem_1fr_6rem] gap-4"
-  >
-    <ah-game-header class="col-span-3 col-start-1 row-start-1" />
-    <ah-global-game-info-panel
-      class="col-start-1 row-span-2 row-start-2 pl-8"
-    />
+  <div class="grid size-full grid-cols-[19rem_1fr_22rem] grid-rows-[3rem_1fr_6rem] gap-4">
+    <ah-game-header class="col-span-3 col-start-1 row-start-1" (menuRequested)="settingsDialog().open()" />
+    <ah-global-game-info-panel class="col-start-1 row-span-2 row-start-2 pl-8" />
     <ah-play-area class="col-start-2 row-start-2 overflow-hidden" />
-    <ah-current-investigator-panel
-      class="z-1 col-start-3 row-span-2 row-start-2 pt-0.5 pr-8 pl-px"
-    />
-    <ah-cards-hand
-      class="col-span-3 col-start-1 row-start-3"
-      [cards]="cards()"
-    />
+    <ah-current-investigator-panel class="z-1 col-start-3 row-span-2 row-start-2 pt-0.5 pr-8 pl-px" />
+    <ah-cards-hand class="col-span-3 col-start-1 row-start-3" [cards]="cards()" />
   </div>
 }
 
 <ng-template #debugPanel />
-<ah-settings />
+<ah-dialog *transloco="let t" #settings [title]="t('settings')">
+  <ah-settings />
+</ah-dialog>

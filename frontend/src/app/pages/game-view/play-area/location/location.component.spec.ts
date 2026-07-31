@@ -4,10 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import {
-  InvestigatorG,
-  InvestigatorS,
-} from 'shared/domain/test/entities/test-investigators';
+import { InvestigatorG, InvestigatorS } from 'shared/domain/test/entities/test-investigators';
 import { testLocation } from 'shared/domain/test/entities/test-locations';
 import { testGameState } from 'shared/domain/test/test-game-state';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
@@ -20,11 +17,7 @@ describe('LocationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
       imports: [LocationComponent, getTranslocoModule()],
     }).compileComponents();
 
@@ -33,10 +26,7 @@ describe('LocationComponent', () => {
     fixture = TestBed.createComponent(LocationComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('locationId', testLocation.id);
-    fixture.componentRef.setInput('investigatorsIds', [
-      InvestigatorS.id,
-      InvestigatorG.id,
-    ]);
+    fixture.componentRef.setInput('investigatorsIds', [InvestigatorS.id, InvestigatorG.id]);
     await fixture.whenStable();
   });
 
@@ -45,27 +35,18 @@ describe('LocationComponent', () => {
   });
 
   it('should have header', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('ah-location-header')).length,
-    ).toBe(1);
+    expect(fixture.debugElement.queryAll(By.css('ah-location-header')).length).toBe(1);
   });
 
   it('should have image', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('img[alt="location-illustration"]'))
-        .length,
-    ).toBe(1);
+    expect(fixture.debugElement.queryAll(By.css('img[alt="location-illustration"]')).length).toBe(1);
   });
 
   it('should display investigators', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('ah-investigator-avatar')).length,
-    ).toBe(2);
+    expect(fixture.debugElement.queryAll(By.css('ah-investigator-avatar')).length).toBe(2);
   });
 
   it('should display enemies', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('img[alt="enemy"]')).length,
-    ).toBe(InvestigatorS.threatArea.length + InvestigatorG.threatArea.length);
+    expect(fixture.debugElement.queryAll(By.css('img[alt="enemy"]')).length).toBe(InvestigatorS.threatArea.length + InvestigatorG.threatArea.length);
   });
 });

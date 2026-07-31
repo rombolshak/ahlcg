@@ -6,13 +6,7 @@
     width="132"
     height="61"
     class="peer h-fit w-full"
-    [ngSrc]="
-      imageService.getUrl([
-        'illustration',
-        _enemy.setInfo.set,
-        _enemy.setInfo.index,
-      ])
-    "
+    [ngSrc]="imageService.getUrl(['illustration', _enemy.setInfo.set, _enemy.setInfo.index])"
   />
 
   <ah-enemy-popover

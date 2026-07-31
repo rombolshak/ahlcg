@@ -1,11 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
-import {
-  DEFAULT_SETTINGS,
-  SettingsService,
-  STORAGE_KEY_SUFFIX,
-} from './settings.service';
+import { DEFAULT_SETTINGS, SettingsService, STORAGE_KEY_SUFFIX } from './settings.service';
 
 interface TestModel {
   someKey: string;
@@ -38,18 +34,14 @@ describe('SettingsService', () => {
   });
 
   it('should be created', () => {
-    service = TestBed.inject<SettingsService<TestModel>>(
-      SettingsService<TestModel>,
-    );
+    service = TestBed.inject<SettingsService<TestModel>>(SettingsService<TestModel>);
 
     expect(service).toBeTruthy();
   });
 
   it('should load from storage', () => {
     localStorage.setItem('ahlcg_test', JSON.stringify({ someKey: 'test' }));
-    service = TestBed.inject<SettingsService<TestModel>>(
-      SettingsService<TestModel>,
-    );
+    service = TestBed.inject<SettingsService<TestModel>>(SettingsService<TestModel>);
     const data = service.get()();
 
     expect(data).toEqual({
@@ -59,9 +51,7 @@ describe('SettingsService', () => {
   });
 
   it('should save to storage', () => {
-    service = TestBed.inject<SettingsService<TestModel>>(
-      SettingsService<TestModel>,
-    );
+    service = TestBed.inject<SettingsService<TestModel>>(SettingsService<TestModel>);
     service.update('otherKey', 46);
 
     expect(service.get()()).toEqual({
@@ -78,17 +68,13 @@ describe('SettingsService', () => {
 
   it('should set default on error', () => {
     localStorage.setItem('ahlcg_test', 'abab');
-    service = TestBed.inject<SettingsService<TestModel>>(
-      SettingsService<TestModel>,
-    );
+    service = TestBed.inject<SettingsService<TestModel>>(SettingsService<TestModel>);
 
     expect(service.get()()).toEqual(defaultModel);
   });
 
   it('should set default on missing value', () => {
-    service = TestBed.inject<SettingsService<TestModel>>(
-      SettingsService<TestModel>,
-    );
+    service = TestBed.inject<SettingsService<TestModel>>(SettingsService<TestModel>);
 
     expect(service.get()()).toEqual(defaultModel);
   });

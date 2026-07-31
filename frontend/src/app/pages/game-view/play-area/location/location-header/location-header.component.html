@@ -1,37 +1,22 @@
 @let _location = location();
 @if (_location) {
-  <div
-    class="peer absolute flex w-full cursor-default items-center justify-center text-center font-[Conkordia] text-4xl"
-  >
+  <div class="peer absolute flex w-full cursor-default items-center justify-center text-center font-[Conkordia] text-4xl">
     <span>{{ title() | transloco }}</span>
 
     @if (showAbilitiesMark()) {
-      <div
-        class="ml-2 flex h-[32px] w-[32px] items-center justify-center rounded-full bg-yellow-400 font-[Teutonic] text-3xl"
-      >
+      <div class="ml-2 flex h-[32px] w-[32px] items-center justify-center rounded-full bg-yellow-400 font-[Teutonic] text-3xl">
         <span class="text-sm" [innerHtml]="'#n#' | withAhSymbols"></span>
       </div>
     }
   </div>
-  <div
-    class="m-1 flex *:relative *:ml-1 *:flex *:h-[56px] *:w-[56px] *:items-center *:justify-center *:rounded-full *:text-5xl"
-  >
+  <div class="m-1 flex *:relative *:ml-1 *:flex *:h-[56px] *:w-[56px] *:items-center *:justify-center *:rounded-full *:text-5xl">
     <div class="bg-stone-900 text-white">
       <ah-numeric-text [value]="_location.shroud" [invertColors]="true" />
     </div>
 
     <div>
-      <img
-        fill
-        class="z-0"
-        alt="location-clues"
-        [ngSrc]="imageService.getUrl(['card-overlay', 'clue'])"
-      />
-      <ah-numeric-text-with-overlay
-        class="z-0"
-        [value]="_location.clues"
-        [invertColors]="true"
-      />
+      <img fill class="z-0" alt="location-clues" [ngSrc]="imageService.getUrl(['card-overlay', 'clue'])" />
+      <ah-numeric-text-with-overlay class="z-0" [value]="_location.clues" [invertColors]="true" />
     </div>
   </div>
 

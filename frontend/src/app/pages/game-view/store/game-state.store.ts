@@ -1,13 +1,5 @@
 ﻿import { computed } from '@angular/core';
-import {
-  patchState,
-  signalStore,
-  withComputed,
-  withMethods,
-  withProps,
-  withState,
-  WritableStateSource,
-} from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withProps, withState, WritableStateSource } from '@ngrx/signals';
 import { ArkErrors } from 'arktype';
 import { gsap } from 'gsap';
 // @ts-ignore see issue #637 in gsap 3.14.2
@@ -17,38 +9,11 @@ import { applyPatch, Operation } from 'rfc6902';
 import { Act } from 'shared/domain/entities/act.model';
 import { Agenda } from 'shared/domain/entities/agenda.model';
 import { Enemy } from 'shared/domain/entities/enemy.model';
-import {
-  ActId,
-  AgendaId,
-  AssetId,
-  EnemyId,
-  EntityId,
-  EventId,
-  InvestigatorId,
-  LocationId,
-  PlayerCardId,
-  SkillId,
-} from 'shared/domain/entities/id.model';
+import { ActId, AgendaId, AssetId, EnemyId, EntityId, EventId, InvestigatorId, LocationId, PlayerCardId, SkillId } from 'shared/domain/entities/id.model';
 import { Investigator } from 'shared/domain/entities/investigator.model';
 import { Location } from 'shared/domain/entities/location.model';
-import {
-  AssetCard,
-  EventCard,
-  PlayerCard,
-  SkillCard,
-} from 'shared/domain/entities/player-card.model';
-import {
-  GameEntity,
-  isAct,
-  isAgenda,
-  isAsset,
-  isEnemy,
-  isEvent,
-  isInvestigator,
-  isLocation,
-  isPlayerCard,
-  isSkill,
-} from 'shared/domain/game-entity';
+import { AssetCard, EventCard, PlayerCard, SkillCard } from 'shared/domain/entities/player-card.model';
+import { GameEntity, isAct, isAgenda, isAsset, isEnemy, isEvent, isInvestigator, isLocation, isPlayerCard, isSkill } from 'shared/domain/game-entity';
 import { gameState, GameState } from 'shared/domain/game-state';
 
 gsap.registerPlugin(Flip);
@@ -67,28 +32,17 @@ function validateState(state: GameState | null): void {
   }
 }
 
-function applyStatePatches(
-  store: WritableStateSource<State>,
-  changes: Operation[],
-) {
-  patchState(store, (oldState) => {
+function applyStatePatches(store: WritableStateSource<State>, changes: Operation[]) {
+  patchState(store, oldState => {
     let newState: GameState | null;
-    if (
-      oldState.gameState === null &&
-      changes.length === 1 &&
-      changes[0]?.op === 'replace' &&
-      changes[0].path === ''
-    ) {
+    if (oldState.gameState === null && changes.length === 1 && changes[0]?.op === 'replace' && changes[0].path === '') {
       newState = changes[0].value as GameState;
     } else
-      newState = produce(oldState.gameState, (draft) => {
+      newState = produce(oldState.gameState, draft => {
         const results = applyPatch(draft, changes);
-        const errors = results.filter((r) => r !== null);
+        const errors = results.filter(r => r !== null);
         if (errors.length > 0) {
-          throw new Error(
-            'Error applying changes to game state: ' +
-              errors.map((e) => e.message).join('; '),
-          );
+          throw new Error('Error applying changes to game state: ' + errors.map(e => e.message).join('; '));
         }
       });
 
@@ -101,11 +55,8 @@ export const GameStateStore = signalStore(
   { providedIn: 'root' },
   withState<State>({ isLoading: true, error: null, gameState: null }),
 
-  withProps((store) => ({
-    getEntity<T extends GameEntity>(
-      id: EntityId,
-      guard: (entity: GameEntity) => entity is T,
-    ): T {
+  withProps(store => ({
+    getEntity<T extends GameEntity>(id: EntityId, guard: (entity: GameEntity) => entity is T): T {
       const model = store.gameState()?.gameEntities[id];
       if (!model) {
         throw new Error(`Entity '${id}' not found`);
@@ -145,7 +96,7 @@ export const GameStateStore = signalStore(
       return this.getEntity<Enemy>(id, isEnemy);
     },
   })),
-  withComputed((store) => ({
+  withComputed(store => ({
     currentInvestigator: computed(() => {
       if (!store.gameState()) return null;
       // eslint-disable-next-line
@@ -153,7 +104,7 @@ export const GameStateStore = signalStore(
       return store.getInvestigator(id);
     }),
   })),
-  withMethods((store) => ({
+  withMethods(store => ({
     setState(state: GameState): void {
       patchState(store, () => {
         return { isLoading: false, gameState: state };

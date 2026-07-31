@@ -3,11 +3,7 @@ import { InvestigatorTokensComponent } from './investigator-tokens.component';
 
 const meta: Meta<InvestigatorTokensComponent> = {
   component: InvestigatorTokensComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='w-[12rem] text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[12rem] text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

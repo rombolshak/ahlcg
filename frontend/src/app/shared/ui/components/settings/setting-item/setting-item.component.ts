@@ -1,11 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  TemplateRef,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, TemplateRef } from '@angular/core';
 
 export interface SettingController {
   setNextValue(): void;
@@ -20,8 +14,7 @@ export interface SettingController {
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class:
-      'grid grid-cols-2 gap-8 hover:text-accent-content focus:text-accent-content outline-hidden',
+    class: 'grid grid-cols-2 gap-8 hover:text-accent-content focus:text-accent-content outline-hidden',
   },
 })
 export class SettingItemComponent<T> {

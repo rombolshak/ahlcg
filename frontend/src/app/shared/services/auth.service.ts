@@ -18,14 +18,13 @@ export class AuthService {
     this.refreshCurrentUser();
   }
 
-  public readonly currentUser: Observable<User | undefined> =
-    this._user.asObservable();
+  public readonly currentUser: Observable<User | undefined> = this._user.asObservable();
 
   public refreshCurrentUser() {
     this.http
       .get<User | undefined>('/api/auth/info')
       .pipe(
-        catchError((err) => {
+        catchError(err => {
           if (err instanceof HttpErrorResponse && err.status === 401) {
             return of(undefined);
           }
@@ -33,7 +32,7 @@ export class AuthService {
           throw err;
         }),
       )
-      .subscribe((user) => {
+      .subscribe(user => {
         this._user.next(user);
       });
   }

@@ -4,12 +4,7 @@ import { InvestigatorThreatItemComponent } from './investigator-threat-item.comp
 
 const meta: Meta<InvestigatorThreatItemComponent> = {
   component: InvestigatorThreatItemComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class='w-[17rem] min-h-40 text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[17rem] min-h-40 text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

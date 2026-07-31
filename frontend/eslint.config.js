@@ -6,19 +6,13 @@ import prettierConfig from "eslint-config-prettier";
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
 import jasminePlugin from "eslint-plugin-jasmine";
 import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
+import { defineConfig } from "eslint/config";
 import globals from "globals";
-import { config, configs as tsConfigs } from "typescript-eslint";
+import { configs as tsConfigs } from "typescript-eslint";
 
-export default config(
+export default defineConfig(
   {
-    ignores: [
-      ".angular/*",
-      ".storybook/*",
-      "dist/*",
-      "coverage/*",
-      "eslint.config.js",
-      "karma.conf.cjs",
-    ],
+    ignores: [".angular/*", ".storybook/*", "dist/*", "coverage/*", "eslint.config.js", "karma.conf.cjs"],
   },
   {
     files: ["**/*.js"],
@@ -32,13 +26,7 @@ export default config(
   },
   {
     files: ["**/*.ts"],
-    extends: [
-      eslint.configs.recommended,
-      ...tsConfigs.strictTypeChecked,
-      ...tsConfigs.stylisticTypeChecked,
-      ...ngConfigs.tsAll,
-      prettierConfig,
-    ],
+    extends: [eslint.configs.recommended, ...tsConfigs.strictTypeChecked, ...tsConfigs.stylisticTypeChecked, ...ngConfigs.tsAll, prettierConfig],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -89,10 +77,7 @@ export default config(
   },
   {
     files: ["**/*.json"],
-    extends: [
-      ...jsoncConfigs["flat/recommended-with-jsonc"],
-      ...jsoncConfigs["flat/prettier"],
-    ],
+    extends: [...jsoncConfigs["flat/recommended-with-jsonc"], ...jsoncConfigs["flat/prettier"]],
     rules: {},
   },
   {
@@ -117,10 +102,7 @@ export default config(
       ...eslintPluginBetterTailwindcss.configs["recommended-error"].rules,
 
       // or configure rules individually
-      "better-tailwindcss/enforce-consistent-line-wrapping": [
-        "warn",
-        { strictness: "loose", preferSingleLine: true },
-      ],
+      "better-tailwindcss/enforce-consistent-line-wrapping": ["warn", { strictness: "loose", preferSingleLine: true, printWidth: 160 }],
       "better-tailwindcss/no-unknown-classes": [
         "warn",
         {

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  linkedSignal,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ArkErrors } from 'arktype';
 import { createPatch } from 'rfc6902';
@@ -39,11 +33,11 @@ export class DebugPanelComponent {
       return newState
         .entries()
         .map(
-          (e) =>
+          e =>
             ({
               path: e[1].path
                 .entries()
-                .map((v) => v[1].toString())
+                .map(v => v[1].toString())
                 .toArray(),
               message: e[1].message,
               severity: ValidationSeverity.error,
@@ -62,9 +56,7 @@ export class DebugPanelComponent {
     }
 
     const stateErrors = this.validateState(data);
-    this.stateErrors = stateErrors
-      .map((e) => `${e.path.toString()}: ${e.message}`)
-      .join('\n');
+    this.stateErrors = stateErrors.map(e => `${e.path.toString()}: ${e.message}`).join('\n');
     if (stateErrors.length > 0) {
       return;
     }
@@ -76,17 +68,12 @@ export class DebugPanelComponent {
     this.stateErrors = '';
     try {
       const stateErrors = this.validateState(this.gameState());
-      this.stateErrors = stateErrors
-        .map((e) => `${e.path.toString()}: ${e.message}`)
-        .join('\n');
+      this.stateErrors = stateErrors.map(e => `${e.path.toString()}: ${e.message}`).join('\n');
       if (stateErrors.length > 0) {
         return;
       }
 
-      const patch = createPatch(
-        this.gameStateService.gameState(),
-        this.gameState(),
-      );
+      const patch = createPatch(this.gameStateService.gameState(), this.gameState());
 
       this.gameStateService.updateState(patch);
     } catch (e: unknown) {

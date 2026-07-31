@@ -1,6 +1,6 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-import { Faction } from '../../domain/entities/player-card.model';
-import { ImagesUrlService } from '../../services/images-url.service';
+import { Faction } from '@domain/entities/player-card.model';
+import { ImagesUrlService } from '@services/images-url.service';
 
 @Directive({
   selector: '[ahCardFactionBackground]',
@@ -16,14 +16,7 @@ export class CardFactionBackgroundDirective {
     html.classList.add('bg-(image:--bgUrl)', 'bg-cover', 'bg-center');
 
     effect(() => {
-      html.style.setProperty(
-        '--bgUrl',
-        `url(${this.imagesService.getUrl([
-          'card-template',
-          'investigator',
-          this.faction(),
-        ])})`,
-      );
+      html.style.setProperty('--bgUrl', `url(${this.imagesService.getUrl(['card-template', 'investigator', this.faction()])})`);
     });
   }
 }

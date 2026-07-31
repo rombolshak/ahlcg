@@ -13,11 +13,7 @@ describe('AssetPopoverComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
       imports: [AssetPopoverComponent, getTranslocoModule()],
     }).compileComponents();
 

@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-import { Faction } from 'shared/domain/entities/player-card.model';
+import { Faction } from '@domain/entities/player-card.model';
 
 @Directive({
   selector: '[ahCardOutline]',
@@ -8,10 +8,7 @@ export class CardOutlineDirective {
   private readonly el = inject(ElementRef);
 
   constructor() {
-    (this.el.nativeElement as HTMLElement).classList.add(
-      'outline',
-      'outline-2',
-    );
+    (this.el.nativeElement as HTMLElement).classList.add('outline', 'outline-2');
     effect(() => {
       if (this.lastColor) {
         (this.el.nativeElement as HTMLElement).classList.remove(this.lastColor);

@@ -1,12 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  ElementRef,
-  inject,
-  viewChild,
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, computed, ElementRef, inject, viewChild } from '@angular/core';
 import Panzoom, { PanzoomObject, PanzoomOptions } from '@panzoom/panzoom';
 import { GameStateStore } from '../store/game-state.store';
 import { LocationComponent } from './location/location.component';
@@ -34,7 +26,7 @@ export class PlayAreaComponent implements AfterViewInit {
       return [];
     }
 
-    return gameMap.connections.map((conn) => {
+    return gameMap.connections.map(conn => {
       return {
         fromColor: this.state.getLocation(conn.from).color,
         toColor: this.state.getLocation(conn.to).color,
@@ -49,23 +41,13 @@ export class PlayAreaComponent implements AfterViewInit {
       minScale: 0.2,
     } satisfies PanzoomOptions);
 
-    const parent = (this.playArea()?.nativeElement as HTMLElement)
-      .parentNode as HTMLElement;
+    const parent = (this.playArea()?.nativeElement as HTMLElement).parentNode as HTMLElement;
     const locX = 1;
     const locY = 2;
-    const cx =
-      -locX * (this.locationWidth - this.gapWidth / 2) +
-      parent.offsetWidth / 2 -
-      this.locationWidth / 2;
-    const cy =
-      -locY * (this.locationHeight - this.gapHeight) +
-      parent.offsetHeight / 2 -
-      this.locationHeight / 2;
+    const cx = -locX * (this.locationWidth - this.gapWidth / 2) + parent.offsetWidth / 2 - this.locationWidth / 2;
+    const cy = -locY * (this.locationHeight - this.gapHeight) + parent.offsetHeight / 2 - this.locationHeight / 2;
 
-    (this.playArea()?.nativeElement as HTMLElement).addEventListener(
-      'wheel',
-      this.zoomArea.zoomWithWheel,
-    );
+    (this.playArea()?.nativeElement as HTMLElement).addEventListener('wheel', this.zoomArea.zoomWithWheel);
 
     setTimeout(() => {
       this.zoomArea.pan(cx, cy, { animate: true });

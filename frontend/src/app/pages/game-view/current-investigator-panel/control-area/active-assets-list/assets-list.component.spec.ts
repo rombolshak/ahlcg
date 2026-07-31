@@ -29,8 +29,6 @@ describe('ActiveAssetsListComponent', () => {
   });
 
   it('should display all assets', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('ah-controlled-asset')).length,
-    ).toBe(3);
+    expect(fixture.debugElement.queryAll(By.css('ah-controlled-asset')).length).toBe(3);
   });
 });

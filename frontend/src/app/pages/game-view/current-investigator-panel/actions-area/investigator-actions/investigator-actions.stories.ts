@@ -4,12 +4,7 @@ import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
 
 const meta: Meta<InvestigatorActionsComponent> = {
   component: InvestigatorActionsComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class='w-[20rem] mt-10 ml-10 flex flex-col text-neutral-900'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='w-[20rem] mt-10 ml-10 flex flex-col text-neutral-900'>${story}</div>`)],
 };
 
 export default meta;

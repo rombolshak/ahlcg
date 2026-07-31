@@ -1,20 +1,11 @@
 ﻿@switch (card().cardType) {
   @case ("asset") {
-    <ah-asset-card
-      [card]="card() | as: AssetCard"
-      [displayOptions]="displayOptions()"
-    />
+    <ah-asset-card [card]="card() | as: AssetCard" [displayOptions]="displayOptions()" />
   }
   @case ("event") {
-    <ah-event-card
-      [card]="card() | as: EventCard"
-      [displayOptions]="displayOptions()"
-    />
+    <ah-event-card [card]="card() | as: EventCard" [displayOptions]="displayOptions()" />
   }
   @case ("skill") {
-    <ah-skill-card
-      [card]="card() | as: SkillCard"
-      [displayOptions]="displayOptions()"
-    />
+    <ah-skill-card [card]="card() | as: SkillCard" [displayOptions]="displayOptions()" />
   }
 }

@@ -4,11 +4,7 @@ import { AgendaComponent } from './agenda.component';
 
 const meta: Meta<AgendaComponent> = {
   component: AgendaComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div style="width: 300px; margin: 3em;">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div style="width: 300px; margin: 3em;">${story}</div>`)],
 };
 
 export default meta;

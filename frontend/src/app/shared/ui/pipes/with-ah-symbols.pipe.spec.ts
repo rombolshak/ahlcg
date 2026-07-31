@@ -45,11 +45,7 @@ describe('WithAhSymbolsPipe', () => {
   it('replaces several occurrences if needed', () => {
     const pipe = TestBed.runInInjectionContext(() => new WithAhSymbolsPipe());
 
-    expect(
-      pipe.transform(
-        'several replacements by one symbol #c# and #d# succeeded',
-      ),
-    ).toEqual(
+    expect(pipe.transform('several replacements by one symbol #c# and #d# succeeded')).toEqual(
       'several replacements by one symbol <span class="font-[AHSymbol] text-xs">c</span> and <span class="font-[AHSymbol] text-xs">d</span> succeeded',
     );
   });

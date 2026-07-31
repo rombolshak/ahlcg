@@ -4,12 +4,7 @@ import { ControlledAssetComponent } from './controlled-asset.component';
 
 const meta: Meta<ControlledAssetComponent> = {
   component: ControlledAssetComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) =>
-        `<div class="ml-50 w-[5.5rem] rounded grid grid-cols-1 auto-rows-[5.5rem]">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class="ml-50 w-[5.5rem] rounded grid grid-cols-1 auto-rows-[5.5rem]">${story}</div>`)],
 };
 
 export default meta;

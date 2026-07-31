@@ -1,18 +1,11 @@
-<ng-container
-  *transloco="
-    let t;
-    prefix: 'game_view.current_investigator_panel.actions_area'
-  "
->
+<ng-container *transloco="let t; prefix: 'game_view.current_investigator_panel.actions_area'">
   @let _action = action();
   @if (_action.originator) {
     <p>{{ t("given_action", { originator: _action.originator }) }}</p>
   }
 
   @if (_action.restrictions) {
-    <p
-      [innerHTML]="t(`restrictions.${_action.restrictions}`) | withAhSymbols"
-    ></p>
+    <p [innerHTML]="t(`restrictions.${_action.restrictions}`) | withAhSymbols"></p>
   } @else {
     <p>{{ t("standard_action") }}</p>
   }

@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  OnInit,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, OnInit, output } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { gsap } from 'gsap';
 import { pairwise } from 'rxjs';
@@ -29,15 +19,9 @@ export class NumericTextComponent implements OnInit {
 
   public readonly animationCompleted = output();
   private readonly element = inject(ElementRef<HTMLElement>);
-  private readonly _increaseColor = computed(() =>
-    this.invertColors() ? this.decreaseColor() : this.increaseColor(),
-  );
-  private readonly _decreaseColor = computed(() =>
-    this.invertColors() ? this.increaseColor() : this.decreaseColor(),
-  );
-  private readonly changes = toSignal(
-    toObservable(this.value).pipe(pairwise()),
-  );
+  private readonly _increaseColor = computed(() => (this.invertColors() ? this.decreaseColor() : this.increaseColor()));
+  private readonly _decreaseColor = computed(() => (this.invertColors() ? this.increaseColor() : this.decreaseColor()));
+  private readonly changes = toSignal(toObservable(this.value).pipe(pairwise()));
 
   constructor() {
     effect(() => {

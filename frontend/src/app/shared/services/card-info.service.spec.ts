@@ -1,10 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
-import {
-  HttpTestingController,
-  provideHttpClientTesting,
-} from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
@@ -41,10 +38,10 @@ describe('CardInfoService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load json files', (done) => {
+  it('should load json files', done => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
-      toObservable(service.getCardInfo(id)).subscribe((data) => {
+      toObservable(service.getCardInfo(id)).subscribe(data => {
         if (!data) return;
 
         expect(data).toBeTruthy();
@@ -80,11 +77,11 @@ describe('CardInfoService', () => {
     });
   });
 
-  it('should throw for incorrect description (non existent field)', (done) => {
+  it('should throw for incorrect description (non existent field)', done => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
       toObservable(service.getCardInfo(id)).subscribe({
-        next: (data) => {
+        next: data => {
           if (!data) return;
 
           expect(data.isLoadedWithError).toBeTrue();
@@ -107,10 +104,10 @@ describe('CardInfoService', () => {
     });
   });
 
-  it('should throw for incorrect description (missing required fields)', (done) => {
+  it('should throw for incorrect description (missing required fields)', done => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
-      toObservable(service.getCardInfo(id)).subscribe((data) => {
+      toObservable(service.getCardInfo(id)).subscribe(data => {
         if (!data) return;
 
         expect(data.isLoadedWithError).toBeTrue();

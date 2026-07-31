@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { Enemy } from 'shared/domain/entities/enemy.model';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item/investigator-threat-item.component';
@@ -32,13 +27,9 @@ export class ThreatAreaComponent {
   readonly noThreatsText = input.required<string>();
   readonly threatsSeverity = input.required<ThreatsSeverity>();
 
-  protected readonly healthSeverity = computed(
-    () => `${(this.threatsSeverity().healthSeverity * 100).toFixed(0)}%`,
-  );
+  protected readonly healthSeverity = computed(() => `${(this.threatsSeverity().healthSeverity * 100).toFixed(0)}%`);
 
-  protected readonly sanitySeverity = computed(
-    () => `${(this.threatsSeverity().sanitySeverity * 100).toFixed(0)}%`,
-  );
+  protected readonly sanitySeverity = computed(() => `${(this.threatsSeverity().sanitySeverity * 100).toFixed(0)}%`);
 
   protected readonly gradientFrom = computed(() => {
     return this.gradientTo() - 20;

@@ -28,16 +28,10 @@ describe('ActComponent', () => {
   });
 
   it('should display all objectives', () => {
-    expect(
-      fixture.debugElement.queryAll(By.css('[data-testId="objective"]')).length,
-    ).toBe(testAct.objectives.length);
+    expect(fixture.debugElement.queryAll(By.css('[data-testId="objective"]')).length).toBe(testAct.objectives.length);
   });
 
-  async function checkProgress(
-    first: number,
-    second: number,
-    progress: string,
-  ) {
+  async function checkProgress(first: number, second: number, progress: string) {
     fixture.componentRef.setInput('act', {
       ...testAct,
       objectives: [
@@ -62,9 +56,7 @@ describe('ActComponent', () => {
   });
 
   it('should display act title', () => {
-    expect(
-      (fixture.debugElement.nativeElement as HTMLElement).textContent,
-    ).toContain('Обиталище Зверя');
+    expect((fixture.debugElement.nativeElement as HTMLElement).textContent).toContain('Обиталище Зверя');
   });
 
   it('should calc max lines for objective', async () => {

@@ -1,11 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';
 import { GameStateStore } from '../../store/game-state.store';
@@ -15,12 +9,7 @@ import { LocationHeaderComponent } from './location-header/location-header.compo
 
 @Component({
   selector: 'ah-location',
-  imports: [
-    NgOptimizedImage,
-    LocationHeaderComponent,
-    InvestigatorAvatarComponent,
-    EnemyAvatarComponent,
-  ],
+  imports: [NgOptimizedImage, LocationHeaderComponent, InvestigatorAvatarComponent, EnemyAvatarComponent],
   templateUrl: './location.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -34,11 +23,7 @@ export class LocationComponent {
 
   readonly store = inject(GameStateStore);
 
-  protected readonly location = computed(() =>
-    this.store.getLocation(this.locationId()),
-  );
+  protected readonly location = computed(() => this.store.getLocation(this.locationId()));
 
-  protected readonly investigators = computed(() =>
-    this.investigatorsIds().map((id) => this.store.getInvestigator(id)),
-  );
+  protected readonly investigators = computed(() => this.investigatorsIds().map(id => this.store.getInvestigator(id)));
 }

@@ -5,11 +5,7 @@ import { ActComponent } from './act.component';
 
 const meta: Meta<ActComponent> = {
   component: ActComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div style="width: 300px; margin: 3em;">${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div style="width: 300px; margin: 3em;">${story}</div>`)],
 };
 
 export default meta;

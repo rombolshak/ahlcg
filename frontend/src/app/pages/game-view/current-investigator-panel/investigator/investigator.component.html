@@ -10,44 +10,21 @@
     height="154"
     class="peer col-start-1 row-start-1 rounded-l-lg"
     alt="investigator avatar"
-    [ngSrc]="
-      imagesService.getUrl([
-        'investigator',
-        investigator().setInfo.set,
-        investigator().setInfo.index,
-      ])
-    "
+    [ngSrc]="imagesService.getUrl(['investigator', investigator().setInfo.set, investigator().setInfo.index])"
   />
 
   <div class="col-start-2 row-start-1 flex w-full flex-col justify-between">
     <div class="flex flex-col">
-      <ah-investigator-title
-        [text]="t(info()?.title ?? '')"
-        [faction]="investigator().faction"
-      />
-      <ah-investigator-subtitle
-        [text]="t(info()?.subtitle ?? '')"
-        [faction]="investigator().faction"
-      />
+      <ah-investigator-title [text]="t(info()?.title ?? '')" [faction]="investigator().faction" />
+      <ah-investigator-subtitle [text]="t(info()?.subtitle ?? '')" [faction]="investigator().faction" />
     </div>
 
-    <ah-investigator-ability
-      [faction]="investigator().faction"
-      [text]="t(info()?.abilities?.at(0) ?? '')"
-    />
+    <ah-investigator-ability [faction]="investigator().faction" [text]="t(info()?.abilities?.at(0) ?? '')" />
 
     <ah-vitals-bar [entity]="investigator()" />
   </div>
 
-  <ah-investigator-tokens
-    class="col-start-2 row-start-2"
-    [faction]="investigator().faction"
-    [tokens]="investigator().tokens"
-  />
+  <ah-investigator-tokens class="col-start-2 row-start-2" [faction]="investigator().faction" [tokens]="investigator().tokens" />
 
-  <ah-investigator-skills
-    class="col-start-1 row-start-2"
-    [faction]="investigator().faction"
-    [skills]="investigator().skills"
-  />
+  <ah-investigator-skills class="col-start-1 row-start-2" [faction]="investigator().faction" [skills]="investigator().skills" />
 </div>

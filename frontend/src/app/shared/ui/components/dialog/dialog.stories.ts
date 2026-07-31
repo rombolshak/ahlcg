@@ -14,10 +14,9 @@ type Story = StoryObj<DialogComponent>;
 export const Normal: Story = {
   args: {
     title: 'Sample dialog',
-    id: 'sample',
-    open: true,
+    isOpen: true,
   },
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `<ah-dialog ${argsToTemplate(args)}>Dialog content goes here</ah-dialog>`,
   }),

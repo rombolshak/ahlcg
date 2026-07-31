@@ -12,21 +12,21 @@ export default meta;
 type Story = StoryObj<ArtButtonComponent>;
 
 export const Normal: Story = {
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `<button ah-art-button type="button">Default</button>`,
   }),
 };
 
 export const Disabled: Story = {
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `<button ah-art-button type="button" disabled>Disabled</button>`,
   }),
 };
 
 export const Colored: Story = {
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `
       <button ah-art-button type="button" class="btn-primary">Primary</button>
@@ -38,7 +38,7 @@ export const Colored: Story = {
 };
 
 export const Sized: Story = {
-  render: (args) => ({
+  render: args => ({
     props: args,
     template: `
       <button ah-art-button type="button" class="btn-xs">Extra small</button>

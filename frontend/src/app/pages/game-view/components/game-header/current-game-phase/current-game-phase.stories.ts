@@ -4,11 +4,7 @@ import { InvestigatorSeeker } from './phase-colors.model';
 
 const meta: Meta<CurrentGamePhaseComponent> = {
   component: CurrentGamePhaseComponent,
-  decorators: [
-    componentWrapperDecorator(
-      (story) => `<div class='min-w-70 h-12 grid'>${story}</div>`,
-    ),
-  ],
+  decorators: [componentWrapperDecorator(story => `<div class='min-w-70 h-12 grid'>${story}</div>`)],
 };
 
 export default meta;

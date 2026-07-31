@@ -1,15 +1,6 @@
 ﻿import { Traversal, type } from 'arktype';
 import { CardType } from './entities/card.model';
-import {
-  ActId,
-  actId,
-  AgendaId,
-  agendaId,
-  EntityId,
-  InvestigatorId,
-  investigatorId,
-  LocationId,
-} from './entities/id.model';
+import { ActId, actId, AgendaId, agendaId, EntityId, InvestigatorId, investigatorId, LocationId } from './entities/id.model';
 import { Investigator } from './entities/investigator.model';
 import { GameEntity, gameEntity } from './game-entity';
 import { gameMap } from './game-map.model';
@@ -35,7 +26,7 @@ function validateEntity(
       problem: `${entityType.toString()} '${id}' does not exists in gameEntities.`,
     });
   if (entityType instanceof Array) {
-    if (!entityType.find((v) => v === gameEntities[id]?.cardType))
+    if (!entityType.find(v => v === gameEntities[id]?.cardType))
       return ctx.reject({
         path: path,
         expected: entityType.join(' or '),
@@ -51,38 +42,13 @@ function validateEntity(
   return true;
 }
 
-function validateActs(
-  state: { acts: ActId[]; gameEntities: GameEntities },
-  ctx: Traversal,
-) {
-  return state.acts.reduce(
-    (result, act, index) =>
-      result &&
-      validateEntity(
-        act,
-        state.gameEntities,
-        ctx,
-        ['acts', index.toString()],
-        'act',
-      ),
-    true,
-  );
+function validateActs(state: { acts: ActId[]; gameEntities: GameEntities }, ctx: Traversal) {
+  return state.acts.reduce((result, act, index) => result && validateEntity(act, state.gameEntities, ctx, ['acts', index.toString()], 'act'), true);
 }
 
-function validateAgendas(
-  state: { agendas: AgendaId[]; gameEntities: GameEntities },
-  ctx: Traversal,
-) {
+function validateAgendas(state: { agendas: AgendaId[]; gameEntities: GameEntities }, ctx: Traversal) {
   return state.agendas.reduce(
-    (result, agendaId, index) =>
-      result &&
-      validateEntity(
-        agendaId,
-        state.gameEntities,
-        ctx,
-        ['agendas', index.toString()],
-        'agenda',
-      ),
+    (result, agendaId, index) => result && validateEntity(agendaId, state.gameEntities, ctx, ['agendas', index.toString()], 'agenda'),
     true,
   );
 }
@@ -94,13 +60,7 @@ function validateCurrentInvestigator(
   },
   ctx: Traversal,
 ) {
-  return validateEntity(
-    state.currentInvestigator,
-    state.gameEntities,
-    ctx,
-    ['currentInvestigator'],
-    'investigator',
-  );
+  return validateEntity(state.currentInvestigator, state.gameEntities, ctx, ['currentInvestigator'], 'investigator');
 }
 
 function validateSingleInvestigator(
@@ -111,85 +71,38 @@ function validateSingleInvestigator(
   i: number,
   ctx: Traversal,
 ) {
-  return validateEntity(
-    state.investigators[i],
-    state.gameEntities,
-    ctx,
-    ['investigators', i.toString()],
-    'investigator',
-  );
+  return validateEntity(state.investigators[i], state.gameEntities, ctx, ['investigators', i.toString()], 'investigator');
 }
 
-function validateThreatArea(
-  investigator: Investigator,
-  state: { gameEntities: GameEntities },
-  ctx: Traversal,
-) {
+function validateThreatArea(investigator: Investigator, state: { gameEntities: GameEntities }, ctx: Traversal) {
   return investigator.threatArea.reduce(
     (result, threat, index) =>
-      result &&
-      validateEntity(
-        threat,
-        state.gameEntities,
-        ctx,
-        ['gameEntities', investigator.id, 'threatArea', index.toString()],
-        'enemy',
-      ),
+      result && validateEntity(threat, state.gameEntities, ctx, ['gameEntities', investigator.id, 'threatArea', index.toString()], 'enemy'),
     true,
   );
 }
 
-function validateHand(
-  investigator: Investigator,
-  state: { gameEntities: GameEntities },
-  ctx: Traversal,
-) {
+function validateHand(investigator: Investigator, state: { gameEntities: GameEntities }, ctx: Traversal) {
   return investigator.hand.reduce(
     (result, card, index) =>
-      result &&
-      validateEntity(
-        card,
-        state.gameEntities,
-        ctx,
-        ['gameEntities', investigator.id, 'hand', index.toString()],
-        ['asset', 'skill', 'event'],
-      ),
+      result && validateEntity(card, state.gameEntities, ctx, ['gameEntities', investigator.id, 'hand', index.toString()], ['asset', 'skill', 'event']),
     true,
   );
 }
 
-function validateAssets(
-  investigator: Investigator,
-  state: { gameEntities: GameEntities },
-  ctx: Traversal,
-) {
+function validateAssets(investigator: Investigator, state: { gameEntities: GameEntities }, ctx: Traversal) {
   return investigator.controlledAssets.reduce(
     (result, asset, index) =>
-      result &&
-      validateEntity(
-        asset,
-        state.gameEntities,
-        ctx,
-        ['gameEntities', investigator.id, 'controlledAssets', index.toString()],
-        'asset',
-      ),
+      result && validateEntity(asset, state.gameEntities, ctx, ['gameEntities', investigator.id, 'controlledAssets', index.toString()], 'asset'),
     true,
   );
 }
 
-function validateInvestigators(
-  state: { investigators: InvestigatorId[]; gameEntities: GameEntities },
-  ctx: Traversal,
-) {
+function validateInvestigators(state: { investigators: InvestigatorId[]; gameEntities: GameEntities }, ctx: Traversal) {
   return state.investigators.reduce((result, investigatorId, index) => {
     if (!validateSingleInvestigator(state, index, ctx)) return false;
     const investigator = state.gameEntities[investigatorId] as Investigator;
-    return (
-      result &&
-      validateThreatArea(investigator, state, ctx) &&
-      validateHand(investigator, state, ctx) &&
-      validateAssets(investigator, state, ctx)
-    );
+    return result && validateThreatArea(investigator, state, ctx) && validateHand(investigator, state, ctx) && validateAssets(investigator, state, ctx);
   }, true);
 }
 
@@ -201,13 +114,7 @@ function validatePlaceLocation(
   ctx: Traversal,
   i: number,
 ) {
-  return validateEntity(
-    place.location,
-    state.gameEntities,
-    ctx,
-    ['scenarioMap', 'places', i.toString(), 'location'],
-    'location',
-  );
+  return validateEntity(place.location, state.gameEntities, ctx, ['scenarioMap', 'places', i.toString(), 'location'], 'location');
 }
 
 function validatePlaceInvestigator(
@@ -221,19 +128,7 @@ function validatePlaceInvestigator(
   return place.investigators.reduce(
     (result, investigatorId, index) =>
       result &&
-      validateEntity(
-        investigatorId,
-        state.gameEntities,
-        ctx,
-        [
-          'scenarioMap',
-          'places',
-          i.toString(),
-          'investigators',
-          index.toString(),
-        ],
-        'investigator',
-      ),
+      validateEntity(investigatorId, state.gameEntities, ctx, ['scenarioMap', 'places', i.toString(), 'investigators', index.toString()], 'investigator'),
     true,
   );
 }
@@ -248,11 +143,7 @@ function validatePlaces(
   ctx: Traversal,
 ) {
   return state.scenarioMap.places.reduce((result, place, index) => {
-    return (
-      result &&
-      validatePlaceLocation(place, state, ctx, index) &&
-      validatePlaceInvestigator(place, state, ctx, index)
-    );
+    return result && validatePlaceLocation(place, state, ctx, index) && validatePlaceInvestigator(place, state, ctx, index);
   }, true);
 }
 
@@ -267,12 +158,12 @@ function validateConnections(
 ) {
   return state.scenarioMap.connections.reduce((result, connection, index) => {
     if (!result) return result;
-    if (!state.scenarioMap.places.find((p) => p.location === connection.from))
+    if (!state.scenarioMap.places.find(p => p.location === connection.from))
       return ctx.reject({
         path: ['scenarioMap', 'connections', index.toString(), 'from'],
         problem: `place ${connection.from} is not specified in map`,
       });
-    if (!state.scenarioMap.places.find((p) => p.location === connection.to))
+    if (!state.scenarioMap.places.find(p => p.location === connection.to))
       return ctx.reject({
         path: ['scenarioMap', 'connections', index.toString(), 'to'],
         problem: `place ${connection.to} is not specified in map`,

@@ -1,10 +1,6 @@
 ﻿import { GameMap } from '../game-map.model';
 import { InvestigatorG, InvestigatorS } from './entities/test-investigators';
-import {
-  testLocation,
-  testLocation2,
-  testLocation3,
-} from './entities/test-locations';
+import { testLocation, testLocation2, testLocation3 } from './entities/test-locations';
 
 export const testGameMap: GameMap = {
   height: 6,

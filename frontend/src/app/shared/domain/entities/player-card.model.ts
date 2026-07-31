@@ -4,14 +4,7 @@ import { gameCard } from './card.model';
 import { health, sanity } from './details/vitals.model';
 import { assetId, eventId, skillId } from './id.model';
 
-export const faction = type.enumerated(
-  'neutral',
-  'guardian',
-  'seeker',
-  'rogue',
-  'survivor',
-  'mystic',
-);
+export const faction = type.enumerated('neutral', 'guardian', 'seeker', 'rogue', 'survivor', 'mystic');
 export type Faction = typeof faction.infer;
 
 export const skills = type({
@@ -25,12 +18,7 @@ export const skills = type({
 export const skillType = skills.keyof();
 export type SkillType = typeof skillType.infer;
 
-export const playerCardType = type.enumerated(
-  'asset',
-  'skill',
-  'event',
-  'investigator',
-);
+export const playerCardType = type.enumerated('asset', 'skill', 'event', 'investigator');
 export type PlayerCardType = typeof playerCardType.infer;
 
 export const playerCardBase = gameCard.and({

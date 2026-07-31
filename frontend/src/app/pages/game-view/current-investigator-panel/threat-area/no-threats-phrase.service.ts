@@ -8,10 +8,7 @@ export class NoThreatsPhraseService {
   private readonly initialPhrasesCount = 12;
   private readonly totalPhrasesCount = 25;
 
-  private readonly phraseSignals = new Map<
-    string,
-    ReturnType<typeof this.createPhraseSignal>
-  >();
+  private readonly phraseSignals = new Map<string, ReturnType<typeof this.createPhraseSignal>>();
 
   private createPhraseSignal(investigator: Signal<Investigator | null>) {
     let currentPhrase = this.getRandomPhrase(this.initialPhrasesCount);

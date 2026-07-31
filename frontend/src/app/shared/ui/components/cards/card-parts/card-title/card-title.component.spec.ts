@@ -28,8 +28,6 @@ describe('CardTitleComponent', () => {
 
   it('should print title', () => {
     expect(fixture.debugElement.queryAll(By.css('div')).length).toEqual(1);
-    expect(
-      fixture.debugElement.query(By.css('div')).nativeElement.innerText,
-    ).toContain('Test title');
+    expect(fixture.debugElement.query(By.css('div')).nativeElement.innerText).toContain('Test title');
   });
 });

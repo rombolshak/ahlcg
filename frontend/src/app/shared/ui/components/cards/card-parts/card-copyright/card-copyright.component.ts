@@ -1,10 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { DisplayOptions } from 'shared/domain/display.options';
 import { CardInfo } from 'shared/domain/entities/details/card-info.model';
 import { ImagesUrlService } from 'shared/services/images-url.service';

@@ -29,16 +29,7 @@
           z-index: 100;
           animation: fogMove 18s ease infinite;
           background:
-            radial-gradient(
-              circle at 30% 40%,
-              rgb(60 80 65 / 25%),
-              transparent 60%
-            ),
-            radial-gradient(
-              circle at 70% 60%,
-              rgb(90 100 70 / 18%),
-              transparent 65%
-            ),
+            radial-gradient(circle at 30% 40%, rgb(60 80 65 / 25%), transparent 60%), radial-gradient(circle at 70% 60%, rgb(90 100 70 / 18%), transparent 65%),
             linear-gradient(270deg, #0b0d0c, #111614, #0b0d0c);
           background-size: 200% 200%;
           width: 100%;
@@ -64,13 +55,7 @@
           position: absolute;
           opacity: 0.25;
           inset: 0;
-          background-image: repeating-linear-gradient(
-            0deg,
-            rgb(255 255 255 / 1.5%),
-            rgb(255 255 255 / 1.5%) 1px,
-            transparent 1px,
-            transparent 2px
-          );
+          background-image: repeating-linear-gradient(0deg, rgb(255 255 255 / 1.5%), rgb(255 255 255 / 1.5%) 1px, transparent 1px, transparent 2px);
           pointer-events: none;
           content: "";
         }
@@ -113,12 +98,7 @@
           mix-blend-mode: screen;
           animation: shimmer 2.5s infinite;
           inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent,
-            rgb(200 220 160 / 25%),
-            transparent
-          );
+          background: linear-gradient(120deg, transparent, rgb(200 220 160 / 25%), transparent);
           content: "";
         }
 
@@ -170,7 +150,7 @@
       progressFill.style.width = clamped + "%";
     }
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries();
       if (!entries.length) return;
 
@@ -190,9 +170,7 @@
       if (totalDuration > 35 && waiting > avgDuration * 5) {
         clearInterval(exitSplash);
         observer.disconnect();
-        document
-          .querySelector("#splash")
-          ?.setAttribute("style", "opacity: 0; transition: opacity 1s ease;");
+        document.querySelector("#splash")?.setAttribute("style", "opacity: 0; transition: opacity 1s ease;");
         setTimeout(() => {
           document.querySelector("#splash")?.remove();
         }, 1000);

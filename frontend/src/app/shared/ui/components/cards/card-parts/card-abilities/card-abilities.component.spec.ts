@@ -14,11 +14,7 @@ describe('CardAbilityComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
       imports: [CardAbilitiesComponent, getTranslocoModule()],
     }).compileComponents();
 

@@ -21,11 +21,7 @@ export enum VerticalConnectorPosition {
   Bottom,
 }
 
-export type Connector =
-  | TopConnector
-  | BottomConnector
-  | LeftConnector
-  | RightConnector;
+export type Connector = TopConnector | BottomConnector | LeftConnector | RightConnector;
 
 interface TopConnector {
   plane: Plane.Top;
@@ -58,10 +54,7 @@ interface ElementBox {
   providedIn: 'root',
 })
 export class ConnectionPointsService {
-  public getConnectors(
-    fromEl: ElementBox,
-    toEl: ElementBox,
-  ): [Connector, Connector] {
+  public getConnectors(fromEl: ElementBox, toEl: ElementBox): [Connector, Connector] {
     const fromPlane = this.getOriginatingPlane(fromEl, toEl);
     const point = this.getConnectorPosition(fromEl, toEl, fromPlane);
     const fromConnector = { plane: fromPlane, position: point } as Connector;
@@ -81,47 +74,28 @@ export class ConnectionPointsService {
     switch (connector.plane) {
       case Plane.Top:
         return {
-          x: this.getPointOnPlane(
-            el.offsetLeft,
-            el.offsetWidth,
-            this.getHorizontalStep(connector.position, options.horizontalStep),
-          ),
+          x: this.getPointOnPlane(el.offsetLeft, el.offsetWidth, this.getHorizontalStep(connector.position, options.horizontalStep)),
           y: el.offsetTop - options.borderOffset,
         };
       case Plane.Bottom:
         return {
-          x: this.getPointOnPlane(
-            el.offsetLeft,
-            el.offsetWidth,
-            this.getHorizontalStep(connector.position, options.horizontalStep),
-          ),
+          x: this.getPointOnPlane(el.offsetLeft, el.offsetWidth, this.getHorizontalStep(connector.position, options.horizontalStep)),
           y: el.offsetTop + el.offsetHeight + options.borderOffset,
         };
       case Plane.Left:
         return {
           x: el.offsetLeft - options.borderOffset,
-          y: this.getPointOnPlane(
-            el.offsetTop,
-            el.offsetHeight,
-            this.getVerticalStep(connector.position, options.verticalStep),
-          ),
+          y: this.getPointOnPlane(el.offsetTop, el.offsetHeight, this.getVerticalStep(connector.position, options.verticalStep)),
         };
       case Plane.Right:
         return {
           x: el.offsetLeft + el.offsetWidth + options.borderOffset,
-          y: this.getPointOnPlane(
-            el.offsetTop,
-            el.offsetHeight,
-            this.getVerticalStep(connector.position, options.verticalStep),
-          ),
+          y: this.getPointOnPlane(el.offsetTop, el.offsetHeight, this.getVerticalStep(connector.position, options.verticalStep)),
         };
     }
   }
 
-  private getHorizontalStep(
-    position: HorizontalConnectorPosition,
-    step: number,
-  ) {
+  private getHorizontalStep(position: HorizontalConnectorPosition, step: number) {
     switch (position) {
       case HorizontalConnectorPosition.CornerLeft:
         return 0;
@@ -152,37 +126,25 @@ export class ConnectionPointsService {
   }
 
   private getOriginatingPlane(fromEl: ElementBox, toEl: ElementBox): Plane {
-    if (fromEl.offsetTop + fromEl.offsetHeight <= toEl.offsetTop)
-      return Plane.Bottom;
-    if (toEl.offsetTop + toEl.offsetHeight <= fromEl.offsetTop)
-      return Plane.Top;
+    if (fromEl.offsetTop + fromEl.offsetHeight <= toEl.offsetTop) return Plane.Bottom;
+    if (toEl.offsetTop + toEl.offsetHeight <= fromEl.offsetTop) return Plane.Top;
     if (fromEl.offsetLeft < toEl.offsetLeft) return Plane.Right;
     return Plane.Left;
   }
 
-  private getConnectorPosition(
-    fromEl: ElementBox,
-    toEl: ElementBox,
-    fromPlane: Plane,
-  ) {
+  private getConnectorPosition(fromEl: ElementBox, toEl: ElementBox, fromPlane: Plane) {
     switch (fromPlane) {
       case Plane.Top:
       case Plane.Bottom:
-        if (fromEl.offsetLeft + fromEl.offsetWidth <= toEl.offsetLeft)
-          return HorizontalConnectorPosition.CornerRight;
-        if (fromEl.offsetLeft >= toEl.offsetLeft + toEl.offsetWidth)
-          return HorizontalConnectorPosition.CornerLeft;
-        if (fromEl.offsetLeft < toEl.offsetLeft)
-          return HorizontalConnectorPosition.Right;
-        if (fromEl.offsetLeft > toEl.offsetLeft)
-          return HorizontalConnectorPosition.Left;
+        if (fromEl.offsetLeft + fromEl.offsetWidth <= toEl.offsetLeft) return HorizontalConnectorPosition.CornerRight;
+        if (fromEl.offsetLeft >= toEl.offsetLeft + toEl.offsetWidth) return HorizontalConnectorPosition.CornerLeft;
+        if (fromEl.offsetLeft < toEl.offsetLeft) return HorizontalConnectorPosition.Right;
+        if (fromEl.offsetLeft > toEl.offsetLeft) return HorizontalConnectorPosition.Left;
         return HorizontalConnectorPosition.Center;
       case Plane.Left:
       case Plane.Right:
-        if (fromEl.offsetTop < toEl.offsetTop)
-          return VerticalConnectorPosition.Bottom;
-        if (toEl.offsetTop < fromEl.offsetTop)
-          return VerticalConnectorPosition.Top;
+        if (fromEl.offsetTop < toEl.offsetTop) return VerticalConnectorPosition.Bottom;
+        if (toEl.offsetTop < fromEl.offsetTop) return VerticalConnectorPosition.Top;
         return VerticalConnectorPosition.Center;
     }
   }

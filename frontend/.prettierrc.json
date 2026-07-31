@@ -1,8 +1,6 @@
 {
+  "printWidth": 160,
   "htmlWhitespaceSensitivity": "css",
-  "plugins": [
-    "prettier-plugin-css-order",
-    "prettier-plugin-organize-imports",
-    "prettier-plugin-sh"
-  ]
+  "arrowParens": "avoid",
+  "plugins": ["prettier-plugin-css-order", "prettier-plugin-organize-imports", "prettier-plugin-sh"]
 }

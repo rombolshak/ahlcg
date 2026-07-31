@@ -2,10 +2,7 @@
   @let _cardInfo = cardInfo();
   @if (_cardInfo) {
     @if (showTitle()) {
-      <p
-        class="mb-0 text-center font-[Conkordia] text-lg/5"
-        data-testId="title"
-      >
+      <p class="mb-0 text-center font-[Conkordia] text-lg/5" data-testId="title">
         {{ t(_cardInfo.title) }}
       </p>
     }
@@ -14,20 +11,13 @@
         {{ t(_cardInfo.subtitle) }}
       </p>
     }
-    <p
-      class="mb-1 text-center font-[ArnoProBold] text-sm italic"
-      data-testId="traits"
-    >
+    <p class="mb-1 text-center font-[ArnoProBold] text-sm italic" data-testId="traits">
       @for (trait of _cardInfo.traits; track $index) {
         <span class="mr-1">{{ t(trait) }}.</span>
       }
     </p>
     @for (ability of _cardInfo.abilities; track $index) {
-      <p
-        class="mb-1 font-[ArnoPro] text-base/4 whitespace-pre-wrap"
-        data-testId="ability"
-        [innerHtml]="t(ability) | withAhSymbols"
-      ></p>
+      <p class="mb-1 font-[ArnoPro] text-base/4 whitespace-pre-wrap" data-testId="ability" [innerHtml]="t(ability) | withAhSymbols"></p>
     }
   }
 

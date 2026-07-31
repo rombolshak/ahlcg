@@ -1,24 +1,19 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  provideZonelessChangeDetection,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Faction } from 'shared/domain/entities/player-card.model';
-import { CardOutlineDirective } from './card-outline.directive';
+import { Faction } from '@domain/entities/player-card.model';
+import { CardBackgroundDirective } from 'shared/ui/directives/cards/card-background.directive';
 
 @Component({
   selector: 'ah-test',
-  imports: [CardOutlineDirective],
-  template: ` <div ahCardOutline [faction]="cardClass()"></div> `,
+  imports: [CardBackgroundDirective],
+  template: ` <div ahCardBackground [faction]="cardClass()"></div> `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 class TestComponent {
   readonly cardClass = input.required<Faction>();
 }
 
-describe('CardOutlineDirective', () => {
+describe('CardBackgroundDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(async () => {
@@ -28,15 +23,15 @@ describe('CardOutlineDirective', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    fixture.componentRef.setInput('cardClass', 'rogue');
+    fixture.componentRef.setInput('cardClass', 'survivor');
     await fixture.whenStable();
   });
 
   it('should create an instance', () => {
     expect(fixture.debugElement.children[0]?.classes).toEqual({
-      outline: true,
-      'outline-2': true,
-      'outline-green-400': true,
+      'to-faction-survivor-darker': true,
+      'from-faction-survivor': true,
+      'bg-radial-[at_25%_25%]': true,
     });
   });
 });
