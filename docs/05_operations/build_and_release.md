@@ -1,12 +1,15 @@
 # Build and Release
 
 ## Purpose
+
 Explains how to build backend and frontend locally, run tests with coverage, and understand CI/CD workflows.
 
 ## When to Load
+
 Read this when building the project, running tests, understanding CI failures, or preparing a release.
 
 ## Related Files
+
 - [Development Workflow](./dev_workflow.md) — Quick start and commands
 - [Backend Services](../03_implementation/backend/services.md) — Backend structure
 - [Frontend UI Patterns](../03_implementation/frontend/ui_patterns.md) — Frontend structure
@@ -43,6 +46,7 @@ dotnet run
 ```
 
 Launches Aspire orchestration:
+
 - PostgreSQL on `localhost:5432`
 - API on `https://localhost:5001`
 - Swagger UI on `https://localhost:5001/scalar/v1`
@@ -191,6 +195,7 @@ Delegates to reusable workflows; aggregates coverage to Coveralls at the end.
 **File:** `.github/workflows/backend.yml`
 
 **Steps:**
+
 1. Checkout code
 2. Setup .NET 10
 3. Install tools: `dotnet-reportgenerator-globaltool`, `dotnet-sonarscanner`
@@ -203,10 +208,12 @@ Delegates to reusable workflows; aggregates coverage to Coveralls at the end.
 10. Upload to Coveralls (flagged as "backend")
 
 **Outputs:**
+
 - Coverage reports generated at `backend/coveragereport/`
 - Test results uploaded to Coveralls and SonarCloud
 
 **Secrets Required:**
+
 - `SONAR_TOKEN` — SonarCloud authentication
 
 ### Frontend Workflow
@@ -214,6 +221,7 @@ Delegates to reusable workflows; aggregates coverage to Coveralls at the end.
 **File:** `.github/workflows/frontend.yml`
 
 **Steps:**
+
 1. Checkout code
 2. Setup Node (latest LTS) with npm caching
 3. `npm ci` (clean install, respecting package-lock.json)
@@ -222,10 +230,12 @@ Delegates to reusable workflows; aggregates coverage to Coveralls at the end.
 6. SonarQube scan (requires `SONAR_TOKEN`)
 
 **Outputs:**
+
 - Coverage reports at `frontend/coverage/ahlcg/`
 - Test results uploaded to Coveralls and SonarCloud
 
 **Secrets Required:**
+
 - `SONAR_TOKEN` — SonarCloud authentication
 
 ### Chromatic Visual Regression
@@ -235,6 +245,7 @@ Delegates to reusable workflows; aggregates coverage to Coveralls at the end.
 Triggers on frontend asset or Storybook changes (excludes Dependabot branches).
 
 **Steps:**
+
 1. Checkout code
 2. Setup Node with npm caching
 3. `npm ci`
@@ -242,6 +253,7 @@ Triggers on frontend asset or Storybook changes (excludes Dependabot branches).
 5. Upload to Chromatic for visual regression testing (TurboSnap enabled for fast runs)
 
 **Secrets Required:**
+
 - `CHROMATIC_PROJECT_TOKEN` — Chromatic authentication
 
 ---
@@ -251,13 +263,15 @@ Triggers on frontend asset or Storybook changes (excludes Dependabot branches).
 ### Code Coverage
 
 **Backend:**
+
 - Collected via Coverlet + XPlat format
 - Aggregated by reportgenerator into HTML, Cobertura, SonarQube formats
 - Report location (CI): `backend/coveragereport/`
 - Target: 70% overall; 90% for auth endpoints
 
 **Frontend:**
-- Collected via Karma + Jasmine
+
+- Collected via Vitest + `@vitest/coverage-v8`
 - Outputs to `frontend/coverage/ahlcg/`
 - Includes lcov and HTML reports
 - Target: 70% overall; 50% for UI, 80% for services
@@ -276,12 +290,14 @@ Final "parallel-finished" step merges results for consolidated coverage dashboar
 ### SonarCloud Integration
 
 **Backend:**
+
 - Project key: `rombolshak_ahlcg_backend`
 - Organization: `rombolshak`
 - Scans: All C# code
 - Quality gate: Defined in SonarCloud console
 
 **Frontend:**
+
 - Project key: `rombolshak_ahlcg_frontend` (inferred)
 - Organization: `rombolshak`
 - Scans: All TypeScript code
@@ -306,6 +322,7 @@ Publish as self-contained or containerized (Docker support TBD).
 - **Storybook**: `frontend/storybook-static/` (static site)
 
 Deploy with:
+
 ```bash
 npm run build
 # Copy frontend/dist/ahlcg/* to CDN or web server
@@ -330,6 +347,7 @@ npm run build
    - Verify all dependencies (PostgreSQL, etc.) available
 
 2. **Frontend**: Build static app and host behind CDN/web server
+
    ```bash
    npm run build
    # Configure web server to serve frontend/dist/ahlcg/
@@ -345,20 +363,21 @@ npm run build
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| "dotnet command not found" | Install .NET SDK 10.x; verify `dotnet --version` |
-| "npm ERR! code ERESOLVE" | Run `npm ci --force` (Tailwind 4 resolution) |
-| PostgreSQL connection fails | Verify PostgreSQL running on localhost:5432; check appsettings connection string |
-| Tests timeout | Check for CPU overload; increase timeout with `--logger "console;verbosity=detailed"` |
-| Coverage not generated | Verify coverage tool installed; check test output path in workflow |
-| Chromatic build fails | Run `npm run build-storybook` locally to verify; check token secret |
+| Issue                       | Solution                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------- |
+| "dotnet command not found"  | Install .NET SDK 10.x; verify `dotnet --version`                                      |
+| "npm ERR! code ERESOLVE"    | Run `npm ci --force` (Tailwind 4 resolution)                                          |
+| PostgreSQL connection fails | Verify PostgreSQL running on localhost:5432; check appsettings connection string      |
+| Tests timeout               | Check for CPU overload; increase timeout with `--logger "console;verbosity=detailed"` |
+| Coverage not generated      | Verify coverage tool installed; check test output path in workflow                    |
+| Chromatic build fails       | Run `npm run build-storybook` locally to verify; check token secret                   |
 
 ---
 
 ## Best Practices
 
 ✅ **DO:**
+
 - Run `npm ci` (not `npm install`) in CI for reproducible installs
 - Collect coverage in CI; generate HTML reports for debugging
 - Use Aspire AppHost for local full-stack dev
@@ -366,6 +385,7 @@ npm run build
 - Keep CI fast: use path filters, parallel jobs, caching
 
 ❌ **DON'T:**
+
 - Manually publish builds (use CI/CD)
 - Ignore coverage reports (they reveal test gaps)
 - Run `npm install` in CI (use `npm ci`)

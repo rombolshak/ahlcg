@@ -1,13 +1,16 @@
 # Testing Strategy
 
 ## Purpose
+
 Describes the overall testing approach, coverage goals, and how testing is integrated into CI/CD.
 
 ## When to Load
+
 Read this to understand testing philosophy and how to choose which tests to write.
 
 ## Related Files
-- [Frontend Testing](./frontend.md) — Karma + Jasmine setup
+
+- [Frontend Testing](./frontend.md) — Vitest + happy-dom setup
 - [Backend Testing](./backend.md) — xUnit + Moq setup
 - [Build & Release](../05_operations/build_and_release.md) — CI integrations
 - [Frontend UI Patterns](../03_implementation/frontend/ui_patterns.md) — Testing patterns
@@ -34,8 +37,9 @@ Read this to understand testing philosophy and how to choose which tests to writ
 ```
 
 **Ahlcg's Current Approach:**
+
 - ✅ Unit tests: Domain model, services
-- ✅ Component tests: UI components, state management (Jasmine, xUnit)
+- ✅ Component tests: UI components, state management (Vitest, xUnit)
 - 🔄 Integration tests: (Minimal currently)
 - ❌ E2E tests: Browser automation (not yet implemented)
 
@@ -44,6 +48,7 @@ Read this to understand testing philosophy and how to choose which tests to writ
 ## Test Scope
 
 ### Unit Tests
+
 - **Coverage:** Single method or small function
 - **Duration:** < 100ms each
 - **Environment:** In-memory, no external dependencies
@@ -54,6 +59,7 @@ Read this to understand testing philosophy and how to choose which tests to writ
   - Component input/output (button emits events)
 
 ### Integration Tests
+
 - **Coverage:** Multiple components or layers together
 - **Duration:** 100ms–1s each
 - **Environment:** Test database, real services
@@ -64,6 +70,7 @@ Read this to understand testing philosophy and how to choose which tests to writ
   - HTTP service communicating with mock backend
 
 ### E2E Tests (Future)
+
 - **Coverage:** Complete user flows (browser end-to-end)
 - **Duration:** 1s–10s each
 - **Environment:** Deployed app, real browser
@@ -77,17 +84,20 @@ Read this to understand testing philosophy and how to choose which tests to writ
 ## Code Coverage
 
 **Goals:**
+
 - Overall: >= 70% line coverage
 - Critical paths (auth, core logic): >= 90%
 - UI components: >= 50% (view testing is expensive)
 
 **Measurement:**
+
 - Backend: `dotnet test --collect:"XPlat Code Coverage"`
 - Frontend: `npm run test:ci`
 - Aggregation: Coveralls + SonarCloud
 - CI reports: Automatic on PR/merge
 
 **Coverage Reporting:**
+
 ```bash
 # Backend
 dotnet test --collect:"XPlat Code Coverage"
@@ -143,24 +153,24 @@ public async Task LoginAnonymously_CreatesAccount() {
   // Arrange
   var userManager = GetMockUserManager();
   var signInManager = GetMockSignInManager();
-  
+
   // Act
   var result = await LoginAnonymously(userManager, signInManager);
-  
+
   // Assert
   Assert.NotNull(result);
   Assert.True(result.IsAnonymous);
 }
 
-// Jasmine (Frontend)
+// Vitest (Frontend)
 it('should create account and sign in', () => {
   // Arrange
   const service = TestBed.inject(AuthService);
-  spyOn(service, 'login').and.returnValue(of({ id: '123', isAnonymous: true }));
-  
+  vi.spyOn(service, 'login').mockReturnValue(of({ id: '123', isAnonymous: true }));
+
   // Act
   component.loginAnonymously();
-  
+
   // Assert
   expect(service.login).toHaveBeenCalled();
   expect(component.user()).toBeTruthy();
@@ -210,12 +220,14 @@ dotnet test /p:CollectCoverage=true
 ### GitHub Actions Workflow
 
 1. **Frontend Tests** (`.github/workflows/frontend.yml`)
+
    ```
    npm ci --force
    npm run ci:all  (lint + test)
    ```
 
 2. **Backend Tests** (`.github/workflows/backend.yml`)
+
    ```
    dotnet restore
    dotnet build
@@ -223,6 +235,7 @@ dotnet test /p:CollectCoverage=true
    ```
 
 3. **Coverage Aggregation** (`.github/workflows/ci.yml`)
+
    ```
    Frontend coverage → Coveralls
    Backend coverage → Coveralls
@@ -230,6 +243,7 @@ dotnet test /p:CollectCoverage=true
    ```
 
 4. **SonarCloud Analysis**
+
    ```
    SonarQube Scan (frontend + backend)
    Quality gates (bugs, vulnerabilities, coverage)
@@ -245,15 +259,15 @@ dotnet test /p:CollectCoverage=true
 
 ## Testing Challenges & Solutions
 
-| Challenge | Solution |
-|-----------|----------|
-| Async code in tests | Use `async/await` or `.fakeAsync()` (Angular) |
-| Real HTTP calls | Mock HttpTestingController (Angular) or HttpClientMock (C#) |
-| Database state | Use test transactions with rollback; or in-memory DB |
-| Timing issues | Use `done()` callback or promises; avoid sleep() |
-| Flaky tests | Retry failed tests; investigate timing/randomness |
-| Large test suites | Parallelize (multiple workers); separate fast/slow tests |
-| Missing mocks | Use `jest.mock()` or `Moq.Of()` to mock  defaults |
+| Challenge           | Solution                                                    |
+| ------------------- | ----------------------------------------------------------- |
+| Async code in tests | Use `async/await` or `.fakeAsync()` (Angular)               |
+| Real HTTP calls     | Mock HttpTestingController (Angular) or HttpClientMock (C#) |
+| Database state      | Use test transactions with rollback; or in-memory DB        |
+| Timing issues       | Use `done()` callback or promises; avoid sleep()            |
+| Flaky tests         | Retry failed tests; investigate timing/randomness           |
+| Large test suites   | Parallelize (multiple workers); separate fast/slow tests    |
+| Missing mocks       | Use `jest.mock()` or `Moq.Of()` to mock defaults            |
 
 ---
 
@@ -318,26 +332,28 @@ Assert.InRange(value, min, max);
 Assert.Collection(items, item => Assert.Equal("x", item.Name));
 ```
 
-### Jasmine (Frontend)
+### Vitest (Frontend)
 
 ```typescript
 expect(value).toBeTruthy();
 expect(value).toEqual(expected);
-expect(() => fn()).toThrowError('message');
+expect(() => fn()).toThrowError("message");
 expect(spy).toHaveBeenCalledWith(arg);
 expect(spy).toHaveBeenCalledTimes(2);
+// Vitest has no toBeTrue(); use expect(value).toBe(true)
 ```
 
 ---
 
 ## Debugging Tests
 
-### Browser Console (Karma)
+### Vitest UI / Inspect
 
-1. Open `localhost:9876` during test run
-2. Click "Debug"
-3. Browser DevTools opens
-4. Set breakpoints, step through code
+```bash
+cd frontend
+npx ng test --ui          # Interactive Vitest UI dashboard
+npx ng test --inspect     # Node Inspector; connect via chrome://inspect
+```
 
 ### VS Code Debugger
 
@@ -347,9 +363,9 @@ Add to `.vscode/launch.json`:
 {
   "type": "node",
   "request": "launch",
-  "name": "Jest Debug",
-  "program": "${workspaceFolder}/node_modules/.bin/jest",
-  "args": ["--runInBand"],
+  "name": "Vitest Debug",
+  "program": "${workspaceFolder}/frontend/node_modules/vitest/vitest.mjs",
+  "args": ["--no-watch"],
   "console": "integratedTerminal"
 }
 ```
@@ -360,7 +376,7 @@ Add to `.vscode/launch.json`:
 [Fact]
 public void MyTest(ITestOutputHelper output) {
   output.WriteLine("Debug message");
-  
+
   try {
     // test code
   }
@@ -376,6 +392,7 @@ public void MyTest(ITestOutputHelper output) {
 ## Best Practices
 
 ✅ **DO:**
+
 - Test behavior, not implementation
 - Use descriptive test names
 - Keep tests focused (one assertion per test or closely related)
@@ -384,6 +401,7 @@ public void MyTest(ITestOutputHelper output) {
 - Clean up after tests (tear down fixtures)
 
 ❌ **DON'T:**
+
 - Test framework code (Angular, EF Core)
 - Write integration tests as unit tests
 - Use real HTTP calls or databases
