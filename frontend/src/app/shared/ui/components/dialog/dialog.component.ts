@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, contentChild, ElementRef, inject, input, OnDestroy, viewChild } from '@angular/core';
-import { InputManagerService } from '@services/input-manager.service';
+import { InputManagerService, LayerRef } from '@services/input-manager.service';
 import { AH_DIALOG_CONTENT } from '@shared/components/dialog/dialog.content';
 import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { SvgComponent } from '../svg/svg.component';
@@ -24,11 +24,12 @@ export class DialogComponent implements OnDestroy {
   private readonly inputManager = inject(InputManagerService);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly content = contentChild.required(AH_DIALOG_CONTENT);
+  private inputLayer: LayerRef | undefined;
 
   public open() {
     this.dialog().nativeElement.showModal();
     this.content().onOpened?.();
-    this.inputManager.pushLayer({
+    this.inputLayer = this.inputManager.pushLayer({
       cancel: () => {
         this.close();
       },
@@ -38,7 +39,7 @@ export class DialogComponent implements OnDestroy {
 
   public close() {
     this.dialog().nativeElement.close();
-    this.inputManager.popLayer();
+    this.inputLayer?.destroy();
     this.content().onClosed?.();
   }
 

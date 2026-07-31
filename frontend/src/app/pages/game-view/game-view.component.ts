@@ -54,8 +54,12 @@ export class GameViewComponent implements OnInit {
       toggleDebugPanel: async () => {
         await this.toggleDebug();
       },
-      applyPatch: this.timelineService.applyNextPatch.bind(this),
-      resetState: this.timelineService.restoreOriginalState.bind(this),
+      applyPatch: () => {
+        this.timelineService.applyNextPatch();
+      },
+      resetState: () => {
+        this.timelineService.restoreOriginalState();
+      },
     });
     this.gameState.setState(testGameState);
   }

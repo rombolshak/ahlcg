@@ -7,6 +7,10 @@ export type InputCommand = GeneralAction | Navigation | Debug;
 
 export type InputHandler = () => void | Promise<void>;
 export type InputLayer = Partial<Record<InputCommand, InputHandler>>;
+export interface LayerRef {
+  layer: InputLayer;
+  destroy: () => void;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -41,12 +45,17 @@ export class InputManagerService {
     });
   }
 
-  public pushLayer(layer: InputLayer): void {
+  public pushLayer(layer: InputLayer): LayerRef {
     this.layers.push(layer);
-  }
-
-  public popLayer(): void {
-    this.layers.pop();
+    return {
+      layer,
+      destroy: () => {
+        const index = this.layers.indexOf(layer);
+        if (index !== -1) {
+          this.layers.splice(index, 1);
+        }
+      },
+    };
   }
 
   public registerGlobal(layer: InputLayer): void {

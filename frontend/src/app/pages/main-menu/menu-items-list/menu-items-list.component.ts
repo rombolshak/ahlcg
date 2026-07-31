@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, linkedSignal, OnDestroy, OnInit } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
-import { InputManagerService } from '@services/input-manager.service';
+import { InputManagerService, LayerRef } from '@services/input-manager.service';
 import { ArtButtonComponent } from '@shared/components/art-button/art-button.component';
 import { MenuItem } from '../menu-item';
 
@@ -19,13 +19,14 @@ export class MenuItemsListComponent implements OnInit, OnDestroy {
   public readonly items = input.required<MenuItem[]>();
 
   private readonly inputManager = inject(InputManagerService);
+  private inputLayer: LayerRef | undefined;
 
   protected readonly selectedIndex = linkedSignal(() => {
     return this.items().findIndex(item => !item.disabled);
   });
 
   public ngOnInit() {
-    this.inputManager.pushLayer({
+    this.inputLayer = this.inputManager.pushLayer({
       moveDown: () => {
         const nextItem = this.items().findIndex((item, index) => index > this.selectedIndex() && !item.disabled);
         if (nextItem !== -1) {
@@ -49,6 +50,6 @@ export class MenuItemsListComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy() {
-    this.inputManager.popLayer();
+    this.inputLayer?.destroy();
   }
 }
