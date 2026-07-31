@@ -40,8 +40,20 @@ export class InputManagerService {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    inject<Document>(DOCUMENT).addEventListener('keydown', async $event => {
-      await this.onKeyDown($event);
+    inject<Document>(DOCUMENT).addEventListener('keyup', async event => {
+      const command = this.keyToCommand.get(event.code);
+      if (!command) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const handlers = this.layers.at(-1);
+      const handler = handlers?.[command] ?? this.globalLayer[command];
+      if (handler) {
+        await handler();
+      }
     });
   }
 
@@ -64,20 +76,4 @@ export class InputManagerService {
       ...layer,
     };
   }
-
-  private onKeyDown = async (event: KeyboardEvent): Promise<void> => {
-    const command = this.keyToCommand.get(event.code);
-    if (!command) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const handlers = this.layers.at(-1);
-    const handler = handlers?.[command] ?? this.globalLayer[command];
-    if (handler) {
-      await handler();
-    }
-  };
 }

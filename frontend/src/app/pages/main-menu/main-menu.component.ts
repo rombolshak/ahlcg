@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, Signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { AuthService } from '@services/auth.service';
 import { DialogComponent } from '@shared/components/dialog/dialog.component';
@@ -8,7 +9,7 @@ import { MenuItemsListComponent } from './menu-items-list/menu-items-list.compon
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [MenuItemsListComponent, SettingsComponent, DialogComponent],
+  imports: [MenuItemsListComponent, SettingsComponent, DialogComponent, TranslocoDirective],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {

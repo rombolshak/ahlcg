@@ -4,6 +4,6 @@
   </div>
 </div>
 
-<ah-dialog #settings>
+<ah-dialog *transloco="let t" #settings [title]="t('settings')">
   <ah-settings />
 </ah-dialog>
