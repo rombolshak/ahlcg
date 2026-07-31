@@ -51,7 +51,7 @@ describe('MenuItemsListComponent', () => {
     await fixture.whenStable();
 
     pressAndCheck = (key: string, expectedItem: string) => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { code: key }));
+      document.dispatchEvent(new KeyboardEvent('keyup', { code: key }));
       TestBed.tick();
 
       expect((fixture.debugElement.query(By.css('.active')).nativeElement as HTMLElement).textContent).toContain(expectedItem);
@@ -87,7 +87,7 @@ describe('MenuItemsListComponent', () => {
     pressAndCheck('ArrowUp', 'item2');
     pressAndCheck('ArrowUp', 'item1');
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Enter' }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Enter' }));
 
     expect(calls1).toBe(1);
     expect(calls2).toBe(0);
