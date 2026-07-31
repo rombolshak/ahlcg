@@ -50,7 +50,7 @@ describe('AgendaComponent', () => {
     });
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes[`to-${color}-800/70`]).toBeTrue();
+    expect(fixture.debugElement.classes[`to-${color}-800/70`]).toBe(true);
   }
 
   it('should change background by doom threshold', async () => {

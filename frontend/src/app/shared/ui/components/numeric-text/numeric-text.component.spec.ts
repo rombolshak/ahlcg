@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { NumericTextComponent } from './numeric-text.component';
 
 describe('NumericTextComponent', () => {
@@ -23,12 +24,11 @@ describe('NumericTextComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fire event after animation', done => {
-    component.animationCompleted.subscribe(() => {
-      done();
-    });
+  it('should fire event after animation', async () => {
+    const emitted = firstValueFrom(component.animationCompleted);
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
     TestBed.tick();
+    await emitted;
   });
 });

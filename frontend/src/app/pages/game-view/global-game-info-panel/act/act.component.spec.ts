@@ -41,7 +41,7 @@ describe('ActComponent', () => {
     });
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes[`to-${progress}-700/80`]).toBeTrue();
+    expect(fixture.debugElement.classes[`to-${progress}-700/80`]).toBe(true);
   }
 
   it('should calc overall objectives progress', async () => {

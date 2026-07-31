@@ -69,7 +69,7 @@ describe('MenuItemsListComponent', () => {
   it('should set active element on load', () => {
     const el = fixture.debugElement.query(By.css('[type=button]'));
 
-    expect(el.classes['active']).toBeTrue();
+    expect(el.classes['active']).toBe(true);
     expect(fixture.debugElement.queryAll(By.css('.active')).length).toBe(1);
   });
 

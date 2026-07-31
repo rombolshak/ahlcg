@@ -13,7 +13,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "npm run test:ci",
-    "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadless",
+    "test:ci": "ng test --no-watch --no-progress",
     "format:base": "prettier --log-level warn --ignore-path=./.gitignore  \"src/**/*.{js,ts,css,scss,sh,html,md,json,yaml,yml}\"",
     "format": "npm run format:base -- --write",
     "lint": "eslint \"src/**/*.{js,ts,html,json}\"",
@@ -74,6 +74,7 @@
     "@toolwind/anchors": "^1.0.10",
     "@types/jasmine": "~6.0.0",
     "@typescript-eslint/parser": "^8.57.2",
+    "@vitest/coverage-v8": "^4.1.10",
     "angular-eslint": "21.3.1",
     "chromatic": "^16.0.0",
     "cspell": "^9.7.0",
@@ -86,13 +87,8 @@
     "eslint-plugin-jsonc": "^3.1.2",
     "eslint-plugin-storybook": "^10.3.3",
     "globals": "^17.4.0",
+    "happy-dom": "^20.11.1",
     "husky": "^9.1.7",
-    "jasmine-core": "~6.1.0",
-    "karma": "~6.4.4",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.1",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.2.0",
     "lint-staged": "^16.4.0",
     "postcss": "^8.5.8",
     "prettier": "^3.8.1",
@@ -108,7 +104,8 @@
     "tailwindcss": "^4.2.2",
     "tsc-files": "^1.1.4",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.57.2"
+    "typescript-eslint": "^8.57.2",
+    "vitest": "^4.1.10"
   },
   "overrides": {
     "@ngrx/signals": {

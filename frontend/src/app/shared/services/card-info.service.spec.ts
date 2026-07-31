@@ -38,7 +38,7 @@ describe('CardInfoService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load json files', done => {
+  it('should load json files', () => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
       toObservable(service.getCardInfo(id)).subscribe(data => {
@@ -61,7 +61,6 @@ describe('CardInfoService', () => {
         });
 
         http.verify();
-        done();
       });
     });
 
@@ -77,18 +76,17 @@ describe('CardInfoService', () => {
     });
   });
 
-  it('should throw for incorrect description (non existent field)', done => {
+  it('should throw for incorrect description (non existent field)', () => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
       toObservable(service.getCardInfo(id)).subscribe({
         next: data => {
           if (!data) return;
 
-          expect(data.isLoadedWithError).toBeTrue();
+          expect(data.isLoadedWithError).toBe(true);
           expect(data.title).toContain('nonexistent');
 
           http.verify();
-          done();
         },
       });
     });
@@ -104,17 +102,16 @@ describe('CardInfoService', () => {
     });
   });
 
-  it('should throw for incorrect description (missing required fields)', done => {
+  it('should throw for incorrect description (missing required fields)', () => {
     TestBed.runInInjectionContext(() => {
       const id = signal(cardE);
       toObservable(service.getCardInfo(id)).subscribe(data => {
         if (!data) return;
 
-        expect(data.isLoadedWithError).toBeTrue();
+        expect(data.isLoadedWithError).toBe(true);
         expect(data.title).toContain('title');
 
         http.verify();
-        done();
       });
     });
 
