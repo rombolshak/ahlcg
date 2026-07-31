@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { defaultSlots } from '@domain/test/entities/test-investigators';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { ControlAreaComponent } from './control-area.component';
 
 describe('ControlAreaComponent', () => {
@@ -12,7 +13,7 @@ describe('ControlAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [ControlAreaComponent, getTranslocoModule()],
     }).compileComponents();
 

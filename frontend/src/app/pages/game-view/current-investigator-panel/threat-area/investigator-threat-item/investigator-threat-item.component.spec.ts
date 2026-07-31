@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { testEnemy } from 'shared/domain/test/entities/test-enemies';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item.component';
 
@@ -12,7 +13,7 @@ describe('InvestigatorThreatItemComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [InvestigatorThreatItemComponent, getTranslocoModule()],
     }).compileComponents();
 

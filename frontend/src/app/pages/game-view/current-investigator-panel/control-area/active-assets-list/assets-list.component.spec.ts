@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { cardA, cardA3, cardA4 } from '@domain/test/entities/test-cards';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
 import { AssetsListComponent } from 'pages/game-view/current-investigator-panel/control-area/active-assets-list/assets-list.component';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 
 describe('ActiveAssetsListComponent', () => {
   let component: AssetsListComponent;
@@ -13,7 +14,7 @@ describe('ActiveAssetsListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [AssetsListComponent, getTranslocoModule()],
     }).compileComponents();
 
