@@ -4,9 +4,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { CardInfo } from '@domain/entities/details/card-info.model';
+import { cardE } from '@domain/test/entities/test-cards';
 import { TranslocoService } from '@jsverse/transloco';
-import { BehaviorSubject, of } from 'rxjs';
-import { cardE } from '../domain/test/entities/test-cards';
+import { BehaviorSubject, filter, firstValueFrom, of } from 'rxjs';
 import { CardInfoService } from './card-info.service';
 
 describe('CardInfoService', () => {
@@ -38,32 +39,10 @@ describe('CardInfoService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should load json files', done => {
-    TestBed.runInInjectionContext(() => {
-      const id = signal(cardE);
-      toObservable(service.getCardInfo(id)).subscribe(data => {
-        if (!data) return;
-
-        expect(data).toBeTruthy();
-        expect(data).toEqual({
-          title: 'cards/02/107.title',
-          traits: ['traits.insight', 'traits.tactic'],
-          abilities: ['cards/02/107.a1'],
-          flavor: 'cards/02/107.flavor',
-          setInfo: {
-            set: '02',
-            index: '107',
-          },
-          copyright: {
-            illustrator: 'Robert Laskey',
-            ffg: '2016',
-          },
-        });
-
-        http.verify();
-        done();
-      });
-    });
+  it('should load json files', async () => {
+    const id = signal(cardE);
+    const data$ = TestBed.runInInjectionContext(() => toObservable(service.getCardInfo(id)));
+    const dataPromise = firstValueFrom(data$.pipe(filter((data): data is CardInfo => data !== undefined)));
 
     TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
@@ -75,23 +54,32 @@ describe('CardInfoService', () => {
         ffg: '2016',
       },
     });
+
+    const data = await dataPromise;
+
+    expect(data).toBeTruthy();
+    expect(data).toEqual({
+      title: 'cards/02/107.title',
+      traits: ['traits.insight', 'traits.tactic'],
+      abilities: ['cards/02/107.a1'],
+      flavor: 'cards/02/107.flavor',
+      setInfo: {
+        set: '02',
+        index: '107',
+      },
+      copyright: {
+        illustrator: 'Robert Laskey',
+        ffg: '2016',
+      },
+    });
+
+    http.verify();
   });
 
-  it('should throw for incorrect description (non existent field)', done => {
-    TestBed.runInInjectionContext(() => {
-      const id = signal(cardE);
-      toObservable(service.getCardInfo(id)).subscribe({
-        next: data => {
-          if (!data) return;
-
-          expect(data.isLoadedWithError).toBeTrue();
-          expect(data.title).toContain('nonexistent');
-
-          http.verify();
-          done();
-        },
-      });
-    });
+  it('should throw for incorrect description (non existent field)', async () => {
+    const id = signal(cardE);
+    const data$ = TestBed.runInInjectionContext(() => toObservable(service.getCardInfo(id)));
+    const dataPromise = firstValueFrom(data$.pipe(filter((data): data is CardInfo => data !== undefined)));
 
     TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
@@ -102,21 +90,19 @@ describe('CardInfoService', () => {
         ffg: '2016',
       },
     });
+
+    const data = await dataPromise;
+
+    expect(data.isLoadedWithError).toBe(true);
+    expect(data.title).toContain('nonexistent');
+
+    http.verify();
   });
 
-  it('should throw for incorrect description (missing required fields)', done => {
-    TestBed.runInInjectionContext(() => {
-      const id = signal(cardE);
-      toObservable(service.getCardInfo(id)).subscribe(data => {
-        if (!data) return;
-
-        expect(data.isLoadedWithError).toBeTrue();
-        expect(data.title).toContain('title');
-
-        http.verify();
-        done();
-      });
-    });
+  it('should throw for incorrect description (missing required fields)', async () => {
+    const id = signal(cardE);
+    const data$ = TestBed.runInInjectionContext(() => toObservable(service.getCardInfo(id)));
+    const dataPromise = firstValueFrom(data$.pipe(filter((data): data is CardInfo => data !== undefined)));
 
     TestBed.tick();
     http.expectOne('/assets/cards/02/107.json').flush({
@@ -128,5 +114,12 @@ describe('CardInfoService', () => {
         ffg: '2016',
       },
     });
+
+    const data = await dataPromise;
+
+    expect(data.isLoadedWithError).toBe(true);
+    expect(data.title).toContain('title');
+
+    http.verify();
   });
 });

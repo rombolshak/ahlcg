@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { cardS, displayOption } from 'shared/domain/test/entities/test-cards';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { getTranslocoModule } from '../../../../domain/test/transloco.testing';
 import { SkillCardComponent } from './skill-card.component';
 
@@ -12,7 +13,7 @@ describe('SkillCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [SkillCardComponent, getTranslocoModule()],
     }).compileComponents();
 

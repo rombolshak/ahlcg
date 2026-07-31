@@ -1,12 +1,15 @@
 # Architecture Overview
 
 ## Purpose
+
 Describes how Ahlcg's major components (frontend, backend, database, real-time communication) fit together and exchange data.
 
 ## When to Load
+
 Read this to understand the system design, technology stack, and how frontend and backend interact.
 
 ## Related Files
+
 - [Frontend Architecture](./frontend.md) — Frontend component structure
 - [Backend Architecture](./backend.md) — Backend service structure
 - [Product Overview](../01_product/overview.md) — What Ahlcg does
@@ -101,19 +104,21 @@ Local Development Only:
 ## Technology Stack
 
 ### Frontend
+
 - **Framework:** Angular 20 (TypeScript)
 - **State Management:** @ngrx/signals (signal-based store)
 - **DOM Animations:** GSAP Flip
 - **Schema Validation:** arktype
 - **Internationalization:** Transloco
 - **Styling:** Tailwind CSS
-- **Testing:** Karma + Jasmine
+- **Testing:** Vitest + happy-dom
 - **Component Dev:** Storybook
 - **Visual Regression:** Chromatic
 - **HTTP:** Angular HttpClient
 - **Real-time:** SignalR client library
 
 ### Backend
+
 - **Runtime:** .NET 10.0
 - **Framework:** ASP.NET Core Minimal APIs
 - **Authentication:** ASP.NET Identity
@@ -127,14 +132,16 @@ Local Development Only:
 - **Local Orchestration:** .NET Aspire AppHost
 
 ### Database
+
 - **Engine:** PostgreSQL
 - **Schema Management:** EF Core Migrations
 - **Admin UI:** PgAdmin (local dev only)
 
 ### CI/CD
+
 - **Provider:** GitHub Actions
 - **Path Filtering:** dorny/path-filter (split workflows by module)
-- **Testing:** xUnit (backend), Jasmine (frontend)
+- **Testing:** xUnit (backend), Vitest (frontend)
 - **Coverage:** Coveralls, SonarCloud
 - **Visual Regression:** Chromatic
 - **Code Analysis:** SonarCloud
@@ -144,6 +151,7 @@ Local Development Only:
 ## Data Flow Examples
 
 ### Authentication Flow
+
 ```
 1. User clicks "Play Now"
    ├─ Browser: Click handler → AuthService uses Angular HttpClient.post('/auth/loginAnonymously', ...) and subscribes/awaits observable
@@ -168,6 +176,7 @@ Local Development Only:
 ```
 
 ### Real-Time Game Update (Future Design)
+
 ```
 1. Player A makes a move
    ├─ Browser: Patch generated locally
@@ -193,29 +202,35 @@ Local Development Only:
 ## Communication Contracts
 
 ### REST Endpoints (HTTP)
+
 See [API Reference](../99_reference/api.md) for full contract details.
 
 **Authentication Routes** (`/auth`)
+
 - `POST /auth/loginAnonymously` — Create anon account & sign in
 - `POST /auth/linkCredentials` — Upgrade to permanent account
 - `GET /auth/info` — Get current user info
 - `POST /auth/logout` — Sign out (delete if anon)
 
 **Health & Docs** (dev only)
+
 - `GET /health` — Readiness probe
 - `GET /alive` — Liveness probe
 - `GET /openapi/v1.json` — OpenAPI schema
 - `GET /scalar/v1` — Scalar UI (interactive API docs)
 
 ### SignalR Hub (`/game`)
+
 See [API Reference](../99_reference/api.md) for SignalR contracts.
 
 **Server → Client** (future)
+
 - `GameStateUpdated(state)` — New game state
 - `PlayerLeft(playerId)` — A player disconnected
 - `GameEnded(result)` — Scenario completed
 
 **Client → Server** (future)
+
 - `JoinGame(gameId)` — Subscribe to game updates
 - `ApplyAction(action)` — Player takes action
 - `SendChat(message)` — Send chat message
@@ -272,16 +287,19 @@ Note: This is a future reference design. Currently, Aspire handles local orchest
 ## Scalability Considerations
 
 ### Horizontal (More Servers)
+
 - **Frontend:** Served as static assets; easily cacheable via CDN
 - **Backend:** Can run multiple instances behind load balancer
 - **SignalR:** Requires sticky sessions or backplane (e.g., Redis) for multiple instances
 - **Database:** Needs replication / clustering for high availability
 
 ### Vertical (Bigger Servers)
+
 - Trade-off: Cost vs. availability
 - Simpler operational model but less resilient
 
 ### Performance Optimizations
+
 - Cache static assets (frontend) with long TTLs
 - Use connection pooling in EF Core
 - Implement response caching for API endpoints
@@ -293,14 +311,14 @@ Note: This is a future reference design. Currently, Aspire handles local orchest
 
 ## Key Architectural Decisions
 
-| Decision | Rationale | Trade-offs |
-|----------|-----------|-----------|
-| Angular SPA | Rich, responsive UI; offline-capable; code splitting | Larger initial JS bundle; SEO challenges |
-| ASP.NET Core Minimal APIs | Lightweight, modern; less boilerplate than controllers | Smaller ecosystem than MVC; less convention |
-| PostgreSQL | Open-source, reliable, ACID-compliant; good for relational data | Not ideal for unstructured/document data |
-| SignalR for real-time | Built-in .NET support; connectionless or persistent | Forces sticky sessions or backplane |
-| Signal-based store | Modern, reactive; avoids NgRx complexity | Less battle-tested; smaller community |
-| Cookie-based auth | Added easily with ASP.NET Identity; works across origins with CORS | Must secure cookies; requires HTTPS in prod |
+| Decision                  | Rationale                                                          | Trade-offs                                  |
+| ------------------------- | ------------------------------------------------------------------ | ------------------------------------------- |
+| Angular SPA               | Rich, responsive UI; offline-capable; code splitting               | Larger initial JS bundle; SEO challenges    |
+| ASP.NET Core Minimal APIs | Lightweight, modern; less boilerplate than controllers             | Smaller ecosystem than MVC; less convention |
+| PostgreSQL                | Open-source, reliable, ACID-compliant; good for relational data    | Not ideal for unstructured/document data    |
+| SignalR for real-time     | Built-in .NET support; connectionless or persistent                | Forces sticky sessions or backplane         |
+| Signal-based store        | Modern, reactive; avoids NgRx complexity                           | Less battle-tested; smaller community       |
+| Cookie-based auth         | Added easily with ASP.NET Identity; works across origins with CORS | Must secure cookies; requires HTTPS in prod |
 
 ---
 

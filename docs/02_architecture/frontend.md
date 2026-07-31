@@ -1,12 +1,15 @@
 # Frontend Architecture
 
 ## Purpose
+
 Describes the frontend's component structure, routing, state management approach, and design patterns.
 
 ## When to Load
+
 Read this to understand how the frontend is organized and how components interact.
 
 ## Related Files
+
 - [Frontend State Management](../03_implementation/frontend/state_management.md) — How the signals store works
 - [Frontend UI Patterns](../03_implementation/frontend/ui_patterns.md) — Component conventions and patterns
 - [Architecture Overview](./overview.md) — How frontend connects to backend
@@ -16,21 +19,21 @@ Read this to understand how the frontend is organized and how components interac
 
 ## Frontend Stack
 
-| Aspect | Technology | Version |
-|--------|-----------|---------|
-| Framework | Angular | 20 |
-| Language | TypeScript | ~5.9.3 |
-| Build Tool | Angular CLI | ~20.3.0 |
-| State Management | @ngrx/signals | Latest |
-| Animations | GSAP Flip | Latest |
-| Validation | arktype | Latest |
-| HTTP | Angular HttpClient | Built-in |
-| Real-time | SignalR via GameHub (no client package in deps) | Planned |
-| i18n | Transloco | Latest |
-| Styling | Tailwind CSS | 4 |
-| Testing | Karma + Jasmine | Latest |
-| Component Gallery | Storybook | Latest |
-| Visual Testing | Chromatic | (CI service) |
+| Aspect            | Technology                                      | Version      |
+| ----------------- | ----------------------------------------------- | ------------ |
+| Framework         | Angular                                         | 20           |
+| Language          | TypeScript                                      | ~5.9.3       |
+| Build Tool        | Angular CLI                                     | ~20.3.0      |
+| State Management  | @ngrx/signals                                   | Latest       |
+| Animations        | GSAP Flip                                       | Latest       |
+| Validation        | arktype                                         | Latest       |
+| HTTP              | Angular HttpClient                              | Built-in     |
+| Real-time         | SignalR via GameHub (no client package in deps) | Planned      |
+| i18n              | Transloco                                       | Latest       |
+| Styling           | Tailwind CSS                                    | 4            |
+| Testing           | Vitest + happy-dom                              | Latest       |
+| Component Gallery | Storybook                                       | Latest       |
+| Visual Testing    | Chromatic                                       | (CI service) |
 
 ---
 
@@ -107,10 +110,10 @@ frontend/
 │   └── preview.ts                     # Global decorators
 │
 ├── angular.json                       # Build config (dev, build, test, storybook)
-├── karma.conf.cjs                     # Test runner config
 ├── tsconfig.json                      # Base TypeScript config
 ├── tsconfig.app.json                  # App-specific TS config
-├── tsconfig.spec.json                 # Test-specific TS config
+├── tsconfig.spec.json                 # Test-specific TS config (vitest/globals)
+├── src/test-setup.ts                  # Global test setup (localStorage polyfill for happy-dom)
 ├── eslint.config.js                   # Linting rules
 ├── package.json                       # Dependencies
 ├── transloco.config.ts                # i18n config
@@ -124,6 +127,7 @@ frontend/
 Defined in `app.routes.ts`.
 
 **Key Characteristics:**
+
 - Lazy-loaded pages for code-splitting
 - Child routes can be added for sub-pages
 - Supports deep linking (e.g., `/game/123`)
@@ -145,6 +149,7 @@ export const GameStateStore = signalStore(
 ```
 
 **Flow:**
+
 1. **Initialization:** Component calls `store.setState(initialGameState)`
 2. **Patches:** Server sends RFC6902 patches
 3. **Application:** Component calls `store.updateState(patches)`
@@ -158,20 +163,24 @@ See [Frontend State Management](../03_implementation/frontend/state_management.m
 ## Component Patterns
 
 ### Smart Components (Pages)
+
 - Located in `pages/`
 - Handle routing, data fetching, store management
 - Example: `GameViewComponent`
 
 ### Presentational Components (Dumb)
+
 - Located in `shared/ui/` or `pages/*/panels/`
 - Receive data via `@Input()` and emit events via `@Output()`
 - Focused on rendering and user interaction
 - Highly reusable
 
 ### Standalone Components
+
 All components are standalone (Angular 14+) for better tree-shaking and modularity.
 
 ### Services
+
 - Grouped by purpose: `auth.service.ts`, `api.service.ts`, `signalr.service.ts`
 - Singleton by default (@Injectable({ providedIn: 'root' }))
 - Dependency injection via constructor
@@ -191,6 +200,7 @@ this.transloco.selectTranslate('GAME.TURN_START').subscribe(...)
 ```
 
 **Translation Files:**
+
 - Located in `public/assets/i18n/{lang}.json`
 - Supported languages: EN, DE, FR, ES, PT, IT, RU, UK, VI, CS, KO, ZH
 - Fallback language: English
@@ -224,13 +234,14 @@ export const gameState = type({
 }).narrow((state, ctx) => {
   // Custom cross-entity validation
   if (state.investigators.length === 0) {
-    ctx.missing('At least one investigator required')
+    ctx.missing("At least one investigator required");
   }
   return state;
-})
+});
 ```
 
 **Benefits:**
+
 - Type-safe at compile time (TypeScript)
 - Validated at runtime (arktype)
 - Client-side validation before sending to server
@@ -240,7 +251,7 @@ export const gameState = type({
 
 ## Testing Strategy
 
-- **Unit Tests:** Jasmine specs for services, pipes, validators
+- **Unit Tests:** Vitest specs for services, pipes, validators
 - **Component Tests:** Component + template rendering with mocked dependencies
 - **Store Tests:** Verify state transitions and computed selectors
 - **Visual Regression:** Storybook + Chromatic for component appearance

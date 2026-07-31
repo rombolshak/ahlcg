@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
 import campaign from '../../../../../../../public/assets/i18n/campaigns/notz/en.json';
 import scenario from '../../../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
@@ -14,7 +15,7 @@ describe('ScenarioNameComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ScenarioNameComponent, getTranslocoModule()],
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioNameComponent);

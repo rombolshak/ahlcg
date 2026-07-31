@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { cardA } from 'shared/domain/test/entities/test-cards';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { getTranslocoModule } from '../../../../../domain/test/transloco.testing';
 import { CardSubtitleComponent } from './card-subtitle.component';
 
@@ -12,7 +13,7 @@ describe('CardSubtitleComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [CardSubtitleComponent, getTranslocoModule()],
     }).compileComponents();
 

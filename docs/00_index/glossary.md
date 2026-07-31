@@ -1,12 +1,15 @@
 # Glossary
 
 ## Purpose
+
 Definitions of key domain terms (card game concepts) and technical terms specific to Ahlcg.
 
 ## When to Load
+
 Read when you encounter unfamiliar terminology while working on product or implementation code.
 
 ## Related Files
+
 - [README](./README.md) — Documentation index
 
 ---
@@ -36,6 +39,7 @@ A game resource representing investigation progress. Investigators move actions 
 
 **Game State**
 The complete snapshot of a single game session, including:
+
 - All investigators and their status
 - The current Act and Agenda cards
 - Active locations and enemies
@@ -109,11 +113,14 @@ A unit testing framework for .NET. Ahlcg uses it for backend tests.
 **Moq**
 A mocking library for .NET that creates stub objects for testing. Used in backend unit tests.
 
-**Karma**
-A test runner for JavaScript/TypeScript (Angular). Runs Jasmine tests in real or headless browsers.
+**Vitest**
+A Vite-native test runner used for frontend unit and spec tests. Ahlcg runs it via the `@angular/build:unit-test` builder in `happy-dom` (DOM emulation in Node.js — no real browser by default).
+
+**happy-dom**
+A DOM implementation that runs in Node.js, used by Vitest to emulate a browser environment for faster, server-side test execution. It does not provide a web server or `localStorage` by default; Ahlcg polyfills `localStorage` in `src/test-setup.ts`.
 
 **Jasmine**
-A behavior-driven testing framework for JavaScript. Used for frontend unit and spec tests.
+A behavior-driven testing framework for JavaScript. Previously used for frontend tests; replaced by Vitest in the 2026 Karma → Vitest migration.
 
 **Transloco**
 An i18n (internationalization) library for Angular. Ahlcg uses it to support multiple languages.
@@ -145,6 +152,7 @@ An architectural approach emphasizing a rich domain model. Ahlcg's game state va
 
 **Separation of Concerns**
 A design principle where different responsibilities live in different modules. Ahlcg separates:
+
 - Frontend UI from state management
 - Backend endpoints from business logic
 - Application logic from infrastructure concerns

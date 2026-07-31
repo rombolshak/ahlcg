@@ -1,12 +1,15 @@
 # Conventions
 
 ## Purpose
+
 Naming conventions, file structure patterns, and quick navigation table by feature.
 
 ## When to Load
+
 Read this when starting a new task, navigating the codebase, or enforcing consistency.
 
 ## Related Files
+
 - [Architecture Overview](../02_architecture/overview.md) — System structure
 - [All Implementation Files](../03_implementation) — Code patterns
 - [Build & Release](../05_operations/build_and_release.md) — Build configuration
@@ -17,43 +20,43 @@ Read this when starting a new task, navigating the codebase, or enforcing consis
 
 ### TypeScript (Frontend)
 
-| Item | Pattern | Example |
-|------|---------|---------|
-| File | kebab-case | `game-state.store.ts` |
-| Component | `ClassName + class` | `export class GameViewComponent` |
-| File naming | Component files: `-component.ts`, stores: `.store.ts`, services: `.service.ts` | `card-list.component.ts`, `auth.service.ts` |
-| Variable | camelCase | `let gameState = ...` |
-| Constant | UPPER_SNAKE_CASE | `const MAX_PLAYERS = 4;` |
-| Pipe | camelCase in code, kebab-case in template | `| healthFormat` template uses pipe registered as `HealthFormatPipe` |
-| Selector | `app-` prefix for all components | `<app-game-view>` |
-| Service | `service` suffix; injectable | `@Injectable() class GameService` |
-| Store | `.store.ts` suffix using `signalStore()` | `export const gameStateStore = signalStore(...)` |
-| Interface | `I` prefix (optional, but common) | `IGameState` or `GameState` (both acceptable) |
-| Enum | PascalCase | `enum PlayerStatus { Active, Defeated, }` |
+| Item        | Pattern                                                                        | Example                                          |
+| ----------- | ------------------------------------------------------------------------------ | ------------------------------------------------ |
+| File        | kebab-case                                                                     | `game-state.store.ts`                            |
+| Component   | `ClassName + class`                                                            | `export class GameViewComponent`                 |
+| File naming | Component files: `-component.ts`, stores: `.store.ts`, services: `.service.ts` | `card-list.component.ts`, `auth.service.ts`      |
+| Variable    | camelCase                                                                      | `let gameState = ...`                            |
+| Constant    | UPPER_SNAKE_CASE                                                               | `const MAX_PLAYERS = 4;`                         |
+| Pipe        | camelCase in code, kebab-case in template                                      | `                                                | healthFormat`template uses pipe registered as`HealthFormatPipe` |
+| Selector    | `app-` prefix for all components                                               | `<app-game-view>`                                |
+| Service     | `service` suffix; injectable                                                   | `@Injectable() class GameService`                |
+| Store       | `.store.ts` suffix using `signalStore()`                                       | `export const gameStateStore = signalStore(...)` |
+| Interface   | `I` prefix (optional, but common)                                              | `IGameState` or `GameState` (both acceptable)    |
+| Enum        | PascalCase                                                                     | `enum PlayerStatus { Active, Defeated, }`        |
 
 ### C# (Backend)
 
-| Item | Pattern | Example |
-|------|---------|---------|
-| File | PascalCase, matches class name | `AuthEndpoints.cs` (contains `AuthEndpoints` class) |
-| Class | PascalCase | `public class AppUser` |
-| Method | PascalCase | `public async Task LoginAsync()` |
-| Property | PascalCase | `public string Email { get; set; }` |
-| Local Variable | camelCase | `var userId = user.Id;` |
-| Constant | UPPER_SNAKE_CASE or PascalCase | `const string DEFAULT_ROLE = "User";` |
-| Interface | `I` prefix | `public interface IGameService` |
-| Enum | PascalCase | `enum PlayerStatus { Active, Defeated }` |
-| Async Method | `Async` suffix | `public async Task LoginAsync()` |
-| Parameter | camelCase | `public void UpdateUser(string userId, AppUser user)` |
+| Item           | Pattern                        | Example                                               |
+| -------------- | ------------------------------ | ----------------------------------------------------- |
+| File           | PascalCase, matches class name | `AuthEndpoints.cs` (contains `AuthEndpoints` class)   |
+| Class          | PascalCase                     | `public class AppUser`                                |
+| Method         | PascalCase                     | `public async Task LoginAsync()`                      |
+| Property       | PascalCase                     | `public string Email { get; set; }`                   |
+| Local Variable | camelCase                      | `var userId = user.Id;`                               |
+| Constant       | UPPER_SNAKE_CASE or PascalCase | `const string DEFAULT_ROLE = "User";`                 |
+| Interface      | `I` prefix                     | `public interface IGameService`                       |
+| Enum           | PascalCase                     | `enum PlayerStatus { Active, Defeated }`              |
+| Async Method   | `Async` suffix                 | `public async Task LoginAsync()`                      |
+| Parameter      | camelCase                      | `public void UpdateUser(string userId, AppUser user)` |
 
 ### SQL/EF Core
 
-| Item | Pattern | Example |
-|------|---------|---------|
-| Table | PascalCase plural | `Users`, `GameSessions` |
-| Column | PascalCase | `UserId`, `CreatedAt` |
-| Foreign Key | `{EntityName}Id` | `UserId`, `ScenarioId` |
-| Migration | Descriptive verb + date | `20251114145044_Initial.cs` |
+| Item        | Pattern                 | Example                     |
+| ----------- | ----------------------- | --------------------------- |
+| Table       | PascalCase plural       | `Users`, `GameSessions`     |
+| Column      | PascalCase              | `UserId`, `CreatedAt`       |
+| Foreign Key | `{EntityName}Id`        | `UserId`, `ScenarioId`      |
+| Migration   | Descriptive verb + date | `20251114145044_Initial.cs` |
 
 ---
 
@@ -101,6 +104,7 @@ frontend/src/
 ```
 
 **Key Rules:**
+
 - Pages under `/pages` are smart (connected to store/API)
 - Components under `/ui` are presentational (pure input/output)
 - Services handle HTTP, SignalR, business logic
@@ -146,6 +150,7 @@ backend/
 ```
 
 **Key Rules:**
+
 - Endpoints group related routes (`AuthEndpoints`, future `GameEndpoints`)
 - Services implement business logic (dependency injection pattern)
 - Models in `/Models` are domain entities
@@ -158,20 +163,20 @@ backend/
 
 Use this table to find files by feature:
 
-| Feature | Frontend File | Backend File |
-|---------|---------------|--------------|
-| **Authentication** | `auth.service.ts`, `app-user.ts` | `AuthEndpoints.cs`, `AppUser.cs` |
-| **Game State** | `game-state.store.ts` | `GameService.cs`, `GameSession.cs` |
-| **Card Display** | `card-list.component.ts`, `card.ts` | Card JSON in `public/assets/cards/` |
-| **Board UI** | `board.component.ts` | (None; UI-only) |
-| **Player Status** | `player-card.component.ts` | `Investigator.cs`, `PlayerService.cs` |
-| **Animations** | `game-view.component.ts` (GSAP Flip) | (None; frontend-only) |
-| **Real-time Updates** | `game.service.ts` (SignalR client) | `GameHub.cs` (SignalR server) |
-| **Localization** | `transloco-loader.ts`, `i18n/*.json` | (None; frontend-only) |
-| **HTTP Requests** | `HttpClient` in services | Minimal API endpoints |
-| **Database** | (None; frontend-only) | `ApplicationDbContext.cs`, migrations |
-| **Tests (Frontend)** | `*.component.spec.ts` | (None) |
-| **Tests (Backend)** | (None) | `Ahlcg.ApiService.Tests/*.cs` |
+| Feature               | Frontend File                        | Backend File                          |
+| --------------------- | ------------------------------------ | ------------------------------------- |
+| **Authentication**    | `auth.service.ts`, `app-user.ts`     | `AuthEndpoints.cs`, `AppUser.cs`      |
+| **Game State**        | `game-state.store.ts`                | `GameService.cs`, `GameSession.cs`    |
+| **Card Display**      | `card-list.component.ts`, `card.ts`  | Card JSON in `public/assets/cards/`   |
+| **Board UI**          | `board.component.ts`                 | (None; UI-only)                       |
+| **Player Status**     | `player-card.component.ts`           | `Investigator.cs`, `PlayerService.cs` |
+| **Animations**        | `game-view.component.ts` (GSAP Flip) | (None; frontend-only)                 |
+| **Real-time Updates** | `game.service.ts` (SignalR client)   | `GameHub.cs` (SignalR server)         |
+| **Localization**      | `transloco-loader.ts`, `i18n/*.json` | (None; frontend-only)                 |
+| **HTTP Requests**     | `HttpClient` in services             | Minimal API endpoints                 |
+| **Database**          | (None; frontend-only)                | `ApplicationDbContext.cs`, migrations |
+| **Tests (Frontend)**  | `*.component.spec.ts`                | (None)                                |
+| **Tests (Backend)**   | (None)                               | `Ahlcg.ApiService.Tests/*.cs`         |
 
 ---
 
@@ -191,7 +196,7 @@ Use this table to find files by feature:
 })
 export class GameViewComponent {
   gameStore = inject(GameStateStore);
-  
+
   ngOnInit() {
     // Fetch initial state
     this.gameService.loadGame().subscribe(...);
@@ -214,12 +219,12 @@ export class GameBoardComponent {
 #### Service Pattern
 
 ```typescript
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class GameService {
-  private readonly API = 'https://api.example.com';
-  
+  private readonly API = "https://api.example.com";
+
   constructor(private http: HttpClient) {}
-  
+
   loadGame(gameId: string) {
     return this.http.get<GameState>(`${this.API}/games/${gameId}`);
   }
@@ -235,8 +240,8 @@ export const gameStateStore = signalStore(
     loadGame: async (gameId: string) => {
       const game = await gameService.loadGame(gameId).toPromise();
       patchState(store, { game });
-    }
-  }))
+    },
+  })),
 );
 ```
 
@@ -250,14 +255,14 @@ static class AuthEndpoints {
     var group = app.MapGroup("/auth")
       .WithName("Auth")
       .WithOpenApi();
-    
+
     group.MapPost("/login-anonymous", LoginAnonymouslyAsync)
       .WithSummary("Create anonymous account");
-    
+
     group.MapPost("/logout", LogoutAsync)
       .RequireAuthorization();
   }
-  
+
   static async Task<IResult> LoginAnonymouslyAsync(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
@@ -279,12 +284,12 @@ public interface IGameService {
 public class GameService : IGameService {
   private readonly ApplicationDbContext _db;
   private readonly ILogger<GameService> _logger;
-  
+
   public GameService(ApplicationDbContext db, ILogger<GameService> logger) {
     _db = db;
     _logger = logger;
   }
-  
+
   public async Task<Game> GetGameAsync(string gameId) {
     var game = await _db.Games.FindAsync(gameId);
     if (game == null) throw new InvalidOperationException("Game not found");
@@ -302,7 +307,7 @@ public class Game : Entity {
   public Scenario Scenario { get; set; } // Navigation
   public List<Investigator> Investigators { get; set; } = new();
   public GameState CurrentState { get; set; } = new();
-  
+
   public void StartNewTurn() {
     if (CurrentState.IsActive) throw new InvalidOperationException();
     CurrentState.TurnNumber++;
@@ -318,27 +323,28 @@ public class Game : Entity {
 
 ```typescript
 // ✅ DO
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class MyService {
   constructor(private http: HttpClient) {}
-  
+
   getData(): Observable<Data[]> {
-    return this.http.get<Data[]>('/api/data');
+    return this.http.get<Data[]>("/api/data");
   }
 }
 
 // ❌ DON'T
 export class BadService {
   http: HttpClient; // Missing @Injectable
-  
+
   constructor(http: HttpClient) {
     this.http = http; // Verbose assignment
   }
-  
-  getData() { // Untyped return
-    return this.http.get('/api/data');
+
+  getData() {
+    // Untyped return
+    return this.http.get("/api/data");
   }
 }
 ```
@@ -377,6 +383,7 @@ PR → Merge to main → Tag release
 ```
 
 **Branch Naming:**
+
 - `feature/description` — New feature
 - `bugfix/issue-number` — Bug fix
 - `docs/description` — Documentation only
@@ -405,6 +412,7 @@ Types: `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`
 ### Husky Hooks
 
 Automatically enforced on commit:
+
 - Lint frontend changes
 - Format staged files
 - Type check before push
@@ -417,18 +425,18 @@ Automatically enforced on commit:
 
 ```typescript
 // ✅ Test file naming
-game-state.store.spec.ts  // Matches store file
+game - state.store.spec.ts; // Matches store file
 
 // ✅ Test structure
-describe('GameStateStore', () => {
+describe("GameStateStore", () => {
   let store: typeof GameStateStore;
-  
+
   beforeEach(() => {
     // Setup
     store = TestBed.inject(GameStateStore);
   });
-  
-  it('should initialize with empty game', () => {
+
+  it("should initialize with empty game", () => {
     expect(store.game()).toBeNull();
   });
 });
@@ -446,11 +454,11 @@ public class AuthEndpointsTests {
   public async Task LoginAnonymously_NotLoggedIn_CreatesAccount() {
     // Arrange
     var mockUserManager = new Mock<UserManager<AppUser>>();
-    
+
     // Act
     var result = await AuthEndpoints.LoginAnonymouslyAsync(
       mockUserManager.Object, ...);
-    
+
     // Assert
     Assert.NotNull(result);
   }
@@ -463,38 +471,39 @@ public class AuthEndpointsTests {
 
 ### Frontend
 
-| File | Purpose |
-|------|---------|
-| `angular.json` | Angular CLI config (routing, build) |
-| `tsconfig.json` | TypeScript compiler config |
-| `eslint.config.js` | ESLint rules |
-| `karma.conf.cjs` | Test runner (Jasmine) |
-| `package.json` | Dependencies, scripts |
+| File                 | Purpose                                                 |
+| -------------------- | ------------------------------------------------------- |
+| `angular.json`       | Angular CLI config (routing, build)                     |
+| `tsconfig.json`      | TypeScript compiler config                              |
+| `eslint.config.js`   | ESLint rules                                            |
+| `tsconfig.spec.json` | Test TypeScript config (`vitest/globals`)               |
+| `src/test-setup.ts`  | Global test setup (localStorage polyfill for happy-dom) |
+| `package.json`       | Dependencies, scripts                                   |
 
 ### Backend
 
-| File | Purpose |
-|------|---------|
-| `Ahlcg.sln` | Solution file (all projects) |
-| `.csproj` | Project file (dependencies, compile options) |
-| `appsettings.json` | Configuration (non-dev) |
-| `appsettings.Development.json` | Development overrides |
+| File                           | Purpose                                      |
+| ------------------------------ | -------------------------------------------- |
+| `Ahlcg.sln`                    | Solution file (all projects)                 |
+| `.csproj`                      | Project file (dependencies, compile options) |
+| `appsettings.json`             | Configuration (non-dev)                      |
+| `appsettings.Development.json` | Development overrides                        |
 
 ---
 
 ## Common Tasks Quick Link
 
-| Task | Go to | File(s) |
-|------|-------|---------|
-| Add new auth endpoint | Backend Services | [AuthEndpoints.cs](../../backend/Ahlcg.ApiService/AuthEndpoints.cs) |
-| Add new page | Frontend Structure | `frontend/src/app/pages/` + implement component |
-| Add new database table | Backend Persistence | [Migrations](../03_implementation/backend/persistence.md) |
-| Fix TypeScript error | Frontend UI Patterns | [tsconfig.json](../../frontend/tsconfig.json) |
-| Debug failing test | Testing | Test file + [Testing Strategy](../04_testing/strategy.md) |
-| Setup CI secret | Build & Release | [GitHub Actions](../../.github/workflows/) |
-| Configure CORS | Security | [Program.cs](../../backend/Ahlcg.ApiService/Program.cs) |
-| Add translation | Frontend UI Patterns | `frontend/public/assets/i18n/*.json` |
-| Review API contract | API Reference | This file or [Swagger UI](https://localhost:5001/scalar/v1) |
+| Task                   | Go to                | File(s)                                                             |
+| ---------------------- | -------------------- | ------------------------------------------------------------------- |
+| Add new auth endpoint  | Backend Services     | [AuthEndpoints.cs](../../backend/Ahlcg.ApiService/AuthEndpoints.cs) |
+| Add new page           | Frontend Structure   | `frontend/src/app/pages/` + implement component                     |
+| Add new database table | Backend Persistence  | [Migrations](../03_implementation/backend/persistence.md)           |
+| Fix TypeScript error   | Frontend UI Patterns | [tsconfig.json](../../frontend/tsconfig.json)                       |
+| Debug failing test     | Testing              | Test file + [Testing Strategy](../04_testing/strategy.md)           |
+| Setup CI secret        | Build & Release      | [GitHub Actions](../../.github/workflows/)                          |
+| Configure CORS         | Security             | [Program.cs](../../backend/Ahlcg.ApiService/Program.cs)             |
+| Add translation        | Frontend UI Patterns | `frontend/public/assets/i18n/*.json`                                |
+| Review API contract    | API Reference        | This file or [Swagger UI](https://localhost:5001/scalar/v1)         |
 
 ---
 

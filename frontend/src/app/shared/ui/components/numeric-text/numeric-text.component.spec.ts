@@ -23,12 +23,15 @@ describe('NumericTextComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should fire event after animation', done => {
-    component.animationCompleted.subscribe(() => {
-      done();
+  it('should fire event after animation', async () => {
+    const emitted = new Promise<void>(resolve => {
+      component.animationCompleted.subscribe(() => {
+        resolve();
+      });
     });
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
     TestBed.tick();
+    await emitted;
   });
 });

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { createPatch } from 'rfc6902';
+import { vi } from 'vitest';
 import { Enemy } from '../../../shared/domain/entities/enemy.model';
 import { InvestigatorS } from '../../../shared/domain/test/entities/test-investigators';
 import { testGameState } from '../../../shared/domain/test/test-game-state';
@@ -29,8 +30,8 @@ describe('GameDebugTimelineServiceService', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockStore: any;
   beforeEach(() => {
-    const setState = jasmine.createSpy('setState');
-    const updateState = jasmine.createSpy('updateState');
+    const setState = vi.fn();
+    const updateState = vi.fn();
     mockStore = {
       gameState: signal(testGameState),
       setState,

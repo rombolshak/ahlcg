@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { ActionAreaButtonsComponent } from './action-area-buttons.component';
 
 describe('ActionAreaButtonsComponent', () => {
@@ -11,7 +12,7 @@ describe('ActionAreaButtonsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
       imports: [ActionAreaButtonsComponent, getTranslocoModule()],
     }).compileComponents();
 

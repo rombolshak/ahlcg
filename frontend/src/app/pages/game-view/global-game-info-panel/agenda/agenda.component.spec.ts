@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { testAgenda } from 'shared/domain/test/entities/test-agenda';
+import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
 import { AgendaComponent } from './agenda.component';
 
@@ -14,7 +15,7 @@ describe('AgendaComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AgendaComponent, getTranslocoModule()],
-      providers: [provideZonelessChangeDetection(), provideHttpClient()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(withInterceptors([serveCardAssets]))],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgendaComponent);
@@ -50,7 +51,7 @@ describe('AgendaComponent', () => {
     });
     await fixture.whenStable();
 
-    expect(fixture.debugElement.classes[`to-${color}-800/70`]).toBeTrue();
+    expect(fixture.debugElement.classes[`to-${color}-800/70`]).toBe(true);
   }
 
   it('should change background by doom threshold', async () => {
