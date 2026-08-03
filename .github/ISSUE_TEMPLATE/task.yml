@@ -1,0 +1,71 @@
+name: Task
+description: A single implementable piece of work — one branch, one PR.
+title: "<short imperative title>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The bar for a task: **someone with no memory of the conversation that created it can implement it correctly.**
+        If you would rather not fill this in by hand, create it with a title only and run `/groom <number>`.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Why this exists and what it connects to. Name the parent issue and the part of the system it touches.
+      placeholder: |
+        Part of #455 (Multiplayer). Touches the game-state store, which currently
+        loads from a local fixture rather than the server.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What to build, described behaviourally. Concrete enough that two people would build the same thing — but not an implementation plan.
+    validations:
+      required: true
+
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: Checkable statements of observable behaviour, not tasks. Each independently verifiable.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files likely touched
+      description: Best effort. A wrong guess is cheap; a missing hint costs an exploration pass.
+    validations:
+      required: false
+
+  - type: textarea
+    id: conventions
+    attributes:
+      label: Conventions that apply
+      description: Only the non-obvious ones relevant here, with the doc that covers them. Do not restate docs/frontend-conventions.md — link it.
+    validations:
+      required: false
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Test plan
+      description: What proves this works — which specs to add or change, any Storybook story. If it genuinely cannot be unit-tested, say why.
+    validations:
+      required: false
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What someone might reasonably assume is included but is not. Link the issue that covers it, if there is one. This prevents more scope creep than any other section.
+    validations:
+      required: false

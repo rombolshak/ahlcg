@@ -1,0 +1,3 @@
+# Blank issues stay enabled on purpose: capturing a one-line idea quickly matters
+# more than form compliance. Run /groom on it later to turn it into a spec.
+blank_issues_enabled: true
