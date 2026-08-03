@@ -81,7 +81,7 @@ Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scrip
 
 Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly that; it is a personal escape hatch, not a workflow.)
 
-Commit messages are validated by commitlint against conventional-commit rules.
+Commit messages follow `area: what changed` (`ux: keyboard input manager`, `tests: migrate to vitest`). Nothing enforces this: `@commitlint/config-conventional` is configured in `frontend/package.json`, but `frontend/.husky/` contains only `pre-commit` and `pre-push` — there is no `commit-msg` hook, so commitlint never runs.
 
 ## CI
 

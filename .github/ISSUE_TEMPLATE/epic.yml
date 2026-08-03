@@ -1,0 +1,62 @@
+name: Epic / Project / Initiative
+description: A body of work to be broken into child issues. Not implemented directly.
+title: "<capability name>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For work that gets decomposed rather than implemented. Once filed, run `/decompose <number>`
+        to break it into children — the breakdown is proposed for your approval before anything is created.
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What capability this delivers, and who it is for. One or two paragraphs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why now
+      description: What makes this worth doing, and what it unblocks. Context that would otherwise live only in your head.
+    validations:
+      required: false
+
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: How you will know the whole thing is finished — at the capability level, not per task.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and decisions already made
+      description: |
+        Architectural choices, rules-compliance requirements, anything already ruled out.
+        Recording a decision here saves re-litigating it in every child issue.
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Known unknowns
+      description: Questions to resolve before or during decomposition. Being explicit here stops a child issue being written on a guess.
+    validations:
+      required: false
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Adjacent work this deliberately excludes.
+    validations:
+      required: false

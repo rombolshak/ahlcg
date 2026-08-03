@@ -18,6 +18,7 @@ The backend implements **authentication only**. The frontend game view renders f
 | Call an endpoint or the SignalR hub | [api.md](api.md) |
 | Write or debug tests | [testing.md](testing.md) |
 | Run things, ports, CI, git hooks | [workflow.md](workflow.md) |
+| Build a feature with Claude Code (issues, commands, plan gate) | [ai-workflow.md](ai-workflow.md) |
 | Auth model, cookies, secrets, production hardening | [security.md](security.md) |
 | Unfamiliar card-game term | [glossary.md](glossary.md) |
 

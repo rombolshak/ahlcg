@@ -1,0 +1,2 @@
+# Personal Claude Code overrides — the shared config in .claude/ is checked in.
+.claude/settings.local.json

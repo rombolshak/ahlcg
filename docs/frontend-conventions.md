@@ -99,4 +99,8 @@ Tailwind utility classes in templates. Global CSS, the daisyUI plugin, and the c
 
 ## Commits
 
-Conventional commits, enforced by commitlint: `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`, `ci:`.
+Format is `area: what changed` — `ux: keyboard input manager`, `tests: migrate to vitest`, `deps: bump the aspire group with 3 updates`. The area is the part of the system touched, not a value from a fixed enum.
+
+Subject in the imperative, lowercase after the colon, no trailing period.
+
+`@commitlint/config-conventional` is configured in `package.json` but **no `commit-msg` hook is installed**, so nothing validates messages — and the convention above is not conventional-commits anyway.
