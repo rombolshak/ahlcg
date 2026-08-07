@@ -179,4 +179,22 @@ describe('list-navigation / handlers', () => {
 
     expect(confirmed).toEqual(item('b'));
   });
+
+  it('should not call onConfirm for a disabled entry the caller selected directly', async () => {
+    const items = signal([item('a'), item('b', true)]);
+    let confirmed: Item | undefined;
+    const navigation = listNavigation({
+      items,
+      onConfirm: selected => {
+        confirmed = selected;
+      },
+    });
+
+    // moving never lands here, but selectedIndex is writable and pointer input
+    // drives it — the menu's tooltip wrapper sets it on (mouseenter)
+    navigation.selectedIndex.set(1);
+    await navigation.handlers.confirm?.();
+
+    expect(confirmed).toBeUndefined();
+  });
 });

@@ -57,8 +57,10 @@ export function listNavigation<T>(config: ListNavigationConfig<T>): ListNavigati
     ? {
         ...axisHandlers,
         confirm: () => {
+          // a caller can land the index on a disabled entry — moving skips them, but
+          // selectedIndex is writable and pointer input drives it directly
           const item = selectedItem();
-          if (item !== undefined) confirmCallback(item);
+          if (item !== undefined && !isDisabled(item)) confirmCallback(item);
         },
       }
     : axisHandlers;
