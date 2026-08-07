@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, linkedSignal, signal, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, linkedSignal, viewChildren } from '@angular/core';
 import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { InputLayer } from '@services/input-manager.service';
+import { listNavigation } from '@services/list-navigation';
 import { AH_DIALOG_CONTENT, DialogContent } from '@shared/components/dialog/dialog.content';
 import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { produce } from 'immer';
@@ -33,42 +34,30 @@ export class SettingsComponent implements DialogContent {
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();
 
-  private readonly settingsElements = viewChildren('setting', {
-    read: ElementRef,
-  });
   private readonly settingsComponents = viewChildren<SettingItemComponent<unknown>>('setting');
-  private readonly selectedSettingIndex = signal(-1);
+  private readonly navigation = listNavigation({ items: this.settingsComponents });
+  protected readonly selectedIndex = this.navigation.selectedIndex;
 
   constructor() {
     effect(() => {
       this.transloco.setActiveLang(this.userPrefs.get()().lang);
     });
-
-    effect(() => {
-      const nativeElement = this.settingsElements()[this.selectedSettingIndex()]?.nativeElement as HTMLElement | undefined;
-      setTimeout(() => nativeElement?.focus(), 0);
-    });
   }
 
   public onOpened = () => {
-    this.selectedSettingIndex.set(0);
+    this.selectedIndex.set(0);
   };
 
   public getInputHandlers: () => InputLayer = () => {
     return {
+      ...this.navigation.handlers,
       cancel: this.discardSettings.bind(this),
       confirm: this.applySettings.bind(this),
-      moveDown: () => {
-        this.selectedSettingIndex.update(value => (value + 1) % this.settingsElements().length);
-      },
-      moveUp: () => {
-        this.selectedSettingIndex.update(value => (value - 1 + this.settingsElements().length) % this.settingsElements().length);
-      },
       moveLeft: () => {
-        this.settingsComponents()[this.selectedSettingIndex()]?.prevValue.emit();
+        this.settingsComponents()[this.selectedIndex()]?.prevValue.emit();
       },
       moveRight: () => {
-        this.settingsComponents()[this.selectedSettingIndex()]?.nextValue.emit();
+        this.settingsComponents()[this.selectedIndex()]?.nextValue.emit();
       },
     };
   };

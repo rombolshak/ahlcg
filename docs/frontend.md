@@ -75,6 +75,10 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `UserPreferencesService` is the concrete instance. |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
 
+`shared/services/list-navigation.ts` sits next to `InputManagerService` but is **not** a service — it is a plain signal factory (`listNavigation({ items, onConfirm?, orientation? })`) called in a field initializer. Given a `Signal` of items it owns the selected index, wrapping in both directions and skipping any item carrying `disabled: true`; there is no predicate to configure, and items without that property are always selectable. It binds one axis — `moveUp`/`moveDown` or `moveLeft`/`moveRight` — leaving the other free, which is why `SettingsComponent` can still spend `moveLeft`/`moveRight` on changing a setting's value.
+
+It returns an `InputLayer` fragment rather than registering one, so **layer lifetime stays with the caller**. That is what lets one helper serve both ownership models: `MenuItemsListComponent` pushes the fragment through `InputManagerService` itself, while `SettingsComponent` spreads it into the handlers `DialogComponent` merges into the layer *it* owns. The helper never touches the DOM or moves focus — a component that needs to show which entry is selected binds a class, as both call sites do.
+
 ## Internationalization
 
 Transloco. `TranslocoHttpLoader` fetches `/assets/i18n/{lang}.json`.

@@ -14,13 +14,15 @@ export interface SettingController {
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'grid grid-cols-2 gap-8 hover:text-accent-content focus:text-accent-content outline-hidden',
+    class: 'grid grid-cols-2 gap-8 outline-hidden',
+    '[class.text-accent-content]': 'selected()',
   },
 })
 export class SettingItemComponent<T> {
   readonly name = input.required<string>();
   readonly template = input.required<TemplateRef<{ $implicit: T }>>();
   readonly currentValue = input.required<T>();
+  readonly selected = input(false);
   readonly nextValue = output();
   readonly prevValue = output();
 }
