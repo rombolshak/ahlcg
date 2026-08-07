@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, linkedSignal, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, OnDestroy, OnInit } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
 import { InputManagerService, LayerRef } from '@services/input-manager.service';
+import { listNavigation } from '@services/list-navigation';
 import { ArtButtonComponent } from '@shared/components/art-button/art-button.component';
 import { MenuItem } from '../menu-item';
 
@@ -21,32 +22,16 @@ export class MenuItemsListComponent implements OnInit, OnDestroy {
   private readonly inputManager = inject(InputManagerService);
   private inputLayer: LayerRef | undefined;
 
-  protected readonly selectedIndex = linkedSignal(() => {
-    return this.items().findIndex(item => !item.disabled);
+  private readonly navigation = listNavigation({
+    items: this.items,
+    onConfirm: item => {
+      item.process();
+    },
   });
+  protected readonly selectedIndex = this.navigation.selectedIndex;
 
   public ngOnInit() {
-    this.inputLayer = this.inputManager.pushLayer({
-      moveDown: () => {
-        const nextItem = this.items().findIndex((item, index) => index > this.selectedIndex() && !item.disabled);
-        if (nextItem !== -1) {
-          this.selectedIndex.set(nextItem);
-        } else {
-          this.selectedIndex.set(this.items().findIndex(item => !item.disabled));
-        }
-      },
-      moveUp: () => {
-        const prevItem = this.items().findLastIndex((item, index) => index < this.selectedIndex() && !item.disabled);
-        if (prevItem !== -1) {
-          this.selectedIndex.set(prevItem);
-        } else {
-          this.selectedIndex.set(this.items().findLastIndex(item => !item.disabled));
-        }
-      },
-      confirm: () => {
-        this.items()[this.selectedIndex()]?.process();
-      },
-    });
+    this.inputLayer = this.inputManager.pushLayer(this.navigation.handlers);
   }
 
   public ngOnDestroy() {

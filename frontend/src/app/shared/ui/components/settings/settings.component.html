@@ -6,6 +6,7 @@
       tabindex="0"
       [template]="lang"
       [currentValue]="settings().lang"
+      [selected]="selectedIndex() === 0"
       (nextValue)="nextLang()"
       (prevValue)="prevLang()"
     />
