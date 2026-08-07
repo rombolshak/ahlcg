@@ -7,7 +7,8 @@
 | Auth (anonymous login, credential linking, logout, session info) | Implemented, backend + frontend |
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
-| Game API / persistence of game state | **Does not exist** |
+| Game creation (`POST /games`) and persistence of the game record | Implemented, backend only — no frontend client calls it |
+| Game API / persistence of game *state* within a game | **Does not exist** |
 | SignalR | Server hub with a single `Ping()`; **no client** (`@microsoft/signalr` is not a dependency) |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
@@ -40,7 +41,7 @@ Aspire injects `services__apiservice__http__0` into the frontend process. `front
 | Animation | GSAP (+ Flip plugin) | Real-time | SignalR (`AspNetCore.SignalR.OpenTelemetry`) |
 | Styling | Tailwind CSS 4 + daisyUI 5 | Docs | OpenAPI + Scalar (dev only) |
 | i18n | Transloco | Telemetry | OpenTelemetry via `Ahlcg.ServiceDefaults` |
-| Tests | Vitest + happy-dom | Tests | xUnit + Moq + coverlet |
+| Tests | Vitest + happy-dom | Tests | xUnit + Moq + coverlet; Aspire.Hosting.Testing (integration) |
 | Components | Storybook 10 + Chromatic | Orchestration | .NET Aspire (dev only) |
 | Errors | Bugsnag | | |
 

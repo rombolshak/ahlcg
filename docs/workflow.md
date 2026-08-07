@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-.NET SDK 10.x, Node.js with npm, and Docker (Aspire starts Postgres in a container).
+.NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. See [testing.md](testing.md).
 
 ## Running
 
@@ -58,7 +58,7 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Build | `dotnet build` |
 | Test | `dotnet test` |
 | Single test class | `dotnet test --filter "FullyQualifiedName~AuthEndpointsTests"` |
-| Coverage | `dotnet test --collect:"XPlat Code Coverage"` |
+| Coverage | `dotnet-coverage collect --settings coverage.runsettings --output coverage.cobertura.xml --output-format cobertura -- dotnet test` (needs `dotnet tool install -g dotnet-coverage`) |
 | Add migration (from `Ahlcg.ApiService`) | `dotnet ef migrations add {Name}` |
 
 `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set on every project — a warning fails the build.
@@ -92,7 +92,7 @@ Commit messages follow `area: what changed` (`ux: keyboard input manager`, `test
 
 It calls the reusable `backend.yml` / `frontend.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend`.
 
-**backend.yml** — .NET 10, installs `dotnet-reportgenerator-globaltool` and `dotnet-sonarscanner`, wraps restore/build/test in a Sonar session (`rombolshak_ahlcg_backend`), collects XPlat coverage, generates `coveragereport/` (HTML + Cobertura + SonarQube, excluding generated code and migrations), uploads `Cobertura.xml` to Coveralls.
+**backend.yml** — .NET 10, installs `dotnet-reportgenerator-globaltool`, `dotnet-coverage`, `dotnet-sonarscanner`, and the Aspire CLI (then `aspire certs trust`, so the integration tests can serve HTTPS), wraps restore/build/test in a Sonar session (`rombolshak_ahlcg_backend`), collects coverage across the whole process tree with `dotnet-coverage`, generates `coveragereport/` (HTML + Cobertura + SonarQube, excluding generated code and migrations), uploads `Cobertura.xml` to Coveralls.
 
 **frontend.yml** — Node latest with npm cache, `npm ci --force` (a workaround for Tailwind 4 resolution), `npm run ci:all`, Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
 

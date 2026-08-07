@@ -25,8 +25,19 @@ jobs:
           dotnet-version: 10
       - name: Install coverage tool
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
+      # dotnet-coverage, not coverlet: the integration tests run the API in a process DCP
+      # spawns, which coverlet never instruments. See backend/coverage.runsettings.
+      - name: Install dotnet-coverage
+        run: dotnet tool install --global dotnet-coverage
       - name: Install Sonar scanner
         run: dotnet tool install --global dotnet-sonarscanner
+      # The integration tests start apiservice on its https launch profile, so Kestrel needs a
+      # developer certificate. Runners have none; `certs trust` creates one if necessary.
+      # Version tracks the Aspire.Hosting.* packages and the AppHost SDK.
+      - name: Install Aspire CLI
+        run: dotnet tool install --global Aspire.Cli --version 13.4.6
+      - name: Trust HTTPS developer certificate
+        run: aspire certs trust --non-interactive
 
       - name: Start Sonar
         run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths=coveragereport/SonarQube.xml
@@ -35,9 +46,9 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
       - name: Test
-        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger:"trx"
+        run: dotnet-coverage collect --settings coverage.runsettings --output coverage.cobertura.xml --output-format cobertura -- dotnet test --no-build --verbosity normal --logger:"trx"
       - name: Create coverage report
-        run: reportgenerator -reports:"**/coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
+        run: reportgenerator -reports:"coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
       - name: Stop Sonar
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 

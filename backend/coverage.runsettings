@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Coverage settings for `dotnet-coverage collect`.
+
+  Why dotnet-coverage instead of coverlet ("XPlat Code Coverage"): the integration tests
+  exercise the API in a process DCP spawns, not in the test host. Coverlet only instruments the
+  test host, so it reported ~1.65% for Ahlcg.ApiService and left Program.cs and every Map*
+  method looking untested. dotnet-coverage instruments the whole process tree.
+
+  Two traps, both of which fail silently:
+
+  1. ModulePath patterns match the full path, not the file name. A pattern like
+     `.*Ahlcg\..*\.dll$` also matches every third-party assembly sitting in the Ahlcg.AppHost
+     output directory, so the filters must be anchored with `[\\/]` as below.
+  2. dotnet-coverage ignores a malformed settings file without any error, and coverage silently
+     widens to everything. XML comments cannot contain a double hyphen, which is easy to
+     introduce when pasting a CLI flag into a comment. If the report suddenly includes
+     Aspire.Hosting or HealthChecks packages, this file stopped parsing.
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*[\\/]Ahlcg\.ApiService\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Ahlcg\.ServiceDefaults\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <CollectFromChildProcesses>True</CollectFromChildProcesses>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

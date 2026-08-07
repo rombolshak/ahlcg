@@ -1,6 +1,7 @@
 using Ahlcg.ApiService;
 using Ahlcg.ServiceDefaults;
 using AspNetCore.SignalR.OpenTelemetry;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services
     .AddValidation();
 
 builder.Services.AddSignalR().AddHubInstrumentation();
+builder.Services.TryAddSingleton(TimeProvider.System);
 
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()
@@ -33,6 +35,7 @@ app.UseExceptionHandler().UseAuthentication().UseAuthorization();
 app.MapDefaultEndpoints();
 app.MapHub<GameHub>("/game");
 app.MapGroup("auth").MapAuthEndpoints().WithTags("Auth");
+app.MapGroup("games").MapGameEndpoints().WithTags("Games");
 
 if (app.Environment.IsDevelopment())
 {

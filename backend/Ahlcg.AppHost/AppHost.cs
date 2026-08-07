@@ -13,7 +13,7 @@ var migrator =
 
 var apiService =
     builder
-        .AddProject<Ahlcg_ApiService>("apiservice")
+        .AddProject<Ahlcg_ApiService>("apiservice", launchProfileName: "https")
         .WithHttpHealthCheck("/health")
         .WithReference(database)
         .WithReference(migrator)

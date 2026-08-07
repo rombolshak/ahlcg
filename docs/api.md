@@ -1,10 +1,10 @@
 # API Reference
 
-Source of truth: `backend/Ahlcg.ApiService/AuthEndpoints.cs` and `GameHub.cs`. Live spec in Development at `/openapi/v1.json`, browsable at `/scalar/v1`.
+Source of truth: `backend/Ahlcg.ApiService/AuthEndpoints.cs`, `GameEndpoints.cs`, and `GameHub.cs`. Live spec in Development at `/openapi/v1.json`, browsable at `/scalar/v1`.
 
-Base path is `/auth` (group registered as `app.MapGroup("auth")`, tagged `Auth`). From the frontend dev server the same routes are reached as `/api/auth/*` — see [architecture.md](architecture.md).
+Two route groups exist: `/auth` (`app.MapGroup("auth")`, tagged `Auth`) and `/games` (`app.MapGroup("games")`, tagged `Games`). From the frontend dev server the same routes are reached as `/api/auth/*` / `/api/games` — see [architecture.md](architecture.md).
 
-`AddIdentityApiEndpoints<AppUser>()` is called for its services, but `MapIdentityApi()` is **not** — the stock Identity routes (`/register`, `/login`, `/refresh`, `/confirmEmail`, …) do not exist. The four routes below are the entire API.
+`AddIdentityApiEndpoints<AppUser>()` is called for its services, but `MapIdentityApi()` is **not** — the stock Identity routes (`/register`, `/login`, `/refresh`, `/confirmEmail`, …) do not exist. The four `/auth` routes below plus `POST /games` are the entire API.
 
 ## POST /auth/loginAnonymously
 
@@ -47,9 +47,27 @@ Signs out. **Not** marked `RequireAuthorization`, so it is safe to call unauthen
 - `200 OK`, empty body. Clears the auth cookie.
 - Side effect: if the signed-in user has `IsAnonymous = true`, the account is deleted.
 
+## POST /games
+
+Creates a new game owned by the calling user. Requires authorization.
+
+Request headers:
+
+- `Idempotency-Key` — required. Repeating the same key for the same user returns the game created the first time instead of creating a second one; the same key from a *different* user creates a separate game. Enforced by a unique index on `(OwnerId, IdempotencyKey)` in the database, not by a check-then-insert.
+
+```json
+{ "configuration": { "...": "..." } }
+```
+
+`configuration` is opaque — the backend stores it in a `jsonb` column and hands it back unchanged, and never parses or validates its contents (#198). Only its *presence* is checked.
+
+- `200 OK` → `{ "id": "guid", "createdAt": "...", "lastPlayedAt": "...", "configuration": {...} }` (`GameDto`). `createdAt` and `lastPlayedAt` are equal on creation.
+- `400 Bad Request` (`ValidationProblem`) — the `configuration` field was omitted.
+- `401 Unauthorized` — no valid cookie.
+
 ## Error bodies
 
-Auth endpoints return `IdentityResult` (`{ succeeded, errors: [{ code, description }] }`) on `400`, **not** RFC 7807 ProblemDetails. `AddProblemDetails()` is registered and covers unhandled exceptions and framework-generated responses; do not assume a uniform error envelope across the API.
+Auth endpoints return `IdentityResult` (`{ succeeded, errors: [{ code, description }] }`) on `400`, **not** RFC 7807 ProblemDetails. `GameEndpoints.CreateGame` returns a `ValidationProblem` (RFC 7807) instead. `AddProblemDetails()` is registered and covers unhandled exceptions and framework-generated responses; do not assume a uniform error envelope across the API.
 
 ## SignalR: /game
 
