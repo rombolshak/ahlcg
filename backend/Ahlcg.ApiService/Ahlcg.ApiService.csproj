@@ -16,15 +16,17 @@
     <ItemGroup>
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.4.6" />
         <PackageReference Include="AspNetCore.SignalR.OpenTelemetry" Version="1.8.0" />
-        <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
+        <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.13.20" />
+        <!-- Held on 2.x: Microsoft.AspNetCore.OpenApi 10.0.x targets OpenAPI.NET v2, and its
+             XmlCommentGenerator assigns IOpenApiMediaType.Example, which v3 made read-only. -->
+        <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.16.17" />
     </ItemGroup>
 
 </Project>
