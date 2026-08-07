@@ -89,7 +89,7 @@ LoginAnonymously_LoggedIn_ReturnsBadRequest
 LoginAnonymously_FailedToCreateUser_ReturnsBadRequest
 ```
 
-Endpoints are tested by **calling the static handler directly** with mocked `UserManager` / `SignInManager` and a hand-built `ClaimsPrincipal` — no `WebApplicationFactory`, no test database. Assert on the typed result and verify the manager interactions:
+At this tier, endpoints are tested by **calling the static handler directly** with mocked `UserManager` / `SignInManager` and a hand-built `ClaimsPrincipal` — no `WebApplicationFactory`, no Postgres. That also means the whole request pipeline (routing, auth middleware, model binding, endpoint filters) is skipped here; anything that depends on it belongs in the integration tier below. Assert on the typed result and verify the manager interactions:
 
 ```csharp
 var result = await AuthEndpoints.LoginAnonymously(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object);
@@ -98,8 +98,22 @@ Assert.IsType<Ok>(result.Result);
 userManager.Verify(m => m.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
 ```
 
-This is why handlers return `Results<...>` rather than `IResult` — keep new handlers testable the same way. Shared mock factories (`GetMockUserManager`, `GetMockSignInManager`) and principals live at the bottom of `AuthEndpointsTests.cs`.
+This is why handlers return `Results<...>` rather than `IResult` — keep new handlers testable the same way. Shared mock factories (`GetMockUserManager`, `GetMockSignInManager`) and principals live at the bottom of `AuthEndpointsTests.cs`. `GameEndpointsTests` follows the same shape but backs `ApplicationDbContext` with EF's InMemory provider (a fresh database per test) instead of mocking it directly, since the handler under test uses it for real reads/writes.
+
+### Integration tests
+
+`backend/integration-tests/Ahlcg.ApiService.IntegrationTests` exists because EF's InMemory provider does not enforce unique indexes, so it cannot prove the `POST /games` idempotency behaviour (same key + same user → one row; same key + different users → two rows). Everything InMemory *can't* cover goes here instead, driven over real HTTP against the real app and real Postgres — not by calling handlers with mocks.
+
+A collection fixture (`AppFixture`, shared across the test class via `[Collection]`/`ICollectionFixture`) starts the app once:
+
+- `DistributedApplicationTestingBuilder.CreateAsync<Projects.Ahlcg_AppHost>()`, with the `webfrontend`/`webfrontend-installer` resources (no Node in CI) and `pgadmin` (dev convenience only) removed from `builder.Resources` before building. `postgresdb`, `migrator`, and `apiservice` stay — running the real migrator is what proves the migration applies.
+- `app.StartAsync()`, then `app.ResourceNotifications.WaitForResourceHealthyAsync("apiservice")`.
+- Tests get a fresh `HttpClient` per call (`AppFixture.CreateClient()`) with its own `CookieContainer`, and a fresh `ApplicationDbContext` (`AppFixture.CreateDbContext()`) for direct-DB assertions (e.g. counting rows for an idempotency key).
+
+**Why HTTPS, not HTTP:** `ConfigureApplicationCookie` sets `SecurePolicy = Always`, and .NET's `CookieContainer` will not send a `Secure` cookie over plain `http://` (no localhost exception, unlike browsers). So the fixture talks to the `https` endpoint — which requires `AddProject<Ahlcg_ApiService>("apiservice", launchProfileName: "https")` in `AppHost.cs`, since the default `http` launch profile has no HTTPS endpoint at all. Certificate trust is handled by disabling validation on the test client (`ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator`) rather than trusting the dev cert, since CI never does the latter.
+
+Requires a container runtime — Docker or Podman both work, since Aspire drives whichever DCP finds (a real Postgres container is started for each test run). Runs via the same `dotnet test` as the unit tests; GitHub's `ubuntu-latest` runners provide Docker, so CI needs no extra setup, but this tier is slower than the InMemory-backed unit tests.
 
 ## What is not tested
 
-No integration tests, no end-to-end tests, no test database. Visual regression is covered by Chromatic over Storybook stories, not by specs.
+No end-to-end tests against the frontend. Visual regression is covered by Chromatic over Storybook stories, not by specs.

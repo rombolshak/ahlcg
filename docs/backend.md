@@ -6,21 +6,24 @@
 
 | Project | Role |
 | --- | --- |
-| `Ahlcg.ApiService` | The API. `Program.cs`, `AuthEndpoints.cs`, `GameHub.cs`, `ApplicationDbContext.cs`, `Migrations/` |
+| `Ahlcg.ApiService` | The API. `Program.cs`, `AuthEndpoints.cs`, `GameEndpoints.cs`, `GameHub.cs`, `ApplicationDbContext.cs`, `Migrations/` |
 | `Ahlcg.AppHost` | .NET Aspire orchestration for local dev (`AppHost.cs`) |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
 | `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience (`Extensions.cs`) |
-| `unit-tests/Ahlcg.ApiService.Tests` | xUnit + Moq |
+| `unit-tests/Ahlcg.ApiService.Tests` | xUnit + Moq, handler-level, no database |
+| `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres — see [testing.md](testing.md) |
 
 ## Startup
 
-`Program.cs` is short — read it rather than a summary. Order: `AddServiceDefaults()` → `AddNpgsqlDbContext<ApplicationDbContext>("ahlcg")` → problem details, OpenAPI, `AddValidation()` → SignalR with OTel hub instrumentation → Identity API endpoints + EF stores → cookie configuration. Then `UseExceptionHandler().UseAuthentication().UseAuthorization()`, `MapDefaultEndpoints()`, `MapHub<GameHub>("/game")`, `MapGroup("auth").MapAuthEndpoints()`. OpenAPI, Scalar, and the developer exception page are Development-only.
+`Program.cs` is short — read it rather than a summary. Order: `AddServiceDefaults()` → `AddNpgsqlDbContext<ApplicationDbContext>("ahlcg")` → problem details, OpenAPI, `AddValidation()` → SignalR with OTel hub instrumentation → `TryAddSingleton(TimeProvider.System)` → Identity API endpoints + EF stores → cookie configuration. Then `UseExceptionHandler().UseAuthentication().UseAuthorization()`, `MapDefaultEndpoints()`, `MapHub<GameHub>("/game")`, `MapGroup("auth").MapAuthEndpoints()`, `MapGroup("games").MapGameEndpoints()`. OpenAPI, Scalar, and the developer exception page are Development-only.
 
 The connection string name is `ahlcg`, supplied by Aspire.
 
+`Ahlcg.AppHost/AppHost.cs` adds `apiservice` with `launchProfileName: "https"` so it exposes the HTTPS endpoint its own `https` launch profile declares, in addition to the default `http` one. This is needed by the integration test project (see [testing.md](testing.md)) — the auth cookie is `Secure`, and `CookieContainer` will not send a `Secure` cookie over plain HTTP.
+
 ## Endpoints
 
-One route group per feature, defined as a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `Program.cs`. `AuthEndpoints.cs` is the only existing group and the pattern to copy:
+One route group per feature, defined as a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `Program.cs`. `AuthEndpoints.cs` and `GameEndpoints.cs` are the existing groups and the pattern to copy:
 
 - Handlers return `Results<TOk, TError…>` (typed results), not `IResult`. This is what makes them directly unit-testable — the tests call `AuthEndpoints.LoginAnonymously(principal, userManager, signInManager)` with mocks and assert on `result.Result`.
 - Dependencies (`ClaimsPrincipal`, `UserManager<AppUser>`, `SignInManager<AppUser>`, the request record) arrive as handler parameters.
@@ -36,7 +39,7 @@ There is no service layer, repository layer, or DTO folder. Do not invent one fo
 public class AppUser : IdentityUser { public bool IsAnonymous { get; set; } }
 ```
 
-Declared in `AuthEndpoints.cs`. `ApplicationDbContext` is `IdentityDbContext<AppUser>` with no additional entities or `OnModelCreating` overrides — the schema is stock Identity plus the `IsAnonymous` column.
+Declared in `AuthEndpoints.cs`. `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus one additional entity, `Game` (declared in `GameEndpoints.cs`, the same way `AppUser` lives in `AuthEndpoints.cs`), and one `OnModelCreating` override that configures it: a unique index on `(OwnerId, IdempotencyKey)` and a cascade-delete foreign key to the owning `AppUser` (so a deleted anonymous user's games go with it, rather than orphaning the FK).
 
 Lifecycle: anonymous login creates a user with a GUID `UserName` and no password → `linkCredentials` either adds a password and sets email/username (`IsAnonymous = false`) or, if the email already exists, verifies the password, deletes the anonymous user, and signs in the existing one → logout deletes the user if still anonymous.
 
@@ -44,12 +47,19 @@ Lifecycle: anonymous login creates a user with a GUID `UserName` and no password
 
 Cookie settings (`ConfigureApplicationCookie`): 90-day expiry, sliding, `HttpOnly`, `SecurePolicy = Always`, `SameSite = Lax`. See [security.md](security.md).
 
+## Games
+
+`Game` (id, `OwnerId`, `IdempotencyKey`, `Configuration`, `CreatedAt`, `LastPlayedAt`) is the first game-shaped entity the backend stores. `Configuration` is a `JsonDocument`, mapped with an explicit `HasConversion` to a `jsonb` column — the conversion exists so the model also builds under EF's InMemory provider (used by the unit tests); without it, InMemory tries to treat `JsonDocument` as a navigable/owned entity and fails, since the automatic scalar mapping for `JsonDocument` is Npgsql-provider-specific. The backend never parses or validates `Configuration` (#198) — presence is checked, contents are not.
+
+`POST /games` (`GameEndpoints.CreateGame`) requires a client-supplied `Idempotency-Key` header. Repeating the same key for the same owner returns the game created the first time; enforced by the database unique index rather than a check-then-insert, which would race. The handler saves optimistically and, on `DbUpdateException`, re-reads by `(OwnerId, IdempotencyKey)` and returns that row instead — rethrowing if nothing is found, since that means the failure was something else.
+
 ## Persistence and migrations
 
 EF Core 10 with Npgsql, code-first. Migrations live in `Ahlcg.ApiService/Migrations/`:
 
 - `20251114145044_Initial` — Identity schema
 - `20251114153547_User_AddIsAnonymous` — the `IsAnonymous` column
+- `20260806164122_Game_Add` — the `Games` table
 
 Add one with `dotnet ef migrations add {Name}` from `backend/Ahlcg.ApiService`. Never hand-edit generated migrations or the model snapshot.
 

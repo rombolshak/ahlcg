@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-.NET SDK 10.x, Node.js with npm, and Docker (Aspire starts Postgres in a container).
+.NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. See [testing.md](testing.md).
 
 ## Running
 
