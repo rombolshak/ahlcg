@@ -27,6 +27,13 @@ jobs:
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
       - name: Install Sonar scanner
         run: dotnet tool install --global dotnet-sonarscanner
+      # The integration tests start apiservice on its https launch profile, so Kestrel needs a
+      # developer certificate. Runners have none; `certs trust` creates one if necessary.
+      # Version tracks the Aspire.Hosting.* packages and the AppHost SDK.
+      - name: Install Aspire CLI
+        run: dotnet tool install --global Aspire.Cli --version 13.4.6
+      - name: Trust HTTPS developer certificate
+        run: aspire certs trust --non-interactive
 
       - name: Start Sonar
         run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths=coveragereport/SonarQube.xml
