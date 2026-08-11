@@ -74,7 +74,7 @@
     "@types/jasmine": "~6.0.0",
     "@typescript-eslint/parser": "^8.60.1",
     "@vitest/coverage-v8": "^4.1.10",
-    "angular-eslint": "22.0.0",
+    "angular-eslint": "21.4.0",
     "chromatic": "^16.0.0",
     "cspell": "^10.0.0",
     "daisyui": "^5.5.19",
