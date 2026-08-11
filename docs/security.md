@@ -30,7 +30,9 @@ options.Cookie.SameSite = SameSiteMode.Lax;
 
 **Health and docs endpoints** — `/health`, `/alive`, `/openapi/v1.json`, and `/scalar/v1` are all gated on `IsDevelopment()`, so they are absent elsewhere.
 
-**Known gap** — `LinkCredentials` deletes the anonymous account when merging into an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path.
+**Known gap** — `SignIn` deletes the anonymous account when signing in to an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path. The other branch — unknown email while anonymous — upgrades the account in place and loses nothing.
+
+**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization and neither has a CAPTCHA, email verification, or rate limit, so both are open to automated account creation.
 
 ## Before deploying
 

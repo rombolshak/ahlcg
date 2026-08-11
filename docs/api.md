@@ -15,21 +15,28 @@ Creates an anonymous account and signs it in. No authorization required, no requ
 
 The created user has a GUID `UserName`, no email, no password, `IsAnonymous = true`.
 
-## POST /auth/linkCredentials
+## POST /auth/signIn
 
-Upgrades the current anonymous account, or transfers to an existing permanent account. Requires authorization.
+Signing in, registering, and upgrading an anonymous account are **one route**, because which of the three happens is decided by state the caller does not have — whether the email is already on record. No authorization required; works from a logged-out, anonymous, or permanent session.
 
 ```json
 { "email": "user@example.com", "username": "playername", "password": "..." }
 ```
 
-All three fields are `[Required]`; `email` is `[EmailAddress]`.
+`RegisterRequest`: all three fields are `[Required]`, `email` is `[EmailAddress]`. `username` is only used on the branches that create or rename an account.
 
-- `200 OK`, empty body.
-  - Email not found → the current account gains the password, email, and username, and `IsAnonymous` becomes `false`.
-  - Email found and password valid → the anonymous account is **deleted** and the existing account is signed in. Data transfer is not implemented (`TODO` in source).
+| Email on record | Caller's session | Result |
+| --- | --- | --- |
+| Yes, password valid | any | The existing account is signed in. An anonymous session is deleted first |
+| Yes, password wrong | any | `403 Forbidden` — nothing is deleted |
+| No | anonymous | That account is **upgraded in place**: it gains the password, email and username, `IsAnonymous` becomes `false`. It keeps its id, so its games survive, and the existing cookie stays valid — no re-sign-in |
+| No | logged out or permanent | A new permanent account is created and signed in |
+
+- `200 OK`, empty body. Sets the `AspNetCore.Identity.Application` cookie (persistent) on every branch except the in-place upgrade, which does not need to.
 - `403 Forbidden` — the email exists but the password is wrong.
-- `400 Bad Request` with an `IdentityResult` body — caller is not signed in or is not anonymous (`"Account is not anonymous and cannot be linked to another"`), or `AddPasswordAsync`/`UpdateAsync` failed.
+- `400 Bad Request` with an `IdentityResult` body — `CreateAsync`, `AddPasswordAsync` or `UpdateAsync` failed (weak password, duplicate username, invalid email, …).
+
+Keeping the upgrade branch is the point of the merge: splitting it out meant a register button could delete an anonymous player's account and create a fresh one, silently losing their games. The one remaining data-loss path is signing in to an **existing** account while anonymous, which still discards the anonymous one (`// TODO transfer all data to the linked account`).
 
 ## GET /auth/info
 

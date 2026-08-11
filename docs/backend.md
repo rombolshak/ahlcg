@@ -41,9 +41,9 @@ public class AppUser : IdentityUser { public bool IsAnonymous { get; set; } }
 
 Declared in `AuthEndpoints.cs`. `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus one additional entity, `Game` (declared in `GameEndpoints.cs`, the same way `AppUser` lives in `AuthEndpoints.cs`), and one `OnModelCreating` override that configures it: a unique index on `(OwnerId, IdempotencyKey)` and a cascade-delete foreign key to the owning `AppUser` (so a deleted anonymous user's games go with it, rather than orphaning the FK).
 
-Lifecycle: anonymous login creates a user with a GUID `UserName` and no password → `linkCredentials` either adds a password and sets email/username (`IsAnonymous = false`) or, if the email already exists, verifies the password, deletes the anonymous user, and signs in the existing one → logout deletes the user if still anonymous.
+Lifecycle: anonymous login creates a user with a GUID `UserName` and no password → `signIn` either upgrades that user in place (adds a password, sets email/username, `IsAnonymous = false`, **same id**) when the email is new, or verifies the password against the existing account, deletes the anonymous one, and signs the existing one in → logout deletes the user if still anonymous. A caller with no session takes the same route: unknown email creates a permanent user outright.
 
-`LinkCredentials` carries a `// TODO transfer all data to the linked account` — the merge path currently discards the anonymous account's data.
+`SignIn` carries a `// TODO transfer all data to the linked account` — the branch that signs in to an *existing* account while anonymous discards the anonymous account's data. The upgrade branch has no such problem, which is why it exists.
 
 Cookie settings (`ConfigureApplicationCookie`): 90-day expiry, sliding, `HttpOnly`, `SecurePolicy = Always`, `SameSite = Lax`. See [security.md](security.md).
 

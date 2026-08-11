@@ -46,6 +46,6 @@ Every card in play is a **game entity** (`shared/domain/game-entity.ts`), a disc
 
 **Ahlcg** — this project. Fan-made digital Arkham Horror: The Card Game.
 
-**Anonymous user** — an account created with no email or password so a visitor can play immediately. Deleted on logout unless upgraded via `/auth/linkCredentials`.
+**Anonymous user** — an account created with no email or password so a visitor can play immediately. Deleted on logout unless upgraded via `/auth/signIn`, which turns it into a permanent account in place.
 
 **Migrator** — `backend/Ahlcg.Migrator`, a one-shot background service that applies EF Core migrations and then stops the host. Aspire waits for its completion before starting the API.
