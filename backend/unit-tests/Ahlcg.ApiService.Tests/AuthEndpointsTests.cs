@@ -59,29 +59,104 @@ public class AuthEndpointsTests
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
+    // `SignIn` covers three intents that differ only by state the caller cannot see — whether the
+    // email is already on record, and what kind of session they hold. The cases below are the whole
+    // truth table; the one that earns the endpoint its shape is
+    // `SignIn_AnonymousUnknownEmail_UpgradesAccountInPlace`, which is what stops a register button
+    // from destroying an anonymous player's games.
+
     [Fact]
-    public async Task LinkCredentials_NotLoggedIn_ReturnsBadRequest()
+    public async Task SignIn_LoggedOutKnownEmailCorrectPassword_SignsInExistingAccount()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        var result = await AuthEndpoints.LinkCredentials(
+        var result = await AuthEndpoints.SignIn(
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
-            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+
+        Assert.IsType<Ok>(result.Result);
+        userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_KnownEmailWrongPassword_ReturnsForbid()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
+
+        Assert.IsType<ForbidHttpResult>(result.Result);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
+    public async Task SignIn_AnonymousKnownEmailWrongPassword_KeepsAnonymousAccount()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            AnonymousPrincipal1,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
+
+        Assert.IsType<ForbidHttpResult>(result.Result);
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
+    public async Task SignIn_LoggedOutUnknownEmail_CreatesPermanentAccountAndSignsIn()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+
+        Assert.IsType<Ok>(result.Result);
+        userManager.Verify(manager => manager.CreateAsync(
+            It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false), "P@ssw0rd"));
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_LoggedOutUnknownEmailCreateFails_ReturnsBadRequest()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw"));
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
     [Fact]
-    public async Task LinkCredentials_NonExistentUser_UpgradesCurrentAccountToPermanent()
+    public async Task SignIn_AnonymousUnknownEmail_UpgradesAccountInPlace()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        var result = await AuthEndpoints.LinkCredentials(
+        var result = await AuthEndpoints.SignIn(
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
@@ -91,16 +166,21 @@ public class AuthEndpointsTests
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
         userManager.Verify(manager =>
             manager.UpdateAsync(It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false)));
+
+        // The account keeps its id, so anything hanging off OwnerId survives — and the existing
+        // session cookie already names it, so no re-sign-in.
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
     [Fact]
-    public async Task LinkCredentials_NonExistentUserWithShortPassword_ReturnsBadRequest()
+    public async Task SignIn_AnonymousUnknownEmailWithShortPassword_ReturnsBadRequest()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        var result = await AuthEndpoints.LinkCredentials(
+        var result = await AuthEndpoints.SignIn(
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
@@ -108,20 +188,17 @@ public class AuthEndpointsTests
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw"));
-        userManager.Verify(
-            manager =>
-                manager.UpdateAsync(It.IsAny<AppUser>()),
-            Times.Never);
+        userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
     [Fact]
-    public async Task LinkCredentials_NonExistentUserWithBadEmail_ReturnsBadRequest()
+    public async Task SignIn_AnonymousUnknownEmailWithBadEmail_ReturnsBadRequest()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        var result = await AuthEndpoints.LinkCredentials(
+        var result = await AuthEndpoints.SignIn(
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
@@ -134,30 +211,12 @@ public class AuthEndpointsTests
     }
 
     [Fact]
-    public async Task LinkCredentials_ExistentUserWithInvalidPassword_ReturnsForbid()
+    public async Task SignIn_AnonymousKnownEmailCorrectPassword_DeletesAnonymousAndSignsInExisting()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        var result = await AuthEndpoints.LinkCredentials(
-            AnonymousPrincipal1,
-            userManager.Object,
-            signInManager.Object,
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
-
-        Assert.IsType<ForbidHttpResult>(result.Result);
-        userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
-        userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
-    }
-
-    [Fact]
-    public async Task LinkCredentials_ExistentUserWithCorrectPassword_MergesCurrentAccountWithPermanentAndReSignIn()
-    {
-        var userManager = GetMockUserManager();
-        var signInManager = GetMockSignInManager();
-
-        var result = await AuthEndpoints.LinkCredentials(
+        var result = await AuthEndpoints.SignIn(
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
@@ -166,8 +225,26 @@ public class AuthEndpointsTests
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
-        userManager.Verify(manager => manager.DeleteAsync(It.Is<AppUser>(u => u.IsAnonymous)));
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true));
+        userManager.Verify(manager => manager.DeleteAsync(It.Is<AppUser>(u => u.Id == AnonymousUser1)));
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_PermanentSessionUnknownEmail_CreatesAccountWithoutDeletingCurrent()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            PermanentPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+
+        Assert.IsType<Ok>(result.Result);
+        userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), "P@ssw0rd"));
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -281,6 +358,12 @@ public class AuthEndpointsTests
         mock.Setup(m => m.FindByEmailAsync("test@test.com")).ReturnsAsync(permanentUser);
 
         mock.Setup(m => m.CreateAsync(It.IsAny<AppUser>())).ReturnsAsync(IdentityResult.Success);
+        mock
+            .Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
+            .ReturnsAsync(IdentityResult.Success);
+        mock
+            .Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length < 6)))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "password_short" }));
         mock
             .Setup(m => m.AddPasswordAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
             .ReturnsAsync(IdentityResult.Success);

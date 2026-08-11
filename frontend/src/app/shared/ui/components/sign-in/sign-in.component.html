@@ -1,0 +1,71 @@
+<ng-container *transloco="let t; prefix: 'auth.sign_in'">
+  @if (view() === "choice") {
+    <p class="mb-6 text-base-content/80">{{ t("message") }}</p>
+
+    <div class="grid grid-cols-2 gap-4">
+      @for (choice of choices(); track choice.key) {
+        <button
+          type="button"
+          class="card cursor-pointer bg-base-200 text-left transition card-border"
+          [class.border-primary]="$index === selectedIndex()"
+          [disabled]="busy()"
+          [attr.data-testId]="choice.key"
+          (click)="choice.process()"
+          (mouseenter)="selectedIndex.set($index)"
+        >
+          <div class="card-body">
+            <h2 class="card-title">{{ t(`${choice.key}.title`) }}</h2>
+            <p>{{ t(`${choice.key}.lead`) }}</p>
+            <ul class="mt-2 list-disc pl-4 text-sm text-base-content/70">
+              <li>{{ t(`${choice.key}.device`) }}</li>
+              <li>{{ t(`${choice.key}.name`) }}</li>
+            </ul>
+          </div>
+        </button>
+      }
+    </div>
+
+    <p class="mt-6 text-sm text-base-content/60">{{ t("later_hint") }}</p>
+  } @else {
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">{{ t("credentials.legend") }}</legend>
+
+      <label class="floating-label mt-2">
+        <input type="email" class="validator input w-full" required [value]="email()" [disabled]="busy()" (input)="onEmailInput($event)" />
+        <span>{{ t("credentials.email") }}</span>
+      </label>
+
+      <label class="floating-label mt-4">
+        <input type="text" class="input w-full" required [value]="username()" [disabled]="busy()" (input)="onUsernameInput($event)" />
+        <span>{{ t("credentials.username") }}</span>
+      </label>
+
+      <label class="floating-label mt-4">
+        <input type="password" class="input w-full" required [value]="password()" [disabled]="busy()" (input)="onPasswordInput($event)" />
+        <span>{{ t("credentials.password") }}</span>
+      </label>
+    </fieldset>
+
+    @if (error(); as err) {
+      <div role="alert" class="mt-4 alert alert-soft alert-error">
+        @if (err.kind === "key") {
+          <span>{{ t(err.key) }}</span>
+        } @else {
+          <span>{{ err.message }}</span>
+        }
+      </div>
+    }
+
+    <div class="mt-6 flex items-center justify-between">
+      <button type="button" class="btn btn-ghost" [disabled]="busy()" (click)="backToChoice()">
+        {{ t("credentials.back") }}
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="submit()">
+        @if (busy()) {
+          <span class="loading loading-sm loading-spinner"></span>
+        }
+        {{ t("credentials.submit") }}
+      </button>
+    </div>
+  }
+</ng-container>

@@ -4,7 +4,7 @@
 
 | Area | Status |
 | --- | --- |
-| Auth (anonymous login, credential linking, logout, session info) | Implemented, backend + frontend |
+| Auth (anonymous login, sign-in, credential linking, logout, session info) | Implemented, backend + frontend |
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
 | Game creation (`POST /games`) and persistence of the game record | Implemented, backend only — no frontend client calls it |
@@ -47,13 +47,15 @@ Aspire injects `services__apiservice__http__0` into the frontend process. `front
 
 Other notable frontend deps: `@panzoom/panzoom` (board pan/zoom), `vanilla-jsoneditor` (debug panel), `deep-object-diff` (settings), `@toolwind/anchors` (CSS anchor positioning).
 
-## Data flow: anonymous login
+## Data flow: signing in
 
 1. `MainMenuComponent` reads `AuthService.currentUser` (a `BehaviorSubject` seeded by a `GET /api/auth/info` on construction).
 2. `401` is mapped to `undefined` — that is the "logged out" signal, not an error.
 3. Menu items switch on `currentUser() !== undefined`.
 
-There is no interceptor, no auth guard, and no token handling: the session is the `AspNetCore.Identity.Application` cookie, sent automatically.
+Anything else that needs an account does not check first. `authInterceptor` catches a `401` from any call except `GET /api/auth/info`, opens the sign-in prompt through `DialogService`, and **replays the original request** once the user is authenticated, so the caller resumes where it left off. An `HttpContextToken` marks the replay so a second `401` fails instead of looping. A dialog dismissed without signing in rethrows the original error.
+
+There is no auth guard and no token handling: the session is the `AspNetCore.Identity.Application` cookie, sent automatically.
 
 ## Data flow: game state
 

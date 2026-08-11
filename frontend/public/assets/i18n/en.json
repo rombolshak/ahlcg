@@ -82,5 +82,34 @@
     "load_game": "Case files",
     "decks": "Dossiers",
     "settings": "Settings"
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Records office",
+      "message": "Every investigation is filed under an investigator's name. We have none on record for you.",
+      "later_hint": "You can sign the register later, from Settings.",
+      "anonymous": {
+        "title": "Travel light",
+        "lead": "Begin at once.",
+        "device": "This device only",
+        "name": "A random alias at the table"
+      },
+      "credentials": {
+        "title": "Sign the register",
+        "lead": "Your files follow you.",
+        "device": "Any device",
+        "name": "Your own name at the table",
+        "legend": "Your particulars",
+        "email": "Email",
+        "username": "Name",
+        "password": "Password",
+        "submit": "Sign the register",
+        "back": "Back"
+      },
+      "errors": {
+        "wrong_password": "Those particulars do not match our records.",
+        "generic": "The records office could not be reached. Try again."
+      }
+    }
   }
 }

@@ -38,9 +38,17 @@ export class InputManagerService {
     ['Tab', 'none'], // disable tab navigation
   ]);
 
+  private readonly textEntryInputTypes = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
+
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     inject<Document>(DOCUMENT).addEventListener('keyup', async event => {
+      // A form field wants every key it can make sense of — letters, digits, Space, Tab between
+      // fields — so only Escape/Enter are taken from it; everything else is a global shortcut.
+      if (this.isTextEntryElement(event.target) && event.code !== 'Escape' && event.code !== 'Enter') {
+        return;
+      }
+
       const command = this.keyToCommand.get(event.code);
       if (!command) {
         return;
@@ -55,6 +63,14 @@ export class InputManagerService {
         await handler();
       }
     });
+  }
+
+  private isTextEntryElement(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) return false;
+    if (target instanceof HTMLTextAreaElement) return true;
+    if (target.isContentEditable) return true;
+    if (target instanceof HTMLInputElement) return this.textEntryInputTypes.has(target.type);
+    return false;
   }
 
   public pushLayer(layer: InputLayer): LayerRef {
