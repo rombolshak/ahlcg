@@ -21,6 +21,7 @@ var apiService =
 
 builder
     .AddViteApp("webfrontend", "../../frontend", "start")
+    .WithNpm(true, "ci")
     .WithExternalHttpEndpoints()
     .WithReference(apiService)
     .WaitFor(apiService);
