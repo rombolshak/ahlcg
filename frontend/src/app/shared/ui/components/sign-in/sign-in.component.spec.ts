@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
 import { AuthService, User } from '@services/auth.service';
+import { DialogComponent } from '@shared/components/dialog/dialog.component';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { SignInComponent } from './sign-in.component';
@@ -160,6 +161,49 @@ describe('SignInComponent', () => {
       await component.getInputHandlers().confirm?.();
 
       expect(signIn).toHaveBeenCalledWith({ email: '', username: '', password: '' });
+    });
+  });
+
+  // The unit tests above call `getInputHandlers()` directly, which cannot catch a caller that asks
+  // for the handlers once and keeps them. These go through the real path — mounted in a
+  // `DialogComponent`, driven by keys the `InputManagerService` listener picks up off the document.
+  describe('inside a dialog', () => {
+    let dialogFixture: ComponentFixture<DialogComponent>;
+
+    const press = (code: string) => {
+      document.dispatchEvent(new KeyboardEvent('keyup', { code }));
+      dialogFixture.detectChanges();
+    };
+
+    const showsCredentialsView = () => Boolean((dialogFixture.nativeElement as HTMLElement).querySelector('.fieldset'));
+
+    beforeEach(() => {
+      dialogFixture = TestBed.createComponent(DialogComponent);
+      dialogFixture.detectChanges();
+      dialogFixture.componentInstance.attachContent(SignInComponent);
+      dialogFixture.detectChanges();
+      dialogFixture.componentInstance.open();
+
+      (dialogFixture.nativeElement as HTMLElement).querySelector<HTMLElement>('[data-testId=credentials]')?.click();
+      dialogFixture.detectChanges();
+    });
+
+    it('should go back to the choice view on Escape rather than starting an anonymous login', () => {
+      expect(showsCredentialsView()).toBe(true);
+
+      press('Escape');
+
+      expect(showsCredentialsView()).toBe(false);
+      expect(loginAnonymously).not.toHaveBeenCalled();
+    });
+
+    it('should submit the credentials on Enter rather than re-running the chosen panel', () => {
+      expect(showsCredentialsView()).toBe(true);
+
+      press('Enter');
+
+      expect(signIn).toHaveBeenCalledWith({ email: '', username: '', password: '' });
+      expect(loginAnonymously).not.toHaveBeenCalled();
     });
   });
 });

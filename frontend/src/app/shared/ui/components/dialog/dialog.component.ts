@@ -61,14 +61,26 @@ export class DialogComponent implements OnDestroy {
   }
 
   public open() {
-    this.dialog().nativeElement.showModal();
+    const element = this.dialog().nativeElement;
+    element.showModal();
     this.resolveContent()?.onOpened?.();
-    this.inputLayer = this.inputManager.pushLayer({
+
+    // `onOpened` can resolve the dialog outright — content that already knows its answer emits
+    // its result there, and the caller tears the dialog down synchronously, before this method
+    // has returned. Pushing a layer now would put one on top of the stack that nothing owns:
+    // `close()` has already run and destroyed the layer that existed at the time, which was
+    // none. It would then swallow every input for the rest of the session.
+    if (!element.open) return;
+
+    // A provider, not an object: content is free to change what its keys mean while the dialog
+    // stays open — `SignInComponent` swaps a whole view, so Escape goes from "start anonymously"
+    // to "back to the choice". A snapshot taken here would keep answering for the first view.
+    this.inputLayer = this.inputManager.pushLayer(() => ({
       cancel: () => {
         this.close();
       },
       ...this.resolveContent()?.getInputHandlers?.(),
-    });
+    }));
   }
 
   public close() {

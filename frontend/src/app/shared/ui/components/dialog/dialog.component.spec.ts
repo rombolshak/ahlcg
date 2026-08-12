@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, viewChild } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { InputManagerService } from '@services/input-manager.service';
-import { vi } from 'vitest';
+import { InputLayer, InputManagerService } from '@services/input-manager.service';
+import { MockInstance, vi } from 'vitest';
 import { DialogComponent } from './dialog.component';
 import { AH_DIALOG_CONTENT, DialogContent } from './dialog.content';
 
@@ -42,6 +42,12 @@ class TestHostComponent {
   public readonly dialog = viewChild.required(DialogComponent);
 }
 
+/** The dialog pushes a provider, so the layer it registered has to be called to be inspected. */
+const resolveLayer = (pushSpy: MockInstance<InputManagerService['pushLayer']>): InputLayer => {
+  const layer = pushSpy.mock.calls[0]?.[0];
+  return typeof layer === 'function' ? layer() : (layer ?? {});
+};
+
 describe('DialogComponent', () => {
   let component: DialogComponent;
   let fixture: ComponentFixture<DialogComponent>;
@@ -72,7 +78,40 @@ describe('DialogComponent', () => {
 
     expect(contentRef.instance.opened).toBe(true);
     expect(pushSpy).toHaveBeenCalledTimes(1);
-    expect(typeof pushSpy.mock.calls[0]?.[0].confirm).toBe('function');
+    expect(typeof resolveLayer(pushSpy).confirm).toBe('function');
+  });
+
+  it('should re-ask the content for its handlers on every command rather than snapshotting them at open', async () => {
+    const contentRef = component.attachContent(TestContentComponent);
+    fixture.detectChanges();
+
+    const inputManager = TestBed.inject(InputManagerService);
+    const pushSpy = vi.spyOn(inputManager, 'pushLayer');
+
+    component.open();
+
+    const swapped = vi.fn();
+    contentRef.instance.getInputHandlers = () => ({ confirm: swapped });
+    await resolveLayer(pushSpy).confirm?.();
+
+    expect(swapped).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not push an input layer when onOpened closes the dialog synchronously', () => {
+    const contentRef = component.attachContent(TestContentComponent);
+    contentRef.instance.onOpened = () => {
+      component.close();
+    };
+    fixture.detectChanges();
+
+    const inputManager = TestBed.inject(InputManagerService);
+    const pushSpy = vi.spyOn(inputManager, 'pushLayer');
+
+    component.open();
+
+    // A layer pushed here would outlive the dialog: `close()` has already run and destroyed the
+    // layer that existed at the time, which was none, so nothing would ever pop this one.
+    expect(pushSpy).not.toHaveBeenCalled();
   });
 
   it('should prevent the native cancel event so Escape cannot close the dialog on its own', () => {

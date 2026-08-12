@@ -43,13 +43,12 @@ export class DialogService {
     dialogRef.changeDetectorRef.detectChanges();
 
     const contentRef = dialogRef.instance.attachContent(content);
-    dialogRef.instance.open();
 
     const result$ = new ReplaySubject<TResult>(1);
 
     // Two independent paths lead here: the content emits a result, or the dialog closes some
-    // other way (nothing does today, since content-provided `cancel` handlers never call
-    // `close()` directly — but nothing should be able to strand `openDialogs` if that changes).
+    // other way (Escape is prevented in the template, but nothing should be able to strand
+    // `openDialogs` if a future content type calls `close()` itself).
     // `teardown` calling `dialogRef.instance.close()` itself fires the native `close` event,
     // re-entering this function — `done` makes it idempotent.
     let done = false;
@@ -83,6 +82,14 @@ export class DialogService {
       });
 
     this.openDialogs.set(content, result$);
+
+    // Opened last, and deliberately: `open()` runs the content's `onOpened`, where content that
+    // already knows its answer can emit `result` synchronously. Everything that has to survive
+    // that — the subject, both subscriptions, the map entry — must already be in place, or the
+    // value is emitted into the void and the entry is registered after its own teardown deleted
+    // it, leaving a resolved dialog permanently marked as open.
+    dialogRef.instance.open();
+
     return result$;
   }
 }

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, output, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { InputManagerService } from '@services/input-manager.service';
+import { vi } from 'vitest';
 import { DialogService } from './dialog.service';
 
 @Component({
@@ -10,6 +12,20 @@ import { DialogService } from './dialog.service';
 })
 class TestDialogContentComponent {
   public readonly result = output<string>();
+}
+
+/** Content that already knows its answer, so it resolves inside `onOpened` — before `open()` returns. */
+@Component({
+  selector: 'ah-test-immediate-dialog-content',
+  template: ``,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class ImmediateDialogContentComponent {
+  public readonly result = output<string>();
+
+  public onOpened() {
+    this.result.emit('immediate');
+  }
 }
 
 describe('DialogService', () => {
@@ -107,6 +123,55 @@ describe('DialogService', () => {
     TestBed.tick();
 
     expect(secondCompleted).toBe(true);
+  });
+
+  it('should deliver a result emitted synchronously from onOpened', () => {
+    const values: string[] = [];
+    let completed = false;
+    service.open(ImmediateDialogContentComponent).subscribe({
+      next: value => {
+        values.push(value);
+      },
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    // No tick: `open()` must have wired the subject and both subscriptions before it opened the
+    // dialog, so a result emitted from `onOpened` lands rather than being emitted into the void.
+    expect(values).toEqual(['immediate']);
+    expect(completed).toBe(true);
+    expect(document.querySelector('dialog')).toBeFalsy();
+  });
+
+  it('should not leave a dialog resolved from onOpened registered as open', () => {
+    service.open(ImmediateDialogContentComponent).subscribe();
+    TestBed.tick();
+
+    // The map entry is written before `open()`, so its own teardown has to be the thing that
+    // clears it. If the write landed afterwards, this second call would hand back the dead
+    // stream from the first and never show a dialog again.
+    let secondValue: string | undefined;
+    service.open(ImmediateDialogContentComponent).subscribe(value => {
+      secondValue = value;
+    });
+
+    expect(secondValue).toBe('immediate');
+    expect(document.querySelector('dialog')).toBeFalsy();
+  });
+
+  it('should not strand an input layer for a dialog resolved from onOpened', () => {
+    const inputManager = TestBed.inject(InputManagerService);
+    service.open(ImmediateDialogContentComponent).subscribe();
+    TestBed.tick();
+
+    const globalCancel = vi.fn();
+    inputManager.registerGlobal({ cancel: globalCancel });
+    document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Escape' }));
+
+    // A layer pushed after teardown sits on top of the stack forever, and `cancel` on it closes
+    // an already-destroyed dialog. Reaching the global layer proves nothing was left behind.
+    expect(globalCancel).toHaveBeenCalledTimes(1);
   });
 
   it('should let a late subscriber receive an already-resolved result', () => {
