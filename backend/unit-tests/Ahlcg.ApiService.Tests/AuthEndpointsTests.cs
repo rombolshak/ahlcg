@@ -80,7 +80,33 @@ public class AuthEndpointsTests
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+
+        // lockoutOnFailure: true — without it a wrong password costs an attacker nothing
+        signInManager.Verify(manager =>
+            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true));
+        userManager.Verify(manager => manager.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_KnownEmailLockedOut_ReturnsForbid()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+        signInManager
+            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), true))
+            .ReturnsAsync(SignInResult.LockedOut);
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+
+        // A locked-out account is indistinguishable from a wrong password to the caller, which is
+        // deliberate — it keeps the endpoint from confirming that an email is registered.
+        Assert.IsType<ForbidHttpResult>(result.Result);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
     [Fact]
@@ -130,7 +156,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(
-            It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false), "P@ssw0rd"));
+            It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false && u.LockoutEnabled), "P@ssw0rd"));
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), true));
     }
 
@@ -164,8 +190,11 @@ public class AuthEndpointsTests
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
-        userManager.Verify(manager =>
-            manager.UpdateAsync(It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false)));
+
+        // Lockout matters only once the account has a password to guess, so the upgrade is where it
+        // gets switched on — AllowedForNewUsers does not reach a row that already exists.
+        userManager.Verify(manager => manager.UpdateAsync(
+            It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false && u.LockoutEnabled)));
 
         // The account keeps its id, so anything hanging off OwnerId survives — and the existing
         // session cookie already names it, so no re-sign-in.
@@ -376,7 +405,6 @@ public class AuthEndpointsTests
         mock
             .Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email != "bad_mail")))
             .ReturnsAsync(IdentityResult.Success);
-        mock.Setup(m => m.CheckPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd")).ReturnsAsync(true);
         return mock;
     }
 
@@ -392,6 +420,16 @@ public class AuthEndpointsTests
             null,
             null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+        // The password check goes through SignInManager, not UserManager, so that failures count
+        // towards lockout. `lockoutOnFailure` is matched explicitly: passing false here would still
+        // authenticate correctly and silently drop the rate limiting.
+        mock
+            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), "P@ssw0rd", true))
+            .ReturnsAsync(SignInResult.Success);
+        mock
+            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.Is<string>(s => s != "P@ssw0rd"), true))
+            .ReturnsAsync(SignInResult.Failed);
         return mock;
     }
 

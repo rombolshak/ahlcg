@@ -97,8 +97,12 @@ public static class AuthEndpoints
                 ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser)
                 : await CreatePermanentUserAsync(userManager, signInManager, request);
 
-        var checkResult = await userManager.CheckPasswordAsync(userToLogin, request.Password);
-        if (!checkResult) return TypedResults.Forbid();
+        // CheckPasswordSignInAsync rather than UserManager.CheckPasswordAsync: it records failed
+        // attempts and honours the lockout window, which is the only thing standing between this
+        // endpoint and unlimited password guessing. It validates without establishing a session,
+        // so the SignInAsync below is still needed.
+        var checkResult = await signInManager.CheckPasswordSignInAsync(userToLogin, request.Password, true);
+        if (!checkResult.Succeeded) return TypedResults.Forbid();
 
         // TODO transfer all data to the linked account
         if (loggedInUser is { IsAnonymous: true }) await userManager.DeleteAsync(loggedInUser);
@@ -143,6 +147,11 @@ public static class AuthEndpoints
         loggedInUser.Email = request.Email;
         loggedInUser.IsAnonymous = false;
 
+        // Anonymous accounts have no password to guess, so lockout is only meaningful from the
+        // moment one gains credentials. Set explicitly rather than relying on
+        // Lockout.AllowedForNewUsers, which only applies at CreateAsync — this row already exists.
+        loggedInUser.LockoutEnabled = true;
+
         var updateResult = await userManager.UpdateAsync(loggedInUser);
         if (!updateResult.Succeeded) return TypedResults.BadRequest(updateResult);
         return TypedResults.Ok();
@@ -158,7 +167,8 @@ public static class AuthEndpoints
         {
             UserName = request.Username,
             Email = request.Email,
-            IsAnonymous = false
+            IsAnonymous = false,
+            LockoutEnabled = true
         };
 
         var createResult = await userManager.CreateAsync(newUser, request.Password);

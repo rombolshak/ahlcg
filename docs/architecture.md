@@ -4,7 +4,7 @@
 
 | Area | Status |
 | --- | --- |
-| Auth (anonymous login, sign-in, credential linking, logout, session info) | Implemented, backend + frontend |
+| Auth (anonymous login, sign-in and anonymous upgrade, logout, session info) | Implemented, backend + frontend |
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
 | Game creation (`POST /games`) and persistence of the game record | Implemented, backend only — no frontend client calls it |
