@@ -7,8 +7,16 @@ export type InputCommand = GeneralAction | Navigation | Debug;
 
 export type InputHandler = () => void | Promise<void>;
 export type InputLayer = Partial<Record<InputCommand, InputHandler>>;
+
+/**
+ * A layer whose handlers depend on state that changes while it is pushed — a dialog whose content
+ * swaps views, say. Resolved on every keystroke rather than at push time, so which commands the
+ * layer handles *at all* stays current too, and with it the fall-through to the global layer.
+ */
+export type InputLayerProvider = () => InputLayer;
+
 export interface LayerRef {
-  layer: InputLayer;
+  layer: InputLayer | InputLayerProvider;
   destroy: () => void;
 }
 
@@ -16,7 +24,7 @@ export interface LayerRef {
   providedIn: 'root',
 })
 export class InputManagerService {
-  private readonly layers: InputLayer[] = [];
+  private readonly layers: InputLayerProvider[] = [];
   private globalLayer: InputLayer = {};
   private readonly keyToCommand = new Map<string, InputCommand>([
     ['Enter', 'confirm'],
@@ -57,7 +65,7 @@ export class InputManagerService {
       event.preventDefault();
       event.stopPropagation();
 
-      const handlers = this.layers.at(-1);
+      const handlers = this.layers.at(-1)?.();
       const handler = handlers?.[command] ?? this.globalLayer[command];
       if (handler) {
         await handler();
@@ -73,12 +81,14 @@ export class InputManagerService {
     return false;
   }
 
-  public pushLayer(layer: InputLayer): LayerRef {
-    this.layers.push(layer);
+  /** Pass a provider when the layer's handlers change while it is pushed; a plain object never restated. */
+  public pushLayer(layer: InputLayer | InputLayerProvider): LayerRef {
+    const provider = typeof layer === 'function' ? layer : () => layer;
+    this.layers.push(provider);
     return {
       layer,
       destroy: () => {
-        const index = this.layers.indexOf(layer);
+        const index = this.layers.indexOf(provider);
         if (index !== -1) {
           this.layers.splice(index, 1);
         }
