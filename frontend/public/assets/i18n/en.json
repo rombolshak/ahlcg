@@ -82,5 +82,38 @@
     "load_game": "Case files",
     "decks": "Dossiers",
     "settings": "Settings"
+  },
+  "auth": {
+    "sign_in": {
+      "title": "Confront the Mythos",
+      "message": "Before the first draw, choose your anchor. Prefer a lightweight charm for quick entry. You can always bind a heavier pact later.",
+      "later_hint": "You can sign the register later, from Settings.",
+      "anonymous": {
+        "title": "The Lucky Talisman",
+        "lead": "Perfect for trying new decks or solo runs.",
+        "credentials": "No credentials required",
+        "device": "This device only",
+        "name": "A random alias in the multiplayer",
+        "duration": "Cases are deleted after 90 days of inactivity"
+      },
+      "credentials": {
+        "title": "The Tome of Binding",
+        "lead": "Choose if you want to investigate from multiple devices.",
+        "credentials": "Full account registration",
+        "device": "Access from any device",
+        "name": "Your own name online",
+        "duration": "Data is stored for at least 1 year",
+        "legend": "Your particulars",
+        "email": "Email",
+        "username": "Name",
+        "password": "Password",
+        "submit": "Bind account",
+        "back": "Go back"
+      },
+      "errors": {
+        "wrong_password": "The sigil is incorrect. The Tome rejects your touch. Forgot your binding?",
+        "generic": "The archives are silent. An eldritch interference blocks our reach. Try again later."
+      }
+    }
   }
 }

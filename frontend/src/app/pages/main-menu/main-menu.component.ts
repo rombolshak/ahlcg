@@ -3,8 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { AuthService } from '@services/auth.service';
+import { DialogService } from '@services/dialog.service';
 import { DialogComponent } from '@shared/components/dialog/dialog.component';
 import { SettingsComponent } from '@shared/components/settings/settings.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@shared/components/sign-in/sign-in.component';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
@@ -18,6 +20,7 @@ import { MenuItemsListComponent } from './menu-items-list/menu-items-list.compon
 })
 export class MainMenuComponent {
   private readonly authService = inject(AuthService);
+  private readonly dialogService = inject(DialogService);
   private readonly currentUser = toSignal(this.authService.currentUser);
   private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
 
@@ -44,9 +47,18 @@ export class MainMenuComponent {
       : {
           name: 'login_to_continue',
           process: () => {
-            alert('login');
+            this.signIn();
           },
         };
+  }
+
+  /**
+   * No subscription: `DialogService.open` creates and opens the dialog eagerly, and both sign-in
+   * paths refresh `AuthService.currentUser` themselves — so `mainItems` swaps this entry for
+   * "continue" on its own. There is nothing left for a result handler to do.
+   */
+  private signIn() {
+    this.dialogService.open(SignInComponent, SIGN_IN_DIALOG_OPTIONS);
   }
 
   private createNewGameButton() {

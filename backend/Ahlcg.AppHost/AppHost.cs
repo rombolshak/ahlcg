@@ -2,7 +2,7 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder.AddPostgres("postgresdb").WithPgAdmin();
+var postgres = builder.AddPostgres("postgresdb").WithDataVolume().WithPgAdmin();
 var database = postgres.AddDatabase("ahlcg");
 
 var migrator =
@@ -13,7 +13,7 @@ var migrator =
 
 var apiService =
     builder
-        .AddProject<Ahlcg_ApiService>("apiservice", launchProfileName: "https")
+        .AddProject<Ahlcg_ApiService>("apiservice", "https")
         .WithHttpHealthCheck("/health")
         .WithReference(database)
         .WithReference(migrator)

@@ -15,9 +15,26 @@ export const Normal: Story = {
   args: {
     title: 'Sample dialog',
     isOpen: true,
+    size: 's',
+  },
+  argTypes: {
+    size: {
+      control: 'inline-radio',
+      options: ['s', 'm', 'l'],
+    },
   },
   render: args => ({
     props: args,
     template: `<ah-dialog ${argsToTemplate(args)}>Dialog content goes here</ah-dialog>`,
   }),
+};
+
+export const Medium: Story = {
+  ...Normal,
+  args: { ...Normal.args, size: 'm' },
+};
+
+export const Large: Story = {
+  ...Normal,
+  args: { ...Normal.args, size: 'l' },
 };

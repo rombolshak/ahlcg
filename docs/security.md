@@ -20,6 +20,10 @@ options.Cookie.SameSite = SameSiteMode.Lax;
 
 **Password handling** — entirely ASP.NET Identity (hashing, verification, complexity defaults). No custom crypto.
 
+**Brute force** — `SignIn` verifies passwords with `SignInManager.CheckPasswordSignInAsync(..., lockoutOnFailure: true)`, so failed attempts count against Identity's lockout. No `IdentityOptions.Lockout` is configured, so the defaults stand: 5 attempts, 5-minute lockout, enabled for new users. `SignIn` also sets `LockoutEnabled` explicitly on the accounts it creates and on anonymous accounts it upgrades — the upgrade path needs it because `AllowedForNewUsers` only applies at `CreateAsync`, and that row already exists. A locked-out account returns `403`, the same as a wrong password, so the endpoint does not leak which emails are registered.
+
+This covers guessing an existing password. It does not cover the account *creation* path below, which is still unmetered.
+
 **Transport** — no `UseHttpsRedirection()`, no HSTS. Fine for localhost; not for production.
 
 **CORS** — not configured. Works because the SPA and API are same-origin through the dev proxy. Cross-origin hosting will fail until a policy with `AllowCredentials()` is added.
@@ -30,7 +34,9 @@ options.Cookie.SameSite = SameSiteMode.Lax;
 
 **Health and docs endpoints** — `/health`, `/alive`, `/openapi/v1.json`, and `/scalar/v1` are all gated on `IsDevelopment()`, so they are absent elsewhere.
 
-**Known gap** — `LinkCredentials` deletes the anonymous account when merging into an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path.
+**Known gap** — `SignIn` deletes the anonymous account when signing in to an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path. The other branch — unknown email while anonymous — upgrades the account in place and loses nothing.
+
+**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown and the caller is logged out, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization and neither has a CAPTCHA, email verification, or rate limit, so both are open to automated account creation.
 
 ## Before deploying
 

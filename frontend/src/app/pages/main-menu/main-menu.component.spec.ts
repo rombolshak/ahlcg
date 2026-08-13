@@ -2,7 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
 import { AuthService, User } from '@services/auth.service';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { DialogService } from '@services/dialog.service';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@shared/components/sign-in/sign-in.component';
+import { BehaviorSubject, EMPTY, Observable } from 'rxjs';
+import { vi } from 'vitest';
 import { MainMenuComponent } from './main-menu.component';
 
 class AuthMockService {
@@ -17,14 +20,21 @@ describe('MainMenuComponent', () => {
   let component: MainMenuComponent;
   let fixture: ComponentFixture<MainMenuComponent>;
   let mockAuthService: AuthMockService;
+  let openDialog: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    openDialog = vi.fn().mockReturnValue(EMPTY);
+
     await TestBed.configureTestingModule({
       imports: [MainMenuComponent, getTranslocoModule()],
       providers: [
         {
           provide: AuthService,
           useClass: AuthMockService,
+        },
+        {
+          provide: DialogService,
+          useValue: { open: openDialog },
         },
       ],
     }).compileComponents();
@@ -44,6 +54,15 @@ describe('MainMenuComponent', () => {
     TestBed.tick();
 
     expect(fixture.debugElement.query(By.css('[data-testId=login_to_continue]'))).toBeTruthy();
+  });
+
+  it('should open the sign-in dialog when the login button is pressed', () => {
+    mockAuthService._user.next(undefined);
+    TestBed.tick();
+
+    (fixture.debugElement.query(By.css('[data-testId=login_to_continue]')).nativeElement as HTMLElement).click();
+
+    expect(openDialog).toHaveBeenCalledWith(SignInComponent, SIGN_IN_DIALOG_OPTIONS);
   });
 
   it('should display continue button if authenticated', () => {
