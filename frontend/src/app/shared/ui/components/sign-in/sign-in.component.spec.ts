@@ -95,7 +95,7 @@ describe('SignInComponent', () => {
 
     const alert = fixture.debugElement.query(By.css('.alert')).nativeElement as HTMLElement;
 
-    expect(alert.textContent).toContain('Those particulars do not match our records.');
+    expect(alert.textContent).toContain('incorrect');
     expect((fixture.debugElement.query(By.css('input[type=email]')).nativeElement as HTMLInputElement).value).toBe('a@example.com');
   });
 
@@ -126,7 +126,7 @@ describe('SignInComponent', () => {
     });
 
     it('should move the selection between panels in the choice view', async () => {
-      const selected = () => fixture.debugElement.query(By.css('.border-primary')).nativeElement as HTMLElement;
+      const selected = () => fixture.debugElement.query(By.css('.bg-primary')).nativeElement as HTMLElement;
 
       expect(selected().getAttribute('data-testId')).toBe('anonymous');
 
