@@ -101,7 +101,8 @@ Then set fields per `.claude/lib/project-status.md`:
 - children with a real spec body → **Status: Ready to dev**
 - children still thin, or only structurally agreed → **Status: Proposed**
 - `Type` one level below the parent (`Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`); `Bug` for defects at any depth
-- inherit `Iteration` and `Priority` from the parent where it has them and the child does not
+- inherit `Priority` from the parent where it has one and the child does not
+- leave `Iteration` alone — `/work` owns it, and sets it when implementation starts
 
 Then apply the approved dependency changes per `.claude/lib/issue-dependencies.md`. Do this after any splits and closes, so edges point at issues that still exist. When you close a child, check whether anything was blocked by it and remove the dead edge — GitHub leaves it in place, and a closed blocker still reads as "blocked" at a glance.
 

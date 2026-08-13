@@ -34,6 +34,44 @@ gh project item-edit \
 
 All four IDs come from `.claude/project-fields.json` plus the item lookup above.
 
+## Write the Iteration field
+
+Iteration option IDs are **not** cached in `.claude/project-fields.json` — only the field id is. Iterations are created and completed over time, so the ids must be read live:
+
+```bash
+gh api graphql -f query='
+query {
+  node(id: "<projectId>") {
+    ... on ProjectV2 {
+      field(name: "Iteration") {
+        ... on ProjectV2IterationField {
+          configuration {
+            iterations { id title startDate duration }
+            completedIterations { id title startDate duration }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+`iterations` holds the current and future ones, `completedIterations` the past ones, newest first.
+
+**The current iteration** is the entry whose window contains today — `startDate <= today < startDate + duration` days. In practice that is `iterations[0]`, but check the dates rather than assuming: between a completed iteration and the next start there is no current iteration at all, and picking `iterations[0]` blindly then files the work under an iteration that has not begun.
+
+Write it with `--iteration-id`:
+
+```bash
+gh project item-edit \
+  --project-id <projectId> \
+  --id <itemId> \
+  --field-id <iterationFieldId> \
+  --iteration-id <iterationId>
+```
+
+**Set Iteration from when the work actually happens, not from when the issue was filed.** An issue groomed in March and implemented in August belongs to August's iteration — the field is a record of when effort was spent, and backdating it to the grooming date makes the board useless for that. If an item already carries an older iteration, overwrite it.
+
 ## Failure handling
 
 - **"option not found"** or a missing field name → the board changed since bootstrap. Rerun `/project-bootstrap` and retry once.
