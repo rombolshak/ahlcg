@@ -35,7 +35,12 @@ This is a stop, not a refusal: the dependency may be stale, or the user may know
 
 ## 2. Set up
 
-Set **Status → In progress** per `.claude/lib/project-status.md`.
+Per `.claude/lib/project-status.md`, set both:
+
+- **Status → In progress**
+- **Iteration → the current iteration**, resolved from today's date against the live iteration configuration. Set it even if the item already has one — an issue groomed in a past iteration and implemented now belongs to the current one, and the stale value is exactly what needs overwriting.
+
+This is the point where Iteration gets written, because starting work is when the iteration becomes a fact rather than a guess. Do not set it at grooming time.
 
 Branch off up-to-date `main`, matching the existing convention (`210-assets-area`, `48-actions-selector`):
 

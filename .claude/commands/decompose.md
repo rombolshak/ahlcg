@@ -80,7 +80,8 @@ Then, per `.claude/lib/project-status.md`, for each new issue:
 - add it to the project if `--parent` did not
 - set **Type** to the agreed value
 - set **Status → Proposed** (they are not ready to implement until groomed)
-- inherit **Iteration** and **Priority** from the parent when it has them
+- inherit **Priority** from the parent when it has one
+- leave **Iteration** unset — `/work` writes it when implementation actually starts. A child seeded with the parent's iteration at decompose time is a prediction, and it silently becomes wrong the moment the work slips.
 
 Once every child exists and you have its number, record the approved ordering per `.claude/lib/issue-dependencies.md`. This has to come last — a dependency needs both issues to exist, and the API takes database ids you can only resolve after creation.
 
