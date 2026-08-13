@@ -259,7 +259,7 @@ public class AuthEndpointsTests
     }
 
     [Fact]
-    public async Task SignIn_PermanentSessionUnknownEmail_CreatesAccountWithoutDeletingCurrent()
+    public async Task SignIn_PermanentSessionUnknownEmail_ReturnsBadRequestWithoutCreatingAccount()
     {
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
@@ -270,10 +270,36 @@ public class AuthEndpointsTests
             signInManager.Object,
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
 
-        Assert.IsType<Ok>(result.Result);
-        userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), "P@ssw0rd"));
-        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        // There is nothing to sign into and nothing to upgrade, so creating an account here would
+        // only leave the caller signed in as someone else, with the account they arrived with
+        // reachable again only by logging out.
+        Assert.IsType<BadRequest<IdentityResult>>(result.Result);
+        userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
+        userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
+    public async Task SignIn_PermanentSessionKnownEmail_StillSignsInThatAccount()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            PermanentPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+
+        // Only account *creation* is barred from a permanent session — switching to an account that
+        // exists is still an ordinary sign-in, and still costs a password check.
+        Assert.IsType<Ok>(result.Result);
+        signInManager.Verify(manager =>
+            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true));
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+        userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
     }
 
     [Fact]

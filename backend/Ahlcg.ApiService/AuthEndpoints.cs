@@ -46,7 +46,8 @@ public static class AuthEndpoints
                 "Signs in with an email and password, from a logged-out, anonymous or permanent session. " +
                 "If the email is already on record, the password is checked against that account and it is signed in. " +
                 "If it is not, and the caller holds an anonymous account, that account is upgraded in place — " +
-                "it keeps its id and therefore its data. Otherwise a new permanent account is created.");
+                "it keeps its id and therefore its data. If it is not and the caller is logged out, a new permanent " +
+                "account is created. A permanent session cannot create a second account: log out first.");
 
         group.MapPost("logout", Logout)
             .WithDescription(
@@ -93,9 +94,20 @@ public static class AuthEndpoints
         var userToLogin = await userManager.FindByEmailAsync(request.Email);
 
         if (userToLogin is null)
+        {
+            // A permanent session has nothing to gain from an unknown email: there is no account to
+            // sign into, and its own account cannot be upgraded — it already is permanent. Creating
+            // one would silently leave the caller signed in as somebody else, with the account they
+            // arrived with, and its data, reachable only by remembering to log out first. Whoever
+            // wants a second account can log out and ask for it from a logged-out session.
+            if (loggedInUser is { IsAnonymous: false })
+                return TypedResults.BadRequest(IdentityResult.Failed(
+                    new IdentityError { Description = "Already signed in with a permanent account" }));
+
             return loggedInUser is { IsAnonymous: true }
                 ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser)
                 : await CreatePermanentUserAsync(userManager, signInManager, request);
+        }
 
         // CheckPasswordSignInAsync rather than UserManager.CheckPasswordAsync: it records failed
         // attempts and honours the lockout window, which is the only thing standing between this

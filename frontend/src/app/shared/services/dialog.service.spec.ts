@@ -167,7 +167,7 @@ describe('DialogService', () => {
 
     const globalCancel = vi.fn();
     inputManager.registerGlobal({ cancel: globalCancel });
-    document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Escape' }));
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
 
     // A layer pushed after teardown sits on top of the stack forever, and `cancel` on it closes
     // an already-destroyed dialog. Reaching the global layer proves nothing was left behind.

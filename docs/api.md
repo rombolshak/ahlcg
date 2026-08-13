@@ -30,11 +30,12 @@ Signing in, registering, and upgrading an anonymous account are **one route**, b
 | Yes, password valid | any | The existing account is signed in. An anonymous session is deleted first |
 | Yes, password wrong | any | `403 Forbidden` — nothing is deleted. Counts towards lockout |
 | No | anonymous | That account is **upgraded in place**: it gains the password, email and username, `IsAnonymous` becomes `false`. It keeps its id, so its games survive, and the existing cookie stays valid — no re-sign-in |
-| No | logged out or permanent | A new permanent account is created and signed in |
+| No | logged out | A new permanent account is created and signed in |
+| No | permanent | `400 Bad Request` (`"Already signed in with a permanent account"`) — nothing is created. There is nothing to sign into and nothing to upgrade, so the only outcome would be a session naming somebody else while the caller's own account, and its games, sit behind a logout they did not ask for. Log out first to register a second account |
 
 - `200 OK`, empty body. Sets the `AspNetCore.Identity.Application` cookie (persistent) on every branch except the in-place upgrade, which does not need to.
 - `403 Forbidden` — the email exists but the password is wrong, **or** the account is locked out. The two are deliberately indistinguishable, so the endpoint does not confirm that an email is registered.
-- `400 Bad Request` with an `IdentityResult` body — `CreateAsync`, `AddPasswordAsync` or `UpdateAsync` failed (weak password, duplicate username, invalid email, …).
+- `400 Bad Request` with an `IdentityResult` body — a permanent session asked for an unknown email, or `CreateAsync`, `AddPasswordAsync` or `UpdateAsync` failed (weak password, duplicate username, invalid email, …).
 
 The password check runs through `SignInManager.CheckPasswordSignInAsync(..., lockoutOnFailure: true)`, so failures count against Identity's lockout. `Program.cs` configures no `IdentityOptions.Lockout`, so the defaults apply: 5 failed attempts, then a 5-minute lockout.
 

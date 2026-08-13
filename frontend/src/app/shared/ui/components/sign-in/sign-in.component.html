@@ -7,7 +7,7 @@
         <button
           type="button"
           class="card cursor-pointer bg-base-200 text-left transition card-border"
-          [class.border-primary]="$index === selectedIndex()"
+          [class.bg-primary]="$index === selectedIndex()"
           [disabled]="busy()"
           [attr.data-testId]="choice.key"
           (click)="choice.process()"
@@ -17,21 +17,21 @@
             <h2 class="card-title">{{ t(`${choice.key}.title`) }}</h2>
             <p>{{ t(`${choice.key}.lead`) }}</p>
             <ul class="mt-2 list-disc pl-4 text-sm text-base-content/70">
+              <li>{{ t(`${choice.key}.credentials`) }}</li>
               <li>{{ t(`${choice.key}.device`) }}</li>
               <li>{{ t(`${choice.key}.name`) }}</li>
+              <li>{{ t(`${choice.key}.duration`) }}</li>
             </ul>
           </div>
         </button>
       }
     </div>
-
-    <p class="mt-6 text-sm text-base-content/60">{{ t("later_hint") }}</p>
   } @else {
     <fieldset class="fieldset">
       <legend class="fieldset-legend">{{ t("credentials.legend") }}</legend>
 
       <label class="floating-label mt-2">
-        <input type="email" class="validator input w-full" required [value]="email()" [disabled]="busy()" (input)="onEmailInput($event)" />
+        <input type="email" class="validator input w-full" ahFocusTrap required [value]="email()" [disabled]="busy()" (input)="onEmailInput($event)" />
         <span>{{ t("credentials.email") }}</span>
       </label>
 
@@ -56,15 +56,15 @@
       </div>
     }
 
-    <div class="mt-6 flex items-center justify-between">
-      <button type="button" class="btn btn-ghost" [disabled]="busy()" (click)="backToChoice()">
-        {{ t("credentials.back") }}
-      </button>
+    <div class="mt-6 flex items-center justify-around gap-4">
       <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="submit()">
         @if (busy()) {
           <span class="loading loading-sm loading-spinner"></span>
         }
         {{ t("credentials.submit") }}
+      </button>
+      <button type="button" class="btn btn-active" [disabled]="busy()" (click)="backToChoice()">
+        {{ t("credentials.back") }}
       </button>
     </div>
   }

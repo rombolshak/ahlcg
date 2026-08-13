@@ -36,7 +36,7 @@ This covers guessing an existing password. It does not cover the account *creati
 
 **Known gap** — `SignIn` deletes the anonymous account when signing in to an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path. The other branch — unknown email while anonymous — upgrades the account in place and loses nothing.
 
-**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization and neither has a CAPTCHA, email verification, or rate limit, so both are open to automated account creation.
+**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown and the caller is logged out, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization and neither has a CAPTCHA, email verification, or rate limit, so both are open to automated account creation.
 
 ## Before deploying
 

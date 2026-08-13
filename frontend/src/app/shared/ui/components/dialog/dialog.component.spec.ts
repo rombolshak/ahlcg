@@ -114,6 +114,29 @@ describe('DialogComponent', () => {
     expect(pushSpy).not.toHaveBeenCalled();
   });
 
+  it('should size the modal box small by default', () => {
+    const box = fixture.debugElement.query(By.css('.modal-box')).nativeElement as HTMLElement;
+
+    expect(box.classList.contains('max-w-[32rem]')).toBe(true);
+  });
+
+  for (const [size, widthClass] of [
+    ['m', 'max-w-[48rem]'],
+    ['l', 'max-w-[64rem]'],
+  ] as const) {
+    it(`should widen the modal box for size ${size}`, () => {
+      fixture.componentRef.setInput('size', size);
+      fixture.detectChanges();
+
+      const box = fixture.debugElement.query(By.css('.modal-box')).nativeElement as HTMLElement;
+
+      // The binding carries the whole class list, so `modal-box` itself has to survive the swap.
+      expect(box.classList.contains(widthClass)).toBe(true);
+      expect(box.classList.contains('max-w-[32rem]')).toBe(false);
+      expect(box.classList.contains('modal-box')).toBe(true);
+    });
+  }
+
   it('should prevent the native cancel event so Escape cannot close the dialog on its own', () => {
     const dialogEl = fixture.debugElement.query(By.css('dialog')).nativeElement as HTMLDialogElement;
     const event = new Event('cancel', { cancelable: true });

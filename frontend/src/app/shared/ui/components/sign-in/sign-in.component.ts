@@ -3,9 +3,18 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService, Credentials, User } from '@services/auth.service';
+import { DialogContentWithResult, DialogOptions } from '@services/dialog.service';
 import { InputLayer } from '@services/input-manager.service';
 import { listNavigation } from '@services/list-navigation';
-import { AH_DIALOG_CONTENT, DialogContent } from '@shared/components/dialog/dialog.content';
+import { AH_DIALOG_CONTENT } from '@shared/components/dialog/dialog.content';
+import { FocusTrapDirective } from '@shared/directives/focus-trap.directive';
+
+/**
+ * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
+ * interceptor's 401 — so the same dialog appears however it was reached. `m`: the choice view puts
+ * two cards side by side, which 32rem squeezes into columns too narrow for their bullet lists.
+ */
+export const SIGN_IN_DIALOG_OPTIONS = { titleKey: 'auth.sign_in.title', size: 'm' } as const satisfies DialogOptions;
 
 type View = 'choice' | 'credentials';
 
@@ -28,7 +37,7 @@ interface IdentityResult {
 
 @Component({
   selector: 'ah-sign-in',
-  imports: [TranslocoDirective],
+  imports: [TranslocoDirective, FocusTrapDirective],
   templateUrl: './sign-in.component.html',
   providers: [
     {
@@ -41,7 +50,7 @@ interface IdentityResult {
     class: 'cursor-reset',
   },
 })
-export class SignInComponent implements DialogContent {
+export class SignInComponent implements DialogContentWithResult<User> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -59,13 +68,13 @@ export class SignInComponent implements DialogContent {
     {
       key: 'anonymous',
       process: () => {
-        this.travelLight();
+        this.loginAnonymously();
       },
     },
     {
       key: 'credentials',
       process: () => {
-        this.showCredentials();
+        this.showCredentialsForm();
       },
     },
   ]);
@@ -94,7 +103,7 @@ export class SignInComponent implements DialogContent {
     return {
       ...this.choiceNavigation.handlers,
       cancel: () => {
-        this.travelLight();
+        this.loginAnonymously();
       },
     };
   };
@@ -111,7 +120,7 @@ export class SignInComponent implements DialogContent {
     this.password.set((event.target as HTMLInputElement).value);
   }
 
-  protected showCredentials(): void {
+  protected showCredentialsForm(): void {
     this.error.set(undefined);
     this.view.set('credentials');
   }
@@ -121,7 +130,7 @@ export class SignInComponent implements DialogContent {
     this.view.set('choice');
   }
 
-  protected travelLight(): void {
+  protected loginAnonymously(): void {
     if (this.busy()) return;
 
     this.busy.set(true);

@@ -2,11 +2,15 @@ import { DOCUMENT } from '@angular/common';
 import { ApplicationRef, createComponent, EnvironmentInjector, inject, Injectable, OutputRef, Type } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
-import { DialogComponent } from '@shared/components/dialog/dialog.component';
+import { DialogComponent, DialogSize } from '@shared/components/dialog/dialog.component';
 import { DialogContent } from '@shared/components/dialog/dialog.content';
 import { Observable, ReplaySubject, take } from 'rxjs';
 
 export type DialogContentWithResult<TResult> = DialogContent & { readonly result: OutputRef<TResult> };
+export interface DialogOptions {
+  readonly titleKey?: string;
+  readonly size?: DialogSize;
+}
 
 /**
  * Depends only on `ApplicationRef`, `EnvironmentInjector`, `DOCUMENT` and `TranslocoService` — never
@@ -25,7 +29,7 @@ export class DialogService {
 
   private readonly openDialogs = new Map<Type<unknown>, Observable<unknown>>();
 
-  public open<TResult>(content: Type<DialogContentWithResult<TResult>>, options?: { titleKey?: string }): Observable<TResult> {
+  public open<TResult>(content: Type<DialogContentWithResult<TResult>>, options?: DialogOptions): Observable<TResult> {
     const existing = this.openDialogs.get(content);
     if (existing) return existing as Observable<TResult>;
 
@@ -38,6 +42,9 @@ export class DialogService {
     });
     if (options?.titleKey) {
       dialogRef.setInput('title', this.transloco.translate(options.titleKey));
+    }
+    if (options?.size) {
+      dialogRef.setInput('size', options.size);
     }
     this.appRef.attachView(dialogRef.hostView);
     dialogRef.changeDetectorRef.detectChanges();

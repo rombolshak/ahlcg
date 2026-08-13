@@ -50,7 +50,7 @@ export class InputManagerService {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    inject<Document>(DOCUMENT).addEventListener('keyup', async event => {
+    inject<Document>(DOCUMENT).addEventListener('keydown', async event => {
       // A form field wants every key it can make sense of — letters, digits, Space, Tab between
       // fields — so only Escape/Enter are taken from it; everything else is a global shortcut.
       if (this.isTextEntryElement(event.target) && event.code !== 'Escape' && event.code !== 'Enter') {

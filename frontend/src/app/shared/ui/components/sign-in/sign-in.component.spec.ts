@@ -171,7 +171,7 @@ describe('SignInComponent', () => {
     let dialogFixture: ComponentFixture<DialogComponent>;
 
     const press = (code: string) => {
-      document.dispatchEvent(new KeyboardEvent('keyup', { code }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { code }));
       dialogFixture.detectChanges();
     };
 

@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SignInComponent } from '@shared/components/sign-in/sign-in.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@shared/components/sign-in/sign-in.component';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
@@ -44,7 +44,7 @@ describe('authInterceptor', () => {
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(open).toHaveBeenCalledWith(SignInComponent, { titleKey: 'auth.sign_in.title' });
+    expect(open).toHaveBeenCalledWith(SignInComponent, SIGN_IN_DIALOG_OPTIONS);
 
     dialogResult$.next({ isAnonymous: true, email: null });
 

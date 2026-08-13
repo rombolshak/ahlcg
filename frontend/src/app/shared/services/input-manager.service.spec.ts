@@ -32,14 +32,14 @@ describe('InputManagerService', () => {
     input.type = 'text';
     document.body.appendChild(input);
 
-    input.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyA', bubbles: true }));
-    input.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space', bubbles: true }));
-    input.dispatchEvent(new KeyboardEvent('keyup', { code: 'Tab', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Space', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Tab', bubbles: true }));
 
     expect(calls).toEqual([]);
 
-    input.dispatchEvent(new KeyboardEvent('keyup', { code: 'Escape', bubbles: true }));
-    input.dispatchEvent(new KeyboardEvent('keyup', { code: 'Enter', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape', bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent('keydown', { code: 'Enter', bubbles: true }));
 
     expect(calls).toEqual(['cancel', 'confirm']);
 

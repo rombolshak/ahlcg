@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ComponentRef,
+  computed,
   contentChild,
   ElementRef,
   inject,
@@ -16,6 +17,24 @@ import { InputManagerService, LayerRef } from '@services/input-manager.service';
 import { AH_DIALOG_CONTENT, DialogContent } from '@shared/components/dialog/dialog.content';
 import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { SvgComponent } from '../svg/svg.component';
+
+export type DialogSize = 's' | 'm' | 'l';
+
+/**
+ * The whole class list of the box per size, not just the size-dependent part: a `[class]` binding
+ * alongside a static `class` attribute is a lint error, so the binding owns all of it. Written out
+ * in full rather than composed from fragments — Tailwind only emits classes spelled out in source.
+ *
+ * Width and padding override daisyUI's `modal-box` defaults (32rem wide, 1.5rem all round). `s` is
+ * daisyUI's own width and reproduces the padding the dialog had before sizes existed — 1.5rem from
+ * `modal-box` plus the 1rem the body used to carry itself. `m` and `l` pad by their own rule: a
+ * half-height top, so the engraved border across the top stays close to the title.
+ */
+const SIZE_CLASSES: Record<DialogSize, string> = {
+  s: 'modal-box min-h-40 text-primary-content w-11/12 max-w-[32rem] px-18 pt-5 pb-8',
+  m: 'modal-box min-h-40 text-primary-content w-11/12 max-w-[48rem] px-24 pt-6 pb-14',
+  l: 'modal-box min-h-40 text-primary-content w-11/12 max-w-[64rem] px-30 pt-8 pb-17',
+};
 
 @Component({
   selector: 'ah-dialog',
@@ -33,6 +52,9 @@ import { SvgComponent } from '../svg/svg.component';
 export class DialogComponent implements OnDestroy {
   public readonly title = input('');
   public readonly isOpen = input(false);
+  public readonly size = input<DialogSize>('s');
+
+  protected readonly boxClasses = computed(() => SIZE_CLASSES[this.size()]);
 
   /**
    * Fires whenever the underlying `<dialog>` actually closes — via `close()` below, or any other
