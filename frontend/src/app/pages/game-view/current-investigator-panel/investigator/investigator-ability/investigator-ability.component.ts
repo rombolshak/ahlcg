@@ -14,8 +14,8 @@ import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
   },
 })
 export class InvestigatorAbilityComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly text = input.required<string>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

@@ -10,13 +10,14 @@ import { ConnectionPointsService } from './connection-points.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationsConnectionComponent {
+  private readonly connectionsService = inject(ConnectionPointsService);
+
   readonly map = input.required<GameMap>();
   readonly from = input.required<string>();
   readonly to = input.required<string>();
   readonly fromColor = input<string | undefined>('var(--color-stone-700)');
   readonly toColor = input<string | undefined>('var(--color-stone-700)');
 
-  private readonly connectionsService = inject(ConnectionPointsService);
   private readonly options = {
     horizontalStep: 0.25,
     verticalStep: 0.33,

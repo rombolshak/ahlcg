@@ -17,10 +17,13 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   },
 })
 export class AgendaComponent {
-  readonly agenda = input.required<Agenda>();
   protected readonly imageService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
 
-  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.agenda);
+  readonly agenda = input.required<Agenda>();
+
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.agenda);
+
   readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptyDoomSlots = computed(() => Math.max(this.agenda().requiredDoom - this.agenda().currentDoom - this.agenda().doomOnCards, 0));

@@ -15,8 +15,8 @@ import { InvestigatorSkillComponent } from './investigator-skill/investigator-sk
   },
 })
 export class InvestigatorSkillsComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly skills = input.required<InvestigatorSkills>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

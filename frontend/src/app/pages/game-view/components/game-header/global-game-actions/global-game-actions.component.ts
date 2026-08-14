@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { ActionButton } from './action-button.model';
 import { SvgComponent } from '@shared/components/svg/svg.component';
+import { ActionButton } from './action-button.model';
 
 @Component({
   selector: 'ah-global-game-actions',

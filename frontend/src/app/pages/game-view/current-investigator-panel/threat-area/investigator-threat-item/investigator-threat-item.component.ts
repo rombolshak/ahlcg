@@ -18,7 +18,10 @@ import { VitalsBarComponent } from '@shared/components/vitals-bar/vitals-bar.com
   },
 })
 export class InvestigatorThreatItemComponent {
-  readonly enemy = input.required<Enemy>();
   protected readonly imagesService = inject(ImagesUrlService);
-  protected readonly info = inject(CardInfoService).getCardInfo(this.enemy);
+  private readonly cardInfoService = inject(CardInfoService);
+
+  readonly enemy = input.required<Enemy>();
+
+  protected readonly info = this.cardInfoService.getCardInfo(this.enemy);
 }

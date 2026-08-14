@@ -103,18 +103,16 @@
   font-family: Teutonic;
 }
 
-@layer utilities {
-  .stroke {
-    -webkit-text-stroke-width: thick;
-  }
+@utility stroke {
+  -webkit-text-stroke-width: thick;
+}
 
-  .cursor-reset {
-    cursor: unset;
-  }
+@utility cursor-reset {
+  cursor: unset;
+}
 
-  .color-white {
-    color: oklch(1 0 0);
-  }
+@utility color-white {
+  color: oklch(1 0 0);
 }
 
 @theme {

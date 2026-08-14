@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CardInfo } from '@domain/entities/details/card-info.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -13,8 +13,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
       group-data-[size=m]:pr-[40px] group-data-[size=m]:pl-[48px] group-data-[size=m]:text-lg/[18px]
       group-data-[size=s]:pr-[22px] group-data-[size=s]:pl-[30px] group-data-[size=s]:text-[10px]/[10px]
     "
-    [class.text-center]="align() === 'center'"
-    [class.text-left]="align() !== 'center'"
+    [class.text-center]="centered()"
+    [class.text-left]="!centered()"
   >
     {{ card().title | transloco }}
   </div> `,
@@ -23,4 +23,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class CardTitleComponent {
   readonly card = input.required<CardInfo>();
   readonly align = input<'left' | 'center'>('center');
+
+  protected readonly centered = computed(() => this.align() === 'center');
 }

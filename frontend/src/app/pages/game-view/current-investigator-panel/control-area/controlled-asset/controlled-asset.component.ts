@@ -20,10 +20,13 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
   },
 })
 export class ControlledAssetComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
+
   readonly asset = input.required<AssetCard>();
   readonly passive = input(false);
   readonly hovered = input(false);
-  protected readonly imagesService = inject(ImagesUrlService);
-  protected readonly info = inject(CardInfoService).getCardInfo(this.asset);
+
+  protected readonly info = this.cardInfoService.getCardInfo(this.asset);
   protected readonly anchorName = computed(() => `--asset-${this.asset().id}`);
 }

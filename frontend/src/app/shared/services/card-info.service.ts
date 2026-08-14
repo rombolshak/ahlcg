@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, effect, inject, Injectable, signal, Signal } from '@angular/core';
+import { computed, effect, inject, Service, signal, Signal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { ArkErrors, type } from 'arktype';
 import { combineLatest, map, switchMap } from 'rxjs';
@@ -19,9 +19,7 @@ const cardDescription = type({
 
 type CardDescription = typeof cardDescription.infer;
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CardInfoService {
   private readonly transloco = inject(TranslocoService);
   private readonly http = inject(HttpClient);

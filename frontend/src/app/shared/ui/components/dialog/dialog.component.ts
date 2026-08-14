@@ -50,6 +50,8 @@ const SIZE_CLASSES: Record<DialogSize, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogComponent implements OnDestroy {
+  private readonly inputManager = inject(InputManagerService);
+
   public readonly title = input('');
   public readonly isOpen = input(false);
   public readonly size = input<DialogSize>('s');
@@ -65,7 +67,6 @@ export class DialogComponent implements OnDestroy {
    */
   public readonly closed = output();
 
-  private readonly inputManager = inject(InputManagerService);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly projectedContent = contentChild(AH_DIALOG_CONTENT);
   private readonly contentHost = viewChild('contentHost', { read: ViewContainerRef });

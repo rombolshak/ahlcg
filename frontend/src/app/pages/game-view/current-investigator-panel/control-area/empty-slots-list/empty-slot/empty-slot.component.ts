@@ -13,6 +13,7 @@ import { ImagesUrlService } from '@services/images-url.service';
   },
 })
 export class EmptySlotComponent {
-  readonly slot = input.required<AssetSlot>();
   protected readonly imagesUrlService = inject(ImagesUrlService);
+
+  readonly slot = input.required<AssetSlot>();
 }

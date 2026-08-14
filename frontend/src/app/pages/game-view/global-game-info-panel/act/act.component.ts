@@ -19,10 +19,13 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   },
 })
 export class ActComponent {
-  readonly act = input.required<Act>();
   protected readonly imageService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
 
-  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.act);
+  readonly act = input.required<Act>();
+
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.act);
+
   readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptySlots = computed(() => this.act().objectives.map(o => Math.max(o.requiredValue - o.currentValue, 0)));

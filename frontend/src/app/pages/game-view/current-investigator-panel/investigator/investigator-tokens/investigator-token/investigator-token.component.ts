@@ -15,9 +15,9 @@ import { NumericTextComponent } from '../../../../../../shared/ui/components/num
   },
 })
 export class InvestigatorTokenComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly type = input.required<TokenType>();
   readonly value = input.required<number | undefined>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

@@ -31,10 +31,10 @@ import { InvestigatorTokensComponent } from './investigator-tokens/investigator-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
+
   readonly investigator = input.required<Investigator>();
 
-  protected readonly imagesService = inject(ImagesUrlService);
-
-  private readonly cardInfoService = inject(CardInfoService);
   protected readonly info = this.cardInfoService.getCardInfo(this.investigator);
 }

@@ -15,8 +15,8 @@ import { InvestigatorTokenComponent } from './investigator-token/investigator-to
   },
 })
 export class InvestigatorTokensComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly tokens = input.required<CardTokens | undefined>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

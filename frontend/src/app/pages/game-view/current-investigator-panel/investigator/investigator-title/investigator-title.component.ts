@@ -13,8 +13,8 @@ import { ImagesUrlService } from '@services/images-url.service';
   },
 })
 export class InvestigatorTitleComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly text = input.required<string>();
   readonly faction = input.required<Faction>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

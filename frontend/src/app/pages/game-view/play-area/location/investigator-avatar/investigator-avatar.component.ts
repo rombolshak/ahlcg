@@ -14,7 +14,7 @@ import { CardOutlineDirective } from '@shared/directives/cards/card-outline.dire
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorAvatarComponent {
-  readonly investigator = input.required<Investigator>();
-
   protected readonly imagesService = inject(ImagesUrlService);
+
+  readonly investigator = input.required<Investigator>();
 }

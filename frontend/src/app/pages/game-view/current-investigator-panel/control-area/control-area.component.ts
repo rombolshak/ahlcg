@@ -25,13 +25,13 @@ import { emptySlots, getTotalPages, isActive, sliceActiveAssets, slicePassiveAss
   hostDirectives: [{ directive: CardFactionBackgroundDirective, inputs: ['faction'] }],
 })
 export class ControlAreaComponent implements OnInit, OnDestroy {
+  protected readonly imagesService = inject(ImagesUrlService);
+  private readonly element = inject(ElementRef);
+
   readonly faction = input.required<Faction>();
   readonly assets = input.required<AssetCard[]>();
   readonly maxSlotsCounts = input.required<SlotsCount>();
 
-  protected readonly imagesService = inject(ImagesUrlService);
-
-  private readonly element = inject(ElementRef);
   private readonly observer = new ResizeObserver(entries => {
     this.resize(entries);
   });

@@ -13,6 +13,7 @@ import { ImagesUrlService } from '@services/images-url.service';
   },
 })
 export class EnemyAttackDisplayComponent {
-  readonly enemy = input.required<Enemy>();
   protected readonly imagesService = inject(ImagesUrlService);
+
+  readonly enemy = input.required<Enemy>();
 }

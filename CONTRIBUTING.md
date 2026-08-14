@@ -2,7 +2,7 @@
 
 Fan-made, rules-compliant digital implementation of Arkham Horror: The Card Game. Monorepo:
 
-- **`frontend/`** — Angular 21 SPA. Zoneless, signal-based, `@ngrx/signals` store, arktype validation, RFC6902 patching, GSAP Flip animations, Tailwind 4 + daisyUI, Transloco i18n, Storybook + Chromatic.
+- **`frontend/`** — Angular 22 SPA. Zoneless, signal-based, `@ngrx/signals` store, arktype validation, RFC6902 patching, GSAP Flip animations, Tailwind 4 + daisyUI, Transloco i18n, Storybook + Chromatic.
 - **`backend/`** — .NET 10. ASP.NET Core Minimal APIs with Identity (cookie sessions), EF Core + PostgreSQL, SignalR, OpenTelemetry, orchestrated for local development by .NET Aspire.
 
 ## Where the project actually stands

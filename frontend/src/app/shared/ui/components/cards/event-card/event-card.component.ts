@@ -25,7 +25,10 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EventCardComponent {
+  private readonly cardInfoService = inject(CardInfoService);
+
   readonly card = input.required<EventCard>();
-  readonly cardInfo = inject(CardInfoService).getCardInfo(this.card);
   readonly displayOptions = input.required<DisplayOptions>();
+
+  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
 }

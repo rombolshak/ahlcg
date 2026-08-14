@@ -8,7 +8,7 @@ These are rules, not preferences. Follow them in new code; ESLint (`eslint.confi
 - **Use `input()` / `input.required()` and `output()`.** `@Input()` and `@Output()` decorators appear nowhere in `src/` and must not be introduced.
 - **Use `viewChild()` / `viewChild.required()`**, not `@ViewChild()`.
 - **Always set `changeDetection: ChangeDetectionStrategy.OnPush`.** The app is zoneless (`provideZonelessChangeDetection()`); anything else is a bug.
-- **Standalone only.** Do not write `standalone: true` — it is the default in Angular 21 and is not spelled out in this codebase. List dependencies in `imports`.
+- **Standalone only.** Do not write `standalone: true` — it is the default in Angular 22 and is not spelled out in this codebase. List dependencies in `imports`.
 - Put host classes and attributes in the `host: {}` metadata object, not `@HostBinding`.
 - Declare members `readonly` unless they are genuinely reassigned, and scope them explicitly: `private` for injected collaborators and internal signals, `protected` for anything only the template reads, `public` only for a real external API.
 
@@ -21,7 +21,7 @@ These are rules, not preferences. Follow them in new code; ESLint (`eslint.confi
 ## Dependency injection
 
 - **Use `inject()`.** Constructor parameter injection appears nowhere in `src/`. Constructors are for effects and subscriptions only.
-- Services are `@Injectable({ providedIn: 'root' })`.
+- Services are `@Service()` — Angular 22's replacement for `@Injectable({ providedIn: 'root' })`, enforced by `@angular-eslint/prefer-service-decorator`.
 - Configure generic/reusable services with `InjectionToken`s — see `SettingsService` with `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX`.
 
 ## Files and naming
@@ -60,7 +60,7 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 
 ## Imports
 
-`tsconfig.json` sets `baseUrl: "src/app"` and these aliases — use them for anything outside the current feature folder:
+`tsconfig.json` sets these path aliases — use them for anything outside the current feature folder:
 
 | Alias | Resolves to |
 | --- | --- |
@@ -69,7 +69,7 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 | `@services/*` | `src/app/shared/services/*` |
 | `@shared/*` | `src/app/shared/ui/*` |
 
-Use relative imports only for siblings and children within the same feature. (A few older files import bare baseUrl paths like `shared/domain/game-state` — prefer the alias in new code.)
+Use relative imports only for siblings and children within the same feature. There is no `baseUrl`, so bare paths like `shared/domain/game-state` do not resolve.
 
 ## TypeScript strictness
 
@@ -95,7 +95,7 @@ if (model instanceof ArkErrors) {
 
 ## Styling
 
-Tailwind utility classes in templates. Global CSS, the daisyUI plugin, and the custom `abyss` theme live in `src/styles.css` — that file is the single source of truth for design tokens (`--color-primary`, `--radius-box`, …). Reference tokens through Tailwind/daisyUI class names or `var(--color-…)`; do not hardcode hex values. `eslint-plugin-better-tailwindcss` and `prettier-plugin-tailwindcss` enforce class ordering and validity; `stylelint` covers `.css`.
+Tailwind utility classes in templates. Global CSS, the daisyUI plugin, and the custom `abyss` theme live in `src/styles.css` — that file is the single source of truth for design tokens (`--color-primary`, `--radius-box`, …). Reference tokens through Tailwind/daisyUI class names or `var(--color-…)`; do not hardcode hex values. `eslint-plugin-better-tailwindcss` enforces class ordering and validity; `stylelint` covers `.css`. Custom utilities go in `@utility` blocks — classes declared under `@layer utilities` are invisible to the linter. Prettier owns whitespace inside a `class` attribute in `.html`, so that rule never wraps there; inline templates in `.ts` do wrap at 160.
 
 ## Commits
 

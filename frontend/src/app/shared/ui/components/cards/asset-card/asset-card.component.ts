@@ -18,10 +18,13 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetCardComponent {
-  readonly card = input.required<AssetCard>();
   imagesService = inject(ImagesUrlService);
-  readonly cardInfo = inject(CardInfoService).getCardInfo(this.card);
+  private readonly cardInfoService = inject(CardInfoService);
+
+  readonly card = input.required<AssetCard>();
   readonly displayOptions = input.required<DisplayOptions>();
+
+  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
   slotSizes = {
     l: 64,
     m: 43,

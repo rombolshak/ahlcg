@@ -32,6 +32,6 @@ describe('NumericTextComponent', () => {
     fixture.componentRef.setInput('value', 1);
     fixture.detectChanges();
     TestBed.tick();
-    await emitted;
+    await expect(emitted).resolves.toBeUndefined();
   });
 });

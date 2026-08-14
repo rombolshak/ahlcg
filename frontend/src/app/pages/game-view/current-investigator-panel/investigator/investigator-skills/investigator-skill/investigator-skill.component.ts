@@ -14,8 +14,8 @@ import { NumericTextComponent } from '@shared/components/numeric-text/numeric-te
   },
 })
 export class InvestigatorSkillComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly type = input.required<SkillType>();
   readonly value = input.required<number>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

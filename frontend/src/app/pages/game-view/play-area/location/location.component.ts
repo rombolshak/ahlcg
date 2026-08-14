@@ -18,10 +18,10 @@ import { LocationHeaderComponent } from './location-header/location-header.compo
 })
 export class LocationComponent {
   imageService = inject(ImagesUrlService);
+  readonly store = inject(GameStateStore);
+
   readonly locationId = input.required<LocationId>();
   readonly investigatorsIds = input.required<InvestigatorId[]>();
-
-  readonly store = inject(GameStateStore);
 
   protected readonly location = computed(() => this.store.getLocation(this.locationId()));
 

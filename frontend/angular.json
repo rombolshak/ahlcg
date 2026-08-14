@@ -31,9 +31,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "scripts": []
           },
           "configurations": {
@@ -82,23 +80,15 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "coverage": true,
-            "coverageReporters": [
-              "html",
-              "lcov"
-            ],
+            "coverageReporters": ["html", "lcov"],
             "tsConfig": "tsconfig.spec.json",
-            "setupFiles": [
-              "src/test-setup.ts"
-            ]
+            "setupFiles": ["src/test-setup.ts"]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         },
         "storybook": {
@@ -106,12 +96,9 @@
           "options": {
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "compodoc": false,
             "port": 6006,
-            "webpackStatsJson": true,
             "zoneless": true
           }
         },
@@ -120,12 +107,9 @@
           "options": {
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "compodoc": false,
             "outputDir": "storybook-static",
-            "webpackStatsJson": true,
             "zoneless": true
           }
         }
@@ -133,9 +117,7 @@
     }
   },
   "cli": {
-    "schematicCollections": [
-      "angular-eslint"
-    ],
+    "schematicCollections": ["angular-eslint"],
     "analytics": false
   },
   "schematics": {

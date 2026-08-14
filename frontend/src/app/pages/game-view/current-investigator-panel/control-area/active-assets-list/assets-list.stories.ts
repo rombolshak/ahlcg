@@ -1,9 +1,8 @@
 ﻿import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6 } from '@domain/test/entities/test-cards';
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { AssetsListComponent } from 'pages/game-view/current-investigator-panel/control-area/active-assets-list/assets-list.component';
-import { ControlledAssetComponent } from '../controlled-asset/controlled-asset.component';
+import { AssetsListComponent } from './assets-list.component';
 
-const meta: Meta<ControlledAssetComponent> = {
+const meta: Meta<AssetsListComponent> = {
   component: AssetsListComponent,
   decorators: [componentWrapperDecorator(story => `<div class="w-[22rem]">${story}</div>`)],
 };

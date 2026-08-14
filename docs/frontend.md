@@ -1,6 +1,6 @@
 # Frontend
 
-Angular 21 SPA in `frontend/`. Read [frontend-conventions.md](frontend-conventions.md) before writing any code here.
+Angular 22 SPA in `frontend/`. Read [frontend-conventions.md](frontend-conventions.md) before writing any code here.
 
 ## Layout
 

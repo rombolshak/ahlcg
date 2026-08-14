@@ -17,10 +17,11 @@ import { VitalsBarComponent } from '@shared/components/vitals-bar/vitals-bar.com
   },
 })
 export class EnemyPopoverComponent {
-  readonly enemy = input.required<Enemy>();
   readonly imageService = inject(ImagesUrlService);
-
   private readonly cardInfoService = inject(CardInfoService);
+
+  readonly enemy = input.required<Enemy>();
+
   private readonly cardInfo = this.cardInfoService.getCardInfo(this.enemy);
   readonly title = computed(() => this.cardInfo()?.title);
 }

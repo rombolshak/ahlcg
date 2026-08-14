@@ -1,13 +1,11 @@
-import { effect, inject, Injectable, InjectionToken, signal, Signal } from '@angular/core';
+import { effect, inject, InjectionToken, Service, signal, Signal } from '@angular/core';
 import { diff } from 'deep-object-diff';
 
 const STORAGE_KEY_PREFIX = 'ahlcg_';
 export const DEFAULT_SETTINGS = new InjectionToken('Default settings value');
 export const STORAGE_KEY_SUFFIX = new InjectionToken<string>('Storage key suffix');
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class SettingsService<T extends object> {
   private readonly defaultSettings = inject<T>(DEFAULT_SETTINGS);
   private readonly storageKeySuffix = inject(STORAGE_KEY_SUFFIX);
