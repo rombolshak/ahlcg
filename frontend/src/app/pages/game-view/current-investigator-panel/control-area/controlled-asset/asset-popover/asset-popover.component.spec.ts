@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { cardA } from 'shared/domain/test/entities/test-cards';
+import { cardA } from '@domain/test/entities/test-cards';
 import { getTranslocoModule } from '../../../../../../shared/domain/test/transloco.testing';
 import { AssetPopoverComponent } from './asset-popover.component';
 

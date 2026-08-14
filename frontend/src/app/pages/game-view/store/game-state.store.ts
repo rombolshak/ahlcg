@@ -3,18 +3,18 @@ import { patchState, signalStore, withComputed, withMethods, withProps, withStat
 import { ArkErrors } from 'arktype';
 import { gsap } from 'gsap';
 // @ts-ignore see issue #637 in gsap 3.14.2
+import { Act } from '@domain/entities/act.model';
+import { Agenda } from '@domain/entities/agenda.model';
+import { Enemy } from '@domain/entities/enemy.model';
+import { ActId, AgendaId, AssetId, EnemyId, EntityId, EventId, InvestigatorId, LocationId, PlayerCardId, SkillId } from '@domain/entities/id.model';
+import { Investigator } from '@domain/entities/investigator.model';
+import { Location } from '@domain/entities/location.model';
+import { AssetCard, EventCard, PlayerCard, SkillCard } from '@domain/entities/player-card.model';
+import { GameEntity, isAct, isAgenda, isAsset, isEnemy, isEvent, isInvestigator, isLocation, isPlayerCard, isSkill } from '@domain/game-entity';
+import { gameState, GameState } from '@domain/game-state';
 import { Flip } from 'gsap/Flip';
 import { produce } from 'immer';
 import { applyPatch, Operation } from 'rfc6902';
-import { Act } from 'shared/domain/entities/act.model';
-import { Agenda } from 'shared/domain/entities/agenda.model';
-import { Enemy } from 'shared/domain/entities/enemy.model';
-import { ActId, AgendaId, AssetId, EnemyId, EntityId, EventId, InvestigatorId, LocationId, PlayerCardId, SkillId } from 'shared/domain/entities/id.model';
-import { Investigator } from 'shared/domain/entities/investigator.model';
-import { Location } from 'shared/domain/entities/location.model';
-import { AssetCard, EventCard, PlayerCard, SkillCard } from 'shared/domain/entities/player-card.model';
-import { GameEntity, isAct, isAgenda, isAsset, isEnemy, isEvent, isInvestigator, isLocation, isPlayerCard, isSkill } from 'shared/domain/game-entity';
-import { gameState, GameState } from 'shared/domain/game-state';
 
 gsap.registerPlugin(Flip);
 

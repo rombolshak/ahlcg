@@ -1,9 +1,7 @@
-import { computed, Injectable, signal, Signal } from '@angular/core';
-import { Investigator } from 'shared/domain/entities/investigator.model';
+import { computed, Service, signal, Signal } from '@angular/core';
+import { Investigator } from '@domain/entities/investigator.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class NoThreatsPhraseService {
   private readonly initialPhrasesCount = 12;
   private readonly totalPhrasesCount = 25;

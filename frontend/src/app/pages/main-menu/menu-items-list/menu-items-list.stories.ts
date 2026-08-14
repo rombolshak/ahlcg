@@ -1,5 +1,5 @@
 ﻿import { MenuItemsListComponent } from '@pages/main-menu/menu-items-list/menu-items-list.component';
-import { Meta, StoryObj } from '@storybook/angular';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 
 const meta: Meta<MenuItemsListComponent> = {
   component: MenuItemsListComponent,

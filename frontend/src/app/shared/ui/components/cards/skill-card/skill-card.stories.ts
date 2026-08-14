@@ -1,4 +1,4 @@
-﻿import { Meta, StoryObj } from '@storybook/angular';
+﻿import { Meta, StoryObj } from '@storybook/angular-vite';
 import { cardS } from '../../../../domain/test/entities/test-cards';
 import { SkillCardComponent } from './skill-card.component';
 

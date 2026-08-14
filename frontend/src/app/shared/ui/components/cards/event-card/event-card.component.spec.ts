@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { cardE, displayOption } from 'shared/domain/test/entities/test-cards';
-import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
+import { cardE, displayOption } from '@domain/test/entities/test-cards';
+import { serveCardAssets } from '@domain/test/serve-card-assets';
 import { getTranslocoModule } from '../../../../domain/test/transloco.testing';
 import { EventCardComponent } from './event-card.component';
 

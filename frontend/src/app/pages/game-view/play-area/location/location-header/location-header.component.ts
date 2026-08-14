@@ -1,12 +1,12 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Location } from '@domain/entities/location.model';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { Location } from 'shared/domain/entities/location.model';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { ImagesUrlService } from 'shared/services/images-url.service';
-import { NumericTextWithOverlayComponent } from 'shared/ui/components/numeric-text/numeric-text-with-overlay.component';
-import { NumericTextComponent } from 'shared/ui/components/numeric-text/numeric-text.component';
-import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
+import { CardInfoService } from '@services/card-info.service';
+import { ImagesUrlService } from '@services/images-url.service';
+import { NumericTextWithOverlayComponent } from '@shared/components/numeric-text/numeric-text-with-overlay.component';
+import { NumericTextComponent } from '@shared/components/numeric-text/numeric-text.component';
+import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../../components/card-details-text/card-details-text.component';
 
 @Component({
@@ -19,11 +19,13 @@ import { CardDetailsTextComponent } from '../../../components/card-details-text/
   },
 })
 export class LocationHeaderComponent {
+  protected readonly imageService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
+
   readonly location = input<Location>();
   readonly hovered = input(false);
-  protected readonly imageService = inject(ImagesUrlService);
 
-  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.location);
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.location);
 
   protected readonly title = computed(() => this.cardInfo()?.title);
   protected readonly showAbilitiesMark = computed(() => (this.cardInfo()?.abilities?.length ?? 0) > 0);

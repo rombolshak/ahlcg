@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { defaultSlots } from '@domain/test/entities/test-investigators';
+import { serveCardAssets } from '@domain/test/serve-card-assets';
 import { getTranslocoModule } from '@domain/test/transloco.testing';
-import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
 import { ControlAreaComponent } from './control-area.component';
 
 describe('ControlAreaComponent', () => {

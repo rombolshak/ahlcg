@@ -1,4 +1,4 @@
-﻿import { Meta, StoryObj } from '@storybook/angular';
+﻿import { Meta, StoryObj } from '@storybook/angular-vite';
 import { TextWithOverlayComponent } from './text-with-overlay.component';
 
 const meta: Meta<TextWithOverlayComponent> = {

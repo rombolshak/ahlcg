@@ -1,4 +1,4 @@
-import { DOCUMENT, inject, Injectable } from '@angular/core';
+import { DOCUMENT, inject, Service } from '@angular/core';
 
 type GeneralAction = 'confirm' | 'cancel' | 'none';
 type Navigation = 'moveUp' | 'moveDown' | 'moveLeft' | 'moveRight';
@@ -20,9 +20,7 @@ export interface LayerRef {
   destroy: () => void;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class InputManagerService {
   private readonly layers: InputLayerProvider[] = [];
   private globalLayer: InputLayer = {};

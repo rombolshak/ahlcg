@@ -1,4 +1,4 @@
-﻿import { Meta, StoryObj } from '@storybook/angular';
+﻿import { Meta, StoryObj } from '@storybook/angular-vite';
 import { cardA } from '../../../../domain/test/entities/test-cards';
 import { AssetCardComponent } from './asset-card.component';
 

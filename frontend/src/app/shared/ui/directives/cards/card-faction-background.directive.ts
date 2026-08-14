@@ -6,9 +6,10 @@ import { ImagesUrlService } from '@services/images-url.service';
   selector: '[ahCardFactionBackground]',
 })
 export class CardFactionBackgroundDirective {
-  readonly faction = input.required<Faction>();
   private readonly el = inject(ElementRef);
   private readonly imagesService = inject(ImagesUrlService);
+
+  readonly faction = input.required<Faction>();
 
   constructor() {
     const html = this.el.nativeElement as HTMLElement;

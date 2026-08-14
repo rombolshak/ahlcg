@@ -1,8 +1,8 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { TokenType } from 'shared/domain/entities/details/card.tokens';
-import { Faction } from 'shared/domain/entities/player-card.model';
-import { ImagesUrlService } from 'shared/services/images-url.service';
+import { TokenType } from '@domain/entities/details/card.tokens';
+import { Faction } from '@domain/entities/player-card.model';
+import { ImagesUrlService } from '@services/images-url.service';
 import { NumericTextComponent } from '../../../../../../shared/ui/components/numeric-text/numeric-text.component';
 
 @Component({
@@ -15,9 +15,9 @@ import { NumericTextComponent } from '../../../../../../shared/ui/components/num
   },
 })
 export class InvestigatorTokenComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly type = input.required<TokenType>();
   readonly value = input.required<number | undefined>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

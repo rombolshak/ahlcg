@@ -17,9 +17,10 @@ import { MenuItem } from '../menu-item';
   },
 })
 export class MenuItemsListComponent implements OnInit, OnDestroy {
+  private readonly inputManager = inject(InputManagerService);
+
   public readonly items = input.required<MenuItem[]>();
 
-  private readonly inputManager = inject(InputManagerService);
   private inputLayer: LayerRef | undefined;
 
   private readonly navigation = listNavigation({

@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { CurrentGamePhaseComponent } from './current-game-phase.component';
 import { InvestigatorSeeker } from './phase-colors.model';
 

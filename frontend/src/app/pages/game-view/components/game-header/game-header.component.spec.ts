@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
-import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
+import { serveCardAssets } from '@domain/test/serve-card-assets';
+import { getTranslocoModule } from '@domain/test/transloco.testing';
 import { GameHeaderComponent } from './game-header.component';
 
 describe('GameHeaderComponent', () => {

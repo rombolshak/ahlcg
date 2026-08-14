@@ -1,10 +1,10 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import eslint from "@eslint/js";
 
+import vitest from "@vitest/eslint-plugin";
 import { configs as ngConfigs, processInlineTemplates } from "angular-eslint";
 import prettierConfig from "eslint-config-prettier";
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
-import jasminePlugin from "eslint-plugin-jasmine";
 import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
@@ -82,15 +82,19 @@ export default defineConfig(
   },
   {
     files: ["src/**/*.spec.ts"],
-    extends: [jasminePlugin.configs.recommended, prettierConfig],
+    extends: [vitest.configs.recommended, prettierConfig],
     languageOptions: {
       globals: {
-        ...globals.jasmine,
+        ...globals.vitest,
+        ...vitest.environments.env.globals,
       },
     },
-    plugins: { jasmine: jasminePlugin },
+    plugins: { vitest },
     rules: {
       "@typescript-eslint/no-unsafe-member-access": "off",
+      // Assertions often sit in a per-spec `checkX`/`validateX` helper, or in HttpTestingController,
+      // whose `expect*` methods throw on their own.
+      "vitest/expect-expect": ["error", { assertFunctionNames: ["expect", "http.expect*", "check*", "validate*"] }],
     },
   },
   {
@@ -107,6 +111,9 @@ export default defineConfig(
         "warn",
         {
           detectComponentClasses: true,
+          // Classes that exist outside anything Tailwind compiles: a component's own `styles`,
+          // the splash screen's inline <style> in index.html, and vanilla-jsoneditor's theme.
+          ignore: ["^active$", "^background$", "^progress-(track|fill)$", "^jse-theme-dark$"],
         },
       ],
     },
@@ -114,6 +121,18 @@ export default defineConfig(
       "better-tailwindcss": {
         entryPoint: "./src/styles.css",
       },
+    },
+  },
+  {
+    // Prettier's HTML printer collapses a class attribute back onto one line however long it gets, so
+    // in real templates the two tools would undo each other forever. printWidth 0 means "never wrap",
+    // which is what prettier produces. Inline templates keep wrapping — they live in template literals,
+    // which prettier leaves alone.
+    files: ["**/*.html"],
+    // `processInlineTemplates` presents inline templates as virtual .html files under their .ts path.
+    ignores: ["**/*.ts/**"],
+    rules: {
+      "better-tailwindcss/enforce-consistent-line-wrapping": ["warn", { strictness: "loose", preferSingleLine: true, printWidth: 0 }],
     },
   },
 );

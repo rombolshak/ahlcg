@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { GamePhase } from '@domain/meta-info';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { GamePhase } from 'shared/domain/meta-info';
 import { PhaseColor } from './phase-colors.model';
 
 @Component({

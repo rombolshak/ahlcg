@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { ScenarioNameComponent } from './scenario-name.component';
 
 const meta: Meta<ScenarioNameComponent> = {

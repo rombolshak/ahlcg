@@ -3,8 +3,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { cardA, cardE, cardS, displayOption } from 'shared/domain/test/entities/test-cards';
-import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
+import { cardA, cardE, cardS, displayOption } from '@domain/test/entities/test-cards';
+import { serveCardAssets } from '@domain/test/serve-card-assets';
 import { getTranslocoModule } from '../../../../domain/test/transloco.testing';
 import { CardComponent } from './card.component';
 

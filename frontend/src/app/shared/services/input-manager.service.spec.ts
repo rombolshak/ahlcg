@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-
-import { InputManagerService } from 'shared/services/input-manager.service';
+import { InputManagerService } from '@services/input-manager.service';
 
 describe('InputManagerService', () => {
   let service: InputManagerService;

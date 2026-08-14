@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testGameMap } from 'shared/domain/test/test-game-map';
+import { testGameMap } from '@domain/test/test-game-map';
 import { LocationsConnectionComponent } from './locations-connection.component';
 
 describe('LocationsConnectionComponent', () => {
@@ -42,7 +42,7 @@ describe('LocationsConnectionComponent', () => {
       f.componentRef.setInput('to', '.test2');
       f.componentRef.setInput('map', testGameMap);
       f.detectChanges();
-    }).toThrowError('Could not find element by selector .test1');
+    }).toThrow('Could not find element by selector .test1');
 
     expect(() => {
       const f = TestBed.createComponent(LocationsConnectionComponent);
@@ -50,7 +50,7 @@ describe('LocationsConnectionComponent', () => {
       f.componentRef.setInput('to', '.test2');
       f.componentRef.setInput('map', testGameMap);
       f.detectChanges();
-    }).toThrowError('Could not find element by selector .test2');
+    }).toThrow('Could not find element by selector .test2');
   });
 
   it('should display an svg with gradients', () => {

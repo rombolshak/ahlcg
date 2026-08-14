@@ -1,9 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { DisplayOptions } from 'shared/domain/display.options';
-import { AssetCard } from 'shared/domain/entities/player-card.model';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { ImagesUrlService } from 'shared/services/images-url.service';
+import { DisplayOptions } from '@domain/display.options';
+import { AssetCard } from '@domain/entities/player-card.model';
+import { CardInfoService } from '@services/card-info.service';
+import { ImagesUrlService } from '@services/images-url.service';
 import { CardAbilitiesComponent } from '../card-parts/card-abilities/card-abilities.component';
 import { CardCopyrightComponent } from '../card-parts/card-copyright/card-copyright.component';
 import { CardCostComponent } from '../card-parts/card-cost/card-cost.component';
@@ -18,10 +18,13 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetCardComponent {
-  readonly card = input.required<AssetCard>();
   imagesService = inject(ImagesUrlService);
-  readonly cardInfo = inject(CardInfoService).getCardInfo(this.card);
+  private readonly cardInfoService = inject(CardInfoService);
+
+  readonly card = input.required<AssetCard>();
   readonly displayOptions = input.required<DisplayOptions>();
+
+  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
   slotSizes = {
     l: 64,
     m: 43,

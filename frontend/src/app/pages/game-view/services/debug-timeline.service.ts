@@ -1,11 +1,9 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Service, signal } from '@angular/core';
+import { GameState } from '@domain/game-state';
 import { createPatch, Operation } from 'rfc6902';
-import { GameState } from 'shared/domain/game-state';
 import { GameStateStore } from '../store/game-state.store';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DebugTimelineService {
   private readonly store = inject(GameStateStore);
   private originalState: GameState | null = null;

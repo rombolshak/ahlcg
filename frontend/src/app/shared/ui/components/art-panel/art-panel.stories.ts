@@ -1,5 +1,5 @@
 ﻿import { ArtPanelComponent } from '@shared/components/art-panel/art-panel.component';
-import { argsToTemplate, Meta, StoryObj } from '@storybook/angular';
+import { argsToTemplate, Meta, StoryObj } from '@storybook/angular-vite';
 
 const meta: Meta<ArtPanelComponent> = {
   component: ArtPanelComponent,

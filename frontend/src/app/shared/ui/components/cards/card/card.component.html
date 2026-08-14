@@ -1,4 +1,5 @@
-﻿@switch (card().cardType) {
+﻿@let cardType = card().cardType;
+@switch (cardType) {
   @case ("asset") {
     <ah-asset-card [card]="card() | as: AssetCard" [displayOptions]="displayOptions()" />
   }
@@ -8,4 +9,5 @@
   @case ("skill") {
     <ah-skill-card [card]="card() | as: SkillCard" [displayOptions]="displayOptions()" />
   }
+  @default never;
 }

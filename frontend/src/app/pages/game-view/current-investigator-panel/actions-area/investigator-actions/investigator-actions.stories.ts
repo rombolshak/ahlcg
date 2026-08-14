@@ -1,6 +1,6 @@
 ﻿import { testActions } from '@domain/test/test-actions';
 import { InvestigatorActionsComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/investigator-actions.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 
 const meta: Meta<InvestigatorActionsComponent> = {
   component: InvestigatorActionsComponent,

@@ -7,8 +7,8 @@ import Bugsnag from '@bugsnag/js';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
 import { provideTransloco } from '@jsverse/transloco';
 import { authInterceptor } from '@services/auth.interceptor';
-import { routes } from 'app.routes';
-import { TranslocoHttpLoader } from 'transloco-loader';
+import { routes } from './app.routes';
+import { TranslocoHttpLoader } from './transloco-loader';
 
 Bugsnag.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });
 BugsnagPerformance.start({ apiKey: 'c83772d54325525fdd6f016c4c49f3df' });

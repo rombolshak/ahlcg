@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 export enum Plane {
   Top,
@@ -50,9 +50,7 @@ interface ElementBox {
   offsetHeight: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ConnectionPointsService {
   public getConnectors(fromEl: ElementBox, toEl: ElementBox): [Connector, Connector] {
     const fromPlane = this.getOriginatingPlane(fromEl, toEl);

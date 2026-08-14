@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ApplicationRef, createComponent, EnvironmentInjector, inject, Injectable, OutputRef, Type } from '@angular/core';
+import { ApplicationRef, createComponent, EnvironmentInjector, inject, OutputRef, Service, Type } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { DialogComponent, DialogSize } from '@shared/components/dialog/dialog.component';
@@ -18,9 +18,7 @@ export interface DialogOptions {
  * interceptor injects this service from inside that construction; a dependency back onto
  * `AuthService` here would be a cyclic-DI error.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class DialogService {
   private readonly appRef = inject(ApplicationRef);
   private readonly environmentInjector = inject(EnvironmentInjector);

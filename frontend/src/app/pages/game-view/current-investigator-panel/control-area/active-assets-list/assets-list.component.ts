@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { AssetCard } from 'shared/domain/entities/player-card.model';
+import { AssetCard } from '@domain/entities/player-card.model';
 import { ControlledAssetComponent } from '../controlled-asset/controlled-asset.component';
 
 @Component({

@@ -1,7 +1,7 @@
 ﻿import { cardA3 } from '@domain/test/entities/test-cards';
 import { testLocation } from '@domain/test/entities/test-locations';
 import { ActionTooltipComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/action-tooltip/action-tooltip.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 
 const meta: Meta<ActionTooltipComponent> = {
   component: ActionTooltipComponent,

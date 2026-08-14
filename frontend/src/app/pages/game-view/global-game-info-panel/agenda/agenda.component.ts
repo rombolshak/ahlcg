@@ -1,9 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Agenda } from 'shared/domain/entities/agenda.model';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { ImagesUrlService } from 'shared/services/images-url.service';
+import { CardInfoService } from '@services/card-info.service';
+import { ImagesUrlService } from '@services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 
 @Component({
@@ -17,10 +17,13 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   },
 })
 export class AgendaComponent {
-  readonly agenda = input.required<Agenda>();
   protected readonly imageService = inject(ImagesUrlService);
+  private readonly cardInfoService = inject(CardInfoService);
 
-  private readonly cardInfo = inject(CardInfoService).getCardInfo(this.agenda);
+  readonly agenda = input.required<Agenda>();
+
+  private readonly cardInfo = this.cardInfoService.getCardInfo(this.agenda);
+
   readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptyDoomSlots = computed(() => Math.max(this.agenda().requiredDoom - this.agenda().currentDoom - this.agenda().doomOnCards, 0));

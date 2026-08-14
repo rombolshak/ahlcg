@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, effect, inject, linkedSignal, viewC
 import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { InputLayer } from '@services/input-manager.service';
 import { listNavigation } from '@services/list-navigation';
+import { SettingsService } from '@services/settings/settings.service';
+import { provideUserPreferencesService, UserPreferences } from '@services/settings/user-preferences.service';
 import { AH_DIALOG_CONTENT, DialogContent } from '@shared/components/dialog/dialog.content';
 import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { produce } from 'immer';
-import { SettingsService } from 'shared/services/settings/settings.service';
-import { provideUserPreferencesService, UserPreferences } from 'shared/services/settings/user-preferences.service';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 
 @Component({

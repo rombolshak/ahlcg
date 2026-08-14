@@ -1,9 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { DisplayOptions } from 'shared/domain/display.options';
-import { CardInfo } from 'shared/domain/entities/details/card-info.model';
-import { ImagesUrlService } from 'shared/services/images-url.service';
-import { TrimStartPipe } from 'shared/ui/pipes/trim-start.pipe';
+import { DisplayOptions } from '@domain/display.options';
+import { CardInfo } from '@domain/entities/details/card-info.model';
+import { ImagesUrlService } from '@services/images-url.service';
+import { TrimStartPipe } from '@shared/pipes/trim-start.pipe';
 
 @Component({
   selector: 'ah-card-copyright',

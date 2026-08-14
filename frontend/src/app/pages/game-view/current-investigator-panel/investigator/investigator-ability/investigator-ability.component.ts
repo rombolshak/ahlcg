@@ -1,8 +1,8 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { Faction } from 'shared/domain/entities/player-card.model';
-import { ImagesUrlService } from 'shared/services/images-url.service';
-import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
+import { Faction } from '@domain/entities/player-card.model';
+import { ImagesUrlService } from '@services/images-url.service';
+import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-investigator-ability',
@@ -14,8 +14,8 @@ import { WithAhSymbolsPipe } from 'shared/ui/pipes/with-ah-symbols.pipe';
   },
 })
 export class InvestigatorAbilityComponent {
+  protected readonly imagesService = inject(ImagesUrlService);
+
   readonly faction = input.required<Faction>();
   readonly text = input.required<string>();
-
-  protected readonly imagesService = inject(ImagesUrlService);
 }

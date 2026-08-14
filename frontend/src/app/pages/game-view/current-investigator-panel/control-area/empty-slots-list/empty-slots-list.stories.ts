@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { AssetSlot } from '../../../../../shared/domain/entities/player-card.model';
 import { defaultSlots } from '../../../../../shared/domain/test/entities/test-investigators';
 import { ControlledAssetComponent } from '../controlled-asset/controlled-asset.component';

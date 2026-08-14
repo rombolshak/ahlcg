@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { VitalsBarComponent } from './vitals-bar.component';
 
 const meta: Meta<VitalsBarComponent> = {

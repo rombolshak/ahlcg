@@ -17,7 +17,7 @@
 ## Components
 
 ```
-frontend/  Angular 21 SPA          →  /api/*  →  backend/Ahlcg.ApiService  →  PostgreSQL
+frontend/  Angular 22 SPA          →  /api/*  →  backend/Ahlcg.ApiService  →  PostgreSQL
                                         (dev proxy)        (Minimal API + Identity + SignalR)
 ```
 
