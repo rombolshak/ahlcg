@@ -1,16 +1,14 @@
-import { computed, Injectable, signal, Signal } from '@angular/core';
-import { Enemy } from 'shared/domain/entities/enemy.model';
-import { Investigator } from 'shared/domain/entities/investigator.model';
-import { AssetCard } from 'shared/domain/entities/player-card.model';
+import { computed, Service, signal, Signal } from '@angular/core';
+import { Enemy } from '@domain/entities/enemy.model';
+import { Investigator } from '@domain/entities/investigator.model';
+import { AssetCard } from '@domain/entities/player-card.model';
 
 export interface ThreatsSeverity {
   healthSeverity: number;
   sanitySeverity: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ThreatsSeverityService {
   private readonly investigatorsSignals = new Map<string, ReturnType<typeof this.calculate>>();
 

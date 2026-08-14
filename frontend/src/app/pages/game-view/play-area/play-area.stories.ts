@@ -1,5 +1,5 @@
-﻿import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
-import { testGameState } from 'shared/domain/test/test-game-state';
+﻿import { testGameState } from '@domain/test/test-game-state';
+import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { GameStateStore } from '../store/game-state.store';
 import { PlayAreaComponent } from './play-area.component';
 

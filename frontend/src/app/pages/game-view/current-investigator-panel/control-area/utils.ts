@@ -1,4 +1,4 @@
-﻿import { AssetCard, AssetSlot, SlotsCount } from 'shared/domain/entities/player-card.model';
+﻿import { AssetCard, AssetSlot, SlotsCount } from '@domain/entities/player-card.model';
 
 export const isActive: (asset: AssetCard) => boolean = asset => {
   if (asset.slot) return true;

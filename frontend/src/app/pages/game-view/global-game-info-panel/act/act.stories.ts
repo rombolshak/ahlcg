@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { Objective } from '../../../../shared/domain/entities/act.model';
 import { testAct } from '../../../../shared/domain/test/entities/test-act';
 import { ActComponent } from './act.component';

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { Enemy } from '@domain/entities/enemy.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Enemy } from 'shared/domain/entities/enemy.model';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item/investigator-threat-item.component';
 import { ThreatsSeverity } from './threats-severity.service';
 

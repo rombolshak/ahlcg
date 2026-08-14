@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { GameMap } from 'shared/domain/game-map.model';
+import { GameMap } from '@domain/game-map.model';
 import { ConnectionPointsService } from './connection-points.service';
 
 @Component({

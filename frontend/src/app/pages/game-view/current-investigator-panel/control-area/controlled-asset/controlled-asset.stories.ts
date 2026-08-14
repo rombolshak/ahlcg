@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { cardA } from '../../../../../shared/domain/test/entities/test-cards';
 import { ControlledAssetComponent } from './controlled-asset.component';
 

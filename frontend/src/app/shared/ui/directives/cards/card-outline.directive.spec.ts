@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Faction } from '@domain/entities/player-card.model';
-import { CardOutlineDirective } from 'shared/ui/directives/cards/card-outline.directive';
+import { CardOutlineDirective } from '@shared/directives/cards/card-outline.directive';
 
 @Component({
   selector: 'ah-test',

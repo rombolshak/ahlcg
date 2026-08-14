@@ -1,10 +1,10 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import eslint from "@eslint/js";
 
+import vitest from "@vitest/eslint-plugin";
 import { configs as ngConfigs, processInlineTemplates } from "angular-eslint";
 import prettierConfig from "eslint-config-prettier";
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
-import jasminePlugin from "eslint-plugin-jasmine";
 import { configs as jsoncConfigs } from "eslint-plugin-jsonc";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
@@ -82,13 +82,14 @@ export default defineConfig(
   },
   {
     files: ["src/**/*.spec.ts"],
-    extends: [jasminePlugin.configs.recommended, prettierConfig],
+    extends: [vitest.configs.recommended, prettierConfig],
     languageOptions: {
       globals: {
-        ...globals.jasmine,
+        ...globals.vitest,
+        ...vitest.environments.env.globals,
       },
     },
-    plugins: { jasmine: jasminePlugin },
+    plugins: { vitest },
     rules: {
       "@typescript-eslint/no-unsafe-member-access": "off",
     },

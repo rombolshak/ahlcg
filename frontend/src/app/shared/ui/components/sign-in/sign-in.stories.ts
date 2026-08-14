@@ -1,7 +1,7 @@
 import { TranslocoDirective } from '@jsverse/transloco';
 import { AuthService } from '@services/auth.service';
 import { DialogComponent } from '@shared/components/dialog/dialog.component';
-import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
+import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { NEVER } from 'rxjs';
 import { userEvent, within } from 'storybook/test';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from './sign-in.component';

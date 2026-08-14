@@ -1,5 +1,5 @@
 ﻿import { ActionAreaButtonsComponent } from '@pages/game-view/current-investigator-panel/actions-area/action-area-buttons/action-area-buttons.component';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 
 const meta: Meta<ActionAreaButtonsComponent> = {
   component: ActionAreaButtonsComponent,

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testGameMap } from 'shared/domain/test/test-game-map';
+import { testGameMap } from '@domain/test/test-game-map';
 import { LocationsConnectionComponent } from './locations-connection.component';
 
 describe('LocationsConnectionComponent', () => {

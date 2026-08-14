@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { InvestigatorId, LocationId } from 'shared/domain/entities/id.model';
-import { ImagesUrlService } from 'shared/services/images-url.service';
+import { InvestigatorId, LocationId } from '@domain/entities/id.model';
+import { ImagesUrlService } from '@services/images-url.service';
 import { GameStateStore } from '../../store/game-state.store';
 import { EnemyAvatarComponent } from './enemy-avatar/enemy-avatar.component';
 import { InvestigatorAvatarComponent } from './investigator-avatar/investigator-avatar.component';

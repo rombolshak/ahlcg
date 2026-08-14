@@ -1,4 +1,4 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { NumericTextComponent } from './numeric-text.component';
 
 const meta: Meta<NumericTextComponent> = {

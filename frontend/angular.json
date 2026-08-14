@@ -102,9 +102,8 @@
           }
         },
         "storybook": {
-          "builder": "@storybook/angular:start-storybook",
+          "builder": "@storybook/angular-vite:start-storybook",
           "options": {
-            "experimentalZoneless": true,
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
             "styles": [
@@ -112,13 +111,13 @@
             ],
             "compodoc": false,
             "port": 6006,
-            "webpackStatsJson": true
+            "webpackStatsJson": true,
+            "zoneless": true
           }
         },
         "build-storybook": {
-          "builder": "@storybook/angular:build-storybook",
+          "builder": "@storybook/angular-vite:build-storybook",
           "options": {
-            "experimentalZoneless": true,
             "configDir": ".storybook",
             "browserTarget": "ahlcg:build",
             "styles": [
@@ -126,7 +125,8 @@
             ],
             "compodoc": false,
             "outputDir": "storybook-static",
-            "webpackStatsJson": true
+            "webpackStatsJson": true,
+            "zoneless": true
           }
         }
       }

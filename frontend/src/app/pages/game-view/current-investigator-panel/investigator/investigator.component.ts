@@ -1,11 +1,11 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { Investigator } from '@domain/entities/investigator.model';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { CardInfoService } from '@services/card-info.service';
+import { ImagesUrlService } from '@services/images-url.service';
 import { CardFactionBackgroundDirective } from '@shared/directives/cards/card-faction-background.directive';
 import { CardOutlineDirective } from '@shared/directives/cards/card-outline.directive';
-import { Investigator } from 'shared/domain/entities/investigator.model';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { ImagesUrlService } from 'shared/services/images-url.service';
 import { VitalsBarComponent } from '../../../../shared/ui/components/vitals-bar/vitals-bar.component';
 import { InvestigatorAbilityComponent } from './investigator-ability/investigator-ability.component';
 import { InvestigatorSkillsComponent } from './investigator-skills/investigator-skills.component';

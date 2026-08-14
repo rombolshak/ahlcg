@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { GameState, gameState } from '@domain/game-state';
+import { JsonEditorComponent } from '@shared/components/json-editor/json-editor.component';
 import { ArkErrors } from 'arktype';
 import { createPatch } from 'rfc6902';
-import { GameState, gameState } from 'shared/domain/game-state';
-import { JsonEditorComponent } from 'shared/ui/components/json-editor/json-editor.component';
 import { ValidationError, ValidationSeverity } from 'vanilla-jsoneditor';
 import { DebugTimelineService } from '../services/debug-timeline.service';
 import { GameStateStore } from '../store/game-state.store';

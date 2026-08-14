@@ -1,9 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Agenda } from 'shared/domain/entities/agenda.model';
-import { CardInfoService } from 'shared/services/card-info.service';
-import { ImagesUrlService } from 'shared/services/images-url.service';
+import { CardInfoService } from '@services/card-info.service';
+import { ImagesUrlService } from '@services/images-url.service';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 
 @Component({

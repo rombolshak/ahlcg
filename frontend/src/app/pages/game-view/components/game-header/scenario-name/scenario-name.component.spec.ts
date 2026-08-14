@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { serveCardAssets } from 'shared/domain/test/serve-card-assets';
-import { getTranslocoModule } from 'shared/domain/test/transloco.testing';
+import { serveCardAssets } from '@domain/test/serve-card-assets';
+import { getTranslocoModule } from '@domain/test/transloco.testing';
 import campaign from '../../../../../../../public/assets/i18n/campaigns/notz/en.json';
 import scenario from '../../../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
 import { ScenarioNameComponent } from './scenario-name.component';
