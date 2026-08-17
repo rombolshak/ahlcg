@@ -81,6 +81,26 @@ export default defineConfig(
     rules: {},
   },
   {
+    // The domain layer is plain TypeScript with no framework dependency, so anything else can
+    // import it without dragging Angular along. Both globs point at the same folder: `shared/domain`
+    // today, `domain` once #541 moves it — this rule drops the first glob at that point instead of
+    // being rewritten.
+    files: ["src/app/shared/domain/**/*.ts", "src/app/domain/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "warn",
+        {
+          patterns: [
+            {
+              group: ["@angular", "@angular/*"],
+              message: "The domain layer must stay framework-free. Move Angular-dependent code out of domain/.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["src/**/*.spec.ts"],
     extends: [vitest.configs.recommended, prettierConfig],
     languageOptions: {
