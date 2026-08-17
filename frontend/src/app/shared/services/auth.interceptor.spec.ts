@@ -46,7 +46,7 @@ describe('authInterceptor', () => {
 
     expect(open).toHaveBeenCalledWith(SignInComponent, SIGN_IN_DIALOG_OPTIONS);
 
-    dialogResult$.next({ isAnonymous: true, email: null });
+    dialogResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush({ id: '1' });
 
@@ -110,7 +110,7 @@ describe('authInterceptor', () => {
     });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
-    dialogResult$.next({ isAnonymous: true, email: null });
+    dialogResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
 

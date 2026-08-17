@@ -1,0 +1,39 @@
+<ng-container *transloco="let t; prefix: 'settings.account'">
+  @switch (state()) {
+    @case ("anonymous") {
+      <p>
+        {{ t("anonymous.name_label") }}: <span class="break-all">{{ user()?.userName }}</span>
+      </p>
+      <p class="mt-2">{{ t("anonymous.state") }}</p>
+      <p class="mt-1 text-base-content/70">{{ t("anonymous.detail") }}</p>
+    }
+    @case ("permanent") {
+      <p>{{ t("permanent.name_label") }}: {{ user()?.userName }}</p>
+      <p>{{ t("permanent.email_label") }}: {{ user()?.email }}</p>
+      <p class="mt-2">{{ t("permanent.state") }}</p>
+      <p class="mt-1 text-base-content/70">{{ t("permanent.detail") }}</p>
+    }
+    @case ("signed_out") {
+      <p>{{ t("signed_out.state") }}</p>
+      <p class="mt-1 text-base-content/70">{{ t("signed_out.detail") }}</p>
+    }
+    @default {
+      <!-- `state()` is exhaustive over the three cases above; kept for the compile-time check. -->
+    }
+  }
+
+  <div class="mt-6 flex items-center justify-center gap-4">
+    @for (action of actions(); track action.key) {
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="$index === selectedIndex()"
+        [attr.data-testId]="action.key"
+        (click)="action.process()"
+        (mouseenter)="selectedIndex.set($index)"
+      >
+        {{ t(action.labelKey) }}
+      </button>
+    }
+  </div>
+</ng-container>

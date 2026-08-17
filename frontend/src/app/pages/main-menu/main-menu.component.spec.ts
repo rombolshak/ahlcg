@@ -66,7 +66,7 @@ describe('MainMenuComponent', () => {
   });
 
   it('should display continue button if authenticated', () => {
-    mockAuthService._user.next({ isAnonymous: true, email: null });
+    mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
     TestBed.tick();
 
     expect(fixture.debugElement.query(By.css('[data-testId=continue]'))).toBeTruthy();

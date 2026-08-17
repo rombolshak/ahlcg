@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, signal, viewChild } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { InputLayer, InputManagerService } from '@services/input-manager.service';
 import { MockInstance, vi } from 'vitest';
@@ -20,10 +20,13 @@ import { AH_DIALOG_CONTENT, DialogContent } from './dialog.content';
 })
 class TestContentComponent implements DialogContent {
   public opened = false;
+  public readonly ownTitle = signal<string | undefined>(undefined);
 
   public onOpened = () => {
     this.opened = true;
   };
+
+  public getTitle = () => this.ownTitle();
 
   public getInputHandlers = () => ({
     confirm: () => {
@@ -136,6 +139,28 @@ describe('DialogComponent', () => {
       expect(box.classList.contains('modal-box')).toBe(true);
     });
   }
+
+  // The title is pulled from content, not pushed by it, so a view swap inside the content renames
+  // the dialog without the content holding a reference to it.
+  it('should take its heading from the content, and follow the content when that changes', () => {
+    fixture.componentRef.setInput('title', 'Settings');
+    const contentRef = component.attachContent(TestContentComponent);
+    fixture.detectChanges();
+
+    const heading = () => (fixture.debugElement.query(By.css('h1')).nativeElement as HTMLElement).textContent.trim();
+
+    expect(heading()).toBe('Settings');
+
+    contentRef.instance.ownTitle.set('Your Account');
+    fixture.detectChanges();
+
+    expect(heading()).toBe('Your Account');
+
+    contentRef.instance.ownTitle.set(undefined);
+    fixture.detectChanges();
+
+    expect(heading()).toBe('Settings');
+  });
 
   it('should prevent the native cancel event so Escape cannot close the dialog on its own', () => {
     const dialogEl = fixture.debugElement.query(By.css('dialog')).nativeElement as HTMLDialogElement;

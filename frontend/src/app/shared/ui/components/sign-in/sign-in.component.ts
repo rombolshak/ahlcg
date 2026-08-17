@@ -1,13 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal, Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal, Signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { AuthService, Credentials, User } from '@services/auth.service';
+import { AuthService, User } from '@services/auth.service';
 import { DialogContentWithResult, DialogOptions } from '@services/dialog.service';
 import { InputLayer } from '@services/input-manager.service';
 import { listNavigation } from '@services/list-navigation';
+import { CredentialsFormComponent } from '@shared/components/credentials-form/credentials-form.component';
 import { AH_DIALOG_CONTENT } from '@shared/components/dialog/dialog.content';
-import { FocusTrapDirective } from '@shared/directives/focus-trap.directive';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
@@ -37,7 +37,7 @@ interface IdentityResult {
 
 @Component({
   selector: 'ah-sign-in',
-  imports: [TranslocoDirective, FocusTrapDirective],
+  imports: [TranslocoDirective, CredentialsFormComponent],
   templateUrl: './sign-in.component.html',
   providers: [
     {
@@ -59,10 +59,6 @@ export class SignInComponent implements DialogContentWithResult<User> {
   protected readonly view = signal<View>('choice');
   protected readonly busy = signal(false);
   protected readonly error = signal<ErrorMessage | undefined>(undefined);
-
-  protected readonly email = signal('');
-  protected readonly username = signal('');
-  protected readonly password = signal('');
 
   protected readonly choices: Signal<Choice[]> = signal([
     {
@@ -88,16 +84,14 @@ export class SignInComponent implements DialogContentWithResult<User> {
   });
   protected readonly selectedIndex = this.choiceNavigation.selectedIndex;
 
+  /** Only rendered while `view() === 'credentials'`, so this is `undefined` the rest of the time. */
+  private readonly credentialsForm = viewChild(CredentialsFormComponent);
+
   public getInputHandlers: () => InputLayer = () => {
     if (this.view() === 'credentials') {
-      return {
-        cancel: () => {
-          this.backToChoice();
-        },
-        confirm: () => {
-          this.submit();
-        },
-      };
+      // The keyboard path and the button path go through the same submission on the form's own
+      // side, so nothing here restates what "confirm" or "cancel" mean in that view.
+      return this.credentialsForm()?.getInputHandlers() ?? {};
     }
 
     return {
@@ -108,18 +102,6 @@ export class SignInComponent implements DialogContentWithResult<User> {
     };
   };
 
-  protected onEmailInput(event: Event): void {
-    this.email.set((event.target as HTMLInputElement).value);
-  }
-
-  protected onUsernameInput(event: Event): void {
-    this.username.set((event.target as HTMLInputElement).value);
-  }
-
-  protected onPasswordInput(event: Event): void {
-    this.password.set((event.target as HTMLInputElement).value);
-  }
-
   protected showCredentialsForm(): void {
     this.error.set(undefined);
     this.view.set('credentials');
@@ -128,6 +110,16 @@ export class SignInComponent implements DialogContentWithResult<User> {
   protected backToChoice(): void {
     this.error.set(undefined);
     this.view.set('choice');
+  }
+
+  /** `undefined` is a dismissal — back to the choice view, not a failure to report. */
+  protected onFormResult(user: User | undefined): void {
+    if (user === undefined) {
+      this.backToChoice();
+      return;
+    }
+
+    this.result.emit(user);
   }
 
   protected loginAnonymously(): void {
@@ -149,29 +141,9 @@ export class SignInComponent implements DialogContentWithResult<User> {
       });
   }
 
-  protected submit(): void {
-    if (this.busy()) return;
-
-    const credentials: Credentials = { email: this.email(), username: this.username(), password: this.password() };
-    this.busy.set(true);
-    this.error.set(undefined);
-    this.auth
-      .signIn(credentials)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: user => {
-          this.result.emit(user);
-        },
-        error: (err: unknown) => {
-          this.busy.set(false);
-          this.error.set(this.toErrorMessage(err));
-        },
-      });
-  }
-
   private toErrorMessage(err: unknown): ErrorMessage {
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 403) return { kind: 'key', key: 'errors.wrong_password' };
+      if (err.status === 403) return { kind: 'key', key: 'wrong_password' };
 
       if (err.status === 400) {
         const body = err.error as IdentityResult | null;
@@ -180,6 +152,6 @@ export class SignInComponent implements DialogContentWithResult<User> {
       }
     }
 
-    return { kind: 'key', key: 'errors.generic' };
+    return { kind: 'key', key: 'generic' };
   }
 }

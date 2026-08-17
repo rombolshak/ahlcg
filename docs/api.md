@@ -50,7 +50,7 @@ Only the unknown-email-while-anonymous branch above preserves everything, by upg
 
 Returns the current session. Requires authorization.
 
-- `200 OK` → `{ "email": string | null, "isAnonymous": boolean }` (`UserDto`). `email` is `null` for anonymous accounts. There is no `id` or `userName` in the response.
+- `200 OK` → `{ "email": string | null, "userName": string | null, "isAnonymous": boolean }` (`UserDto`). `email` is `null` for anonymous accounts; `userName` is set for every account, and is a raw GUID for anonymous ones. There is no `id` in the response.
 - `401 Unauthorized` — no valid cookie.
 
 `AuthService` on the frontend treats `401` as "logged out", not as an error.

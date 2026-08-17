@@ -1,0 +1,12 @@
+<ng-container *transloco="let t">
+  <p class="mb-6 text-center text-base-content/80">{{ t(messageKey()) }}</p>
+
+  <div class="flex items-center justify-center gap-4">
+    <button type="button" data-testId="confirm" [class]="confirmButtonClass()" (click)="result.emit(true)" (mouseenter)="selectedIndex.set(0)">
+      {{ t(confirmKey()) }}
+    </button>
+    <button type="button" data-testId="cancel" [class]="cancelButtonClass()" (click)="result.emit(false)" (mouseenter)="selectedIndex.set(1)">
+      {{ t(cancelKey()) }}
+    </button>
+  </div>
+</ng-container>

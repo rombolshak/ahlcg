@@ -24,9 +24,9 @@ describe('AuthService', () => {
   });
 
   it('should load user model', () => {
-    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null, userName: 'anon-guid' });
     service.currentUser.subscribe(data => {
-      expect(data).toEqual({ isAnonymous: true, email: null } satisfies User);
+      expect(data).toEqual({ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User);
     });
   });
 
@@ -47,11 +47,11 @@ describe('AuthService', () => {
     });
 
     http.expectOne('/api/auth/loginAnonymously').flush(null);
-    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
-    expect(result).toEqual({ isAnonymous: true, email: null } satisfies User);
+    expect(result).toEqual({ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User);
     service.currentUser.subscribe(data => {
-      expect(data).toEqual({ isAnonymous: true, email: null } satisfies User);
+      expect(data).toEqual({ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User);
     });
   });
 
@@ -68,13 +68,13 @@ describe('AuthService', () => {
 
     expect(req.request.body).toEqual(credentials);
     req.flush(null);
-    http.expectOne('/api/auth/info').flush({ isAnonymous: false, email: 'a@example.com' });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: false, email: 'a@example.com', userName: 'a' });
 
-    expect(result).toEqual({ isAnonymous: false, email: 'a@example.com' } satisfies User);
+    expect(result).toEqual({ isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User);
   });
 
   it('should use signIn to upgrade an anonymous session, leaving currentUser permanent', () => {
-    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     const credentials: Credentials = { email: 'a@example.com', username: 'a', password: 'P@ssw0rd' };
     let result: User | undefined;
@@ -83,13 +83,13 @@ describe('AuthService', () => {
     });
 
     http.expectOne('/api/auth/signIn').flush(null);
-    http.expectOne('/api/auth/info').flush({ isAnonymous: false, email: 'a@example.com' });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: false, email: 'a@example.com', userName: 'a' });
 
-    expect(result).toEqual({ isAnonymous: false, email: 'a@example.com' } satisfies User);
+    expect(result).toEqual({ isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User);
   });
 
   it('should POST to logout, refresh currentUser, and leave currentUser undefined after the following 401', () => {
-    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null });
+    http.expectOne('/api/auth/info').flush({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     let emitted = false;
     service.logout().subscribe(value => {

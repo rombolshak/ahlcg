@@ -1,25 +1,56 @@
 <ng-container *transloco="let t">
-  <div class="text-center text-xl">
-    <ah-setting-item
-      #setting
-      name="Language"
-      tabindex="0"
-      [template]="lang"
-      [currentValue]="settings().lang"
-      [selected]="selectedIndex() === 0"
-      (nextValue)="nextLang()"
-      (prevValue)="prevLang()"
-    />
-  </div>
+  @if (view() === "settings") {
+    <div class="text-center text-xl">
+      <ah-setting-item
+        #setting
+        tabindex="0"
+        [name]="t('settings.language')"
+        [template]="lang"
+        [currentValue]="settings().lang"
+        [selected]="selectedIndex() === 0"
+        (mouseenter)="selectedIndex.set(0)"
+        (nextValue)="nextLang()"
+        (prevValue)="prevLang()"
+      />
 
-  <div class="mt-5 flex items-center justify-center gap-8">
-    <button type="submit" class="btn self-center btn-primary" (click)="applySettings()">
-      {{ t("Apply") }}
-    </button>
-    <button type="reset" class="btn self-center" (click)="discardSettings()">
-      {{ t("Discard") }}
-    </button>
-  </div>
+      <!-- Same two-column grid as `ah-setting-item`'s host, so this label sits in the same column
+           as "Language" instead of against the dialog's left edge. -->
+      <button
+        type="button"
+        class="grid w-full grid-cols-2 gap-8 outline-hidden"
+        data-testId="account-row"
+        [class.text-accent-content]="selectedIndex() === accountRowIndex()"
+        (click)="view.set('account')"
+        (mouseenter)="selectedIndex.set(accountRowIndex())"
+      >
+        <p>{{ t("settings.account.row") }}</p>
+      </button>
+    </div>
+
+    <div class="mt-5 flex items-center justify-center gap-8">
+      <button
+        type="submit"
+        class="btn self-center"
+        [class.btn-primary]="isButtonsRowSelected() && selectedButtonIndex() === 0"
+        (click)="applySettings()"
+        (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(0)"
+      >
+        {{ t("Apply") }}
+      </button>
+      <button
+        type="reset"
+        class="btn self-center"
+        [class.btn-primary]="isButtonsRowSelected() && selectedButtonIndex() === 1"
+        (click)="discardSettings()"
+        (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(1)"
+      >
+        {{ t("Discard") }}
+      </button>
+    </div>
+  } @else {
+    <ah-account (back)="view.set('settings')" />
+  }
+
   <ng-template #lang let-lang>
     <span class="w-32">{{ getLangDisplay(lang) }}</span>
   </ng-template>

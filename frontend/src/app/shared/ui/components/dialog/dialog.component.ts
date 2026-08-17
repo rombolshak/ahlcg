@@ -1,4 +1,5 @@
 import {
+  Binding,
   ChangeDetectionStrategy,
   Component,
   ComponentRef,
@@ -9,6 +10,7 @@ import {
   input,
   OnDestroy,
   output,
+  signal,
   Type,
   viewChild,
   ViewContainerRef,
@@ -59,6 +61,13 @@ export class DialogComponent implements OnDestroy {
   protected readonly boxClasses = computed(() => SIZE_CLASSES[this.size()]);
 
   /**
+   * Asked of the content rather than pushed by it, so a view swap renames the dialog on its own —
+   * the same pull the input layer does. A computed, so it has to read `dynamicContent` through a
+   * signal or attaching content after this first evaluates would never re-run it.
+   */
+  protected readonly displayedTitle = computed(() => this.resolveContent()?.getTitle?.() ?? this.title());
+
+  /**
    * Fires whenever the underlying `<dialog>` actually closes — via `close()` below, or any other
    * UA-initiated close. The template also prevents the native `cancel` event (Escape), so
    * `InputManagerService`'s layer stays the single source of truth for what Escape does; this
@@ -70,16 +79,16 @@ export class DialogComponent implements OnDestroy {
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private readonly projectedContent = contentChild(AH_DIALOG_CONTENT);
   private readonly contentHost = viewChild('contentHost', { read: ViewContainerRef });
-  private dynamicContent: ComponentRef<DialogContent> | undefined;
+  private readonly dynamicContent = signal<ComponentRef<DialogContent> | undefined>(undefined);
   private inputLayer: LayerRef | undefined;
 
   /** Instantiates `type` into the dialog body, replacing content projected via `<ng-content />`. */
-  public attachContent<T extends DialogContent>(type: Type<T>): ComponentRef<T> {
+  public attachContent<T extends DialogContent>(type: Type<T>, bindings?: Binding[]): ComponentRef<T> {
     const host = this.contentHost();
     if (!host) throw new Error('Dialog content host is not yet initialized');
 
-    const ref = host.createComponent(type);
-    this.dynamicContent = ref;
+    const ref = bindings ? host.createComponent(type, { bindings }) : host.createComponent(type);
+    this.dynamicContent.set(ref);
     return ref;
   }
 
@@ -117,6 +126,6 @@ export class DialogComponent implements OnDestroy {
   }
 
   private resolveContent(): DialogContent | undefined {
-    return this.dynamicContent?.instance ?? this.projectedContent();
+    return this.dynamicContent()?.instance ?? this.projectedContent();
   }
 }
