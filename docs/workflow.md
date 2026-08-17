@@ -46,10 +46,16 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Everything CI runs | `npm run ci:all` (= `lint:all` + `test:ci`) |
 | All linters | `npm run lint:all` |
 | Type check only | `npm run lint:tsc:all` (app + spec tsconfigs) |
-| ESLint / Stylelint / cspell | `npm run lint` / `lint:style` / `lint:spelling` |
+| ESLint (+ dependency cycles) / Stylelint / cspell | `npm run lint` / `lint:style` / `lint:spelling` |
+| Import cycles only | `npm run lint:deps` |
 | Format check / fix | `npm run lint:format` / `npm run format` |
 | Storybook | `npm run storybook` / `npm run build-storybook` |
 | Transloco key management | `npm run loco-join` / `npm run loco-split` |
+
+`npm run lint` chains `lint:deps`, which cruises `src/` with dependency-cruiser (`.dependency-cruiser.mjs`) for
+module- and folder-level import cycles. Its rules are `severity: "warn"`, so it prints violations and still exits
+0 — the folder cycles it reports are pre-existing damage that #541 removes. A **new** cycle is still a warning,
+not a failure, until #541's closing issue flips both rules to `error`.
 
 ### Backend (`cd backend`)
 
