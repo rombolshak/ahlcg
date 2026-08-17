@@ -65,11 +65,13 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 | Alias | Resolves to |
 | --- | --- |
 | `@pages/*` | `src/app/pages/*` |
-| `@domain/*` | `src/app/shared/domain/*` |
-| `@services/*` | `src/app/shared/services/*` |
-| `@shared/*` | `src/app/shared/ui/*` |
+| `@domain/*` | `src/app/domain/*` |
+| `@core/*` | `src/app/core/*` |
+| `@ui/*` | `src/app/ui/*` |
+| `@features/*` | `src/app/features/*` |
+| `@testing/*` | `src/testing/*` |
 
-Use relative imports only for siblings and children within the same feature. There is no `baseUrl`, so bare paths like `shared/domain/game-state` do not resolve.
+Use relative imports only for siblings and children within the same feature. There is no `baseUrl`, so bare paths like `domain/game-state` do not resolve.
 
 ## TypeScript strictness
 

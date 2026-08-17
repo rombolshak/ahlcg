@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, linkedSignal, OnDestroy, OnInit, signal } from '@angular/core';
+import { ImagesUrlService } from '@core/images-url.service';
 import { AssetCard, assetSlot, AssetSlot, Faction, SlotsCount } from '@domain/entities/player-card.model';
 import { AssetsListComponent } from '@pages/game-view/current-investigator-panel/control-area/active-assets-list/assets-list.component';
-import { ImagesUrlService } from '@services/images-url.service';
-import { CardFactionBackgroundDirective } from '@shared/directives/cards/card-faction-background.directive';
+import { CardFactionBackgroundDirective } from '@ui/directives/cards/card-faction-background.directive';
 import { EmptySlotsListComponent } from './empty-slots-list/empty-slots-list.component';
 import { emptySlots, getTotalPages, isActive, sliceActiveAssets, slicePassiveAssets } from './utils';
 

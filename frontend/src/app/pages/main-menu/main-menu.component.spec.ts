@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from '@domain/test/transloco.testing';
-import { AuthService, User } from '@services/auth.service';
-import { DialogService } from '@services/dialog.service';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@shared/components/sign-in/sign-in.component';
+import { AuthService, User } from '@core/auth.service';
+import { DialogService } from '@core/dialog.service';
+import { getTranslocoModule } from '@testing/transloco.testing';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
 import { BehaviorSubject, EMPTY, Observable } from 'rxjs';
 import { vi } from 'vitest';
 import { MainMenuComponent } from './main-menu.component';

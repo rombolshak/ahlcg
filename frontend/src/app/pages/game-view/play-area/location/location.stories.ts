@@ -1,7 +1,7 @@
-﻿import { InvestigatorG, InvestigatorS } from '@domain/test/entities/test-investigators';
-import { testLocation } from '@domain/test/entities/test-locations';
-import { testGameState } from '@domain/test/test-game-state';
-import { componentWrapperDecorator, Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
+﻿import { componentWrapperDecorator, Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
+import { InvestigatorG, InvestigatorS } from '@testing/entities/test-investigators';
+import { testLocation } from '@testing/entities/test-locations';
+import { testGameState } from '@testing/test-game-state';
 import { GameStateStore } from '../../store/game-state.store';
 import { LocationComponent } from './location.component';
 

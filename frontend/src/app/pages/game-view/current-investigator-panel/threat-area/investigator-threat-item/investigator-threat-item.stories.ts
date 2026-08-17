@@ -1,5 +1,5 @@
-﻿import { testEnemy2 } from '@domain/test/entities/test-enemies';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
+import { testEnemy2 } from '@testing/entities/test-enemies';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item.component';
 
 const meta: Meta<InvestigatorThreatItemComponent> = {

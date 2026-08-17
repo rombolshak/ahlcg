@@ -45,7 +45,7 @@ Frontend:
 - `@if` / `@for` / `@switch` in templates, never `*ngIf` / `*ngFor`; no `CommonModule` import
 - `inject()`, never constructor parameter injection
 - `ah` selector prefix; no explicit `standalone: true`
-- Path aliases (`@domain/*`, `@services/*`, `@shared/*`, `@pages/*`) outside the current feature folder
+- Path aliases (`@domain/*`, `@core/*`, `@ui/*`, `@features/*`, `@testing/*`, `@pages/*`) outside the current feature folder
 - Members `readonly` and correctly scoped: `private` collaborators, `protected` for template-only, `public` only for real external API
 - No `any`, no type assertions papering over `noUncheckedIndexedAccess`
 - Branded ids produced by validation, never casting

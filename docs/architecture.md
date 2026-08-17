@@ -12,7 +12,7 @@
 | SignalR | Server hub with a single `Ping()`; **no client** (`@microsoft/signalr` is not a dependency) |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
-`GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/test/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server.
+`GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server.
 
 ## Components
 

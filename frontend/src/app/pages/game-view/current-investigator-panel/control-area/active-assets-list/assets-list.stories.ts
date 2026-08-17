@@ -1,5 +1,5 @@
-﻿import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6 } from '@domain/test/entities/test-cards';
-import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
+﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
+import { cardA, cardA2, cardA3, cardA4, cardA5, cardA6 } from '@testing/entities/test-cards';
 import { AssetsListComponent } from './assets-list.component';
 
 const meta: Meta<AssetsListComponent> = {

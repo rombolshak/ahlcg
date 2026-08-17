@@ -56,7 +56,7 @@ Ordering lives in the issue's native **Blocked by** links, not in the body — s
 ## Rules when filling it in
 
 - **Ground it in the real code.** Explore before writing. An acceptance criterion that assumes a service exists when it does not is worse than no criterion.
-- **Respect what does not exist yet.** The backend implements authentication only; the game view renders `@domain/test/test-game-state`; there is no game API and no SignalR client. Never write criteria that assume otherwise — check `docs/architecture.md`.
+- **Respect what does not exist yet.** The backend implements authentication only; the game view renders `@testing/test-game-state`; there is no game API and no SignalR client. Never write criteria that assume otherwise — check `docs/architecture.md`.
 - **Write down what the user told you, in their words.** The answers from `.claude/lib/intent-interview.md` are the highest-value content in the body, because they are the only part not recoverable from the code. The *Out of scope* section usually comes straight out of the boundary question.
 - **Leave the checkboxes unchecked.** They get ticked when the work is done, not when it is specified.
 - **Do not pad.** A small issue gets a short body. Omit a section rather than filling it with "N/A" noise — except *Out of scope*, which is most valuable exactly when the boundary is unclear.

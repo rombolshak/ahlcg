@@ -1,7 +1,7 @@
 import { provideHttpClient } from "@angular/common/http";
 import { importProvidersFrom } from "@angular/core";
 import { applicationConfig, Preview } from "@storybook/angular-vite";
-import { getTranslocoModule } from "../src/app/shared/domain/test/transloco.testing";
+import { getTranslocoModule } from "../src/testing/transloco.testing";
 
 const preview: Preview = {
   decorators: [

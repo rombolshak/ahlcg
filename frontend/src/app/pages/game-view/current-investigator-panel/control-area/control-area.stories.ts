@@ -1,6 +1,6 @@
 ﻿/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { defaultSlots } from '../../../../shared/domain/test/entities/test-investigators';
+import { defaultSlots } from '@testing/entities/test-investigators';
 import { ControlAreaComponent } from './control-area.component';
 import { SeveralIcons, Simple as SimpleAsset, WithClue, WithDoom, WithResource, WithSlot } from './controlled-asset/controlled-asset.stories';
 

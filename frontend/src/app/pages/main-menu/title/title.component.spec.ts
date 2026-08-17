@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
-import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { TitleComponent } from './title.component';
 
 describe('TitleComponent', () => {

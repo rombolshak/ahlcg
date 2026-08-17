@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
-import { testEnemy } from '@domain/test/entities/test-enemies';
+import { testEnemy } from '@testing/entities/test-enemies';
 import { EnemySkillTestsDisplayComponent } from './enemy-skill-tests-display.component';
 
 describe('EnemySkillTestsDisplayComponent', () => {

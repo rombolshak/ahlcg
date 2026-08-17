@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
-import { CardInfoService } from '@services/card-info.service';
+import { CardInfoService } from '@core/card-info.service';
 import { GameStateStore } from '../../store/game-state.store';
 import { CurrentGamePhaseComponent } from './current-game-phase/current-game-phase.component';
 import { InvestigatorSeeker } from './current-game-phase/phase-colors.model';

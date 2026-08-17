@@ -9,13 +9,19 @@
         "./src/app/pages/*"
       ],
       "@domain/*": [
-        "./src/app/shared/domain/*"
+        "./src/app/domain/*"
       ],
-      "@services/*": [
-        "./src/app/shared/services/*"
+      "@core/*": [
+        "./src/app/core/*"
       ],
-      "@shared/*": [
-        "./src/app/shared/ui/*"
+      "@ui/*": [
+        "./src/app/ui/*"
+      ],
+      "@features/*": [
+        "./src/app/features/*"
+      ],
+      "@testing/*": [
+        "./src/testing/*"
       ]
     },
     "outDir": "./dist/out-tsc",

@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
+import { Enemy } from '@domain/entities/enemy.model';
+import { InvestigatorS } from '@testing/entities/test-investigators';
+import { testGameState } from '@testing/test-game-state';
 import { createPatch } from 'rfc6902';
 import { vi } from 'vitest';
-import { Enemy } from '../../../shared/domain/entities/enemy.model';
-import { InvestigatorS } from '../../../shared/domain/test/entities/test-investigators';
-import { testGameState } from '../../../shared/domain/test/test-game-state';
 import { GameStateStore } from '../store/game-state.store';
 import { DebugTimelineService } from './debug-timeline.service';
 

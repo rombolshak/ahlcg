@@ -33,7 +33,7 @@ Read its ancestors too, if any, for inherited context.
 
 The most common way this goes wrong is decomposing an idealised architecture instead of the one that exists. Before proposing anything:
 
-- Read `docs/architecture.md`. **The backend implements authentication only. The game view renders `@domain/test/test-game-state`, not server data. There is no game API, no SignalR client, no deployment pipeline.** A breakdown that assumes any of these produces issues nobody can implement.
+- Read `docs/architecture.md`. **The backend implements authentication only. The game view renders `@testing/test-game-state`, not server data. There is no game API, no SignalR client, no deployment pipeline.** A breakdown that assumes any of these produces issues nobody can implement.
 - Read the docs for the areas involved (`docs/README.md` routes you).
 - Look at the real code. If a child issue says "extend the X service", X had better exist — or the breakdown needs an issue to create it first.
 

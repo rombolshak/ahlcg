@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { CardInfoService } from '@core/card-info.service';
 import { GameCard } from '@domain/entities/card.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CardInfoService } from '@services/card-info.service';
-import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-card-details-text',

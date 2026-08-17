@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testEnemy, testEnemy2 } from '@domain/test/entities/test-enemies';
-import { serveCardAssets } from '@domain/test/serve-card-assets';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { testEnemy, testEnemy2 } from '@testing/entities/test-enemies';
+import { serveCardAssets } from '@testing/serve-card-assets';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { ThreatAreaComponent } from './threat-area.component';
 
 describe('ThreatAreaComponent', () => {

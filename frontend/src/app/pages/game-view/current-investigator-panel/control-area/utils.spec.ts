@@ -1,6 +1,6 @@
 ﻿import { assetId } from '@domain/entities/id.model';
 import { AssetCard, AssetSlot } from '@domain/entities/player-card.model';
-import { defaultSlots } from '@domain/test/entities/test-investigators';
+import { defaultSlots } from '@testing/entities/test-investigators';
 import { emptySlots, getTotalPages, isActive, sliceActiveAssets, slicePassiveAssets } from './utils';
 
 const emptyAsset: AssetCard = {

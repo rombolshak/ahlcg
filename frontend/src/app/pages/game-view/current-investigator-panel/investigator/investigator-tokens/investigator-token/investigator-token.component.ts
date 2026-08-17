@@ -1,9 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ImagesUrlService } from '@core/images-url.service';
 import { TokenType } from '@domain/entities/details/card.tokens';
 import { Faction } from '@domain/entities/player-card.model';
-import { ImagesUrlService } from '@services/images-url.service';
-import { NumericTextComponent } from '../../../../../../shared/ui/components/numeric-text/numeric-text.component';
+import { NumericTextComponent } from '@ui/components/numeric-text/numeric-text.component';
 
 @Component({
   selector: 'ah-investigator-token',

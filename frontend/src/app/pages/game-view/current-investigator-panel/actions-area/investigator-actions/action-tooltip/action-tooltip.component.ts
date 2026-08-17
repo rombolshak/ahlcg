@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { InvestigatorAction } from '@domain/action.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-action-tooltip',
