@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { InvestigatorAction } from '@domain/action.model';
 import { ActionTooltipComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/action-tooltip/action-tooltip.component';
-import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-investigator-actions',

@@ -1,8 +1,8 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ImagesUrlService } from '@core/images-url.service';
 import { TranslocoService } from '@jsverse/transloco';
-import { ImagesUrlService } from '@services/images-url.service';
 
 @Component({
   selector: 'ah-title',

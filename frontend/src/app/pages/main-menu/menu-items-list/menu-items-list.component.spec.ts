@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { By } from '@angular/platform-browser';
-import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { MenuItemsListComponent } from './menu-items-list.component';
 
 describe('MenuItemsListComponent', () => {

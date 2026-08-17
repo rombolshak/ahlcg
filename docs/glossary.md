@@ -4,7 +4,7 @@ Arkham Horror LCG terms that appear as types, fields, or asset paths in this cod
 
 ## Cards and entities
 
-Every card in play is a **game entity** (`shared/domain/game-entity.ts`), a discriminated union on `cardType`: `act`, `agenda`, `enemy`, `location`, `investigator`, `asset`, `event`, `skill`. All entities live in one flat `gameEntities` map keyed by id; everything else in the state holds ids, never objects.
+Every card in play is a **game entity** (`domain/game-entity.ts`), a discriminated union on `cardType`: `act`, `agenda`, `enemy`, `location`, `investigator`, `asset`, `event`, `skill`. All entities live in one flat `gameEntities` map keyed by id; everything else in the state holds ids, never objects.
 
 **Investigator** — the character a player controls. Has `skills`, `health` and `sanity`, `slotsCount`, `actions`, a `hand`, `controlledAssets`, and a `threatArea`.
 

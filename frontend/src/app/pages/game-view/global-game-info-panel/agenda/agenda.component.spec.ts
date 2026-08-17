@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testAgenda } from '@domain/test/entities/test-agenda';
-import { serveCardAssets } from '@domain/test/serve-card-assets';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { testAgenda } from '@testing/entities/test-agenda';
+import { serveCardAssets } from '@testing/serve-card-assets';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { AgendaComponent } from './agenda.component';
 
 describe('AgendaComponent', () => {

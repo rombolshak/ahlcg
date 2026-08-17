@@ -43,7 +43,7 @@ Frontend (all enforced by ESLint or `tsc`, so violations fail the build, not jus
 - `@if` / `@for` / `@switch` / `@let` in templates. No `*ngIf` / `*ngFor`; `CommonModule` is never imported.
 - `inject()`, never constructor parameter injection. Constructors are for effects and subscriptions.
 - Selector prefix `ah`, never `app`. Standalone is the default — do not write `standalone: true`.
-- Path aliases `@pages/*`, `@domain/*`, `@services/*`, `@shared/*` for anything outside the current feature folder.
+- Path aliases `@pages/*`, `@domain/*`, `@core/*`, `@ui/*`, `@features/*`, `@testing/*` for anything outside the current feature folder.
 - `strict` plus `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`: indexing yields `T | undefined` — narrow it, never assert. Never widen to `any`.
 - Branded ids (`actId`, `playerCardId`, …): produce them by validating through the schema, never by casting.
 - Composed arktype schemas use the `_`-prefixed const + empty-extending `interface` + explicitly annotated re-export idiom. Copy it from a neighbouring `*.model.ts`.

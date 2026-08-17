@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ImagesUrlService } from '@core/images-url.service';
 import { Enemy } from '@domain/entities/enemy.model';
-import { ImagesUrlService } from '@services/images-url.service';
 
 @Component({
   selector: 'ah-enemy-attack-display',

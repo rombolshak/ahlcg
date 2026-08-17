@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { SvgComponent } from '@shared/components/svg/svg.component';
-import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
+import { SvgComponent } from '@ui/components/svg/svg.component';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 
 @Component({
   selector: 'ah-action-area-buttons',

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output } from '@angular/core';
 import { cardWidths } from '@domain/card.constants';
 import { DisplayOptions } from '@domain/display.options';
+import { PlayerCardId } from '@domain/entities/id.model';
 import { PlayerCard } from '@domain/entities/player-card.model';
-import { CardComponent } from '@shared/components/cards/card/card.component';
-import { PlayerCardId } from '../../../../shared/domain/entities/id.model';
+import { CardComponent } from '@ui/components/cards/card/card.component';
 
 @Component({
   selector: 'ah-cards-hand',

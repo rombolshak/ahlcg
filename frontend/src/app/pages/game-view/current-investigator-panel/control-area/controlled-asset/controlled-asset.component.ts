@@ -1,10 +1,10 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { CardInfoService } from '@core/card-info.service';
+import { ImagesUrlService } from '@core/images-url.service';
 import { AssetCard } from '@domain/entities/player-card.model';
-import { ImagesUrlService } from '@services/images-url.service';
-import { VitalsBarComponent } from '@shared/components/vitals-bar/vitals-bar.component';
-import { CardInfoService } from '../../../../../shared/services/card-info.service';
-import { WithAhSymbolsPipe } from '../../../../../shared/ui/pipes/with-ah-symbols.pipe';
+import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.component';
 import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
 

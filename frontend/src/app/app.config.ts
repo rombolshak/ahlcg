@@ -5,8 +5,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
+import { authInterceptor } from '@core/auth.interceptor';
 import { provideTransloco } from '@jsverse/transloco';
-import { authInterceptor } from '@services/auth.interceptor';
 import { routes } from './app.routes';
 import { TranslocoHttpLoader } from './transloco-loader';
 

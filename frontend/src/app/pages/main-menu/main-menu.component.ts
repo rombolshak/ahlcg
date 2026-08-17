@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, Signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { AuthService } from '@core/auth.service';
+import { DialogService } from '@core/dialog.service';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
-import { AuthService } from '@services/auth.service';
-import { DialogService } from '@services/dialog.service';
-import { DialogComponent } from '@shared/components/dialog/dialog.component';
-import { SettingsComponent } from '@shared/components/settings/settings.component';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@shared/components/sign-in/sign-in.component';
+import { DialogComponent } from '@ui/components/dialog/dialog.component';
+import { SettingsComponent } from '@ui/components/settings/settings.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({

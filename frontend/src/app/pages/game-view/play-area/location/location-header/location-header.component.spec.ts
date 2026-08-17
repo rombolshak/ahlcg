@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testLocation } from '@domain/test/entities/test-locations';
-import { serveCardAssets } from '@domain/test/serve-card-assets';
-import { getTranslocoModule } from '@domain/test/transloco.testing';
+import { testLocation } from '@testing/entities/test-locations';
+import { serveCardAssets } from '@testing/serve-card-assets';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { LocationHeaderComponent } from './location-header.component';
 
 describe('LocationHeaderComponent', () => {

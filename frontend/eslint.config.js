@@ -82,10 +82,8 @@ export default defineConfig(
   },
   {
     // The domain layer is plain TypeScript with no framework dependency, so anything else can
-    // import it without dragging Angular along. Both globs point at the same folder: `shared/domain`
-    // today, `domain` once #541 moves it — this rule drops the first glob at that point instead of
-    // being rewritten.
-    files: ["src/app/shared/domain/**/*.ts", "src/app/domain/**/*.ts"],
+    // import it without dragging Angular along.
+    files: ["src/app/domain/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "warn",

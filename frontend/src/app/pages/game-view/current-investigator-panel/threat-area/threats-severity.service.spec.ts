@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { Enemy } from '../../../../shared/domain/entities/enemy.model';
-import { cardA2, cardA3 } from '../../../../shared/domain/test/entities/test-cards';
-import { testEnemy } from '../../../../shared/domain/test/entities/test-enemies';
-import { InvestigatorS } from '../../../../shared/domain/test/entities/test-investigators';
+import { Enemy } from '@domain/entities/enemy.model';
+import { cardA2, cardA3 } from '@testing/entities/test-cards';
+import { testEnemy } from '@testing/entities/test-enemies';
+import { InvestigatorS } from '@testing/entities/test-investigators';
 import { ThreatsSeverityService } from './threats-severity.service';
 
 describe('ThreatsSeverityService', () => {

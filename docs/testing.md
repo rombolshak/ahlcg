@@ -53,8 +53,8 @@ Rules that follow from the codebase's own conventions:
   ```
 - **No `done()` callbacks** — Vitest does not support them. Use `async`/`await`.
 - HTTP: use `provideHttpClientTesting()` + `HttpTestingController`. `HttpClientTestingModule` is deprecated and unused here.
-- Card-rendering specs need `provideHttpClient(withInterceptors([serveCardAssets]))`. `@domain/test/serve-card-assets` serves the card description JSONs from an in-memory map; without it `CardInfoService` issues real `fetch` calls and happy-dom fails with `ECONNREFUSED`. Add new card JSONs to that map when a spec needs them.
-- Translations: `getTranslocoModule()` from `@domain/test/transloco.testing`.
+- Card-rendering specs need `provideHttpClient(withInterceptors([serveCardAssets]))`. `@testing/serve-card-assets` serves the card description JSONs from an in-memory map; without it `CardInfoService` issues real `fetch` calls and happy-dom fails with `ECONNREFUSED`. Add new card JSONs to that map when a spec needs them.
+- Translations: `getTranslocoModule()` from `@testing/transloco.testing`.
 
 Test names read as sentences: `it('should fire event after animation')`.
 

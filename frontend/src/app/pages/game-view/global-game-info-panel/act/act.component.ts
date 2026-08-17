@@ -1,11 +1,11 @@
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { CardInfoService } from '@core/card-info.service';
+import { ImagesUrlService } from '@core/images-url.service';
 import { Act, Objective } from '@domain/entities/act.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CardInfoService } from '@services/card-info.service';
-import { ImagesUrlService } from '@services/images-url.service';
-import { SingleBarComponent } from '@shared/components/vitals-bar/single-bar/single-bar.component';
-import { WithAhSymbolsPipe } from '@shared/pipes/with-ah-symbols.pipe';
+import { SingleBarComponent } from '@ui/components/vitals-bar/single-bar/single-bar.component';
+import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 
 @Component({

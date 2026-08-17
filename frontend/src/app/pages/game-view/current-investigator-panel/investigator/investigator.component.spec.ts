@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
-import { InvestigatorS } from '@domain/test/entities/test-investigators';
-import { serveCardAssets } from '@domain/test/serve-card-assets';
-import { getTranslocoModule } from '../../../../shared/domain/test/transloco.testing';
+import { InvestigatorS } from '@testing/entities/test-investigators';
+import { serveCardAssets } from '@testing/serve-card-assets';
+import { getTranslocoModule } from '@testing/transloco.testing';
 import { InvestigatorComponent } from './investigator.component';
 
 describe('InvestigatorComponent', () => {
