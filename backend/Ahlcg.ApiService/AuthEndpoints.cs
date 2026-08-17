@@ -20,7 +20,7 @@ public static class AuthEndpoints
         [Required] string Password);
 
     [PublicAPI]
-    public record UserDto(string? Email, bool IsAnonymous);
+    public record UserDto(string? Email, string? UserName, bool IsAnonymous);
     
     public static RouteGroupBuilder MapAuthEndpoints(this RouteGroupBuilder group)
     {
@@ -130,7 +130,7 @@ public static class AuthEndpoints
     {
         var user = await userManager.GetUserAsync(principal);
         return user is not null
-            ? TypedResults.Ok(new UserDto(user.Email, user.IsAnonymous))
+            ? TypedResults.Ok(new UserDto(user.Email, user.UserName, user.IsAnonymous))
             : TypedResults.Unauthorized();
     }
 

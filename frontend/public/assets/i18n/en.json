@@ -87,7 +87,6 @@
     "sign_in": {
       "title": "Confront the Mythos",
       "message": "Before the first draw, choose your anchor. Prefer a lightweight charm for quick entry. You can always bind a heavier pact later.",
-      "later_hint": "You can sign the register later, from Settings.",
       "anonymous": {
         "title": "The Lucky Talisman",
         "lead": "Perfect for trying new decks or solo runs.",
@@ -102,18 +101,59 @@
         "credentials": "Full account registration",
         "device": "Access from any device",
         "name": "Your own name online",
-        "duration": "Data is stored for at least 1 year",
-        "legend": "Your particulars",
-        "email": "Email",
-        "username": "Name",
-        "password": "Password",
-        "submit": "Bind account",
-        "back": "Go back"
-      },
+        "duration": "Data is stored for at least 1 year"
+      }
+    },
+    "credentials_form": {
+      "title": "The Binding Rite",
+      "legend": "Your particulars",
+      "email": "Email",
+      "username": "Name",
+      "password": "Password",
+      "submit": "Bind account",
+      "back": "Go back",
+      "cancel": "Not now",
       "errors": {
         "wrong_password": "The sigil is incorrect. The Tome rejects your touch. Forgot your binding?",
         "generic": "The archives are silent. An eldritch interference blocks our reach. Try again later."
       }
     }
+  },
+  "settings": {
+    "language": "Language",
+    "account": {
+      "row": "Account",
+      "title": "Your Account",
+      "back": "Back",
+      "anonymous": {
+        "name_label": "Alias",
+        "state": "A wandering spirit, unbound.",
+        "detail": "This account lives on this device alone. Signing out deletes it beyond recall, along with everything it carries.",
+        "upgrade": "Bind account",
+        "sign_out": "Sign out"
+      },
+      "permanent": {
+        "name_label": "Name",
+        "email_label": "Email",
+        "state": "A pact sealed and lasting.",
+        "detail": "Reachable from any device, however far the investigation strays.",
+        "sign_out": "Sign out"
+      },
+      "signed_out": {
+        "state": "No pact is sealed.",
+        "detail": "Sign in to resume an investigation already begun.",
+        "sign_in": "Sign in"
+      },
+      "sign_out_warning": {
+        "title": "The Pact Unravels",
+        "message": "This account exists only here, only now. Signing out deletes it beyond recall, along with everything it carries.",
+        "confirm": "Delete and sign out",
+        "cancel": "Stay bound"
+      }
+    }
+  },
+  "confirm_dialog": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }

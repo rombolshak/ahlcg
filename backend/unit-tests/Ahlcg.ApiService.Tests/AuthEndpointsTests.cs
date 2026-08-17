@@ -336,7 +336,24 @@ public class AuthEndpointsTests
             userManager.Object);
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
-        Assert.True(((Ok<AuthEndpoints.UserDto>)result.Result).Value?.IsAnonymous);
+        var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
+        Assert.True(user?.IsAnonymous);
+        Assert.False(string.IsNullOrEmpty(user?.UserName));
+    }
+
+    [Fact]
+    public async Task GetCurrentUser_LoggedInAsPermanent_ReturnsEmailAndUserName()
+    {
+        var userManager = GetMockUserManager();
+
+        var result = await AuthEndpoints.GetCurrentUser(
+            new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, PermanentUser)])),
+            userManager.Object);
+
+        Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
+        var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
+        Assert.Equal("test@test.com", user?.Email);
+        Assert.Equal("test user", user?.UserName);
     }
 
     [Fact]

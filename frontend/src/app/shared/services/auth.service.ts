@@ -4,6 +4,7 @@ import { BehaviorSubject, catchError, map, Observable, of, switchMap, tap } from
 
 export interface User {
   email: string | null;
+  userName: string | null;
   isAnonymous: boolean;
 }
 

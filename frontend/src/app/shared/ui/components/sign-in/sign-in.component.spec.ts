@@ -29,6 +29,12 @@ describe('SignInComponent', () => {
     fixture.detectChanges();
   };
 
+  const fillValidCredentials = () => {
+    setInputValue('email', 'a@example.com');
+    setInputValue('text', 'a');
+    setInputValue('password', 'P@ssw0rd');
+  };
+
   beforeEach(async () => {
     loginAnonymously$ = new Subject<User>();
     signIn$ = new Subject<User>();
@@ -62,60 +68,52 @@ describe('SignInComponent', () => {
     });
 
     click('anonymous');
-    loginAnonymously$.next({ isAnonymous: true, email: null });
+    loginAnonymously$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
-    expect(emitted).toEqual([{ isAnonymous: true, email: null } satisfies User]);
+    expect(emitted).toEqual([{ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User]);
   });
 
-  it('should emit a User when submitting valid credentials', () => {
+  it('should show a translated message in the choice view when travelling light fails', () => {
+    click('anonymous');
+    loginAnonymously$.error(new HttpErrorResponse({ status: 403 }));
+    fixture.detectChanges();
+
+    const alert = fixture.debugElement.query(By.css('.alert')).nativeElement as HTMLElement;
+
+    expect(alert.textContent).toContain('incorrect');
+  });
+
+  it('should render the credentials form when choosing to bind an account', () => {
+    click('credentials');
+
+    expect(fixture.debugElement.query(By.css('.fieldset'))).toBeTruthy();
+  });
+
+  it('should emit a User when the credentials form resolves', async () => {
     const emitted: User[] = [];
     component.result.subscribe(user => {
       emitted.push(user);
     });
 
     click('credentials');
-    setInputValue('email', 'a@example.com');
-    setInputValue('text', 'a');
-    setInputValue('password', 'P@ssw0rd');
+    fillValidCredentials();
     (fixture.debugElement.query(By.css('.btn-primary')).nativeElement as HTMLElement).click();
-    signIn$.next({ isAnonymous: false, email: 'a@example.com' });
+    // The credentials form's own signal-forms submission resolves over a couple of microtasks
+    // beyond the click, and `result.emit` runs once that settles.
+    await fixture.whenStable();
+    signIn$.next({ isAnonymous: false, email: 'a@example.com', userName: 'a' });
+    await fixture.whenStable();
 
-    expect(signIn).toHaveBeenCalledWith({ email: 'a@example.com', username: 'a', password: 'P@ssw0rd' });
-    expect(emitted).toEqual([{ isAnonymous: false, email: 'a@example.com' } satisfies User]);
+    expect(emitted).toEqual([{ isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User]);
   });
 
-  it('should keep the dialog open with the typed values and show a translated message on 403', () => {
+  it('should go back to the choice view when the credentials form is dismissed', () => {
     click('credentials');
-    setInputValue('email', 'a@example.com');
-    setInputValue('text', 'a');
-    setInputValue('password', 'wrong');
-    (fixture.debugElement.query(By.css('.btn-primary')).nativeElement as HTMLElement).click();
-    signIn$.error(new HttpErrorResponse({ status: 403 }));
+
+    (fixture.debugElement.query(By.css('.btn-active')).nativeElement as HTMLElement).click();
     fixture.detectChanges();
 
-    const alert = fixture.debugElement.query(By.css('.alert')).nativeElement as HTMLElement;
-
-    expect(alert.textContent).toContain('incorrect');
-    expect((fixture.debugElement.query(By.css('input[type=email]')).nativeElement as HTMLInputElement).value).toBe('a@example.com');
-  });
-
-  it('should render IdentityResult descriptions on 400', () => {
-    click('credentials');
-    setInputValue('email', 'a@example.com');
-    setInputValue('text', 'a');
-    setInputValue('password', 'short');
-    (fixture.debugElement.query(By.css('.btn-primary')).nativeElement as HTMLElement).click();
-    signIn$.error(
-      new HttpErrorResponse({
-        status: 400,
-        error: { succeeded: false, errors: [{ code: 'password_short', description: 'Passwords must be at least 6 characters.' }] },
-      }),
-    );
-    fixture.detectChanges();
-
-    const alert = fixture.debugElement.query(By.css('.alert')).nativeElement as HTMLElement;
-
-    expect(alert.textContent).toContain('Passwords must be at least 6 characters.');
+    expect(fixture.debugElement.query(By.css('.fieldset'))).toBeFalsy();
   });
 
   describe('getInputHandlers', () => {
@@ -149,7 +147,7 @@ describe('SignInComponent', () => {
       expect(fixture.debugElement.query(By.css('.fieldset'))).toBeTruthy();
     });
 
-    it('should go back to the choice view on cancel and submit on confirm in the credentials view', async () => {
+    it('should go back to the choice view on cancel, and delegate confirm to the credentials form', async () => {
       click('credentials');
 
       await component.getInputHandlers().cancel?.();
@@ -158,9 +156,10 @@ describe('SignInComponent', () => {
       expect(fixture.debugElement.query(By.css('.fieldset'))).toBeFalsy();
 
       click('credentials');
+      fillValidCredentials();
       await component.getInputHandlers().confirm?.();
 
-      expect(signIn).toHaveBeenCalledWith({ email: '', username: '', password: '' });
+      expect(signIn).toHaveBeenCalledWith({ email: 'a@example.com', username: 'a', password: 'P@ssw0rd' });
     });
   });
 
@@ -176,6 +175,14 @@ describe('SignInComponent', () => {
     };
 
     const showsCredentialsView = () => Boolean((dialogFixture.nativeElement as HTMLElement).querySelector('.fieldset'));
+
+    const setDialogInputValue = (type: string, value: string) => {
+      const input = (dialogFixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(`input[type=${type}]`);
+      if (!input) throw new Error(`No input[type=${type}] found in the dialog`);
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+      dialogFixture.detectChanges();
+    };
 
     beforeEach(() => {
       dialogFixture = TestBed.createComponent(DialogComponent);
@@ -200,9 +207,13 @@ describe('SignInComponent', () => {
     it('should submit the credentials on Enter rather than re-running the chosen panel', () => {
       expect(showsCredentialsView()).toBe(true);
 
+      setDialogInputValue('email', 'a@example.com');
+      setDialogInputValue('text', 'a');
+      setDialogInputValue('password', 'P@ssw0rd');
+
       press('Enter');
 
-      expect(signIn).toHaveBeenCalledWith({ email: '', username: '', password: '' });
+      expect(signIn).toHaveBeenCalledWith({ email: 'a@example.com', username: 'a', password: 'P@ssw0rd' });
       expect(loginAnonymously).not.toHaveBeenCalled();
     });
   });

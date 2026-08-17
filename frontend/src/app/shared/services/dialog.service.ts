@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ApplicationRef, createComponent, EnvironmentInjector, inject, OutputRef, Service, Type } from '@angular/core';
+import { ApplicationRef, Binding, createComponent, EnvironmentInjector, inject, OutputRef, Service, Type } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { DialogComponent, DialogSize } from '@shared/components/dialog/dialog.component';
@@ -10,6 +10,11 @@ export type DialogContentWithResult<TResult> = DialogContent & { readonly result
 export interface DialogOptions {
   readonly titleKey?: string;
   readonly size?: DialogSize;
+  /**
+   * Forwarded to `attachContent`. Applied by change detection, which has not run by the time
+   * `onOpened` fires — content must read these in `ngOnInit` or an `effect`, not `onOpened`.
+   */
+  readonly bindings?: Binding[];
 }
 
 /**
@@ -47,7 +52,7 @@ export class DialogService {
     this.appRef.attachView(dialogRef.hostView);
     dialogRef.changeDetectorRef.detectChanges();
 
-    const contentRef = dialogRef.instance.attachContent(content);
+    const contentRef = dialogRef.instance.attachContent(content, options?.bindings);
 
     const result$ = new ReplaySubject<TResult>(1);
 

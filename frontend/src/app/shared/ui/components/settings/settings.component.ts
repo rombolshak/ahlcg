@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, linkedSignal, viewChildren } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal, viewChild, viewChildren } from '@angular/core';
 import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { InputLayer } from '@services/input-manager.service';
 import { listNavigation } from '@services/list-navigation';
@@ -7,11 +7,21 @@ import { provideUserPreferencesService, UserPreferences } from '@services/settin
 import { AH_DIALOG_CONTENT, DialogContent } from '@shared/components/dialog/dialog.content';
 import { AH_DIALOG_CONTEXT } from '@shared/components/dialog/dialog.context';
 import { produce } from 'immer';
+import { AccountComponent } from './account/account.component';
 import { SettingItemComponent } from './setting-item/setting-item.component';
+
+type View = 'settings' | 'account';
+
+type Row = { kind: 'setting'; index: number } | { kind: 'account' } | { kind: 'buttons' };
+
+interface DialogButton {
+  key: 'apply' | 'discard';
+  process: () => void;
+}
 
 @Component({
   selector: 'ah-settings',
-  imports: [SettingItemComponent, TranslocoDirective],
+  imports: [SettingItemComponent, AccountComponent, TranslocoDirective],
   templateUrl: './settings.component.html',
   styles: ``,
   providers: [
@@ -34,9 +44,45 @@ export class SettingsComponent implements DialogContent {
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();
 
+  protected readonly view = signal<View>('settings');
+
   private readonly settingsComponents = viewChildren<SettingItemComponent<unknown>>('setting');
-  private readonly navigation = listNavigation({ items: this.settingsComponents });
+  private readonly account = viewChild(AccountComponent);
+
+  protected readonly accountRowIndex = computed(() => this.settingsComponents().length);
+  protected readonly buttonsRowIndex = computed(() => this.settingsComponents().length + 1);
+
+  private readonly rows = computed<Row[]>(() => [
+    ...this.settingsComponents().map((_, index) => ({ kind: 'setting' as const, index })),
+    { kind: 'account' as const },
+    { kind: 'buttons' as const },
+  ]);
+  private readonly navigation = listNavigation({ items: this.rows });
   protected readonly selectedIndex = this.navigation.selectedIndex;
+
+  private readonly buttons = signal<DialogButton[]>([
+    {
+      key: 'apply',
+      process: () => {
+        this.applySettings();
+      },
+    },
+    {
+      key: 'discard',
+      process: () => {
+        this.discardSettings();
+      },
+    },
+  ]);
+  private readonly buttonsNavigation = listNavigation({
+    items: this.buttons,
+    onConfirm: button => {
+      button.process();
+    },
+    orientation: 'horizontal',
+  });
+  protected readonly selectedButtonIndex = this.buttonsNavigation.selectedIndex;
+  protected readonly isButtonsRowSelected = computed(() => this.rows()[this.selectedIndex()]?.kind === 'buttons');
 
   constructor() {
     effect(() => {
@@ -45,19 +91,37 @@ export class SettingsComponent implements DialogContent {
   }
 
   public onOpened = () => {
+    this.view.set('settings');
     this.selectedIndex.set(0);
   };
 
+  /**
+   * The account view renames the dialog rather than printing a heading of its own, which would sit
+   * under a "Settings" title that no longer describes it. `undefined` leaves the dialog's own title
+   * in place, so the settings view needs no key here.
+   */
+  public getTitle = () => (this.view() === 'account' ? this.transloco.translate('settings.account.title') : undefined);
+
   public getInputHandlers: () => InputLayer = () => {
+    if (this.view() === 'account') {
+      return this.account()?.getInputHandlers() ?? {};
+    }
+
+    const row = this.rows()[this.selectedIndex()];
     return {
       ...this.navigation.handlers,
       cancel: this.discardSettings.bind(this),
-      confirm: this.applySettings.bind(this),
       moveLeft: () => {
-        this.settingsComponents()[this.selectedIndex()]?.prevValue.emit();
+        if (row?.kind === 'buttons') this.buttonsNavigation.movePrevious();
+        else if (row?.kind === 'setting') this.settingsComponents()[row.index]?.prevValue.emit();
       },
       moveRight: () => {
-        this.settingsComponents()[this.selectedIndex()]?.nextValue.emit();
+        if (row?.kind === 'buttons') this.buttonsNavigation.moveNext();
+        else if (row?.kind === 'setting') this.settingsComponents()[row.index]?.nextValue.emit();
+      },
+      confirm: () => {
+        if (row?.kind === 'account') this.view.set('account');
+        else if (row?.kind === 'buttons') void this.buttonsNavigation.handlers.confirm?.();
       },
     };
   };

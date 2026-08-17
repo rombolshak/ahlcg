@@ -26,46 +26,19 @@
         </button>
       }
     </div>
-  } @else {
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">{{ t("credentials.legend") }}</legend>
-
-      <label class="floating-label mt-2">
-        <input type="email" class="validator input w-full" ahFocusTrap required [value]="email()" [disabled]="busy()" (input)="onEmailInput($event)" />
-        <span>{{ t("credentials.email") }}</span>
-      </label>
-
-      <label class="floating-label mt-4">
-        <input type="text" class="input w-full" required [value]="username()" [disabled]="busy()" (input)="onUsernameInput($event)" />
-        <span>{{ t("credentials.username") }}</span>
-      </label>
-
-      <label class="floating-label mt-4">
-        <input type="password" class="input w-full" required [value]="password()" [disabled]="busy()" (input)="onPasswordInput($event)" />
-        <span>{{ t("credentials.password") }}</span>
-      </label>
-    </fieldset>
 
     @if (error(); as err) {
-      <div role="alert" class="mt-4 alert alert-soft alert-error">
-        @if (err.kind === "key") {
-          <span>{{ t(err.key) }}</span>
-        } @else {
-          <span>{{ err.message }}</span>
-        }
-      </div>
+      <ng-container *transloco="let te; prefix: 'auth.credentials_form.errors'">
+        <div role="alert" class="mt-4 alert alert-soft alert-error">
+          @if (err.kind === "key") {
+            <span>{{ te(err.key) }}</span>
+          } @else {
+            <span>{{ err.message }}</span>
+          }
+        </div>
+      </ng-container>
     }
-
-    <div class="mt-6 flex items-center justify-around gap-4">
-      <button type="button" class="btn btn-primary" [disabled]="busy()" (click)="submit()">
-        @if (busy()) {
-          <span class="loading loading-sm loading-spinner"></span>
-        }
-        {{ t("credentials.submit") }}
-      </button>
-      <button type="button" class="btn btn-active" [disabled]="busy()" (click)="backToChoice()">
-        {{ t("credentials.back") }}
-      </button>
-    </div>
+  } @else {
+    <ah-credentials-form dismissKey="back" (result)="onFormResult($event)" />
   }
 </ng-container>
