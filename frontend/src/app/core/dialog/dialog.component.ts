@@ -16,9 +16,9 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { InputManagerService, LayerRef } from '@core/input-manager.service';
-import { AH_DIALOG_CONTENT, DialogContent } from '@ui/components/dialog/dialog.content';
-import { AH_DIALOG_CONTEXT } from '@ui/components/dialog/dialog.context';
-import { SvgComponent } from '../svg/svg.component';
+import { SvgComponent } from '@ui/components/svg/svg.component';
+import { AH_DIALOG_CONTENT, DialogContent } from './dialog-content';
+import { AH_DIALOG_CONTEXT } from './dialog-context';
 
 export type DialogSize = 's' | 'm' | 'l';
 

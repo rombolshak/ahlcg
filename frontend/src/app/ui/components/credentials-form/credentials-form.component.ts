@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, inp
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { email, form, FormField, FormRoot, required } from '@angular/forms/signals';
 import { AuthService, Credentials, User } from '@core/auth.service';
-import { DialogContentWithResult, DialogOptions } from '@core/dialog.service';
+import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
+import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { AH_DIALOG_CONTENT } from '@ui/components/dialog/dialog.content';
 import { FocusTrapDirective } from '@ui/directives/focus-trap.directive';
 import { firstValueFrom } from 'rxjs';
 import { toValidationError } from './credentials-form.errors';

@@ -2,7 +2,7 @@ import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular
 import { inject } from '@angular/core';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
 import { catchError, switchMap, throwError, throwIfEmpty } from 'rxjs';
-import { DialogService } from './dialog.service';
+import { DialogService } from './dialog/dialog.service';
 
 const RETRIED = new HttpContextToken(() => false);
 

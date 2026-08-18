@@ -14,9 +14,10 @@ export default {
       name: "no-folder-cycles",
       severity: "warn",
       comment: "Two folders import from each other, even though no single module does. Expected until #541 finishes the layer move; do not add new ones.",
-      // This is the rule that makes #541's three named cycles visible — core/ against each of
-      // ui/components/{dialog,confirm-dialog,sign-in}. None of them are module-level cycles, so
-      // `no-circular` above reports nothing for them and only folder scope catches them.
+      // This is the rule that makes #541's named cycles visible — core/ against
+      // ui/components/sign-in (the other two, core/ against ui/components/{dialog,confirm-dialog},
+      // were closed by #544). None of them are module-level cycles, so `no-circular` above reports
+      // nothing for them and only folder scope catches them.
       //
       // `scope: "folder"` is flagged experimental upstream: if a dependency-cruiser bump renames or
       // drops it, that is why this rule silently stops firing.

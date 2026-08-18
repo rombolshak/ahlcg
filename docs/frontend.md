@@ -29,10 +29,10 @@ frontend/
 │   │   │   ├── game-entity.ts        entity union + type guards
 │   │   │   └── game-map.model.ts, meta-info.ts, action.model.ts,
 │   │   │       card.constants.ts, display.options.ts
-│   │   ├── core/                     auth, auth.interceptor, card-info, dialog,
+│   │   ├── core/                     auth, auth.interceptor, card-info, dialog/,
 │   │   │                             images-url, input-manager, settings/
 │   │   ├── ui/
-│   │   │   ├── components/           cards/, dialog/, sign-in/, settings/, art-button/, art-panel/,
+│   │   │   ├── components/           cards/, sign-in/, settings/, art-button/, art-panel/,
 │   │   │   │                         numeric-text/, vitals-bar/, svg/, json-editor/,
 │   │   │   │                         text-with-overlay/
 │   │   │   ├── directives/cards/     card-background, card-faction-background, card-outline

@@ -2,7 +2,7 @@ import { inputBinding, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '@testing/transloco.testing';
-import { DialogComponent } from '@ui/components/dialog/dialog.component';
+import { DialogComponent } from '../dialog.component';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 
 describe('ConfirmDialogComponent', () => {
