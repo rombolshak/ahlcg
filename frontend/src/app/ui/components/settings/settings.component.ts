@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal, viewChild, viewChildren } from '@angular/core';
+import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
+import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { SettingsService } from '@core/settings/settings.service';
 import { provideUserPreferencesService, UserPreferences } from '@core/settings/user-preferences.service';
 import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { AH_DIALOG_CONTENT, DialogContent } from '@ui/components/dialog/dialog.content';
-import { AH_DIALOG_CONTEXT } from '@ui/components/dialog/dialog.context';
 import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
 import { SettingItemComponent } from './setting-item/setting-item.component';

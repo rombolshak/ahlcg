@@ -1,8 +1,8 @@
 import { AuthService, User } from '@core/auth.service';
-import { ConfirmDialogService } from '@core/confirm-dialog.service';
-import { DialogService } from '@core/dialog.service';
+import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
+import { DialogComponent } from '@core/dialog/dialog.component';
+import { DialogService } from '@core/dialog/dialog.service';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
-import { DialogComponent } from '@ui/components/dialog/dialog.component';
 import { NEVER, of } from 'rxjs';
 import { AccountComponent } from './account.component';
 

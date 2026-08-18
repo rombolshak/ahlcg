@@ -5,7 +5,7 @@ import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
-import { DialogService } from './dialog.service';
+import { DialogService } from './dialog/dialog.service';
 
 describe('authInterceptor', () => {
   let http: HttpClient;

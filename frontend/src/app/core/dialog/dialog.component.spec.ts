@@ -4,8 +4,8 @@ import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, sig
 import { By } from '@angular/platform-browser';
 import { InputLayer, InputManagerService } from '@core/input-manager.service';
 import { MockInstance, vi } from 'vitest';
+import { AH_DIALOG_CONTENT, DialogContent } from './dialog-content';
 import { DialogComponent } from './dialog.component';
-import { AH_DIALOG_CONTENT, DialogContent } from './dialog.content';
 
 @Component({
   selector: 'ah-test-content',

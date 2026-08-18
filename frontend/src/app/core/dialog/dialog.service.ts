@@ -2,9 +2,9 @@ import { DOCUMENT } from '@angular/common';
 import { ApplicationRef, Binding, createComponent, EnvironmentInjector, inject, OutputRef, Service, Type } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
-import { DialogComponent, DialogSize } from '@ui/components/dialog/dialog.component';
-import { DialogContent } from '@ui/components/dialog/dialog.content';
 import { Observable, ReplaySubject, take } from 'rxjs';
+import { DialogContent } from './dialog-content';
+import { DialogComponent, DialogSize } from './dialog.component';
 
 export type DialogContentWithResult<TResult> = DialogContent & { readonly result: OutputRef<TResult> };
 export interface DialogOptions {

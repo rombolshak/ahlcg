@@ -1,7 +1,7 @@
 import { Binding, inject, inputBinding, Service } from '@angular/core';
-import { ConfirmAppearance, ConfirmButtonKey, ConfirmDialogComponent } from '@ui/components/confirm-dialog/confirm-dialog.component';
 import { defaultIfEmpty, Observable } from 'rxjs';
-import { DialogService } from './dialog.service';
+import { DialogService } from '../dialog.service';
+import { ConfirmAppearance, ConfirmButtonKey, ConfirmDialogComponent } from './confirm-dialog.component';
 
 export interface ConfirmOptions {
   readonly titleKey: string;

@@ -2,12 +2,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal, Signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService, User } from '@core/auth.service';
-import { DialogContentWithResult, DialogOptions } from '@core/dialog.service';
+import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
+import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CredentialsFormComponent } from '@ui/components/credentials-form/credentials-form.component';
-import { AH_DIALOG_CONTENT } from '@ui/components/dialog/dialog.content';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth

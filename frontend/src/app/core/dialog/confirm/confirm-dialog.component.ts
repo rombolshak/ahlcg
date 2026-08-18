@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, OnInit, output, signal } from '@angular/core';
-import { DialogContentWithResult } from '@core/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { AH_DIALOG_CONTENT } from '@ui/components/dialog/dialog.content';
+import { AH_DIALOG_CONTENT } from '../dialog-content';
+import { DialogContentWithResult } from '../dialog.service';
 
 export type ConfirmAppearance = 'primary' | 'error';
 export type ConfirmButtonKey = 'confirm' | 'cancel';
