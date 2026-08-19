@@ -32,10 +32,12 @@ frontend/
 │   │   │       card.constants.ts, display.options.ts
 │   │   ├── core/                     auth/, card-info, dialog/,
 │   │   │                             input-manager, settings/
-│   │   ├── ui/
-│   │   │   ├── components/           cards/, art-button/, art-panel/, numeric-text/,
-│   │   │   │                         vitals-bar/, svg/, json-editor/, text-with-overlay/
-│   │   │   ├── directives/cards/     card-background, card-faction-background, card-outline
+│   │   ├── ui/                       kit/ takes primitives, game/ takes domain models
+│   │   │   ├── kit/                  art-button/, art-panel/, numeric-text/, text-with-overlay/,
+│   │   │   │                         svg/, json-editor/, single-bar/
+│   │   │   ├── game/                 vitals-bar/, cards/ (card/, asset-card/, event-card/,
+│   │   │   │                         skill-card/, card-parts/), directives/cards/
+│   │   │   ├── directives/           focus-trap
 │   │   │   └── pipes/                as, trim-start, with-ah-symbols
 │   │   └── features/
 │   │       ├── auth/                 sign-in/, credentials-form/

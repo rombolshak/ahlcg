@@ -2,7 +2,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Enemy } from '@domain/entities/enemy.model';
-import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
+import { VitalsBarComponent } from '@ui/game/vitals-bar/vitals-bar.component';
 import { EnemyPopoverComponent } from './enemy-popover/enemy-popover.component';
 
 @Component({

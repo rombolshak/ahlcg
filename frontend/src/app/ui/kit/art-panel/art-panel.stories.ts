@@ -1,5 +1,5 @@
 ﻿import { argsToTemplate, Meta, StoryObj } from '@storybook/angular-vite';
-import { ArtPanelComponent } from '@ui/components/art-panel/art-panel.component';
+import { ArtPanelComponent } from '@ui/kit/art-panel/art-panel.component';
 
 const meta: Meta<ArtPanelComponent> = {
   component: ArtPanelComponent,

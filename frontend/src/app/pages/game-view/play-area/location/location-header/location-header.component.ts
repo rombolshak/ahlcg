@@ -4,8 +4,8 @@ import { CardInfoService } from '@core/card-info.service';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Location } from '@domain/entities/location.model';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { NumericTextWithOverlayComponent } from '@ui/components/numeric-text/numeric-text-with-overlay.component';
-import { NumericTextComponent } from '@ui/components/numeric-text/numeric-text.component';
+import { NumericTextWithOverlayComponent } from '@ui/kit/numeric-text/numeric-text-with-overlay.component';
+import { NumericTextComponent } from '@ui/kit/numeric-text/numeric-text.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../../components/card-details-text/card-details-text.component';
 

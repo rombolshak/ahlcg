@@ -1,5 +1,5 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { ArtButtonComponent } from '@ui/components/art-button/art-button.component';
+import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
 
 const meta: Meta<ArtButtonComponent> = {
   component: ArtButtonComponent,

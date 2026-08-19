@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Faction } from '@domain/entities/player-card.model';
-import { CardBackgroundDirective } from '@ui/directives/cards/card-background.directive';
+import { CardBackgroundDirective } from '@ui/game/directives/cards/card-background.directive';
 
 @Component({
   selector: 'ah-test',
