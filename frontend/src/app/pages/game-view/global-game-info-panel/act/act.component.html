@@ -26,16 +26,10 @@
           [class.grid-rows-3]="maxLines()[$index] === 3"
         >
           @for (_ of [].constructor(objective.currentValue); track $index) {
-            <img
-              width="36"
-              height="36"
-              alt="objective token"
-              class="flex-none brightness-125"
-              [ngSrc]="imageService.getUrl(['card-overlay', objective.type])"
-            />
+            <img width="36" height="36" alt="objective token" class="flex-none brightness-125" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
           }
           @for (_ of [].constructor(emptySlots()[$index]); track $index) {
-            <img width="36" height="36" alt="objective token" class="flex-none brightness-25" [ngSrc]="imageService.getUrl(['card-overlay', objective.type])" />
+            <img width="36" height="36" alt="objective token" class="flex-none brightness-25" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
           }
         </div>
       }

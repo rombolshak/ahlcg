@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { TranslocoService } from '@jsverse/transloco';
 
 @Component({
@@ -12,8 +12,7 @@ import { TranslocoService } from '@jsverse/transloco';
 })
 export class TitleComponent {
   private readonly transloco = inject(TranslocoService);
-  private readonly imageService = inject(ImagesUrlService);
 
   private readonly lang = toSignal(this.transloco.langChanges$);
-  protected readonly img = computed(() => this.imageService.getUrl(`title/${this.lang() ?? 'en'}`));
+  protected readonly img = computed(() => imageUrl(`title/${this.lang() ?? 'en'}`));
 }

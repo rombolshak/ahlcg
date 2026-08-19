@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Location } from '@domain/entities/location.model';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NumericTextWithOverlayComponent } from '@ui/components/numeric-text/numeric-text-with-overlay.component';
@@ -19,8 +19,8 @@ import { CardDetailsTextComponent } from '../../../components/card-details-text/
   },
 })
 export class LocationHeaderComponent {
-  protected readonly imageService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly location = input<Location>();
   readonly hovered = input(false);

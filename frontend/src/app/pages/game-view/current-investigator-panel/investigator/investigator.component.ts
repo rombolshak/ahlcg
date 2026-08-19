@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Investigator } from '@domain/entities/investigator.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
@@ -31,8 +31,8 @@ import { InvestigatorTokensComponent } from './investigator-tokens/investigator-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorComponent {
-  protected readonly imagesService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly investigator = input.required<Investigator>();
 

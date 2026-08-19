@@ -25,11 +25,12 @@ frontend/
 │   │   ├── domain/                   arktype schemas + inferred types
 │   │   │   ├── entities/             act, agenda, enemy, location, investigator,
 │   │   │   │                         card, player-card, id models; details/
+│   │   │   ├── card-art/             image-url.ts
 │   │   │   ├── game-state.ts         root schema
 │   │   │   ├── game-entity.ts        entity union + type guards
 │   │   │   └── game-map.model.ts, meta-info.ts, action.model.ts,
 │   │   │       card.constants.ts, display.options.ts
-│   │   ├── core/                     auth/, card-info, dialog/, images-url,
+│   │   ├── core/                     auth/, card-info, dialog/,
 │   │   │                             input-manager, settings/
 │   │   ├── ui/
 │   │   │   ├── components/           cards/, art-button/, art-panel/, numeric-text/,
@@ -73,10 +74,11 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | `AuthService` | `GET /api/auth/info` on construction; exposes `currentUser: Observable<User \| undefined>`. `401` maps to `undefined`. `loginAnonymously()`, `signIn(credentials)` and `logout()` each post, then `switchMap` into `refreshCurrentUser()`, so `currentUser` carries server truth rather than an optimistic guess. `signIn` covers signing in, registering and upgrading an anonymous account — the server picks the branch, so there is no separate "link" call. All return cold observables — nothing is requested until subscription. |
 | `DialogService` | Opens a dialog imperatively: `open(Component, { titleKey })` creates a `DialogComponent` into a detached host on `document.body`, mounts the component inside it, and returns an `Observable` of the value that component emits on its `result` output. **One dialog per component type** — a second `open()` for a type already showing returns the existing stream, which is what makes concurrent `401`s share one prompt. Teardown (detach, destroy, remove the host, clear the entry) runs on `result` *or* on the dialog closing by any other route, so no dismissal can strand the service. The content component provides `AH_DIALOG_CONTENT` and exposes `result`; `<ah-dialog>` still accepts projected content declaratively, as `SettingsComponent` uses it. |
 | `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. |
-| `ImagesUrlService` | Maps a typed `ImageDescriptor` tuple to `/assets/images/{...}.webp`. Add new image categories to the `ImageDescriptor` union, not as raw strings. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
+
+`imageUrl(descriptor)` is a pure function in `domain/card-art/`, not a service — it maps a typed `ImageDescriptor` tuple (or a bare string) to `/assets/images/{...}.webp`. Add new image categories to the `ImageDescriptor` union, not as raw strings.
 
 `core/list-navigation.ts` sits next to `InputManagerService` but is **not** a service — it is a plain signal factory (`listNavigation({ items, onConfirm?, orientation? })`) called in a field initializer. Given a `Signal` of items it owns the selected index, wrapping in both directions and skipping any item carrying `disabled: true`; there is no predicate to configure, and items without that property are always selectable. It binds one axis — `moveUp`/`moveDown` or `moveLeft`/`moveRight` — leaving the other free, which is why `SettingsComponent` can still spend `moveLeft`/`moveRight` on changing a setting's value.
 

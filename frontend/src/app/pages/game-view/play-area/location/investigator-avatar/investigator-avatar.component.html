@@ -7,12 +7,12 @@
       height="160"
       class="peer rounded-lg"
       alt="investigator avatar"
-      [ngSrc]="imagesService.getUrl(['investigator', investigator().setInfo.set, investigator().setInfo.index])"
+      [ngSrc]="imageUrl(['investigator', investigator().setInfo.set, investigator().setInfo.index])"
     />
 
     <div class="absolute inset-x-0 bottom-0 flex justify-around bg-gray-900/80">
-      <ah-asset-detail-icon [detail]="investigator().tokens?.resource" [image]="imagesService.getUrl(['card-overlay', 'resource'])" />
-      <ah-asset-detail-icon [detail]="investigator().tokens?.clue" [image]="imagesService.getUrl(['card-overlay', 'clue'])" />
+      <ah-asset-detail-icon [detail]="investigator().tokens?.resource" [image]="imageUrl(['card-overlay', 'resource'])" />
+      <ah-asset-detail-icon [detail]="investigator().tokens?.clue" [image]="imageUrl(['card-overlay', 'clue'])" />
     </div>
   </div>
 

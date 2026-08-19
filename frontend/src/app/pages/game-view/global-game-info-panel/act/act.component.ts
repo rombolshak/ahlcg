@@ -1,7 +1,7 @@
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Act, Objective } from '@domain/entities/act.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { SingleBarComponent } from '@ui/components/vitals-bar/single-bar/single-bar.component';
@@ -19,8 +19,8 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   },
 })
 export class ActComponent {
-  protected readonly imageService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly act = input.required<Act>();
 

@@ -18,7 +18,7 @@
       >
         <img
           alt="card-slot"
-          [ngSrc]="imagesService.getUrl(['card-overlay', 'slot', _card.slot])"
+          [ngSrc]="imageUrl(['card-overlay', 'slot', _card.slot])"
           [width]="slotSizes[displayOptions().cardSize]"
           [height]="slotSizes[displayOptions().cardSize]"
         />
@@ -26,7 +26,7 @@
         @if (_card.additionalSlot) {
           <img
             alt="card-slot"
-            [ngSrc]="imagesService.getUrl(['card-overlay', 'slot', _card.additionalSlot])"
+            [ngSrc]="imageUrl(['card-overlay', 'slot', _card.additionalSlot])"
             [width]="slotSizes[displayOptions().cardSize]"
             [height]="slotSizes[displayOptions().cardSize]"
           />

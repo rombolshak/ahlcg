@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { AssetCard } from '@domain/entities/player-card.model';
 import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
@@ -20,8 +20,8 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
   },
 })
 export class ControlledAssetComponent {
-  protected readonly imagesService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly asset = input.required<AssetCard>();
   readonly passive = input(false);
