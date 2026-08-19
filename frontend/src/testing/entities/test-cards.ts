@@ -1,4 +1,5 @@
 ﻿import { DisplayOptions } from '@domain/display.options';
+import { CardInfo } from '@domain/entities/details/card-info.model';
 import { assetId, eventId, skillId } from '@domain/entities/id.model';
 import { AssetCard, EventCard, SkillCard } from '@domain/entities/player-card.model';
 
@@ -19,6 +20,15 @@ export const cardE: EventCard = {
   cost: 3,
 };
 
+export const cardEInfo: CardInfo = {
+  setInfo: { set: '02', index: '107' },
+  title: 'cards/02/107.title',
+  flavor: 'cards/02/107.flavor',
+  traits: ['traits.insight', 'traits.tactic'],
+  abilities: ['cards/02/107.a1'],
+  copyright: { illustrator: 'Robert Laskey', ffg: '2016' },
+};
+
 const card = {
   hasAction: false,
   cardType: 'asset' as const,
@@ -35,6 +45,14 @@ export const cardA: AssetCard = {
   ...card,
   id: assetId.assert('2'),
   slot: 'hand',
+};
+
+export const cardAInfo: CardInfo = {
+  setInfo: { set: '09', index: '045' },
+  title: 'cards/09/045.title',
+  traits: ['traits.item', 'traits.book', 'traits.science'],
+  abilities: ['cards/09/045.a1', 'cards/09/045.a2'],
+  copyright: { illustrator: 'Pixoloid Studious', ffg: '2022' },
 };
 
 export const cardA2: AssetCard = {
@@ -88,4 +106,13 @@ export const cardS: SkillCard = {
   skills: {
     wild: 1,
   },
+};
+
+export const cardSInfo: CardInfo = {
+  setInfo: { set: '10', index: '095' },
+  title: 'cards/10/095.title',
+  flavor: 'cards/10/095.flavor',
+  traits: ['traits.innate', 'traits.cursed'],
+  abilities: ['cards/10/095.a1'],
+  copyright: { illustrator: 'David Hovey', ffg: '2024' },
 };

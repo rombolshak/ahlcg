@@ -1,0 +1,16 @@
+@let info = cardInfo();
+@let cardType = card().cardType;
+@if (info) {
+  @switch (cardType) {
+    @case ("asset") {
+      <ah-asset-card [card]="card() | as: AssetCard" [cardInfo]="info" [displayOptions]="displayOptions()" />
+    }
+    @case ("event") {
+      <ah-event-card [card]="card() | as: EventCard" [cardInfo]="info" [displayOptions]="displayOptions()" />
+    }
+    @case ("skill") {
+      <ah-skill-card [card]="card() | as: SkillCard" [cardInfo]="info" [displayOptions]="displayOptions()" />
+    }
+    @default never;
+  }
+}

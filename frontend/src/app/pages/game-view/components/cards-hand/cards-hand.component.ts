@@ -3,7 +3,7 @@ import { cardWidths } from '@domain/card.constants';
 import { DisplayOptions } from '@domain/display.options';
 import { PlayerCardId } from '@domain/entities/id.model';
 import { PlayerCard } from '@domain/entities/player-card.model';
-import { CardComponent } from '@ui/game/cards/card/card.component';
+import { CardComponent } from '@features/card/card.component';
 
 @Component({
   selector: 'ah-cards-hand',

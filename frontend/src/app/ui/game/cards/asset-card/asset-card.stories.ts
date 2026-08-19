@@ -1,10 +1,11 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardA } from '@testing/entities/test-cards';
+import { cardA, cardAInfo } from '@testing/entities/test-cards';
 import { AssetCardComponent } from './asset-card.component';
 
 const meta: Meta<AssetCardComponent> = {
   component: AssetCardComponent,
   args: {
+    cardInfo: cardAInfo,
     displayOptions: { cardSize: 'l', textSize: 's' },
   },
 };
