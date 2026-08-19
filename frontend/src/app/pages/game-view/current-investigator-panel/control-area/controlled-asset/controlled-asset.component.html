@@ -1,5 +1,5 @@
 ﻿@let _asset = asset();
-<img fill class="peer -z-1 rounded-sm" alt="asset art" [ngSrc]="imagesService.getUrl(['mini-illustration', _asset.setInfo.set, _asset.setInfo.index])" />
+<img fill class="peer -z-1 rounded-sm" alt="asset art" [ngSrc]="imageUrl(['mini-illustration', _asset.setInfo.set, _asset.setInfo.index])" />
 
 @if (!passive()) {
   <div class="flex flex-col flex-wrap justify-between bg-gray-900/70">
@@ -7,19 +7,15 @@
       <p class="rounded-full border bg-gray-200 px-0.25 pt-1 text-center font-[ArnoPro] text-xs text-gray-500" [innerHTML]="'#n#' | withAhSymbols"></p>
     }
 
-    <ah-asset-detail-icon [detail]="_asset.tokens?.resource" [image]="imagesService.getUrl(['card-overlay', 'resource'])" />
-    <ah-asset-detail-icon [detail]="_asset.tokens?.clue" [image]="imagesService.getUrl(['card-overlay', 'clue'])" />
-    <ah-asset-detail-icon [detail]="_asset.tokens?.doom" [image]="imagesService.getUrl(['card-overlay', 'doom'])" />
+    <ah-asset-detail-icon [detail]="_asset.tokens?.resource" [image]="imageUrl(['card-overlay', 'resource'])" />
+    <ah-asset-detail-icon [detail]="_asset.tokens?.clue" [image]="imageUrl(['card-overlay', 'clue'])" />
+    <ah-asset-detail-icon [detail]="_asset.tokens?.doom" [image]="imageUrl(['card-overlay', 'doom'])" />
     <div class="flex flex-col" [class.hidden]="!_asset.slot && !_asset.additionalSlot">
       @if (_asset.slot) {
-        <ah-asset-detail-icon [detail]="_asset.slot" [image]="imagesService.getUrl(['card-overlay', 'slot', _asset.slot])" [withoutText]="true" />
+        <ah-asset-detail-icon [detail]="_asset.slot" [image]="imageUrl(['card-overlay', 'slot', _asset.slot])" [withoutText]="true" />
       }
       @if (_asset.additionalSlot) {
-        <ah-asset-detail-icon
-          [detail]="_asset.additionalSlot"
-          [image]="imagesService.getUrl(['card-overlay', 'slot', _asset.additionalSlot])"
-          [withoutText]="true"
-        />
+        <ah-asset-detail-icon [detail]="_asset.additionalSlot" [image]="imageUrl(['card-overlay', 'slot', _asset.additionalSlot])" [withoutText]="true" />
       }
     </div>
   </div>

@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { ImagesUrlService } from '@core/images-url.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { imageUrl } from '@domain/card-art/image-url';
 import { AssetSlot } from '@domain/entities/player-card.model';
 
 @Component({
@@ -13,7 +13,7 @@ import { AssetSlot } from '@domain/entities/player-card.model';
   },
 })
 export class EmptySlotComponent {
-  protected readonly imagesUrlService = inject(ImagesUrlService);
+  protected readonly imageUrl = imageUrl;
 
   readonly slot = input.required<AssetSlot>();
 }

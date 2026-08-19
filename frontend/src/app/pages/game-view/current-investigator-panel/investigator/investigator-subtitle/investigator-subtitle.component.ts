@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { ImagesUrlService } from '@core/images-url.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Faction } from '@domain/entities/player-card.model';
 
 @Component({
@@ -13,7 +13,7 @@ import { Faction } from '@domain/entities/player-card.model';
   },
 })
 export class InvestigatorSubtitleComponent {
-  protected readonly imagesService = inject(ImagesUrlService);
+  protected readonly imageUrl = imageUrl;
 
   readonly text = input.required<string>();
   readonly faction = input.required<Faction>();

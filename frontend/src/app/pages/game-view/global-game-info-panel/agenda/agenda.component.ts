@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
@@ -17,8 +17,8 @@ import { CardDetailsTextComponent } from '../../components/card-details-text/car
   },
 })
 export class AgendaComponent {
-  protected readonly imageService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly agenda = input.required<Agenda>();
 

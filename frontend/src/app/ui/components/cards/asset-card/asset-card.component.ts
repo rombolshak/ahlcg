@@ -1,7 +1,7 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { DisplayOptions } from '@domain/display.options';
 import { AssetCard } from '@domain/entities/player-card.model';
 import { CardAbilitiesComponent } from '../card-parts/card-abilities/card-abilities.component';
@@ -18,8 +18,8 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AssetCardComponent {
-  imagesService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
+  protected readonly imageUrl = imageUrl;
 
   readonly card = input.required<AssetCard>();
   readonly displayOptions = input.required<DisplayOptions>();

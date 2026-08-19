@@ -1,4 +1,3 @@
-import { Service } from '@angular/core';
 import { AssetSlot, Faction, PlayerCardType, SkillType } from '@domain/entities/player-card.model';
 
 type CardTemplateType = PlayerCardType | 'investigator-details';
@@ -6,7 +5,7 @@ type SetName = string;
 type SetIndex = string;
 type SimpleOverlayType = 'clue' | 'resource' | 'doom' | 'health' | 'sanity';
 
-type ImageDescriptor =
+export type ImageDescriptor =
   | ['card-template', CardTemplateType, Faction]
   | ['illustration' | 'mini-illustration' | 'investigator', SetName, SetIndex]
   | ['set-icon', SetName]
@@ -16,10 +15,7 @@ type ImageDescriptor =
   | ['card-overlay', 'slot', AssetSlot]
   | ['card-overlay', 'title' | 'subtitle', Faction];
 
-@Service()
-export class ImagesUrlService {
-  getUrl(desc: ImageDescriptor | string): string {
-    if (Array.isArray(desc)) return `/assets/images/${desc.join('/')}.webp`;
-    return `/assets/images/${desc}.webp`;
-  }
+export function imageUrl(desc: ImageDescriptor | string): string {
+  if (Array.isArray(desc)) return `/assets/images/${desc.join('/')}.webp`;
+  return `/assets/images/${desc}.webp`;
 }

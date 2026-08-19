@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { ImagesUrlService } from '@core/images-url.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Investigator } from '@domain/entities/investigator.model';
 import { AssetDetailIconComponent } from '@pages/game-view/current-investigator-panel/control-area/controlled-asset/asset-detail-icon/asset-detail-icon.component';
 import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
@@ -14,7 +14,7 @@ import { CardOutlineDirective } from '@ui/directives/cards/card-outline.directiv
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InvestigatorAvatarComponent {
-  protected readonly imagesService = inject(ImagesUrlService);
+  protected readonly imageUrl = imageUrl;
 
   readonly investigator = input.required<Investigator>();
 }

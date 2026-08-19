@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { ImagesUrlService } from '@core/images-url.service';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { imageUrl } from '@domain/card-art/image-url';
 import { DisplayOptions } from '@domain/display.options';
 import { PlayerCardBase, SkillType } from '@domain/entities/player-card.model';
 
@@ -11,7 +11,7 @@ import { PlayerCardBase, SkillType } from '@domain/entities/player-card.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardSkillsComponent {
-  protected imagesService = inject(ImagesUrlService);
+  protected readonly imageUrl = imageUrl;
 
   readonly card = input.required<PlayerCardBase>();
   readonly displayOptions = input.required<DisplayOptions>();

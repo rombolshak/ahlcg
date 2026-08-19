@@ -1,5 +1,5 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
-import { ImagesUrlService } from '@core/images-url.service';
+import { imageUrl } from '@domain/card-art/image-url';
 import { Faction } from '@domain/entities/player-card.model';
 
 @Directive({
@@ -7,7 +7,6 @@ import { Faction } from '@domain/entities/player-card.model';
 })
 export class CardFactionBackgroundDirective {
   private readonly el = inject(ElementRef);
-  private readonly imagesService = inject(ImagesUrlService);
 
   readonly faction = input.required<Faction>();
 
@@ -17,7 +16,7 @@ export class CardFactionBackgroundDirective {
     html.classList.add('bg-(image:--bgUrl)', 'bg-cover', 'bg-center');
 
     effect(() => {
-      html.style.setProperty('--bgUrl', `url(${this.imagesService.getUrl(['card-template', 'investigator', this.faction()])})`);
+      html.style.setProperty('--bgUrl', `url(${imageUrl(['card-template', 'investigator', this.faction()])})`);
     });
   }
 }

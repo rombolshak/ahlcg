@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { ImagesUrlService } from '@core/images-url.service';
 import { Enemy } from '@domain/entities/enemy.model';
 import { CardDetailsTextComponent } from '@pages/game-view/components/card-details-text/card-details-text.component';
 import { EnemyAttackDisplayComponent } from '@pages/game-view/components/enemy-attack-display/enemy-attack-display.component';
@@ -17,7 +16,6 @@ import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.compone
   },
 })
 export class EnemyPopoverComponent {
-  readonly imageService = inject(ImagesUrlService);
   private readonly cardInfoService = inject(CardInfoService);
 
   readonly enemy = input.required<Enemy>();

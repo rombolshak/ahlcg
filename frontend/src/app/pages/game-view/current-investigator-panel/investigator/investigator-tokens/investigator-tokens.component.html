@@ -1,4 +1,4 @@
-<img fill alt="skills box" [ngSrc]="imagesService.getUrl(['card-template', 'investigator-details', faction()])" />
+<img fill alt="skills box" [ngSrc]="imageUrl(['card-template', 'investigator-details', faction()])" />
 <div class="flex justify-around gap-3 pr-3 pl-2">
   <ah-investigator-token type="clue" [faction]="faction()" [value]="tokens()?.clue ?? 0" />
   <ah-investigator-token type="resource" [faction]="faction()" [value]="tokens()?.resource ?? 0" />
