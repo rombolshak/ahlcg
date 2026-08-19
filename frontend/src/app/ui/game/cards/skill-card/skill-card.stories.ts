@@ -1,10 +1,11 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardS } from '@testing/entities/test-cards';
+import { cardS, cardSInfo } from '@testing/entities/test-cards';
 import { SkillCardComponent } from './skill-card.component';
 
 const meta: Meta<SkillCardComponent> = {
   component: SkillCardComponent,
   args: {
+    cardInfo: cardSInfo,
     displayOptions: { cardSize: 'l', textSize: 's' },
   },
 };

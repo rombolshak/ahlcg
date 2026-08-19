@@ -1,10 +1,11 @@
 ﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardE } from '@testing/entities/test-cards';
+import { cardE, cardEInfo } from '@testing/entities/test-cards';
 import { EventCardComponent } from './event-card.component';
 
 const meta: Meta<EventCardComponent> = {
   component: EventCardComponent,
   args: {
+    cardInfo: cardEInfo,
     displayOptions: { cardSize: 'l', textSize: 's' },
   },
 };

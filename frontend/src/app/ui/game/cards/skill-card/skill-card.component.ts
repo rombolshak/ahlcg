@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { CardInfoService } from '@core/card-info.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { DisplayOptions } from '@domain/display.options';
+import { CardInfo } from '@domain/entities/details/card-info.model';
 import { SkillCard } from '@domain/entities/player-card.model';
 import { CardAbilitiesComponent } from '../card-parts/card-abilities/card-abilities.component';
 import { CardCopyrightComponent } from '../card-parts/card-copyright/card-copyright.component';
@@ -16,10 +16,7 @@ import { CardTraitsComponent } from '../card-parts/card-traits/card-traits.compo
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SkillCardComponent {
-  private readonly cardInfoService = inject(CardInfoService);
-
   readonly card = input.required<SkillCard>();
+  readonly cardInfo = input.required<CardInfo>();
   readonly displayOptions = input.required<DisplayOptions>();
-
-  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
 }

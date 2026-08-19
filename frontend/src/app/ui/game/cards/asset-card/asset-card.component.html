@@ -1,39 +1,37 @@
 ﻿@let _cardInfo = cardInfo();
 @let _card = card();
-@if (_cardInfo) {
-  <ah-player-card [card]="card()" [displayOptions]="displayOptions()">
-    <ah-card-cost [card]="card()" />
-    <ah-card-title class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5 group-data-[size=s]:top-[7px]" [card]="_cardInfo" />
+<ah-player-card [card]="card()" [displayOptions]="displayOptions()">
+  <ah-card-cost [card]="card()" />
+  <ah-card-title class="absolute group-data-[size=l]:top-3 group-data-[size=m]:top-1.5 group-data-[size=s]:top-[7px]" [card]="_cardInfo" />
 
+  <div
+    class="absolute group-data-[size=l]:top-80 group-data-[size=l]:pr-[36px] group-data-[size=l]:pl-[21px] group-data-[size=m]:top-53 group-data-[size=m]:pr-[24px] group-data-[size=m]:pl-[14px] group-data-[size=s]:top-34 group-data-[size=s]:pr-[10px] group-data-[size=s]:pl-[7px]"
+  >
+    <ah-card-traits [card]="_cardInfo" [displayOptions]="displayOptions()" />
+    <ah-card-abilities [card]="_cardInfo" [displayOptions]="displayOptions()" />
+  </div>
+
+  @if (_card.slot) {
     <div
-      class="absolute group-data-[size=l]:top-80 group-data-[size=l]:pr-[36px] group-data-[size=l]:pl-[21px] group-data-[size=m]:top-53 group-data-[size=m]:pr-[24px] group-data-[size=m]:pl-[14px] group-data-[size=s]:top-34 group-data-[size=s]:pr-[10px] group-data-[size=s]:pl-[7px]"
+      class="absolute flex flex-row-reverse group-data-[size=l]:right-[12px] group-data-[size=l]:bottom-[15px] group-data-[size=m]:right-[8px] group-data-[size=m]:bottom-[10px] group-data-[size=s]:right-[6px] group-data-[size=s]:bottom-[8px]"
     >
-      <ah-card-traits [card]="_cardInfo" [displayOptions]="displayOptions()" />
-      <ah-card-abilities [card]="_cardInfo" [displayOptions]="displayOptions()" />
-    </div>
+      <img
+        alt="card-slot"
+        [ngSrc]="imageUrl(['card-overlay', 'slot', _card.slot])"
+        [width]="slotSizes[displayOptions().cardSize]"
+        [height]="slotSizes[displayOptions().cardSize]"
+      />
 
-    @if (_card.slot) {
-      <div
-        class="absolute flex flex-row-reverse group-data-[size=l]:right-[12px] group-data-[size=l]:bottom-[15px] group-data-[size=m]:right-[8px] group-data-[size=m]:bottom-[10px] group-data-[size=s]:right-[6px] group-data-[size=s]:bottom-[8px]"
-      >
+      @if (_card.additionalSlot) {
         <img
           alt="card-slot"
-          [ngSrc]="imageUrl(['card-overlay', 'slot', _card.slot])"
+          [ngSrc]="imageUrl(['card-overlay', 'slot', _card.additionalSlot])"
           [width]="slotSizes[displayOptions().cardSize]"
           [height]="slotSizes[displayOptions().cardSize]"
         />
+      }
+    </div>
+  }
 
-        @if (_card.additionalSlot) {
-          <img
-            alt="card-slot"
-            [ngSrc]="imageUrl(['card-overlay', 'slot', _card.additionalSlot])"
-            [width]="slotSizes[displayOptions().cardSize]"
-            [height]="slotSizes[displayOptions().cardSize]"
-          />
-        }
-      </div>
-    }
-
-    <ah-card-copyright [card]="_cardInfo" [displayOptions]="displayOptions()" />
-  </ah-player-card>
-}
+  <ah-card-copyright [card]="_cardInfo" [displayOptions]="displayOptions()" />
+</ah-player-card>

@@ -35,12 +35,13 @@ frontend/
 │   │   ├── ui/                       kit/ takes primitives, game/ takes domain models
 │   │   │   ├── kit/                  art-button/, art-panel/, numeric-text/, text-with-overlay/,
 │   │   │   │                         svg/, json-editor/, single-bar/
-│   │   │   ├── game/                 vitals-bar/, cards/ (card/, asset-card/, event-card/,
+│   │   │   ├── game/                 vitals-bar/, cards/ (asset-card/, event-card/,
 │   │   │   │                         skill-card/, card-parts/), directives/cards/
 │   │   │   ├── directives/           focus-trap
 │   │   │   └── pipes/                as, trim-start, with-ah-symbols
 │   │   └── features/
 │   │       ├── auth/                 sign-in/, credentials-form/
+│   │       ├── card/                 resolves CardInfo, switches on card type
 │   │       └── settings/             account/, setting-item/, user-preferences.service.ts
 │   ├── testing/                      fixtures + test helpers (shipped in src, see below)
 │   ├── styles.css                    Tailwind + daisyUI theme (design tokens)
@@ -75,7 +76,7 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | --- | --- |
 | `AuthService` | `GET /api/auth/info` on construction; exposes `currentUser: Observable<User \| undefined>`. `401` maps to `undefined`. `loginAnonymously()`, `signIn(credentials)` and `logout()` each post, then `switchMap` into `refreshCurrentUser()`, so `currentUser` carries server truth rather than an optimistic guess. `signIn` covers signing in, registering and upgrading an anonymous account — the server picks the branch, so there is no separate "link" call. All return cold observables — nothing is requested until subscription. |
 | `DialogService` | Opens a dialog imperatively: `open(Component, { titleKey })` creates a `DialogComponent` into a detached host on `document.body`, mounts the component inside it, and returns an `Observable` of the value that component emits on its `result` output. **One dialog per component type** — a second `open()` for a type already showing returns the existing stream, which is what makes concurrent `401`s share one prompt. Teardown (detach, destroy, remove the host, clear the entry) runs on `result` *or* on the dialog closing by any other route, so no dismissal can strand the service. The content component provides `AH_DIALOG_CONTENT` and exposes `result`; `<ah-dialog>` still accepts projected content declaratively, as `SettingsComponent` uses it. |
-| `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. |
+| `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. Called from `features/card/` and from the `pages/game-view/` components that lay out their own card details — never from `ui/`, whose card components take a resolved `CardInfo` as an input. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
