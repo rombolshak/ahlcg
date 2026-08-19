@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, Signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { AuthService } from '@core/auth.service';
+import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
 import { DialogService } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';

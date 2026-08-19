@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { AuthService, User } from '@core/auth.service';
+import { AuthService, User } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { Subject } from 'rxjs';

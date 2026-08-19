@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { AuthService } from '@core/auth.service';
+import { AuthService } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
 import { SettingsService } from '@core/settings/settings.service';
 import { getTranslocoModule } from '@testing/transloco.testing';

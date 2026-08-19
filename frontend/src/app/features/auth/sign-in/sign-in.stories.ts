@@ -1,4 +1,4 @@
-import { AuthService } from '@core/auth.service';
+import { AuthService } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';

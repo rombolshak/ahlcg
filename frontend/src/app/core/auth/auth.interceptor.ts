@@ -1,17 +1,16 @@
 import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { catchError, switchMap, throwError, throwIfEmpty } from 'rxjs';
-import { DialogService } from './dialog/dialog.service';
+import { SIGN_IN_PROMPT } from './sign-in-prompt';
 
 const RETRIED = new HttpContextToken(() => false);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Safe to inject here even though `AuthService`'s constructor issues `GET /auth/info`
-  // synchronously and this interceptor body runs during that construction: `DialogService`
-  // depends only on `ApplicationRef`, `EnvironmentInjector`, `DOCUMENT` and `TranslocoService`,
-  // never on `AuthService`, so there is no cyclic-DI error.
-  const dialog = inject(DialogService);
+  // synchronously and this interceptor body runs during that construction: whatever is bound to
+  // `SIGN_IN_PROMPT` must not depend on `AuthService` (see the token's doc comment), so there is
+  // no cyclic-DI error.
+  const signInPrompt = inject(SIGN_IN_PROMPT);
 
   return next(req).pipe(
     catchError((error: unknown) => {
@@ -20,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      return dialog.open(SignInComponent, SIGN_IN_DIALOG_OPTIONS).pipe(
+      return signInPrompt.prompt().pipe(
         switchMap(() => next(req.clone({ context: req.context.set(RETRIED, true) }))),
         // Dismissed without signing in: the dialog stream completes without emitting, so
         // switchMap's projection never runs and this pipe would otherwise complete silently
