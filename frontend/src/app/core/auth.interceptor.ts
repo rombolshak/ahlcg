@@ -1,6 +1,6 @@
 import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { catchError, switchMap, throwError, throwIfEmpty } from 'rxjs';
 import { DialogService } from './dialog/dialog.service';
 

@@ -73,6 +73,8 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 
 Use relative imports only for siblings and children within the same feature. There is no `baseUrl`, so bare paths like `domain/game-state` do not resolve.
 
+No `index.ts` re-export files: import the symbol from the module that declares it, so the bundler can tree-shake.
+
 ## TypeScript strictness
 
 `tsconfig.json` enables `strict` plus `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`, `noPropertyAccessFromIndexSignature`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, and `strictTemplates`. Consequences you will hit:

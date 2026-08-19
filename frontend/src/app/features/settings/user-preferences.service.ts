@@ -1,7 +1,7 @@
 import { Provider } from '@angular/core';
+import { DEFAULT_SETTINGS, SettingsService, STORAGE_KEY_SUFFIX } from '@core/settings/settings.service';
 import { TranslocoService } from '@jsverse/transloco';
 import { type } from 'arktype';
-import { DEFAULT_SETTINGS, SettingsService, STORAGE_KEY_SUFFIX } from './settings.service';
 
 const userPreferences = type({
   lang: 'string',

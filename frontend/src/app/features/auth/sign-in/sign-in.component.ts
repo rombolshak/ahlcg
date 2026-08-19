@@ -7,7 +7,7 @@ import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.serv
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CredentialsFormComponent } from '@ui/components/credentials-form/credentials-form.component';
+import { CredentialsFormComponent } from '../credentials-form/credentials-form.component';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth

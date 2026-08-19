@@ -4,11 +4,11 @@ import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { SettingsService } from '@core/settings/settings.service';
-import { provideUserPreferencesService, UserPreferences } from '@core/settings/user-preferences.service';
 import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
 import { SettingItemComponent } from './setting-item/setting-item.component';
+import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
 
 type View = 'settings' | 'account';
 

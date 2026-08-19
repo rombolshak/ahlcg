@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, viewChild, ViewContainerRef } from '@angular/core';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
+import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { testGameState } from '@testing/test-game-state';
-import { SettingsComponent } from '@ui/components/settings/settings.component';
 import { CardsHandComponent } from './components/cards-hand/cards-hand.component';
 import { GameHeaderComponent } from './components/game-header/game-header.component';
 import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';
