@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { SvgComponent } from '@ui/components/svg/svg.component';
+import { SvgComponent } from '@ui/kit/svg/svg.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 
 @Component({

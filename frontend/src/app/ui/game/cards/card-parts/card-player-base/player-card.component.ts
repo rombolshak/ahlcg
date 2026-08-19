@@ -5,7 +5,7 @@ import { cardHeights, cardWidths } from '@domain/card.constants';
 import { DisplayOptions } from '@domain/display.options';
 import { PlayerCardBase } from '@domain/entities/player-card.model';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { CardOutlineDirective } from '@ui/directives/cards/card-outline.directive';
+import { CardOutlineDirective } from '@ui/game/directives/cards/card-outline.directive';
 import { CardSkillsComponent } from '../card-skills/card-skills.component';
 
 @Component({

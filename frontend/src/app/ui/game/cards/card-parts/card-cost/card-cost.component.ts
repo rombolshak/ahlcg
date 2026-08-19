@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { TextWithOverlayComponent } from '../../../text-with-overlay/text-with-overlay.component';
+import { TextWithOverlayComponent } from '@ui/kit/text-with-overlay/text-with-overlay.component';
 
 @Component({
   selector: 'ah-card-cost',

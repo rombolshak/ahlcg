@@ -4,7 +4,7 @@ import { CardInfoService } from '@core/card-info.service';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Act, Objective } from '@domain/entities/act.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { SingleBarComponent } from '@ui/components/vitals-bar/single-bar/single-bar.component';
+import { SingleBarComponent } from '@ui/kit/single-bar/single-bar.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
 

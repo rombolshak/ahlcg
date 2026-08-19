@@ -16,7 +16,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { InputManagerService, LayerRef } from '@core/input-manager.service';
-import { SvgComponent } from '@ui/components/svg/svg.component';
+import { SvgComponent } from '@ui/kit/svg/svg.component';
 import { AH_DIALOG_CONTENT, DialogContent } from './dialog-content';
 import { AH_DIALOG_CONTEXT } from './dialog-context';
 

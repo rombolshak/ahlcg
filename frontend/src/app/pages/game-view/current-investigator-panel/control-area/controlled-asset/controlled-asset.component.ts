@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { CardInfoService } from '@core/card-info.service';
 import { imageUrl } from '@domain/card-art/image-url';
 import { AssetCard } from '@domain/entities/player-card.model';
-import { VitalsBarComponent } from '@ui/components/vitals-bar/vitals-bar.component';
+import { VitalsBarComponent } from '@ui/game/vitals-bar/vitals-bar.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { AssetDetailIconComponent } from './asset-detail-icon/asset-detail-icon.component';
 import { AssetPopoverComponent } from './asset-popover/asset-popover.component';

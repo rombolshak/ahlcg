@@ -3,7 +3,7 @@ import { InputManagerService, LayerRef } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
-import { ArtButtonComponent } from '@ui/components/art-button/art-button.component';
+import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
 import { MenuItem } from '../menu-item';
 
 @Component({
