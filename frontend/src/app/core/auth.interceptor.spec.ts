@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';

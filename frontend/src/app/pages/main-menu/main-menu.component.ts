@@ -3,10 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '@core/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { DialogService } from '@core/dialog/dialog.service';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
+import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
-import { SettingsComponent } from '@ui/components/settings/settings.component';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@ui/components/sign-in/sign-in.component';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({

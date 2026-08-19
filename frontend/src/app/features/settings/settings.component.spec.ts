@@ -5,13 +5,13 @@ import { By } from '@angular/platform-browser';
 import { AuthService } from '@core/auth.service';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
 import { SettingsService } from '@core/settings/settings.service';
-import { provideUserPreferencesService, UserPreferences } from '@core/settings/user-preferences.service';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { AccountComponent } from './account/account.component';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 import { SettingsComponent } from './settings.component';
+import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;

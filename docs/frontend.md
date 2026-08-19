@@ -32,12 +32,13 @@ frontend/
 │   │   ├── core/                     auth, auth.interceptor, card-info, dialog/,
 │   │   │                             images-url, input-manager, settings/
 │   │   ├── ui/
-│   │   │   ├── components/           cards/, sign-in/, settings/, art-button/, art-panel/,
-│   │   │   │                         numeric-text/, vitals-bar/, svg/, json-editor/,
-│   │   │   │                         text-with-overlay/
+│   │   │   ├── components/           cards/, art-button/, art-panel/, numeric-text/,
+│   │   │   │                         vitals-bar/, svg/, json-editor/, text-with-overlay/
 │   │   │   ├── directives/cards/     card-background, card-faction-background, card-outline
 │   │   │   └── pipes/                as, trim-start, with-ah-symbols
-│   │   └── features/                 empty, see #541
+│   │   └── features/
+│   │       ├── auth/                 sign-in/, credentials-form/
+│   │       └── settings/             account/, setting-item/, user-preferences.service.ts
 │   ├── testing/                      fixtures + test helpers (shipped in src, see below)
 │   ├── styles.css                    Tailwind + daisyUI theme (design tokens)
 │   ├── test-setup.ts                 localStorage polyfill for happy-dom
@@ -74,7 +75,7 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. |
 | `ImagesUrlService` | Maps a typed `ImageDescriptor` tuple to `/assets/images/{...}.webp`. Add new image categories to the `ImageDescriptor` union, not as raw strings. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
-| `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `UserPreferencesService` is the concrete instance. |
+| `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
 
 `core/list-navigation.ts` sits next to `InputManagerService` but is **not** a service — it is a plain signal factory (`listNavigation({ items, onConfirm?, orientation? })`) called in a field initializer. Given a `Signal` of items it owns the selected index, wrapping in both directions and skipping any item carrying `disabled: true`; there is no predicate to configure, and items without that property are always selectable. It binds one axis — `moveUp`/`moveDown` or `moveLeft`/`moveRight` — leaving the other free, which is why `SettingsComponent` can still spend `moveLeft`/`moveRight` on changing a setting's value.

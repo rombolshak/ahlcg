@@ -5,8 +5,8 @@ import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.servic
 import { DialogService } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
+import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@ui/components/credentials-form/credentials-form.component';
 import { filter, switchMap } from 'rxjs';
 
 type AccountState = 'anonymous' | 'permanent' | 'signed_out';
