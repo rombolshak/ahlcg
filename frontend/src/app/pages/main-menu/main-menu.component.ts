@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, Signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AuthService } from '@core/auth.service';
+import { AuthService } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';

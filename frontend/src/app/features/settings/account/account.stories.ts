@@ -1,4 +1,4 @@
-import { AuthService, User } from '@core/auth.service';
+import { AuthService, User } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { DialogService } from '@core/dialog/dialog.service';

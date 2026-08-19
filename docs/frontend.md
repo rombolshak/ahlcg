@@ -29,8 +29,8 @@ frontend/
 │   │   │   ├── game-entity.ts        entity union + type guards
 │   │   │   └── game-map.model.ts, meta-info.ts, action.model.ts,
 │   │   │       card.constants.ts, display.options.ts
-│   │   ├── core/                     auth, auth.interceptor, card-info, dialog/,
-│   │   │                             images-url, input-manager, settings/
+│   │   ├── core/                     auth/, card-info, dialog/, images-url,
+│   │   │                             input-manager, settings/
 │   │   ├── ui/
 │   │   │   ├── components/           cards/, art-button/, art-panel/, numeric-text/,
 │   │   │   │                         vitals-bar/, svg/, json-editor/, text-with-overlay/

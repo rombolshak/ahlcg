@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { AuthService, User } from '@core/auth.service';
+import { AuthService, User } from '@core/auth/auth.service';
 import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { getTranslocoModule } from '@testing/transloco.testing';

@@ -1,29 +1,28 @@
 import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { authInterceptor } from './auth.interceptor';
-import { DialogService } from './dialog/dialog.service';
+import { SIGN_IN_PROMPT } from './sign-in-prompt';
 
 describe('authInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
-  let open: ReturnType<typeof vi.fn>;
-  let dialogResult$: Subject<unknown>;
+  let prompt: ReturnType<typeof vi.fn>;
+  let promptResult$: Subject<unknown>;
 
   beforeEach(() => {
-    dialogResult$ = new Subject();
-    open = vi.fn(() => dialogResult$);
+    promptResult$ = new Subject();
+    prompt = vi.fn(() => promptResult$);
 
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         {
-          provide: DialogService,
-          useValue: { open },
+          provide: SIGN_IN_PROMPT,
+          useValue: { prompt },
         },
       ],
     });
@@ -44,9 +43,9 @@ describe('authInterceptor', () => {
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(open).toHaveBeenCalledWith(SignInComponent, SIGN_IN_DIALOG_OPTIONS);
+    expect(prompt).toHaveBeenCalledTimes(1);
 
-    dialogResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    promptResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush({ id: '1' });
 
@@ -64,7 +63,7 @@ describe('authInterceptor', () => {
     httpMock.expectOne('/api/auth/info').flush(null, { status: 401, statusText: 'Unauthorized' });
 
     expect(error).toBeTruthy();
-    expect(open).not.toHaveBeenCalled();
+    expect(prompt).not.toHaveBeenCalled();
   });
 
   it('should pass through non-401 errors unchanged', () => {
@@ -78,7 +77,7 @@ describe('authInterceptor', () => {
     httpMock.expectOne('/api/games').flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(error).toBeTruthy();
-    expect(open).not.toHaveBeenCalled();
+    expect(prompt).not.toHaveBeenCalled();
   });
 
   it('should rethrow the original 401 when the dialog is dismissed without signing in', () => {
@@ -94,7 +93,7 @@ describe('authInterceptor', () => {
     });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
-    dialogResult$.complete();
+    promptResult$.complete();
 
     expect(error).toBeInstanceOf(HttpErrorResponse);
     expect((error as HttpErrorResponse).status).toBe(401);
@@ -110,11 +109,11 @@ describe('authInterceptor', () => {
     });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
-    dialogResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    promptResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
 
     expect(error).toBeTruthy();
-    expect(open).toHaveBeenCalledTimes(1);
+    expect(prompt).toHaveBeenCalledTimes(1);
   });
 });

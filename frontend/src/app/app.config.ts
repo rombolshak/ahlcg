@@ -5,7 +5,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import BugsnagPerformance from '@bugsnag/browser-performance';
 import Bugsnag from '@bugsnag/js';
 import { BugsnagErrorHandler } from '@bugsnag/plugin-angular';
-import { authInterceptor } from '@core/auth.interceptor';
+import { authInterceptor } from '@core/auth/auth.interceptor';
+import { provideSignInPrompt } from '@features/auth/sign-in/sign-in.provider';
 import { provideTransloco } from '@jsverse/transloco';
 import { routes } from './app.routes';
 import { TranslocoHttpLoader } from './transloco-loader';
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
+    provideSignInPrompt(),
     {
       provide: ErrorHandler,
       useFactory: errorHandlerFactory,
