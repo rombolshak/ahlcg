@@ -86,11 +86,11 @@ export default defineConfig(
     files: ["src/app/domain/**/*.ts"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             {
-              group: ["@angular", "@angular/*"],
+              group: ["@angular", "@angular/*", "@jsverse/*", "@ngrx/*"],
               message: "The domain layer must stay framework-free. Move Angular-dependent code out of domain/.",
             },
           ],
