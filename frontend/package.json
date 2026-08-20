@@ -14,6 +14,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "npm run test:ci",
     "test:ci": "ng test --no-watch --no-progress",
+    "test:component": "playwright install chromium && vitest --project=storybook --run",
     "format:base": "prettier --log-level warn --ignore-path=./.gitignore  \"src/**/*.{js,ts,css,scss,sh,html,md,json,yaml,yml}\"",
     "format": "npm run format:base -- --write",
     "lint": "eslint \"src/**/*.{js,ts,html,json}\" && npm run lint:deps",

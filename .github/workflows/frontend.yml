@@ -31,6 +31,13 @@ jobs:
 
       - run: npm run ci:all
 
+      # System libraries only; `test:component` downloads the browser itself.
+      - name: Install Playwright system dependencies
+        run: npx playwright install-deps chromium
+
+      - name: Component tests (Chromium)
+        run: npm run test:component
+
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}

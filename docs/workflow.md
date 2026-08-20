@@ -43,7 +43,8 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Dev server | `npm start` |
 | Production build → `dist/ahlcg/` | `npm run build` |
 | Tests (single run — there is no watch script) | `npm test` / `npm run test:ci` |
-| Everything CI runs | `npm run ci:all` (= `lint:all` + `test:ci`) |
+| Component tests (real Chromium) | `npm run test:component` |
+| Everything CI runs | `npm run ci:all` (= `lint:all` + `test:ci`) — CI also runs `test:component` as a separate step; `ci:all` deliberately excludes it (see [testing.md](testing.md)) |
 | All linters | `npm run lint:all` |
 | Type check only | `npm run lint:tsc:all` (app + spec tsconfigs) |
 | ESLint (+ dependency cycles) / Stylelint / cspell | `npm run lint` / `lint:style` / `lint:spelling` |
@@ -83,7 +84,7 @@ Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scrip
 | `*` | `cspell` |
 | `**/*.ts` | `tsc-files --noEmit` |
 
-**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build && dotnet test` if `backend/` changed.
+**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build && dotnet test` if `backend/` changed. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
 
 Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly that; it is a personal escape hatch, not a workflow.)
 
@@ -100,7 +101,7 @@ It calls the reusable `backend.yml` / `frontend.yml`, then a `coveralls` job pos
 
 **backend.yml** — .NET 10, installs `dotnet-reportgenerator-globaltool`, `dotnet-coverage`, `dotnet-sonarscanner`, and the Aspire CLI (then `aspire certs trust`, so the integration tests can serve HTTPS), wraps restore/build/test in a Sonar session (`rombolshak_ahlcg_backend`), collects coverage across the whole process tree with `dotnet-coverage`, generates `coveragereport/` (HTML + Cobertura + SonarQube, excluding generated code and migrations), uploads `Cobertura.xml` to Coveralls.
 
-**frontend.yml** — Node latest with npm cache, `npm ci --force` (a workaround for Tailwind 4 resolution), `npm run ci:all`, Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
+**frontend.yml** — Node latest with npm cache, `npm ci --force` (a workaround for Tailwind 4 resolution), `npm run ci:all`, then Playwright's system dependencies (`npx playwright install-deps chromium`) and `npm run test:component` (the F1 tier; `test:component` downloads the browser itself), Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
 
 **chromatic.yml** — on pushes touching `frontend/src/**` or `frontend/public/assets/fonts/**`, skipped for dependabot branches. Builds Storybook and uploads to Chromatic.
 
