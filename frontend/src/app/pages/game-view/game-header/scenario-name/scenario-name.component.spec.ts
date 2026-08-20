@@ -4,8 +4,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { serveCardAssets } from '@testing/serve-card-assets';
 import { getTranslocoModule } from '@testing/transloco.testing';
-import campaign from '../../../../../../../public/assets/i18n/campaigns/notz/en.json';
-import scenario from '../../../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
+import campaign from '../../../../../../public/assets/i18n/campaigns/notz/en.json';
+import scenario from '../../../../../../public/assets/i18n/campaigns/notz/mm/en.json';
 import { ScenarioNameComponent } from './scenario-name.component';
 
 describe('ScenarioNameComponent', () => {

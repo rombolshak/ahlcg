@@ -13,8 +13,11 @@ frontend/
 │   │   ├── pages/
 │   │   │   ├── main-menu/            title/, menu-items-list/
 │   │   │   └── game-view/
-│   │   │       ├── components/       game-header/, cards-hand/, card-details-text/,
-│   │   │       │                     enemy-attack-display/, enemy-skill-tests-display/
+│   │   │       ├── game-header/
+│   │   │       ├── cards-hand/
+│   │   │       ├── card-details-text/
+│   │   │       ├── enemy-attack-display/
+│   │   │       ├── enemy-skill-tests-display/
 │   │   │       ├── current-investigator-panel/
 │   │   │       │                     investigator/, actions-area/, control-area/, threat-area/
 │   │   │       ├── global-game-info-panel/   act/, agenda/
