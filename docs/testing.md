@@ -71,6 +71,10 @@ The first run downloads two Chromium builds (the full Chrome for Testing plus th
 
 No coverage is collected for this tier — see the coverage-accounting rule above.
 
+**Dialogs opened by `DialogService`:** it appends its own host to `document.body`, outside `canvasElement`, so `within(canvasElement)` cannot see what it opens. A story that needs one opens it for real — from `afterNextRender`, not `ngOnInit`/`ngAfterViewInit` — and queries it with `screen` or a direct `document.querySelectorAll('dialog')`; content that stays in the story's own template keeps `within(canvasElement)` as before. `frontend/src/app/features/settings/account/account.stories.ts` is the worked example.
+
+Opening a dialog for real does **not** by itself justify F1: happy-dom runs `showModal()` and the rest of `DialogService.open()` fine (`dialog.service.spec.ts`), so a story earns its place only with an assertion that needs real layout or real focus, not merely a real dialog.
+
 ### Writing component specs
 
 The pattern used throughout the codebase (`numeric-text.component.spec.ts` is representative):

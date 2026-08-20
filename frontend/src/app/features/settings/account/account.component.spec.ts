@@ -1,8 +1,9 @@
-import { provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AuthService, User } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
+import { DialogComponent } from '@core/dialog/dialog.component';
 import { DialogService } from '@core/dialog/dialog.service';
 import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
 import { getTranslocoModule } from '@testing/transloco.testing';
@@ -146,5 +147,97 @@ describe('AccountComponent', () => {
 
       expect(emittedCount).toBe(1);
     });
+  });
+});
+
+@Component({
+  selector: 'ah-account-dialog-test-host',
+  imports: [DialogComponent, AccountComponent],
+  template: `<ah-dialog><ah-account /></ah-dialog>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class AccountDialogHostComponent {
+  public readonly dialog = viewChild.required(DialogComponent);
+}
+
+// The block above mocks `DialogService`/`ConfirmDialogService` down to `{ open: openDialog }`/
+// `{ confirm }` spies — it proves the right *request* is made, but a spy that never opens anything
+// can never show what actually happens once a real dialog does. This block drives the real
+// services instead, each test commented with what it owns that the mocked block above does not.
+describe('AccountComponent through the real DialogService and ConfirmDialogService', () => {
+  let hostFixture: ComponentFixture<AccountDialogHostComponent>;
+  let hostUser$: BehaviorSubject<User | undefined>;
+  let hostLogout: ReturnType<typeof vi.fn>;
+
+  const clickInDocument = (testId: string) => {
+    document.querySelector<HTMLElement>(`[data-testId=${testId}]`)?.click();
+    TestBed.tick();
+  };
+
+  afterEach(() => {
+    document.querySelectorAll('dialog').forEach(dialog => {
+      dialog.remove();
+    });
+  });
+
+  beforeEach(async () => {
+    hostUser$ = new BehaviorSubject<User | undefined>({ isAnonymous: true, email: null, userName: 'guid-123' });
+    hostLogout = vi.fn(() => of(undefined));
+
+    await TestBed.configureTestingModule({
+      imports: [AccountDialogHostComponent, getTranslocoModule()],
+      providers: [provideZonelessChangeDetection(), { provide: AuthService, useValue: { currentUser: hostUser$, logout: hostLogout } }],
+    }).compileComponents();
+
+    hostFixture = TestBed.createComponent(AccountDialogHostComponent);
+    hostFixture.detectChanges();
+    hostFixture.componentInstance.dialog().open();
+    hostFixture.detectChanges();
+  });
+
+  // Owns what the mocked block cannot: that `openCredentialsForm` really stacks a second,
+  // independently-open `DialogService` dialog rather than replacing the one `AccountComponent`
+  // itself is in — the mocked test only sees that `openDialog` was called with the right arguments.
+  // The top-layer paint order (which dialog visually sits over the other) stays at F1 —
+  // `account.stories.ts`'s `UpgradeStacked` — because that needs real layout.
+  it('should open a second, independently-open dialog for the credentials form, leaving the account dialog open', () => {
+    clickInDocument('upgrade');
+
+    const dialogs = Array.from(document.querySelectorAll('dialog'));
+    expect(dialogs).toHaveLength(2);
+
+    const [accountDialog, credentialsDialog] = dialogs;
+    if (!accountDialog || !credentialsDialog) throw new Error('Expected the account dialog and the credentials form to both be open');
+
+    expect(accountDialog.open).toBe(true);
+    expect(credentialsDialog.open).toBe(true);
+    expect(credentialsDialog.querySelector('form')).toBeTruthy();
+    expect(credentialsDialog.querySelector('h1')?.textContent.trim()).toBe('The Binding Rite');
+  });
+
+  // Owns what the mocked block cannot: that confirming the *real* confirm dialog's own button
+  // actually reaches `AuthService.logout` — the mocked test only sees that `confirm` was called
+  // with the right options, never that a real "yes" answer propagates through it.
+  it('should call logout once the real sign-out confirm dialog is confirmed', () => {
+    clickInDocument('sign_out');
+    clickInDocument('confirm');
+
+    expect(hostLogout).toHaveBeenCalledWith();
+  });
+
+  // Owns what the mocked block cannot: that the real confirm dialog actually opens with Cancel
+  // selected (not just that `defaultButton: 'cancel'` was requested), and that confirming through
+  // the real input layer on a freshly opened prompt reaches Cancel, not logout.
+  it('should default the real sign-out confirm dialog to Cancel, and not log out when it is the one confirmed', () => {
+    clickInDocument('sign_out');
+
+    const cancelButton = document.querySelector<HTMLElement>('[data-testId=cancel]');
+    expect(cancelButton?.classList).toContain('btn-accent');
+    expect(cancelButton?.classList).not.toContain('btn-soft');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'Enter' }));
+    TestBed.tick();
+
+    expect(hostLogout).not.toHaveBeenCalled();
   });
 });
