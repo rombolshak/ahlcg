@@ -4,8 +4,8 @@ import { CardInfoService } from '@core/card-info.service';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Enemy } from '@domain/entities/enemy.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { EnemyAttackDisplayComponent } from '@pages/game-view/components/enemy-attack-display/enemy-attack-display.component';
-import { EnemySkillTestsDisplayComponent } from '@pages/game-view/components/enemy-skill-tests-display/enemy-skill-tests-display.component';
+import { EnemyAttackDisplayComponent } from '@pages/game-view/enemy-attack-display/enemy-attack-display.component';
+import { EnemySkillTestsDisplayComponent } from '@pages/game-view/enemy-skill-tests-display/enemy-skill-tests-display.component';
 import { VitalsBarComponent } from '@ui/game/vitals-bar/vitals-bar.component';
 
 @Component({

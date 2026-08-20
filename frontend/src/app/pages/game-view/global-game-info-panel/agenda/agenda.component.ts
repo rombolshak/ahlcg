@@ -4,7 +4,7 @@ import { CardInfoService } from '@core/card-info.service';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { CardDetailsTextComponent } from '../../components/card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-agenda',

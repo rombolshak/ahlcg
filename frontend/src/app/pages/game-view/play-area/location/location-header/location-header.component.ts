@@ -7,7 +7,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { NumericTextWithOverlayComponent } from '@ui/kit/numeric-text/numeric-text-with-overlay.component';
 import { NumericTextComponent } from '@ui/kit/numeric-text/numeric-text.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
-import { CardDetailsTextComponent } from '../../../components/card-details-text/card-details-text.component';
+import { CardDetailsTextComponent } from '../../../card-details-text/card-details-text.component';
 
 @Component({
   selector: 'ah-location-header',

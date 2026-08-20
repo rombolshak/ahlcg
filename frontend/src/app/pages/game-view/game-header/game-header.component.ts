@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
-import { GameStateStore } from '../../store/game-state.store';
+import { GameStateStore } from '../store/game-state.store';
 import { CurrentGamePhaseComponent } from './current-game-phase/current-game-phase.component';
 import { InvestigatorSeeker } from './current-game-phase/phase-colors.model';
 import { ActionButton } from './global-game-actions/action-button.model';
