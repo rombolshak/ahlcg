@@ -5,7 +5,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { PlayerCard } from '@domain/entities/player-card.model';
-import { cardA, cardA2, cardE, cardS, displayOption } from '@testing/entities/test-cards';
+import { cardA, cardA2, cardE, cardS, displayOption } from '@domain/testing/entities/test-cards';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { CardComponent } from './card.component';
 

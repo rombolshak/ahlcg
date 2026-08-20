@@ -1,5 +1,5 @@
 ﻿/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { testGameState } from '@testing/test-game-state';
+import { testGameState } from '@domain/testing/test-game-state';
 import { ArkErrors } from 'arktype';
 import { produce } from 'immer';
 import { actId, agendaId, assetId, enemyId, investigatorId, locationId } from './entities/id.model';

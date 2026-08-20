@@ -29,11 +29,12 @@ frontend/
 │   │   │   ├── entities/             act, agenda, enemy, location, investigator,
 │   │   │   │                         card, player-card, id models; details/
 │   │   │   ├── card-art/             image-url.ts
+│   │   │   ├── testing/              pure fixtures (entities/, test-game-state, …) — see below
 │   │   │   ├── game-state.ts         root schema
 │   │   │   ├── game-entity.ts        entity union + type guards
 │   │   │   └── game-map.model.ts, meta-info.ts, action.model.ts,
 │   │   │       card.constants.ts, display.options.ts
-│   │   ├── core/                     auth/, card-info, dialog/,
+│   │   ├── core/                     auth/, card-info, dialog/, list-navigation,
 │   │   │                             input-manager, settings/
 │   │   ├── ui/                       kit/ takes primitives, game/ takes domain models
 │   │   │   ├── kit/                  art-button/, art-panel/, numeric-text/, text-with-overlay/,
@@ -46,7 +47,7 @@ frontend/
 │   │       ├── auth/                 sign-in/, credentials-form/
 │   │       ├── card/                 resolves CardInfo, switches on card type
 │   │       └── settings/             account/, setting-item/, user-preferences.service.ts
-│   ├── testing/                      fixtures + test helpers (shipped in src, see below)
+│   ├── testing/                      transloco.testing.ts, serve-card-assets.ts (see below)
 │   ├── styles.css                    Tailwind + daisyUI theme (design tokens)
 │   ├── test-setup.ts                 localStorage polyfill for happy-dom
 │   └── main.ts / index.html
@@ -56,7 +57,7 @@ frontend/
 └── sonar-project.properties
 ```
 
-`src/testing/` lives in `src/` (not a test-only folder) because `GameViewComponent` imports `test-game-state` at runtime and Storybook imports `transloco.testing`.
+Fixtures split by whether they touch a framework. The ten pure fixtures (`entities/`, `test-actions.ts`, `test-game-map.ts`, `test-game-state.ts`, `test-meta.ts`) import only `@domain/*` and live under `app/domain/testing/`, reached through the `@domain/*` alias like the rest of the layer. `transloco.testing.ts` (imports `@jsverse/transloco`) and `serve-card-assets.ts` (imports `@angular/common/http`) would violate `domain/`'s framework-free rule, so they stay at `src/testing/` behind `@testing/*`. `src/testing/` itself lives in `src/` (not a test-only folder) because Storybook imports `transloco.testing`, and `GameViewComponent` imports `test-game-state` at runtime — a fixture in production code, deliberately visible as a `game-view-fixture-import` warning until #497 Live game state replaces it.
 
 ## Routing
 

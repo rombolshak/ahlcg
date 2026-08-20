@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { cardA } from '@testing/entities/test-cards';
+﻿import { cardA } from '@domain/testing/entities/test-cards';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { AssetPopoverComponent } from './asset-popover.component';
 
 const meta: Meta<AssetPopoverComponent> = {

@@ -58,6 +58,58 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 
 **Branded ids.** `entityId` is `string.integer`, and each entity type brands it: `export const actId = entityId.brand('act')`. A raw `string` will not satisfy `ActId`. Produce ids by validating through the schema, never by casting. `playerCardId` is the union `assetId | skillId | eventId`.
 
+## Where a new file goes
+
+`src/app/` has five layers, and imports flow one way through them:
+
+```
+pages ──→ features ──→ ui ──→ domain
+  │           │         │        ↑
+  └───────────┴────→ core ───────┘
+```
+
+`pages/` and `features/` may reach down into anything below them; `ui/` may depend on `ui/` and
+`domain/` only (its `kit/` and `game/` subtrees are peers, not layers — `kit/` takes primitives,
+`game/` takes domain models, neither imports the other); `core/` may depend on `core/`, `domain/`
+and `ui/kit/` (not `ui/game/`, `features/` or `pages/`); `domain/` imports nothing else from
+`src/app` and no framework (no `@angular/*`, `@jsverse/*`, `@ngrx/*`). These are enforced —
+`.dependency-cruiser.mjs` for the folder rules, an ESLint `no-restricted-imports` for the domain
+framework ban — so a violation fails `npm run lint`, not just review.
+
+Deciding where a new file belongs is four questions, asked in order:
+
+1. **How many hosts will use it?** One host and it stays local — a private child reached by a
+   relative import from inside whatever imports it, not a new layer entry at all. A second host is
+   what earns it a place in one of the shared layers below; being generic or "obviously reusable"
+   does not, on its own, promote it. The only trigger for moving something into `ui/` is a second
+   host appearing.
+2. **Does it inject a service, hold state, or otherwise know about the app's runtime?** If yes, it
+   is not `ui/` — `ui/` is dumb, presentational, and driven entirely by inputs. It is either
+   `core/`, `features/`, or a page-local piece under `pages/`.
+3. **Is it one-per-app and without a template of its own?** A cross-cutting service with no
+   domain-specific business logic — `SettingsService`, `InputManagerService`, `DialogService` — is
+   `core/`. **A service and the component it creates imperatively are one module**: `DialogService`
+   creates `DialogComponent` at runtime, so `DialogComponent` lives in `core/dialog/` next to it
+   rather than in `ui/`, even though it has a template.
+4. **Otherwise, it is `features/`.** Business logic that knows about *this app* — anonymous
+   accounts and ASP.NET Identity error payloads (`SignInComponent`), which card fields to resolve
+   and switch on (`features/card/`) — not a generic capability.
+
+The steps-3-vs-4 tiebreaker in one line: **does it know anything about *this app*, or would it work
+unchanged in a different Angular project?** `ConfirmDialogService` is `window.confirm` with
+styling — it would work anywhere, so `core/`. `SignInComponent` knows about anonymous accounts and
+ASP.NET Identity error payloads — it would not, so `features/`.
+
+**A feature's internals are not lint-enforced, but the convention is real.** `#541` asked that
+`features/*/*` be unimportable from outside so that only a feature's public entry is reachable —
+that cannot be built as a lint rule: there is no `index.ts` barrel (banned below) to mark the public
+surface, and path depth does not distinguish a public entry (`features/auth/sign-in/sign-in.component.ts`)
+from a private child (`features/settings/account/account.component.ts`) — both are
+`<folder>/<folder>.component.ts` at the same depth under `features/`. What actually separates them
+is host count (question 1 above), which a path glob cannot see. So it is convention rather than a
+rule: every private child is reached only by a relative import from inside its own feature, and
+every `@features/*` import from outside a feature targets a real entry component.
+
 ## Imports
 
 `tsconfig.json` sets these path aliases — use them for anything outside the current feature folder:
@@ -70,6 +122,8 @@ Copy this shape for any new composed entity. Simple leaf schemas (`vitals`, `ski
 | `@ui/*` | `src/app/ui/*` |
 | `@features/*` | `src/app/features/*` |
 | `@testing/*` | `src/testing/*` |
+
+`@domain/testing/*` fixtures are reached through `@domain/*` above and need no alias of their own.
 
 Use relative imports only for siblings and children within the same feature. There is no `baseUrl`, so bare paths like `domain/game-state` do not resolve.
 

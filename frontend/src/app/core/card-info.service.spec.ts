@@ -5,8 +5,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { CardInfo } from '@domain/entities/details/card-info.model';
+import { cardE } from '@domain/testing/entities/test-cards';
 import { TranslocoService } from '@jsverse/transloco';
-import { cardE } from '@testing/entities/test-cards';
 import { BehaviorSubject, filter, firstValueFrom, of } from 'rxjs';
 import { CardInfoService } from './card-info.service';
 

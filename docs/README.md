@@ -4,7 +4,7 @@ Reference docs for agents working in this repository. Every claim here is checke
 
 ## Read this first
 
-The backend implements **authentication and game creation** (`POST /games`) — nothing more. The frontend game view renders from a **hardcoded fixture** (`@testing/test-game-state`), not from the server, and nothing in the frontend calls the games API. There is no API for game *state*, no SignalR client, and no deployment pipeline. Do not write code that assumes any of them exist.
+The backend implements **authentication and game creation** (`POST /games`) — nothing more. The frontend game view renders from a **hardcoded fixture** (`@domain/testing/test-game-state`), not from the server, and nothing in the frontend calls the games API. There is no API for game *state*, no SignalR client, and no deployment pipeline. Do not write code that assumes any of them exist.
 
 ## Which file do I need?
 

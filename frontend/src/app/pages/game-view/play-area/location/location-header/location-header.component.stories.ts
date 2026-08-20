@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { testLocation } from '@testing/entities/test-locations';
+﻿import { testLocation } from '@domain/testing/entities/test-locations';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { LocationHeaderComponent } from './location-header.component';
 
 const meta: Meta<LocationHeaderComponent> = {

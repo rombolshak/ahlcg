@@ -1,7 +1,7 @@
-﻿import { ActionTooltipComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/action-tooltip/action-tooltip.component';
+﻿import { cardA3 } from '@domain/testing/entities/test-cards';
+import { testLocation } from '@domain/testing/entities/test-locations';
+import { ActionTooltipComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/action-tooltip/action-tooltip.component';
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { cardA3 } from '@testing/entities/test-cards';
-import { testLocation } from '@testing/entities/test-locations';
 
 const meta: Meta<ActionTooltipComponent> = {
   component: ActionTooltipComponent,

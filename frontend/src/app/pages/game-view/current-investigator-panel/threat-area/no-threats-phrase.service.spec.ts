@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
-import { testEnemy } from '@testing/entities/test-enemies';
-import { InvestigatorS } from '@testing/entities/test-investigators';
+import { testEnemy } from '@domain/testing/entities/test-enemies';
+import { InvestigatorS } from '@domain/testing/entities/test-investigators';
 import { NoThreatsPhraseService } from './no-threats-phrase.service';
 
 describe('NoThreatsPhraseService', () => {

@@ -24,7 +24,7 @@ export class AgendaComponent {
 
   private readonly cardInfo = this.cardInfoService.getCardInfo(this.agenda);
 
-  readonly title = computed(() => this.cardInfo()?.title);
+  protected readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptyDoomSlots = computed(() => Math.max(this.agenda().requiredDoom - this.agenda().currentDoom - this.agenda().doomOnCards, 0));
 

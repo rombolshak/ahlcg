@@ -1,5 +1,5 @@
-﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardA, cardAInfo } from '@testing/entities/test-cards';
+﻿import { cardA, cardAInfo } from '@domain/testing/entities/test-cards';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { AssetCardComponent } from './asset-card.component';
 
 const meta: Meta<AssetCardComponent> = {

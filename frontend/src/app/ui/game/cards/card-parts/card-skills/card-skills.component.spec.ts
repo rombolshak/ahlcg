@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { cardA, displayOption } from '@testing/entities/test-cards';
+import { cardA, displayOption } from '@domain/testing/entities/test-cards';
 import { CardSkillsComponent } from './card-skills.component';
 
 describe('CardSkillsComponent', () => {

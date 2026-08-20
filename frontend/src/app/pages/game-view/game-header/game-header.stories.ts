@@ -1,6 +1,6 @@
 ﻿import { signal } from '@angular/core';
+import { testGameState } from '@domain/testing/test-game-state';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
-import { testGameState } from '@testing/test-game-state';
 import { GameStateStore } from '../store/game-state.store';
 import { GameHeaderComponent } from './game-header.component';
 

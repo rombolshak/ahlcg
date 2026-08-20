@@ -1,6 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { CardInfoService } from '@core/card-info.service';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { imageUrl } from '@domain/card-art/image-url';
 import { AssetCard } from '@domain/entities/player-card.model';
 import { VitalsBarComponent } from '@ui/game/vitals-bar/vitals-bar.component';
@@ -20,13 +19,11 @@ import { AssetPopoverComponent } from './asset-popover/asset-popover.component';
   },
 })
 export class ControlledAssetComponent {
-  private readonly cardInfoService = inject(CardInfoService);
   protected readonly imageUrl = imageUrl;
 
   readonly asset = input.required<AssetCard>();
   readonly passive = input(false);
   readonly hovered = input(false);
 
-  protected readonly info = this.cardInfoService.getCardInfo(this.asset);
   protected readonly anchorName = computed(() => `--asset-${this.asset().id}`);
 }

@@ -26,7 +26,7 @@ export class ActComponent {
 
   private readonly cardInfo = this.cardInfoService.getCardInfo(this.act);
 
-  readonly title = computed(() => this.cardInfo()?.title);
+  protected readonly title = computed(() => this.cardInfo()?.title);
 
   protected readonly emptySlots = computed(() => this.act().objectives.map(o => Math.max(o.requiredValue - o.currentValue, 0)));
 
