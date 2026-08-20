@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { cardA } from '@testing/entities/test-cards';
+import { cardA } from '@domain/testing/entities/test-cards';
 import { CardCostComponent } from './card-cost.component';
 
 describe('CardCostComponent', () => {

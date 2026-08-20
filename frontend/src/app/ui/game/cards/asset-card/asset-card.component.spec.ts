@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { cardA, cardAInfo, displayOption } from '@testing/entities/test-cards';
+import { cardA, cardAInfo, displayOption } from '@domain/testing/entities/test-cards';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { AssetCardComponent } from './asset-card.component';
 

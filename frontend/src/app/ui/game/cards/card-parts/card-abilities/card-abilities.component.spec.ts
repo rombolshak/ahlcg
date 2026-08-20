@@ -4,7 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { displayOption } from '@testing/entities/test-cards';
+import { displayOption } from '@domain/testing/entities/test-cards';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { CardAbilitiesComponent } from './card-abilities.component';
 

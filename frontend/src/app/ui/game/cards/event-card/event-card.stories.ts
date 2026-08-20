@@ -1,5 +1,5 @@
-﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardE, cardEInfo } from '@testing/entities/test-cards';
+﻿import { cardE, cardEInfo } from '@domain/testing/entities/test-cards';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { EventCardComponent } from './event-card.component';
 
 const meta: Meta<EventCardComponent> = {

@@ -1,5 +1,5 @@
-﻿import { Meta, StoryObj } from '@storybook/angular-vite';
-import { cardS, cardSInfo } from '@testing/entities/test-cards';
+﻿import { cardS, cardSInfo } from '@domain/testing/entities/test-cards';
+import { Meta, StoryObj } from '@storybook/angular-vite';
 import { SkillCardComponent } from './skill-card.component';
 
 const meta: Meta<SkillCardComponent> = {
