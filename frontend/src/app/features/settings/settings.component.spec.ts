@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { provideZonelessChangeDetection } from '@angular/core';
+import { ChangeDetectionStrategy, Component, provideZonelessChangeDetection, viewChild } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { AuthService } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
+import { DialogComponent } from '@core/dialog/dialog.component';
 import { SettingsService } from '@core/settings/settings.service';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { of } from 'rxjs';
@@ -161,5 +162,60 @@ describe('SettingsComponent', () => {
     await component.getInputHandlers().cancel?.();
 
     expect(component.getTitle()).toBeUndefined();
+  });
+});
+
+@Component({
+  selector: 'ah-settings-dialog-test-host',
+  imports: [DialogComponent, SettingsComponent],
+  template: `<ah-dialog><ah-settings /></ah-dialog>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class SettingsDialogHostComponent {
+  public readonly dialog = viewChild.required(DialogComponent);
+}
+
+// The block above builds `SettingsComponent` with `overrideComponent`, swapping in a mocked
+// `AH_DIALOG_CONTEXT` — that can call `getTitle()` directly, but it can never show that a *real*
+// `DialogComponent` resolves `SettingsComponent` as its `AH_DIALOG_CONTENT` and actually repaints
+// its own rendered heading from it. This is that wiring, for real.
+describe('SettingsComponent projected inside a real DialogComponent', () => {
+  let hostFixture: ComponentFixture<SettingsDialogHostComponent>;
+
+  beforeEach(async () => {
+    localStorage.clear();
+
+    await TestBed.configureTestingModule({
+      imports: [SettingsDialogHostComponent, getTranslocoModule({ translocoConfig: { availableLangs: ['en', 'es'], defaultLang: 'en' } })],
+      providers: [
+        provideZonelessChangeDetection(),
+        // `ah-account` is rendered inside the account view, and needs AuthService to construct.
+        { provide: AuthService, useValue: { currentUser: of({ isAnonymous: true, email: null, userName: 'guid-123' }) } },
+      ],
+    }).compileComponents();
+
+    hostFixture = TestBed.createComponent(SettingsDialogHostComponent);
+    hostFixture.detectChanges();
+    hostFixture.componentInstance.dialog().open();
+    hostFixture.detectChanges();
+  });
+
+  it('should rename the real dialog heading when the account view opens, and restore it when it leaves', async () => {
+    const heading = () => (hostFixture.nativeElement as HTMLElement).querySelector('h1')?.textContent.trim();
+    const initialTitle = heading();
+
+    const settings = hostFixture.debugElement.query(By.directive(SettingsComponent)).componentInstance as SettingsComponent;
+    await settings.getInputHandlers().moveDown?.();
+    await settings.getInputHandlers().confirm?.();
+    hostFixture.detectChanges();
+
+    expect((hostFixture.nativeElement as HTMLElement).querySelector('[data-testId=upgrade]')).toBeTruthy();
+    expect(heading()).toBe('Your Account');
+    expect(heading()).not.toBe(initialTitle);
+
+    await settings.getInputHandlers().cancel?.();
+    hostFixture.detectChanges();
+
+    expect(heading()).toBe(initialTitle);
   });
 });

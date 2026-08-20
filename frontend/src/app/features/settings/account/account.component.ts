@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, outpu
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
+import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { DialogService } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
@@ -20,16 +21,28 @@ interface AccountAction {
 }
 
 /**
- * A view inside the settings dialog, not dialog content of its own — reached by confirming the
- * "Account" row in `SettingsComponent`. Shows who is signed in and offers that state's actions.
+ * Dialog content in its own right — it provides `AH_DIALOG_CONTENT` below, so a dialog holding
+ * `<ah-account>` alone pushes its input handlers the same way any other content does. In the app it
+ * is reached differently: `SettingsComponent` swaps to this view and delegates `getInputHandlers`
+ * to it directly rather than letting `DialogComponent` discover it on its own. That stays safe
+ * alongside the provider here, because `DialogComponent`'s `contentChild(AH_DIALOG_CONTENT)` is a
+ * *content* query and `<ah-account>` sits in `SettingsComponent`'s own view, not in the dialog's
+ * light DOM (`main-menu.component.html` projects only `<ah-settings />`) — content queries never
+ * enter a view, so the dialog still resolves `SettingsComponent` exactly as before.
  */
 @Component({
   selector: 'ah-account',
   imports: [TranslocoDirective],
   templateUrl: './account.component.html',
+  providers: [
+    {
+      provide: AH_DIALOG_CONTENT,
+      useExisting: AccountComponent,
+    },
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AccountComponent {
+export class AccountComponent implements DialogContent {
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(DialogService);
   private readonly confirmDialog = inject(ConfirmDialogService);

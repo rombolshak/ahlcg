@@ -4,10 +4,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AuthService, User } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
+import { DialogService } from '@core/dialog/dialog.service';
 import { getTranslocoModule } from '@testing/transloco.testing';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { vi } from 'vitest';
-import { SignInComponent } from './sign-in.component';
+import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from './sign-in.component';
 
 describe('SignInComponent', () => {
   let component: SignInComponent;
@@ -215,6 +216,33 @@ describe('SignInComponent', () => {
 
       expect(signIn).toHaveBeenCalledWith({ email: 'a@example.com', username: 'a', password: 'P@ssw0rd' });
       expect(loginAnonymously).not.toHaveBeenCalled();
+    });
+  });
+
+  // Everything above drives `SignInComponent` or its `getInputHandlers()` directly and never asks
+  // whether choosing anonymous actually closes the dialog around it — that teardown lives in
+  // `DialogService.open()`, not in `SignInComponent`, and nothing above goes through it for real.
+  describe('opened through DialogService', () => {
+    afterEach(() => {
+      document.querySelectorAll('dialog').forEach(dialog => {
+        dialog.remove();
+      });
+    });
+
+    it('should close the dialog once anonymous sign-in resolves', () => {
+      loginAnonymously.mockReturnValue(of({ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User));
+
+      const dialogService = TestBed.inject(DialogService);
+      dialogService.open(SignInComponent, SIGN_IN_DIALOG_OPTIONS).subscribe();
+      TestBed.tick();
+
+      // Scoped to the dialog, not `document.querySelector` alone: the outer `beforeEach` above
+      // also creates a standalone `SignInComponent` fixture with the same `data-testId`, so an
+      // unscoped query would be ambiguous about which "anonymous" button it clicks.
+      document.querySelector('dialog')?.querySelector<HTMLElement>('[data-testId=anonymous]')?.click();
+      TestBed.tick();
+
+      expect(document.querySelector('dialog')).toBeFalsy();
     });
   });
 });
