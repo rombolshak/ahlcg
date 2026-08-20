@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
-import { testEnemy, testEnemy2 } from '@testing/entities/test-enemies';
+import { testEnemy, testEnemy2 } from '@domain/testing/entities/test-enemies';
 import { serveCardAssets } from '@testing/serve-card-assets';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { ThreatAreaComponent } from './threat-area.component';

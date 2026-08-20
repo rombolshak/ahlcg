@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { InvestigatorS } from '@testing/entities/test-investigators';
+﻿import { InvestigatorS } from '@domain/testing/entities/test-investigators';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { InvestigatorComponent } from './investigator.component';
 
 const meta: Meta<InvestigatorComponent> = {

@@ -1,6 +1,6 @@
 ﻿import { AssetSlot } from '@domain/entities/player-card.model';
+import { defaultSlots } from '@domain/testing/entities/test-investigators';
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { defaultSlots } from '@testing/entities/test-investigators';
 import { ControlledAssetComponent } from '../controlled-asset/controlled-asset.component';
 import { EmptySlotsListComponent } from './empty-slots-list.component';
 

@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { testActions } from '@testing/test-actions';
+﻿import { testActions } from '@domain/testing/test-actions';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { ActionsAreaComponent } from './actions-area.component';
 
 const meta: Meta<ActionsAreaComponent> = {

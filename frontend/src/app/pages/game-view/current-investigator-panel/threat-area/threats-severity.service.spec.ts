@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { Enemy } from '@domain/entities/enemy.model';
-import { cardA2, cardA3 } from '@testing/entities/test-cards';
-import { testEnemy } from '@testing/entities/test-enemies';
-import { InvestigatorS } from '@testing/entities/test-investigators';
+import { cardA2, cardA3 } from '@domain/testing/entities/test-cards';
+import { testEnemy } from '@domain/testing/entities/test-enemies';
+import { InvestigatorS } from '@domain/testing/entities/test-investigators';
 import { ThreatsSeverityService } from './threats-severity.service';
 
 describe('ThreatsSeverityService', () => {
