@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { testAgenda } from '@testing/entities/test-agenda';
+﻿import { testAgenda } from '@domain/testing/entities/test-agenda';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { AgendaComponent } from './agenda.component';
 
 const meta: Meta<AgendaComponent> = {

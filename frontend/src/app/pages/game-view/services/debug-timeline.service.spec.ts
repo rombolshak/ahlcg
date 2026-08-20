@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { Enemy } from '@domain/entities/enemy.model';
-import { InvestigatorS } from '@testing/entities/test-investigators';
-import { testGameState } from '@testing/test-game-state';
+import { InvestigatorS } from '@domain/testing/entities/test-investigators';
+import { testGameState } from '@domain/testing/test-game-state';
 import { createPatch } from 'rfc6902';
 import { vi } from 'vitest';
 import { GameStateStore } from '../store/game-state.store';

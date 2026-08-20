@@ -1,6 +1,6 @@
 ﻿import { Objective } from '@domain/entities/act.model';
+import { testAct } from '@domain/testing/entities/test-act';
 import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { testAct } from '@testing/entities/test-act';
 import { ActComponent } from './act.component';
 
 const meta: Meta<ActComponent> = {

@@ -1,5 +1,5 @@
-﻿import { argsToTemplate, Meta, StoryObj } from '@storybook/angular-vite';
-import { testLocation } from '@testing/entities/test-locations';
+﻿import { testLocation } from '@domain/testing/entities/test-locations';
+import { argsToTemplate, Meta, StoryObj } from '@storybook/angular-vite';
 import { CardDetailsTextComponent } from './card-details-text.component';
 
 const meta: Meta<CardDetailsTextComponent> = {

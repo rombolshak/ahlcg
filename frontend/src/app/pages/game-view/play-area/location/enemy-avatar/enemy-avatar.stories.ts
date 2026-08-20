@@ -1,5 +1,5 @@
-﻿import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
-import { testEnemy, testMassiveEnemy } from '@testing/entities/test-enemies';
+﻿import { testEnemy, testMassiveEnemy } from '@domain/testing/entities/test-enemies';
+import { componentWrapperDecorator, Meta, StoryObj } from '@storybook/angular-vite';
 import { EnemyAvatarComponent } from './enemy-avatar.component';
 
 const meta: Meta<EnemyAvatarComponent> = {
