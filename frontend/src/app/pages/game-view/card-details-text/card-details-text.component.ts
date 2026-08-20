@@ -14,5 +14,5 @@ export class CardDetailsTextComponent {
   private readonly cardInfoService = inject(CardInfoService);
   readonly card = input.required<GameCard>();
   readonly showTitle = input(true);
-  readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
+  protected readonly cardInfo = this.cardInfoService.getCardInfo(this.card);
 }

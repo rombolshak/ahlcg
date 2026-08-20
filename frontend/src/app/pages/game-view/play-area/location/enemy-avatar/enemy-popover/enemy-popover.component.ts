@@ -1,5 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { CardInfoService } from '@core/card-info.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Enemy } from '@domain/entities/enemy.model';
 import { CardDetailsTextComponent } from '@pages/game-view/card-details-text/card-details-text.component';
 import { EnemyAttackDisplayComponent } from '@pages/game-view/enemy-attack-display/enemy-attack-display.component';
@@ -16,10 +15,5 @@ import { VitalsBarComponent } from '@ui/game/vitals-bar/vitals-bar.component';
   },
 })
 export class EnemyPopoverComponent {
-  private readonly cardInfoService = inject(CardInfoService);
-
   readonly enemy = input.required<Enemy>();
-
-  private readonly cardInfo = this.cardInfoService.getCardInfo(this.enemy);
-  readonly title = computed(() => this.cardInfo()?.title);
 }
