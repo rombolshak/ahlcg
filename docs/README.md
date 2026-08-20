@@ -16,7 +16,7 @@ The backend implements **authentication and game creation** (`POST /games`) — 
 | Touch the game state store, patches, or animations | [state-store.md](state-store.md) |
 | Add/modify a backend endpoint, entity, or migration | [backend.md](backend.md) |
 | Call an endpoint or the SignalR hub | [api.md](api.md) |
-| Write or debug tests | [testing.md](testing.md) |
+| Write or debug a test, or decide which tier a new test belongs in | [testing.md](testing.md) |
 | Run things, ports, CI, git hooks | [workflow.md](workflow.md) |
 | Build a feature with Claude Code (issues, commands, plan gate) | [ai-workflow.md](ai-workflow.md) |
 | Auth model, cookies, secrets, production hardening | [security.md](security.md) |

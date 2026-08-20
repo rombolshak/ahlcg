@@ -1,5 +1,40 @@
 # Testing
 
+## Test tiers
+
+**Rule 1 (placement).** A test belongs at the lowest tier that possesses the capability the assertion needs. Tiers are ordered by capability, not by scope or by what drives them.
+
+**Rule 2 (non-duplication).** A tier asserts only what its added capability makes newly observable. If an assertion would pass unchanged one tier down, it belongs one tier down — without this, tiers silently converge and a slow suite re-asserts business logic at browser-startup cost.
+
+| Tier | Adds | Runner | Owns |
+| --- | --- | --- | --- |
+| **F0** Frontend unit | — (pure TS + Angular DI) | vitest / happy-dom | logic, signals, store reducers, validation, pipes |
+| **F1** Component | **geometry, focus, native element semantics** | Storybook `play` + Chromium | anything depending on layout |
+| **F2** Frontend integration | **routing + app bootstrap + real network stack** | Playwright + `ng serve` | cross-route wiring, interceptors, providers |
+| **F3** Visual | **pixels** | Chromatic | appearance only |
+| **B0** Backend unit | — | xUnit + Moq | handler branching |
+| **B1** Backend integration | **HTTP pipeline + real Postgres** | `AppFixture` | routing, middleware, DB constraints |
+| **E** End-to-end | **the browser↔API contract** | Aspire + Playwright | that the two halves agree |
+
+### What happy-dom cannot observe
+
+Rule 1 only works if you know what capability each tier actually adds. happy-dom implements the DOM API surface without a real layout engine or a real display: events dispatch and the tree mutates correctly, but anything that depends on actual rendering reads back as zero or as a no-op. A geometry assertion written against it does not fail — it **passes vacuously**, which is worse than having no test at all, because it looks like coverage.
+
+Promote a test out of F0 once the assertion needs:
+
+- **Real layout geometry.** `getBoundingClientRect()` returns all-zero in happy-dom. GSAP's `Flip.getState`/`Flip.from` (`frontend/src/app/pages/game-view/store/game-state.store.ts:115` and `:118`) and `@panzoom/panzoom` (`frontend/src/app/pages/game-view/play-area/play-area.component.ts:38`, which also reads `parent.offsetWidth`/`offsetHeight` at `:47`-`:48`) both depend on it.
+- **Real focus and `:focus-visible`.** `frontend/src/app/ui/directives/focus-trap.directive.ts:11-12` (`input.focus(); input.select();`) needs a real focus target, not happy-dom's approximation. Contrast this with `frontend/src/app/core/list-navigation.ts`: it moves an "active index" through `linkedSignal`/`computed` state and never calls `focus()`, so it correctly stays at F0 — tracking an index is logic, not DOM.
+- **Native `<dialog>` semantics.** `showModal()`, `.close()`, and the `.open` property (`frontend/src/app/core/dialog/dialog.component.ts:97`, `:119`, and `:105`/`:125`) are native browser behaviour happy-dom does not implement faithfully.
+- **Real pointer or drag sequences.** E.g. the wheel-driven zoom in `play-area.component.ts:50` (`addEventListener('wheel', this.zoomArea.zoomWithWheel)`).
+
+Not everything that touches an event needs this. happy-dom dispatches `KeyboardEvent`s correctly, and both `list-navigation.ts` and `isTextEntryElement` (`frontend/src/app/core/input-manager.service.ts:74`) only branch on event properties — no layout, no native focus — so they stay at F0.
+
+### Naming: what is real, not what drives it
+
+A tier is named for the capability that is genuinely present in it, not for the tool driving it. Playwright against a mocked server is still the frontend integration tier, not end-to-end — what makes a test E is a real API answering the request, not the presence of a real browser. The [Backend](#backend) section below draws the same line: a handler called directly with mocked `UserManager`/`SignInManager` is the unit tier however real its eventual Postgres call would be, and only real HTTP against a real database — `Ahlcg.ApiService.IntegrationTests` — counts as integration.
+
+**Coverage accounting:** F0/B0/B1 own line coverage — the existing lcov → Coveralls/Sonar path. F1/F2/E own capability coverage as a checklist instead: do **not** measure line coverage on them, because running the app in a real browser lights up code incidentally (imports, template bindings, lifecycle hooks) without asserting anything about it, which makes genuinely untested logic look covered.
+
 ## Frontend
 
 Vitest through the `@angular/build:unit-test` builder, running in **happy-dom** — no browser, no web server.
@@ -21,6 +56,20 @@ npx ng test --inspect   # node inspector
 ```
 
 Coverage lands in `frontend/coverage/ahlcg/` (lcov + HTML) and is consumed by Sonar (`sonar.javascript.lcov.reportPaths`). `*.spec.ts` and `*.stories.ts` are excluded from coverage.
+
+### Component tests (F1)
+
+Storybook stories run as tests in a real headless Chromium, via the `storybook` project in `frontend/vitest.config.ts` (`@storybook/addon-vitest` + `@vitest/browser-playwright`). Every story executes: ones with a `play` function assert against it, the rest run as smoke renders. Unlike happy-dom, geometry (`getBoundingClientRect`), focus, and native element semantics are real here instead of vacuously zero.
+
+```bash
+npm run test:component   # playwright install chromium && vitest --project=storybook --run
+```
+
+The first run downloads two Chromium builds (the full Chrome for Testing plus the headless shell) — a few hundred MB compressed, roughly 700 MB on disk; later runs no-op that check in well under a second. To debug: drop `--run` for watch mode, `--project=storybook` selects just this tier out of `vitest.config.ts`, and flipping `headless: false` in `vitest.config.ts` opens the browser so you can watch a `play` function run.
+
+**Why it is not in `ci:all`:** `ci:all` is also what the husky pre-push hook runs (see [workflow.md](workflow.md)). Folding a browser suite into it would make every push depend on a locally installed Chromium binary and fail hard for anyone without one. `test:component` runs as its own CI step instead, and pre-push runtime is unchanged.
+
+No coverage is collected for this tier — see the coverage-accounting rule above.
 
 ### Writing component specs
 
@@ -118,4 +167,4 @@ Requires a container runtime — Docker or Podman both work, since Aspire drives
 
 ## What is not tested
 
-No end-to-end tests against the frontend. Visual regression is covered by Chromatic over Storybook stories, not by specs.
+No end-to-end tests against the frontend. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
