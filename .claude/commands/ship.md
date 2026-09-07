@@ -52,6 +52,10 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 
 **Never use `--no-verify`.** The pre-commit hook runs lint-staged (ESLint, Stylelint, Prettier, cspell, `tsc-files`) and pre-push runs the full `ci:all` or `dotnet build && dotnet test`. If a hook fails, fix the cause and commit again. `npm run shove` exists and bypasses hooks — it is the user's personal escape hatch and is not yours to use.
 
+**If pre-commit fails on command-line length, split the commit.** This is Windows: lint-staged passes every staged path as an argument, and a big enough changeset exceeds the limit before any linter runs. Symptoms are a failure about the command line being too long or the input line being too long — not a lint finding.
+
+Stage by area and commit in several passes (`git add frontend/src/app/game`, commit; `git add backend`, commit; and so on) until each command line fits. Each commit still needs a real `area: what changed` subject describing that slice — do not produce `part 1` / `part 2`. This is a mechanical workaround for an OS limit, so it is **not** a reason to reach for `--no-verify`: the whole problem is that the checks did not get to run.
+
 There is no `commit-msg` hook, so nothing validates the message automatically. Getting the format right is on you.
 
 ## 3. Push and open the PR

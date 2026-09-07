@@ -111,6 +111,8 @@ Rules that follow from the codebase's own conventions:
 
 Test names read as sentences: `it('should fire event after animation')`.
 
+**Do not explain a test in comments inside its body.** Prose in a test body means either the product behaviour is surprising — which belongs in the production code or the test name — or the test is hard to read, which is fixed by naming the fixtures and splitting the case. The one accepted form is structural `// given` / `// when` / `// then` signposts. See [comments.md](comments.md#tests).
+
 ### Frontend gotchas
 
 | Symptom | Cause |

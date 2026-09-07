@@ -155,6 +155,10 @@ if (model instanceof ArkErrors) {
 
 Tailwind utility classes in templates. Global CSS, the daisyUI plugin, and the custom `abyss` theme live in `src/styles.css` — that file is the single source of truth for design tokens (`--color-primary`, `--radius-box`, …). Reference tokens through Tailwind/daisyUI class names or `var(--color-…)`; do not hardcode hex values. `eslint-plugin-better-tailwindcss` enforces class ordering and validity; `stylelint` covers `.css`. Custom utilities go in `@utility` blocks — classes declared under `@layer utilities` are invisible to the linter. Prettier owns whitespace inside a `class` attribute in `.html`, so that rule never wraps there; inline templates in `.ts` do wrap at 160.
 
+## Comments
+
+Rarely. A comment is an exception that has to justify itself; code that needs prose to be understood usually needs reshaping instead. The rule, what survives it, and the separate standard for TSDoc on exported symbols are in [comments.md](comments.md), which applies to the backend too.
+
 ## Commits
 
 Format is `area: what changed` — `ux: keyboard input manager`, `tests: migrate to vitest`, `deps: bump the aspire group with 3 updates`. The area is the part of the system touched, not a value from a fixed enum.

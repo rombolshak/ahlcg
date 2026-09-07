@@ -10,6 +10,7 @@ The backend implements **authentication and game creation** (`POST /games`) — 
 
 | Task | Read |
 | --- | --- |
+| Any code change, any language | [comments.md](comments.md) — when a comment is warranted, which is rarely |
 | Any frontend code change | [frontend-conventions.md](frontend-conventions.md) — mandatory, then the relevant file below |
 | Understand how the pieces connect | [architecture.md](architecture.md) |
 | Add/modify a component, service, route, translation, style | [frontend.md](frontend.md) |

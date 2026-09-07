@@ -49,6 +49,7 @@ Read whichever apply to the diff:
 
 | The diff touches | Read |
 | --- | --- |
+| Any code at all | `docs/comments.md` |
 | Any frontend file | `docs/frontend-conventions.md` — mandatory, in full |
 | Components, services, routes, translations, styles | `docs/frontend.md` |
 | The game state store, patches, animations | `docs/state-store.md` |

@@ -7,8 +7,8 @@ How this project is built with Claude Code. Issues are the spec store; slash com
 ```
 /decompose 455   epic → child issues, linked as sub-issues, added to the board
 /redecompose 142 parent that ALREADY has children → audit the breakdown, fill in thin bodies
-/groom 57        thin issue → implementable spec, written back to the issue body
-/work 57         issue → branch → PLAN GATE → implementation → verify → self-review
+/groom 57        thin issue → audit what it claims → implementable spec, written back to the issue body
+/work 57         issue → audit → branch → PLAN GATE → implementation → verify → self-review
 /ship            commit → push → PR that closes the issue
 ```
 
@@ -31,6 +31,8 @@ One setup command:
 
 **Conventions live in `docs/`, and only in `docs/`.** The `implementer` and `reviewer` agents are told which doc governs their change and required to read it; they do not carry their own copy of the rules. A checklist pasted into a prompt goes stale silently and then two sources disagree with no way to tell which is current. If a rule changes, it changes in one file.
 
+**The issue body is checked before it is trusted.** Bodies are written once and then rot — a spec groomed two months ago names files that have been renamed and services that have been deleted, and it reads exactly as confidently as it did the day it was written. So `/groom` and `/work` both run the read-only `issue-auditor` agent first: it extracts every checkable claim in the body, verifies it against the current code, and reports what is stale, wrong, or unverifiable. It never edits anything. `/work` then plans against reality and tells you where the body was wrong; it stops only when the acceptance criteria themselves cannot be built as written. Sonnet does this, because checking a claim against a grep is mechanical, and running it in a subagent keeps the search output out of the planning context.
+
 **One approval gate, at the plan.** `/work` explores, then stops and shows you a plan. Nothing is written until you approve. Reviewing an approach costs a minute; reviewing a wrong 400-line diff costs an afternoon.
 
 **Green here means green in CI.** `/verify` mirrors the `dorny/paths-filter` split in `.github/workflows/ci.yml`, so it runs the frontend suite only when frontend files changed, and the same commands CI runs.
@@ -50,6 +52,7 @@ Cheap models do the mechanical work; Opus is spent where judgment is.
 | `/verify` | sonnet |
 | `/ship` | haiku |
 | `/sync-docs` | sonnet |
+| `issue-auditor` agent | sonnet |
 | `reviewer` agent | sonnet |
 
 `/work` runs on Opus, plans, and hands the **approved plan file** to the Sonnet `implementer` — the plan file is the handoff artifact, so the decisions survive the model switch.
@@ -58,15 +61,28 @@ Each is a single `model:` line in the command or agent frontmatter. If a stage d
 
 ## Issue types
 
-The board's `Type` field drives which command applies:
+The board hierarchy is five levels deep, and every parent/child edge moves exactly one level:
+
+```
+Initiative → Project → Epic → Task → Sub-task
+```
+
+**No level skipping — in particular, a `Task` is never a direct child of a `Project`.** If a Project's remaining work is one task's worth, the answer is an Epic in between, or it was not a Project. The rule exists so the board can be grouped and filtered by level at all; a hierarchy that holds most of the time cannot be.
+
+`Bug` sits outside the ladder — a defect is a `Bug` at whatever depth it is found.
+
+**Actionable types — the ones where code gets written — are `Task`, `Sub-task`, and `Bug`.** Nothing else goes to `/work`.
 
 | Type | Command |
 | --- | --- |
 | `Initiative` → `Project` → `Epic` | `/decompose`, or `/redecompose` if it already has children |
 | `Task` → `Sub-task` | `/work` (or `/decompose` if a task turned out too big) |
-| `Bug`, `Feature Request` | `/work` |
+| `Bug` | `/work` |
+| `Feature Request` | Intake only — `/decompose` it, or retype it as `Task`/`Bug` first |
 
-`/work` refuses to implement a decomposable type, and `/decompose` points at `/work` for an implementable one, so neither silently does the wrong thing to an issue.
+`Feature Request` records that someone wants something, not what to build, so `/work` stops on it and asks for a retype. It is a front door, not a work item.
+
+`/work` refuses to implement a decomposable type, and `/decompose` points at `/work` for an actionable one, so neither silently does the wrong thing to an issue.
 
 ## Issue relations
 
@@ -103,6 +119,7 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 .claude/
 ├── commands/          the slash commands above
 ├── agents/
+│   ├── issue-auditor.md read-only check of an issue body against the code (sonnet)
 │   ├── implementer.md executes an approved plan (sonnet)
 │   └── reviewer.md    read-only three-axis review (sonnet)
 ├── lib/
@@ -129,11 +146,12 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 - **A one-line idea is a fine issue.** Create it with a title, run `/groom` later — grooming will ask you what you meant rather than inferring it. Blank issues are deliberately enabled.
 - **Answer the interview properly; it is the cheapest step here.** Four questions before a breakdown costs a minute. The same misunderstanding found after the code is written costs the breakdown, the specs, and the diff.
 - **If `/work` says an issue is too thin, believe it.** It is refusing to invent requirements — a plausible guess written as if it were the spec is the most expensive failure this workflow can produce.
+- **When the audit says the body is stale, the body is still stale on GitHub.** `/work` plans around it and tells you; it does not rewrite the issue, because that is your record. If the drift was substantial, re-run `/groom` afterwards so the next reader is not misled by the same text.
 - **Read the reviewer's findings, especially scope creep.** Unrequested changes are flagged even when they are improvements, because you approved a specific scope.
 - **Never `--no-verify`.** Commands will not do it. `npm run shove` remains a human escape hatch, not a workflow step.
 
 ## What is deliberately not here
 
 - **No GitHub Actions `@claude`.** Work happens in local sessions.
-- **No background delegation.** The `implementer` subagent is synchronous, inside `/work`.
+- **No background delegation.** Every subagent — `issue-auditor`, `implementer`, `reviewer` — is synchronous, inside the command that invoked it.
 - **No enforcement hooks.** The husky hooks and CI already gate quality. Extra hooks are worth adding once real recurring mistakes are observed — building them pre-emptively is guessing.

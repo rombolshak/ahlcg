@@ -31,6 +31,7 @@ Read, in this order:
 
    | Touching | Read |
    | --- | --- |
+   | Any code at all | `docs/comments.md` — comments are the exception here, not the habit |
    | Components, services, routes, translations, styles | `docs/frontend.md` |
    | The game state store, patches, animations | `docs/state-store.md` |
    | Backend endpoints, entities, migrations | `docs/backend.md` |

@@ -46,6 +46,7 @@ Read `docs/architecture.md` and the docs for the areas involved, then look at th
 - **Already done?** The work may have landed under a different issue. Check the code before assuming a child is outstanding.
 - **Obsolete?** The design may have moved on since it was written.
 - **Wrong altitude?** Too big to implement in one branch, or so small it should merge into a sibling.
+- **Wrong level?** The hierarchy is `Initiative → Project → Epic → Task → Sub-task`, one step at a time. A `Task` sitting directly under a `Project` is a level skip — propose the missing `Epic` as a verdict, do not just relabel the child.
 - **Overlapping?** Two children that would touch the same files in conflicting ways.
 - **Missing?** Work the parent implies that no child covers — tests, translations, Storybook stories, migrations, docs.
 - **Mis-ordered?** A `Blocked by` edge pointing at something already closed, or an ordering the code has since contradicted. Also the reverse: two children that clearly must land in an order nobody recorded.
@@ -100,7 +101,7 @@ Then set fields per `.claude/lib/project-status.md`:
 
 - children with a real spec body → **Status: Ready to dev**
 - children still thin, or only structurally agreed → **Status: Proposed**
-- `Type` one level below the parent (`Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`); `Bug` for defects at any depth
+- `Type` exactly one level below the parent (`Initiative`→`Project`, `Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`); `Bug` for defects at any depth. Never skip a level — a `Task` directly under a `Project` is wrong, and an old breakdown that did it needs an `Epic` proposed in step 4, not a quiet retype
 - inherit `Priority` from the parent where it has one and the child does not
 - leave `Iteration` alone — `/work` owns it, and sets it when implementation starts
 

@@ -9,15 +9,26 @@ Break issue **#$1** into children that are small enough to implement.
 
 ## Which issues this applies to
 
-The board uses a real four-level hierarchy — check the `Type` field:
+The board hierarchy is five levels, and each level's children are the next level down — no skipping:
+
+```
+Initiative → Project → Epic → Task → Sub-task
+```
+
+**A `Task` may never be a direct child of a `Project`.** If a Project's work is one task's worth, it needs an Epic in between — or it was never a Project. Say so rather than flattening the tree; a hierarchy that is only sometimes true is one nobody can filter a board by.
+
+`Bug` sits outside the ladder: a defect is a `Bug` at whatever depth it appears.
+
+Check the `Type` field:
 
 | Type | Decompose it? |
 | --- | --- |
 | `Initiative` → `Project` → `Epic` | Yes — these exist to be broken down |
 | `Task` | Only if it turned out too big; children become `Sub-task` |
-| `Sub-task`, `Bug`, `Feature Request` | No — these go to `/work` |
+| `Sub-task`, `Bug` | No — these are actionable; they go to `/work` |
+| `Feature Request` | Intake only. Decompose it if it is more than one issue's worth; otherwise ask the user to retype it as `Task` or `Bug` and send it to `/work`. Never leave it as the type work happens under. |
 
-If `#$1` is already an implementable type with a decent body, say so and point at `/work` instead.
+If `#$1` is already an actionable type (`Task`, `Sub-task`, `Bug`) with a decent body, say so and point at `/work` instead.
 
 ## 1. Understand the parent
 
@@ -60,7 +71,7 @@ Good children:
 
 Watch for the work that is easy to forget: tests, translations (Transloco keys for every enabled language), Storybook stories, docs updates, EF migrations.
 
-Set each child's `Type` one level down from the parent: `Initiative`→`Project`, `Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`. A child that is a defect is `Bug` regardless of depth.
+Set each child's `Type` exactly one level down from the parent: `Initiative`→`Project`, `Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`. Never skip a level — a `Project` whose children you want to call tasks needs an `Epic` in between, so propose the Epic. A child that is a defect is `Bug` regardless of depth.
 
 Present as a numbered list — title, one-line purpose, proposed `Type`, and which siblings block it. **Wait for approval.** Do not create anything yet; a wrong breakdown creates real issues on a real board that the user then has to clean up by hand.
 

@@ -2,6 +2,8 @@
 
 .NET 10 solution in `backend/`. All projects set `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` — warnings break the build.
 
+[comments.md](comments.md) applies here as it does to the frontend: a comment is an exception, and XML-doc is for non-obvious public contracts only.
+
 ## Projects
 
 | Project | Role |

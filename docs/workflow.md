@@ -1,5 +1,16 @@
 # Development Workflow
 
+## Shell
+
+Development happens on **Windows**. Both PowerShell 5 (`powershell`) and PowerShell 7 (`pwsh`) are installed, and PowerShell is the shell to write scripts and one-off commands in.
+
+Agents get a Git Bash tool as well, which means `sed`, `awk`, and heredocs technically run — reach for them anyway and you get quoting that behaves differently from every other command in this repo, paths that are `/d/sources/...` in one place and `D:\sources\...` in the next, and scripts nobody can re-run from a normal terminal. So:
+
+- **Editing a file:** use the `Write`/`Edit` tools. Not `sed -i`, not a heredoc redirect.
+- **Scripting anything:** PowerShell, in preference to Python, Node, or a shell script. `Get-Content`, `Set-Content`, `Select-String`, `ForEach-Object` cover what `cat`/`grep`/`awk` were reached for.
+- **Multi-line strings:** a PowerShell here-string (`@"…"@`) or a file written with `Write`. Bash heredocs are not portable to the shell a human here actually uses.
+- **Long text into a CLI:** always a temp file plus `--body-file`, never inline. This is why `/groom`, `/decompose`, `/redecompose`, and `/ship` all say so — backticks, quotes, and newlines do not survive argument quoting on Windows.
+
 ## Prerequisites
 
 .NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. See [testing.md](testing.md).
@@ -87,6 +98,10 @@ Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scrip
 **pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build && dotnet test` if `backend/` changed. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
 
 Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly that; it is a personal escape hatch, not a workflow.)
+
+**Large changesets can blow the Windows command-line length limit.** `lint-staged` passes every staged path to each tool as arguments, so a commit touching enough files produces a command line longer than Windows accepts and the hook fails before any linting happens. The failure is about argument length, not code quality — it says nothing about whether the change is good.
+
+The fix is to **split the commit into several smaller ones**, staged by area, until each is under the limit. It is not `--no-verify`: that skips the checks the size problem prevented from running, which is the opposite of what the situation calls for.
 
 Commit messages follow `area: what changed` (`ux: keyboard input manager`, `tests: migrate to vitest`). Nothing enforces this: `@commitlint/config-conventional` is configured in `frontend/package.json`, but `frontend/.husky/` contains only `pre-commit` and `pre-push` — there is no `commit-msg` hook, so commitlint never runs.
 

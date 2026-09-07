@@ -1,7 +1,7 @@
 ---
 description: Turn a thin issue into an implementable spec and write it back to the issue body. Sets status to Ready to dev.
 argument-hint: <issue-number>
-allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
+allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion, Agent
 model: sonnet
 ---
 
@@ -39,7 +39,20 @@ This is the step that makes the difference between a useful spec and a plausible
 
 Also read the issue's **dependencies** — what blocks it, and what it blocks — per `.claude/lib/issue-dependencies.md`. If it is blocked by something still open, say so now: grooming it is fine, but the user should know it is not startable.
 
-## 3. Ask what it is for
+## 3. Audit what the body already claims
+
+Skip this only if the body is genuinely empty — there is nothing to check. Otherwise, whatever text is already there is the thing most likely to mislead you: it was written against an older codebase, and re-grooming around a stale premise produces a spec that reads well and cannot be built.
+
+Invoke the `issue-auditor` agent (`subagent_type: "issue-auditor"`, `run_in_background: false`) with the issue number, its body, and the parent context you gathered in step 1. It is read-only — it reports claims, it does not edit the issue.
+
+Use its findings two ways:
+
+- **Correct them in the spec you write.** A claim it marked `STALE` or `WRONG` must not survive into the new body unchanged.
+- **Turn the `UNVERIFIABLE` ones into interview questions.** A claim nothing in the repo confirms or denies is usually a claim about intent, and the user is the only source for it.
+
+Report the findings to the user when you show the proposed body for approval, so they can see what changed and why.
+
+## 4. Ask what it is for
 
 Follow `.claude/lib/intent-interview.md`.
 
@@ -47,13 +60,13 @@ This is the step that separates a spec from a plausible-sounding paraphrase of t
 
 Do not skip it because the title seems self-explanatory. Titles always seem self-explanatory to the person who wrote them.
 
-## 4. Write the spec
+## 5. Write the spec
 
 Follow `.claude/lib/issue-spec-template.md` exactly.
 
 Fold in the inherited context from the parent chain, and the user's answers from the previous step, so the issue stands alone.
 
-## 5. Show it, then write it
+## 6. Show it, then write it
 
 Show the proposed body and **wait for approval**. It is going into a permanent, human-visible record — it should not appear on GitHub unreviewed.
 
@@ -71,6 +84,6 @@ If the issue's `Type` field is unset, suggest one based on its scope and depth i
 
 If grooming surfaced a real ordering constraint — this cannot start until something else lands — propose the dependency and, on approval, record it per `.claude/lib/issue-dependencies.md`. Only genuine blockers; see the rules there.
 
-## 6. Report
+## 7. Report
 
-State what you learned that was not in the original issue — separating what you found in the code from what the user told you. Note any dependency added or any open blocker, and anything you could not resolve. If something is still ambiguous after the interview, leave it recorded as an open question in the body rather than papering over it with a confident guess.
+State what you learned that was not in the original issue — separating what you found in the code, what the audit found untrue in the old body, and what the user told you. Note any dependency added or any open blocker, and anything you could not resolve. If something is still ambiguous after the interview, leave it recorded as an open question in the body rather than papering over it with a confident guess.
