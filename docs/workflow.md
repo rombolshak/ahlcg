@@ -13,7 +13,7 @@ Agents get a Git Bash tool as well, which means `sed`, `awk`, and heredocs techn
 
 ## Prerequisites
 
-.NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. See [testing.md](testing.md).
+.NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. The end-to-end suite (`cd e2e`) needs it for the same reason, plus Node for the `webfrontend` resource it leaves running. See [testing.md](testing.md).
 
 ## Running
 
@@ -81,6 +81,19 @@ not a failure, until #541's closing issue flips both rules to `error`.
 
 `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set on every project — a warning fails the build.
 
+### End-to-end (`cd e2e`)
+
+| Goal | Command |
+| --- | --- |
+| Install browser (first run) | `npx playwright install chromium` |
+| Run the suite | `npm test` |
+| Headed, for debugging | `npm run test:headed` |
+| Playwright UI mode | `npm run test:ui` |
+| Against an AppHost you started | `$env:E2E_BASE_URL = 'http://localhost:PORT'` first, then any of the above |
+| Type check | `npm run lint:tsc` |
+
+Boots the full AppHost (including `webfrontend`) itself — nothing needs to be running first, unless `E2E_BASE_URL` says otherwise. See [testing.md](testing.md#end-to-end).
+
 ## Git hooks
 
 Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scripts live in `frontend/.husky/`.
@@ -111,12 +124,15 @@ Commit messages follow `area: what changed` (`ux: keyboard input manager`, `test
 
 - **backend** ← `backend/**`, `.github/workflows/backend.yml`
 - **frontend** ← `frontend/src/**`, `frontend/*.json`, `.github/workflows/frontend.yml`
+- **e2e** ← `backend/**`, `frontend/**`, `e2e/**`, `.github/workflows/e2e.yml`
 
-It calls the reusable `backend.yml` / `frontend.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend`.
+It calls the reusable `backend.yml` / `frontend.yml` / `e2e.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend` — `e2e` does not report coverage, so it is not in that list.
 
 **backend.yml** — .NET 10, installs `dotnet-reportgenerator-globaltool`, `dotnet-coverage`, `dotnet-sonarscanner`, and the Aspire CLI (then `aspire certs trust`, so the integration tests can serve HTTPS), wraps restore/build/test in a Sonar session (`rombolshak_ahlcg_backend`), collects coverage across the whole process tree with `dotnet-coverage`, generates `coveragereport/` (HTML + Cobertura + SonarQube, excluding generated code and migrations), uploads `Cobertura.xml` to Coveralls.
 
 **frontend.yml** — Node latest with npm cache, `npm ci --force` (a workaround for Tailwind 4 resolution), `npm run ci:all`, then Playwright's system dependencies (`npx playwright install-deps chromium`) and `npm run test:component` (the F1 tier; `test:component` downloads the browser itself), Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
+
+**e2e.yml** — .NET 10 and Node, installs the Aspire CLI and runs `aspire certs trust` (same reason as `backend.yml`: `apiservice` binds its `https` launch profile even though the suite itself talks HTTP), `npm ci` and `npx playwright install chromium` in `e2e/`, then `npm test`. No Coveralls step and no Sonar step — this tier does not collect coverage (see [testing.md](testing.md)). Uploads the Playwright HTML report as an artifact on failure.
 
 **chromatic.yml** — on pushes touching `frontend/src/**` or `frontend/public/assets/fonts/**`, skipped for dependabot branches. Builds Storybook and uploads to Chromatic.
 
