@@ -8,8 +8,12 @@
       <p class="mt-1 text-base-content/70">{{ t("anonymous.detail") }}</p>
     }
     @case ("permanent") {
-      <p>{{ t("permanent.name_label") }}: {{ user()?.userName }}</p>
-      <p>{{ t("permanent.email_label") }}: {{ user()?.email }}</p>
+      <p>
+        {{ t("permanent.name_label") }}: <span data-testId="account-user-name">{{ user()?.userName }}</span>
+      </p>
+      <p>
+        {{ t("permanent.email_label") }}: <span data-testId="account-email">{{ user()?.email }}</span>
+      </p>
       <p class="mt-2">{{ t("permanent.state") }}</p>
       <p class="mt-1 text-base-content/70">{{ t("permanent.detail") }}</p>
     }
