@@ -1,0 +1,48 @@
+name: End-to-end CI
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'e2e'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: 'npm'
+          cache-dependency-path: 'e2e/package-lock.json'
+      # apiservice binds its https launch profile, so Kestrel needs a developer certificate.
+      # Version tracks the Aspire.Hosting.* packages and the AppHost SDK.
+      - name: Install Aspire CLI
+        run: dotnet tool install --global Aspire.Cli --version 13.4.6
+      - name: Trust HTTPS developer certificate
+        run: aspire certs trust --non-interactive
+
+      - run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run end-to-end suite
+        run: npm test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7

@@ -15,6 +15,7 @@ jobs:
     outputs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      e2e: ${{ steps.filter.outputs.e2e }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,6 +31,11 @@ jobs:
               - 'frontend/src/**'
               - 'frontend/*.json'
               - '.github/workflows/frontend.yml'
+            e2e:
+              - 'backend/**'
+              - 'frontend/**'
+              - 'e2e/**'
+              - '.github/workflows/e2e.yml'
   backend:
     needs:
       - paths-filter
@@ -43,7 +49,14 @@ jobs:
     if: needs.paths-filter.outputs.frontend == 'true'
     uses: ./.github/workflows/frontend.yml
     secrets: inherit
-  
+
+  e2e:
+    needs:
+      - paths-filter
+    if: needs.paths-filter.outputs.e2e == 'true'
+    uses: ./.github/workflows/e2e.yml
+    secrets: inherit
+
   coveralls:
     runs-on: ubuntu-latest
     needs:

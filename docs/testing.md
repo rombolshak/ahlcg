@@ -171,6 +171,40 @@ A collection fixture (`AppFixture`, shared across the test class via `[Collectio
 
 Requires a container runtime — Docker or Podman both work, since Aspire drives whichever DCP finds (a real Postgres container is started for each test run). Runs via the same `dotnet test` as the unit tests; GitHub's `ubuntu-latest` runners provide Docker, so CI needs no extra setup, but this tier is slower than the InMemory-backed unit tests.
 
+## End-to-end
+
+`e2e/` (top level, not under `frontend/`) drives a real Chromium against the real Angular dev server, the real API, and real Postgres — all hosted by the existing AppHost with `webfrontend` left **in**. Contrast this with `AppFixture` above, which removes it because CI there has no Node; this tier is the one that needs it. `pgadmin` is removed, same as `AppFixture`, since it is dev convenience only.
+
+**Two processes, because each half owns what it is good at.** Playwright owns the run (its CLI, HTML report, traces). A tiny console app, `e2e/apphost/Program.cs`, owns the app model, because `DistributedApplicationTestingBuilder` is the only way to mutate resources before start. `e2e/global-setup.ts` spawns it via `e2e/apphost.ts` and reads the dynamically-assigned `webfrontend` URL from its stdout (Aspire assigns the port, so nothing here hardcodes one); `e2e/global-teardown.ts` closes its stdin, which is the runner's shutdown signal — `Console.In.ReadLineAsync()` returns `null` on EOF, which falls through to `app`'s `DisposeAsync()`.
+
+**Ephemeral Postgres, without touching `AppHost.cs`.** `WithDataVolume()` in `AppHost.cs` adds a `ContainerMountAnnotation` to the `postgresdb` resource so local dev keeps its data across restarts. A naive test run would share that same persistent volume, and a suite that creates real accounts would accumulate rows across runs and go flaky the second time the same identity is used — reusing one fixed test account would only paper over that, not fix it. `Program.cs` instead strips the `ContainerMountAnnotation` off `postgresdb` before `BuildAsync()`, so the container starts with no volume at all; the dev volume is never mounted, so it cannot be written to, and every run starts from an empty database.
+
+**No HTTPS gymnastics.** The browser talks HTTP to the dev server, which proxies `/api/*` to the `apiservice`'s `http` endpoint (`proxy.conf.js`). Nothing in that chain carries a `Secure` cookie over a .NET `CookieContainer` — browsers apply a localhost exception for `Secure` cookies that `CookieContainer` does not — so the integration tier's `https` launch profile and `DangerousAcceptAnyServerCertificateValidator` have no counterpart here. `aspire certs trust` is still needed in CI, because `apiservice` binds its `https` launch profile regardless, and Kestrel will not start without a dev certificate.
+
+```bash
+cd e2e
+npm ci
+npx playwright install chromium
+npm test
+```
+
+Requires a container runtime, same as the integration tier. No coverage is collected for this tier — see the coverage-accounting rule above; a real browser and a real dev-server compile light up code incidentally without asserting anything about it.
+
+**Interactive runs, and attaching to a stack you are already running.** `npm run test:ui` opens Playwright's UI mode, which runs global setup itself before it lists any tests — so the whole stack boots once (~40s) and then stays up for the session, and re-running a spec after an edit hits the same live app. Editing a spec does not re-run global setup; a config change does, and Playwright tears the old AppHost down first.
+
+Setting `E2E_BASE_URL` makes `global-setup.ts` skip the spawn and point at that URL instead, so the suite can drive an AppHost you started yourself — the fast loop when the API is under a debugger. Take the `webfrontend` port from the Aspire dashboard:
+
+```powershell
+cd backend/Ahlcg.AppHost; dotnet run     # separate terminal
+cd e2e
+$env:E2E_BASE_URL = 'http://localhost:PORT'
+npm run test:ui
+```
+
+Attach mode waits 30s for that URL rather than the 5 minutes a cold `ng serve` compile needs, so a wrong port fails fast. Teardown does nothing to a stack it did not start.
+
+`stopAppHost()` closes the runner's stdin and gives it 30s to call `DisposeAsync()` on its own, then escalates to `SIGTERM` and, after another 10s, `SIGKILL`. Either forced-kill path skips `DisposeAsync()` and can leave DCP containers running; clean them up with `podman ps` / `docker ps` and `rm` as usual.
+
 ## What is not tested
 
-No end-to-end tests against the frontend. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
+The game view renders `@domain/testing/test-game-state`, a hardcoded fixture — there is no server for the end-to-end tier to reach there, and `POST /games` has no frontend caller yet, so it is untested end-to-end too. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
