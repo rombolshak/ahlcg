@@ -9,6 +9,7 @@ namespace Ahlcg.ApiService;
 public class AppUser : IdentityUser
 {
     public bool IsAnonymous { get; set; }
+    public ICollection<GameMember> Memberships { get; } = [];
 }
 
 public static class AuthEndpoints

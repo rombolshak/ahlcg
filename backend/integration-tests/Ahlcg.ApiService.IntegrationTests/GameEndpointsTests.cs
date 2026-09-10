@@ -54,6 +54,9 @@ public class GameEndpointsTests(AppFixture fixture)
         await using var db = fixture.CreateDbContext();
         var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == dto.Id);
         Assert.Equal(userId, stored.OwnerId);
+        Assert.Equal(1, stored.IntendedPlayersCount);
+
+        await db.GameMembers.AsNoTracking().SingleAsync(m => m.GameId == dto.Id && m.UserId == userId);
     }
 
     [Fact]
@@ -76,6 +79,9 @@ public class GameEndpointsTests(AppFixture fixture)
         await using var db = fixture.CreateDbContext();
         var count = await db.Games.CountAsync(g => g.IdempotencyKey == key);
         Assert.Equal(1, count);
+
+        var memberCount = await db.GameMembers.CountAsync(m => m.GameId == firstDto.Id);
+        Assert.Equal(1, memberCount);
     }
 
     [Fact]

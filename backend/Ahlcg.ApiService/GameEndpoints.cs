@@ -17,6 +17,18 @@ public class Game
     public required JsonDocument Configuration { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastPlayedAt { get; set; }
+    public int IntendedPlayersCount { get; set; } = 1;
+    public ICollection<GameMember> Members { get; } = [];
+}
+
+public class GameMember
+{
+    public Guid GameId { get; set; }
+    public Game? Game { get; set; }
+    public required string UserId { get; set; }
+    public AppUser? User { get; set; }
+    public DateTimeOffset JoinedAt { get; set; }
+    public DateTimeOffset LastPlayedAt { get; set; }
 }
 
 public static class GameEndpoints
@@ -69,6 +81,8 @@ public static class GameEndpoints
             CreatedAt = now,
             LastPlayedAt = now
         };
+        var member = new GameMember { UserId = user.Id, JoinedAt = now, LastPlayedAt = now };
+        game.Members.Add(member);
 
         db.Games.Add(game);
         try
@@ -77,6 +91,7 @@ public static class GameEndpoints
         }
         catch (DbUpdateException)
         {
+            db.Entry(member).State = EntityState.Detached;
             db.Entry(game).State = EntityState.Detached;
 
             var existing =
