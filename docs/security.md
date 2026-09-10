@@ -16,7 +16,7 @@ options.Cookie.SameSite = SameSiteMode.Lax;
 
 `SecurePolicy = Always` means the cookie is only sent over HTTPS. The frontend never reads or handles the cookie; there is no token storage anywhere in the client.
 
-**Authorization** — opt-in per route via `.RequireAuthorization()`; read the endpoint definitions for which routes carry it. `GameHub` is `[Authorize]`. There are no roles, policies, or claims checks — any authenticated user, anonymous or permanent, is treated identically. Nothing checks ownership of a resource either: `Game.OwnerId` is recorded but not yet enforced anywhere.
+**Authorization** — opt-in per route via `.RequireAuthorization()`; read the endpoint definitions for which routes carry it. `GameHub` is `[Authorize]`. There are no roles, policies, or claims checks — any authenticated user, anonymous or permanent, is treated identically. Nothing checks access to a resource either, though the record that will grant it now exists: a `GameMember` row per (game, user) is what makes a game reachable, and `Game.OwnerId` is provenance that is deliberately never the access check. No endpoint or hub method reads either one yet.
 
 **Password handling** — entirely ASP.NET Identity (hashing, verification, complexity defaults). No custom crypto.
 
