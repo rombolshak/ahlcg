@@ -27,11 +27,11 @@
       "Bash(gh project list:*)",
       "Bash(gh auth status)",
       "Bash(gh api repos/:*)",
-      "Bash(gh api graphql:*)"
+      "Bash(gh api graphql:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)"
     ],
     "ask": [
-      "Bash(git push:*)",
-      "Bash(gh pr create:*)",
       "Bash(gh pr merge:*)",
       "Bash(gh issue create:*)",
       "Bash(gh issue edit:*)",
@@ -45,6 +45,7 @@
     "deny": [
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
+      "Bash(git push origin main:*)",
       "Bash(npm run shove)",
       "Bash(git commit --no-verify:*)",
       "Bash(git push --no-verify:*)",
