@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Ahlcg.ApiService.IntegrationTests;
 
 /// <summary>
-/// Drives POST /games over real HTTP against the real Aspire-orchestrated app and Postgres.
-/// EF's InMemory provider (used by the unit tests) does not enforce unique indexes, so the
-/// idempotency criteria can only be proven here.
+/// Drives POST /games and GET /games over real HTTP against the real Aspire-orchestrated app
+/// and Postgres. EF's InMemory provider (used by the unit tests) does not enforce unique
+/// indexes, so the idempotency criteria can only be proven here.
 /// </summary>
 [Collection(AppCollection.Name)]
 public class GameEndpointsTests(AppFixture fixture)
@@ -137,6 +137,71 @@ public class GameEndpointsTests(AppFixture fixture)
         Assert.False(string.IsNullOrWhiteSpace(post.GetProperty("description").GetString()));
     }
 
+    [Fact]
+    public async Task GetGames_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetGames_Authenticated_ReturnsOnlyCallersGames()
+    {
+        using var clientA = fixture.CreateClient();
+        using var clientB = fixture.CreateClient();
+        await LoginAnonymouslyAsync(clientA);
+        await LoginAnonymouslyAsync(clientB);
+
+        var responseA = await PostGameAsync(clientA, $"caller-a-{Guid.NewGuid()}", """{"a":1}""");
+        responseA.EnsureSuccessStatusCode();
+        var dtoA = await ReadGameAsync(responseA);
+
+        var responseB = await PostGameAsync(clientB, $"caller-b-{Guid.NewGuid()}", """{"b":1}""");
+        responseB.EnsureSuccessStatusCode();
+        var dtoB = await ReadGameAsync(responseB);
+
+        var gamesA = await GetGamesAsync(clientA);
+        var idsA = gamesA.Select(g => g.Id).ToList();
+
+        Assert.Contains(dtoA.Id, idsA);
+        Assert.DoesNotContain(dtoB.Id, idsA);
+    }
+
+    [Fact]
+    public async Task GetGames_ReturnsConfigurationUnchanged()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+        const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
+
+        var createResponse = await PostGameAsync(client, $"config-{Guid.NewGuid()}", json);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await ReadGameAsync(createResponse);
+
+        var games = await GetGamesAsync(client);
+
+        var listed = Assert.Single(games, g => g.Id == created.Id);
+        using var expected = JsonDocument.Parse(json);
+        Assert.True(JsonElement.DeepEquals(expected.RootElement, listed.Configuration));
+    }
+
+    [Fact]
+    public async Task OpenApi_DescribesGetGames()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var get = document.RootElement.GetProperty("paths").GetProperty("/games").GetProperty("get");
+
+        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
+    }
+
     private static JsonElement ParseConfig(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<HttpResponseMessage> PostGameAsync(
@@ -157,6 +222,17 @@ public class GameEndpointsTests(AppFixture fixture)
         var dto = await response.Content.ReadFromJsonAsync<GameEndpoints.GameDto>(JsonSerializerOptions.Web);
         Assert.NotNull(dto);
         return dto;
+    }
+
+    private static async Task<IReadOnlyList<GameEndpoints.GameDto>> GetGamesAsync(HttpClient client)
+    {
+        var response = await client.GetAsync("/games");
+        response.EnsureSuccessStatusCode();
+
+        var games = await response.Content.ReadFromJsonAsync<IReadOnlyList<GameEndpoints.GameDto>>(
+            JsonSerializerOptions.Web);
+        Assert.NotNull(games);
+        return games;
     }
 
     /// <summary>

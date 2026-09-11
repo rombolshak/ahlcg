@@ -10,25 +10,6 @@ namespace Ahlcg.ApiService.Tests;
 public class GameEndpointsTests
 {
     [Fact]
-    public async Task CreateGame_NotLoggedIn_ReturnsUnauthorized()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-
-        var result = await GameEndpoints.CreateGame(
-            NotAuthenticatedPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
-
-        Assert.IsType<UnauthorizedHttpResult>(result.Result);
-        Assert.Empty(db.Games);
-        Assert.Empty(db.GameMembers);
-    }
-
-    [Fact]
     public async Task CreateGame_LoggedIn_PersistsGameOwnedByCaller()
     {
         var userManager = GetMockUserManager();
@@ -114,26 +95,107 @@ public class GameEndpointsTests
     }
 
     [Fact]
-    public async Task CreateGame_LoggedIn_ReturnsConfigurationUnchanged()
+    public async Task ListGames_NoMemberships_ReturnsEmptyList()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
-        const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
 
-        var result = await GameEndpoints.CreateGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration(json)));
+        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
 
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        using var expected = JsonDocument.Parse(json);
-        Assert.True(JsonElement.DeepEquals(expected.RootElement, ok.Value!.Configuration));
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task ListGames_OtherUsersGame_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+
+        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task ListGames_GameOwnedByCallerWithoutMembership_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        await SeedGameAsync(db, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task ListGames_GameCallerDidNotCreate_IsReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        var returned = Assert.Single(ok.Value!);
+        Assert.Equal(game.Id, returned.Id);
+    }
+
+    [Fact]
+    public async Task ListGames_OrdersByCallersOwnLastPlayedAt()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var olderGame = await SeedGameAsync(db, OtherUser, FixedNow.AddDays(2));
+        await AddMembershipAsync(db, olderGame.Id, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, olderGame.Id, OtherUser, FixedNow.AddDays(2));
+        var newerGame = await SeedGameAsync(db, OtherUser, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, newerGame.Id, LoggedInUser, FixedNow.AddDays(3));
+        await AddMembershipAsync(db, newerGame.Id, OtherUser, FixedNow.AddDays(1));
+
+        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Equal([newerGame.Id, olderGame.Id], ok.Value!.Select(g => g.Id));
     }
 
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
+
+    private static async Task<Game> SeedGameAsync(
+        ApplicationDbContext db, string ownerId, DateTimeOffset lastPlayedAt)
+    {
+        var game = new Game
+        {
+            OwnerId = ownerId,
+            IdempotencyKey = Guid.NewGuid().ToString(),
+            Configuration = JsonDocument.Parse("{}"),
+            CreatedAt = lastPlayedAt,
+            LastPlayedAt = lastPlayedAt
+        };
+        db.Games.Add(game);
+        await db.SaveChangesAsync();
+        return game;
+    }
+
+    private static async Task AddMembershipAsync(
+        ApplicationDbContext db, Guid gameId, string userId, DateTimeOffset lastPlayedAt)
+    {
+        db.GameMembers.Add(new GameMember
+        {
+            GameId = gameId,
+            UserId = userId,
+            JoinedAt = lastPlayedAt,
+            LastPlayedAt = lastPlayedAt
+        });
+        await db.SaveChangesAsync();
+    }
 
     private static ApplicationDbContext CreateInMemoryDb()
     {
@@ -167,8 +229,7 @@ public class GameEndpointsTests
     }
 
     private const string LoggedInUser = "4139F1EA-4901-4253-A391-021FAA001677";
-
-    private static readonly ClaimsPrincipal NotAuthenticatedPrincipal = new(new ClaimsIdentity());
+    private const string OtherUser = "B6E3B6BF-EFFF-4B94-9E13-2E27FFF3C7CE";
 
     private static readonly ClaimsPrincipal LoggedInPrincipal =
         new(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, LoggedInUser)]));
