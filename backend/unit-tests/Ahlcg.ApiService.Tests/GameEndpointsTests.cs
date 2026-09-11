@@ -25,6 +25,7 @@ public class GameEndpointsTests
 
         Assert.IsType<UnauthorizedHttpResult>(result.Result);
         Assert.Empty(db.Games);
+        Assert.Empty(db.GameMembers);
     }
 
     [Fact]
@@ -52,6 +53,48 @@ public class GameEndpointsTests
     }
 
     [Fact]
+    public async Task CreateGame_LoggedIn_CreatesMembershipForCaller()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+
+        var result = await GameEndpoints.CreateGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            FixedTimeProvider,
+            "idempotency-key",
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        var stored = Assert.Single(db.Games);
+        var member = Assert.Single(db.GameMembers);
+        Assert.Equal(stored.Id, member.GameId);
+        Assert.Equal(LoggedInUser, member.UserId);
+        Assert.Equal(FixedNow, member.JoinedAt);
+        Assert.Equal(FixedNow, member.LastPlayedAt);
+        Assert.NotNull(ok.Value);
+    }
+
+    [Fact]
+    public async Task CreateGame_LoggedIn_DefaultsIntendedPlayersCountToOne()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+
+        await GameEndpoints.CreateGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            FixedTimeProvider,
+            "idempotency-key",
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
+
+        var stored = Assert.Single(db.Games);
+        Assert.Equal(1, stored.IntendedPlayersCount);
+    }
+
+    [Fact]
     public async Task CreateGame_MissingConfiguration_ReturnsValidationProblem()
     {
         var userManager = GetMockUserManager();
@@ -67,6 +110,7 @@ public class GameEndpointsTests
 
         Assert.IsType<ValidationProblem>(result.Result);
         Assert.Empty(db.Games);
+        Assert.Empty(db.GameMembers);
     }
 
     [Fact]

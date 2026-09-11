@@ -8,89 +8,85 @@
 
 | Project | Role |
 | --- | --- |
-| `Ahlcg.ApiService` | The API. `Program.cs`, `AuthEndpoints.cs`, `GameEndpoints.cs`, `GameHub.cs`, `ApplicationDbContext.cs`, `Migrations/` |
-| `Ahlcg.AppHost` | .NET Aspire orchestration for local dev (`AppHost.cs`) |
+| `Ahlcg.ApiService` | The API — endpoints, entities, the `DbContext`, migrations, the SignalR hub |
+| `Ahlcg.AppHost` | .NET Aspire orchestration for local dev |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
-| `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience (`Extensions.cs`) |
+| `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience |
 | `unit-tests/Ahlcg.ApiService.Tests` | xUnit + Moq, handler-level, no database |
 | `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres — see [testing.md](testing.md) |
 
 ## Startup
 
-`Program.cs` is short — read it rather than a summary. Order: `AddServiceDefaults()` → `AddNpgsqlDbContext<ApplicationDbContext>("ahlcg")` → problem details, OpenAPI, `AddValidation()` → SignalR with OTel hub instrumentation → `TryAddSingleton(TimeProvider.System)` → Identity API endpoints + EF stores → cookie configuration. Then `UseExceptionHandler().UseAuthentication().UseAuthorization()`, `MapDefaultEndpoints()`, `MapHub<GameHub>("/game")`, `MapGroup("auth").MapAuthEndpoints()`, `MapGroup("games").MapGameEndpoints()`. OpenAPI, Scalar, and the developer exception page are Development-only.
+`Program.cs` is short — read it rather than any summary. What is worth knowing before you do:
 
-The connection string name is `ahlcg`, supplied by Aspire.
-
-`Ahlcg.AppHost/AppHost.cs` adds `apiservice` with `launchProfileName: "https"` so it exposes the HTTPS endpoint its own `https` launch profile declares, in addition to the default `http` one. This is needed by the integration test project (see [testing.md](testing.md)) — the auth cookie is `Secure`, and `CookieContainer` will not send a `Secure` cookie over plain HTTP.
+- The connection string name is `ahlcg`, supplied by Aspire.
+- OpenAPI, Scalar, and the developer exception page are **Development-only**. A missing endpoint in a deployed environment is usually this, not a bug.
+- `Ahlcg.AppHost` registers `apiservice` with `launchProfileName: "https"` so it exposes the HTTPS endpoint in addition to the default `http` one. This exists for the integration tests: the auth cookie is `Secure`, and .NET's `CookieContainer` will not send a `Secure` cookie over plain HTTP. See [testing.md](testing.md).
 
 ## Endpoints
 
-One route group per feature, defined as a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `Program.cs`. `AuthEndpoints.cs` and `GameEndpoints.cs` are the existing groups and the pattern to copy:
+One route group per feature: a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `Program.cs`. `AuthEndpoints.cs` and `GameEndpoints.cs` are the pattern to copy.
 
-- Handlers return `Results<TOk, TError…>` (typed results), not `IResult`. This is what makes them directly unit-testable — the tests call `AuthEndpoints.LoginAnonymously(principal, userManager, signInManager)` with mocks and assert on `result.Result`.
-- Dependencies (`ClaimsPrincipal`, `UserManager<AppUser>`, `SignInManager<AppUser>`, the request record) arrive as handler parameters.
-- Request/response DTOs are `record`s nested in the endpoint class, annotated `[PublicAPI]`, with data-annotation validation (`[Required]`, `[EmailAddress]`). Validation runs via `AddValidation()`.
-- Every route carries `.WithDescription(...)`; the group carries one too. These become the Scalar/OpenAPI docs.
+- Handlers return `Results<TOk, TError…>` (typed results), not `IResult`. That is what makes them directly unit-testable — the tests call the handler with mocks and assert on `result.Result`. Keep new handlers testable the same way.
+- Dependencies arrive as handler parameters, resolved by the framework — no constructor injection, since the handlers are static.
+- Request/response DTOs are `record`s nested in the endpoint class, annotated `[PublicAPI]`, with data-annotation validation. Validation runs via `AddValidation()`.
+- Every route carries `.WithDescription(...)`, and so does the group. These become the Scalar/OpenAPI docs, and an integration test asserts they are non-empty.
 - Auth is opt-in per route with `.RequireAuthorization()`.
 
 There is no service layer, repository layer, or DTO folder. Do not invent one for a single handler; extract only when logic is genuinely shared.
 
-## Identity
+Identity is ASP.NET Core Identity with cookie auth. The account lifecycle — how one route serves sign-in, registration and anonymous upgrade, and which branches destroy an anonymous account — is in [api.md](api.md); the hardening and its known gaps are in [security.md](security.md).
 
-```csharp
-public class AppUser : IdentityUser { public bool IsAnonymous { get; set; } }
-```
+## Entities and the DbContext
 
-Declared in `AuthEndpoints.cs`. `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus one additional entity, `Game` (declared in `GameEndpoints.cs`, the same way `AppUser` lives in `AuthEndpoints.cs`), and one `OnModelCreating` override that configures it: a unique index on `(OwnerId, IdempotencyKey)` and a cascade-delete foreign key to the owning `AppUser` (so a deleted anonymous user's games go with it, rather than orphaning the FK).
+**An entity is declared in the endpoint file that owns it**, next to its routes — `AppUser` in `AuthEndpoints.cs`, the game entities in `GameEndpoints.cs`. There is no `Models/` or `Entities/` folder, and adding one is not the fix for a file getting long.
 
-Lifecycle: anonymous login creates a user with a GUID `UserName` and no password → `signIn` either upgrades that user in place (adds a password, sets email/username, `IsAnonymous = false`, **same id**) when the email is new, or verifies the password against the existing account, deletes the anonymous one, and signs the existing one in → logout deletes the user if still anonymous. A caller with no session takes the same route: unknown email creates a permanent user outright. A caller already holding a permanent account cannot: an unknown email is a `400`, since there is nothing to sign into and nothing to upgrade.
+`ApplicationDbContext` is `IdentityDbContext<AppUser>` plus a `DbSet` per entity, and every relationship, key, index, and column mapping is configured in its single `OnModelCreating` override rather than by attributes on the entity. `base.OnModelCreating(builder)` must stay first — Identity's own model configuration lives there.
 
-`SignIn` carries a `// TODO transfer all data to the linked account` — the branch that signs in to an *existing* account while anonymous discards the anonymous account's data. The upgrade branch has no such problem, which is why it exists.
+Conventions that are not obvious from the code:
 
-Cookie settings (`ConfigureApplicationCookie`): 90-day expiry, sliding, `HttpOnly`, `SecurePolicy = Always`, `SameSite = Lax`. See [security.md](security.md).
+- **Foreign keys to `AppUser` cascade.** Logout deletes a still-anonymous user, so anything hanging off that row has to go with it rather than orphan the FK.
+- **Navigation properties are nullable; scalar FKs are not.** A navigation describes *load state* — it is genuinely null after a query that did not `Include` it — while the FK is data that is always present. Where a non-nullable reference-typed FK carries `required`, that is a CS8618 artifact and nothing more; value-typed FKs need no such marker, which is why the two look inconsistent.
+- **`JsonDocument` columns need an explicit `HasConversion`** to their `jsonb` column. Without it the model fails to build under EF's InMemory provider, which the unit tests use: the automatic scalar mapping for `JsonDocument` is Npgsql-specific, and InMemory instead tries to treat it as a navigable entity.
 
-## Games
+## The game data model
 
-`Game` (id, `OwnerId`, `IdempotencyKey`, `Configuration`, `CreatedAt`, `LastPlayedAt`) is the first game-shaped entity the backend stores. `Configuration` is a `JsonDocument`, mapped with an explicit `HasConversion` to a `jsonb` column — the conversion exists so the model also builds under EF's InMemory provider (used by the unit tests); without it, InMemory tries to treat `JsonDocument` as a navigable/owned entity and fails, since the automatic scalar mapping for `JsonDocument` is Npgsql-provider-specific. The backend never parses or validates `Configuration` (#198) — presence is checked, contents are not.
+Three rules govern it. Everything else is in the code.
 
-`POST /games` (`GameEndpoints.CreateGame`) requires a client-supplied `Idempotency-Key` header. Repeating the same key for the same owner returns the game created the first time; enforced by the database unique index rather than a check-then-insert, which would race. The handler saves optimistically and, on `DbUpdateException`, re-reads by `(OwnerId, IdempotencyKey)` and returns that row instead — rethrowing if nothing is found, since that means the failure was something else.
+**A stored game's configuration payload is opaque.** The backend checks that it is present and never parses, validates, or reads it (#198). This is the engine rule: the backend models no card-game concepts. An integer on an entity is allowed to exist, but it must name no card-game concept — not a seat, not an investigator, not a scenario.
+
+**Membership is the access check, never ownership.** A user may resume a game if and only if a `GameMember` row exists for them. `Game.OwnerId` is provenance — it records who created the game and grants nothing — so no authorization may read it. Creating a game writes the creator's membership row in the same `SaveChangesAsync`, so the two cannot come apart, and the idempotency retry path detaches both entities so a repeated key cannot leave a duplicate.
+
+**"Last played" is a per-user question.** Two members of the same game have different answers, so the value that orders anybody's list lives on the membership row; the game-level one is a fact about the game and is not a substitute for it.
+
+**Idempotent creation.** `POST /games` requires a client-supplied `Idempotency-Key`. Repeating a key for the same owner returns the game created the first time — enforced by a database unique index rather than a check-then-insert, which would race. The handler saves optimistically, and on `DbUpdateException` re-reads by owner and key, rethrowing if nothing is found, since that means the failure was something else.
 
 ## Persistence and migrations
 
-EF Core 10 with Npgsql, code-first. Migrations live in `Ahlcg.ApiService/Migrations/`:
+EF Core 10 with Npgsql, code-first. Migrations live in `Ahlcg.ApiService/Migrations/`; add one with `dotnet ef migrations add {Name}` from `backend/Ahlcg.ApiService`. Naming follows `{Entity}_{Change}`.
 
-- `20251114145044_Initial` — Identity schema
-- `20251114153547_User_AddIsAnonymous` — the `IsAnonymous` column
-- `20260806164122_Game_Add` — the `Games` table
+**Never hand-edit the model snapshot or a designer file.** They are the record of what EF believes the model is, and editing them makes the next migration wrong. Never hand-edit generated *schema* operations either — if one is wrong, fix the model and regenerate.
 
-Add one with `dotnet ef migrations add {Name}` from `backend/Ahlcg.ApiService`. Never hand-edit generated migrations or the model snapshot.
+A generated migration takes exactly one kind of hand-added line: a **data** operation, `migrationBuilder.Sql(...)`, backfilling rows the schema change needs in order to be correct. A migration that adds an access-granting table has to seed it, or it ships rows nobody can reach. Backfills belong in the migration and not in `Ahlcg.Migrator`, which runs migrations and does not author them, and where they would not be atomic with the schema they repair.
 
-Migrations are applied by `Ahlcg.Migrator`, not by the API. `Worker.ExecuteAsync` opens a scope, resolves `ApplicationDbContext`, runs the migration inside `Database.CreateExecutionStrategy()` (so transient Postgres failures retry), emits an OTel activity from the `Migrations` source, and then calls `hostApplicationLifetime.StopApplication()`. Aspire's `WaitForCompletion(migrator)` gates the API on that exit.
+A column with a `HasDefaultValue` is backfilled by the generated `AddColumn` and needs no SQL — but give the CLR property the same initializer, because the InMemory provider ignores store defaults and the unit tests would otherwise read a zero.
+
+Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside `Database.CreateExecutionStrategy()` so transient Postgres failures retry, emits an OTel activity, and stops the host; Aspire's `WaitForCompletion(migrator)` gates the API on that exit.
 
 ## SignalR
 
-`GameHub.cs` in full:
-
-```csharp
-[Authorize]
-public class GameHub : Hub
-{
-    public async Task Ping() => await Clients.Caller.SendAsync("ping", DateTime.UtcNow);
-}
-```
-
-Mapped at `/game`, authenticated by the same session cookie. No groups, no game methods, no client.
+`GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. It is a `Ping` stub — no groups, no game methods, no client anywhere in the frontend.
 
 ## Observability and health
 
 Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefaults()`:
 
-- OpenTelemetry logs, metrics, and traces; exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added in `Program.cs`.
+- OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `Program.cs`.
 - Standard resilience handler for outbound `HttpClient`s, plus service discovery.
-- `MapDefaultEndpoints()` maps `/health` (all checks) and `/alive` (checks tagged `live`) **only when the environment is Development** — it returns early otherwise, by design.
+- `MapDefaultEndpoints()` maps `/health` (all checks) and `/alive` (checks tagged `live`) **only in Development** — it returns early otherwise, by design.
 
-Errors use `AddProblemDetails()`; note that `AuthEndpoints` returns `BadRequest<IdentityResult>` rather than ProblemDetails on validation failures.
+Errors use `AddProblemDetails()`, with one exception: `AuthEndpoints` returns `BadRequest<IdentityResult>` rather than ProblemDetails on validation failures.
 
 ## Configuration
 
-`appsettings.json` / `appsettings.Development.json`, overridden by environment variables. Aspire supplies the `ahlcg` connection string and OTLP endpoint at run time.
+`appsettings.json` / `appsettings.Development.json`, overridden by environment variables. Aspire supplies the `ahlcg` connection string and the OTLP endpoint at run time.

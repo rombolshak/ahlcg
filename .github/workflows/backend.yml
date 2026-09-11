@@ -39,8 +39,11 @@ jobs:
       - name: Trust HTTPS developer certificate
         run: aspire certs trust --non-interactive
 
+      # Migrations are generated and must never be hand-edited, so a finding in one is not
+      # actionable. They are also filtered out of the coverage report below, which on its own
+      # makes Sonar count every line in them as uncovered.
       - name: Start Sonar
-        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths=coveragereport/SonarQube.xml
+        run: dotnet sonarscanner begin /k:"rombolshak_ahlcg_backend" /o:"rombolshak" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.coverageReportPaths=coveragereport/SonarQube.xml /d:sonar.coverage.exclusions="**/Migrations/**" /d:sonar.cpd.exclusions="**/Migrations/**"
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
