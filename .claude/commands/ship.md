@@ -1,5 +1,5 @@
 ---
-description: Commit, push, and open a PR that closes the issue. Sets status to Review.
+description: Commit, push, and open a PR that closes the issue. The board moves to Review on its own.
 argument-hint: [issue-number]
 allowed-tools: Bash, Read, Write, Glob, Grep
 model: haiku
@@ -84,7 +84,9 @@ PR body:
 
 ## 4. Board
 
-Set **Status → Review** per `.claude/lib/project-status.md`.
+**Do not touch it.** Opening the PR moves **Status → Review** on its own — the project has a built-in GitHub workflow for it. Setting the field by hand is a redundant write that only risks racing the automation.
+
+Iteration was already set by `/work` when the work started, and does not change here.
 
 ## 5. Report
 
