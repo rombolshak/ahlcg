@@ -1,0 +1,9 @@
+<ng-container *transloco="let t">
+  <p class="mb-6 text-center text-base-content/80">{{ t(messageKey()) }}</p>
+
+  <div class="flex items-center justify-center">
+    <button type="button" data-testId="ok" class="btn btn-primary" (click)="result.emit()">
+      {{ t(okKey()) }}
+    </button>
+  </div>
+</ng-container>

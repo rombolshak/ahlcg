@@ -16,9 +16,12 @@
           class="w-70 text-2xl tracking-wide transition btn-lg"
           [attr.data-testId]="item.name"
           [class.active]="$index === selectedIndex()"
-          [disabled]="item.disabled"
+          [disabled]="item.disabled || item.busy"
           (click)="item.process()"
         >
+          @if (item.busy) {
+            <span class="loading loading-sm loading-spinner"></span>
+          }
           {{ t(`main_menu.${item.name}`) }}
         </button>
       </div>
@@ -29,10 +32,13 @@
         class="w-70 text-2xl tracking-wide transition btn-lg"
         [attr.data-testId]="item.name"
         [class.active]="$index === selectedIndex()"
-        [disabled]="item.disabled"
+        [disabled]="item.disabled || item.busy"
         (click)="item.process()"
         (mouseenter)="selectedIndex.set($index)"
       >
+        @if (item.busy) {
+          <span class="loading loading-sm loading-spinner"></span>
+        }
         {{ t(`main_menu.${item.name}`) }}
       </button>
     }
