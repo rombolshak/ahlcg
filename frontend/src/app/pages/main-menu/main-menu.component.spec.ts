@@ -32,7 +32,7 @@ describe('MainMenuComponent', () => {
   beforeEach(async () => {
     openDialog = vi.fn().mockReturnValue(EMPTY);
     createGame = vi.fn().mockReturnValue(EMPTY);
-    navigate = vi.fn();
+    navigate = vi.fn().mockResolvedValue(true);
     alertDialog = vi.fn().mockReturnValue(EMPTY);
 
     await TestBed.configureTestingModule({
@@ -162,6 +162,50 @@ describe('MainMenuComponent', () => {
       TestBed.tick();
 
       expect(navigate).toHaveBeenCalledWith(['/game', 'game-1']);
+    });
+
+    const flushNavigation = () => new Promise<void>(resolve => void setTimeout(resolve, 0));
+
+    const createThenActivateAgain = async (id: string) => {
+      const create$ = new Subject<CreatedGame>();
+      createGame.mockReturnValue(create$);
+
+      clickNewGame();
+      const [, firstKey] = createGame.mock.calls[0] as [unknown, string];
+      create$.next({ id });
+      create$.complete();
+      await flushNavigation();
+      TestBed.tick();
+
+      createGame.mockReturnValue(new Subject<CreatedGame>());
+      clickNewGame();
+      const [, secondKey] = createGame.mock.calls[1] as [unknown, string];
+
+      return { firstKey, secondKey };
+    };
+
+    it('should use a fresh idempotency key once navigation has landed', async () => {
+      const { firstKey, secondKey } = await createThenActivateAgain('game-1');
+
+      expect(navigate).toHaveBeenCalledWith(['/game', 'game-1']);
+      expect(secondKey).not.toBe(firstKey);
+    });
+
+    it('should keep the idempotency key when navigation does not land', async () => {
+      navigate.mockResolvedValue(false);
+
+      const { firstKey, secondKey } = await createThenActivateAgain('game-1');
+
+      expect(secondKey).toBe(firstKey);
+    });
+
+    it('should keep the idempotency key and report the failure when navigation rejects', async () => {
+      navigate.mockRejectedValue(new Error('blocked'));
+
+      const { firstKey, secondKey } = await createThenActivateAgain('game-1');
+
+      expect(alertDialog).toHaveBeenCalledTimes(1);
+      expect(secondKey).toBe(firstKey);
     });
 
     it('should show an alert and stay on the menu on failure, retrying with the same idempotency key', () => {

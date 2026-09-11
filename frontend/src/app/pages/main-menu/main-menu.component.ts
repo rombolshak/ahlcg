@@ -104,17 +104,35 @@ export class MainMenuComponent {
       )
       .subscribe({
         next: game => {
-          this.newGameIdempotencyKey = undefined;
-          void this.router.navigate(['/game', game.id]);
+          this.openCreatedGame(game.id);
         },
         // A 401 has already been through `authInterceptor`, which opens the sign-in prompt and
         // replays the request — reaching here means the user dismissed it, not that anything failed.
         error: (err: unknown) => {
           if (err instanceof HttpErrorResponse && err.status === 401) return;
 
-          this.alertDialog.alert({ titleKey: 'main_menu.new_game_error.title', messageKey: 'main_menu.new_game_error.message' });
+          this.showCreateError();
         },
       });
+  }
+
+  /**
+   * The key outlives a navigation that did not land, so the next activation reuses it and the
+   * server returns the game already created instead of a second one.
+   */
+  private openCreatedGame(id: string): void {
+    void this.router.navigate(['/game', id]).then(
+      navigated => {
+        if (navigated) this.newGameIdempotencyKey = undefined;
+      },
+      () => {
+        this.showCreateError();
+      },
+    );
+  }
+
+  private showCreateError(): void {
+    this.alertDialog.alert({ titleKey: 'main_menu.new_game_error.title', messageKey: 'main_menu.new_game_error.message' });
   }
 
   private createLoadGameButton(isAuthenticated: boolean) {
