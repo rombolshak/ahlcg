@@ -77,6 +77,24 @@ describe('MenuItemsListComponent', () => {
     expect(fixture.debugElement.queryAll(By.css('.tooltip-open')).length).toBe(1);
   });
 
+  it('should render a spinner and disable the button for a busy item', () => {
+    fixture.componentRef.setInput('items', [
+      {
+        name: 'item1',
+        busy: true,
+        process: () => {
+          calls1++;
+        },
+      },
+    ]);
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(By.css('[data-testId=item1]')).nativeElement as HTMLButtonElement;
+
+    expect(button.disabled).toBe(true);
+    expect(fixture.debugElement.query(By.css('[data-testId=item1] .loading-spinner'))).toBeTruthy();
+  });
+
   it('should react to keyboard events', () => {
     expect((fixture.debugElement.query(By.css('.active')).nativeElement as HTMLElement).textContent).toContain('item1');
 

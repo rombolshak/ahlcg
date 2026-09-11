@@ -79,6 +79,10 @@
     "login_to_continue": "Sign in to continue",
     "continue": "Continue",
     "new_game": "New investigation",
+    "new_game_error": {
+      "title": "The case remains closed",
+      "message": "The investigation could not be started. Try again in a moment."
+    },
     "load_game": "Case files",
     "decks": "Dossiers",
     "settings": "Settings"
@@ -155,5 +159,8 @@
   "confirm_dialog": {
     "confirm": "Confirm",
     "cancel": "Cancel"
+  },
+  "alert_dialog": {
+    "ok": "OK"
   }
 }

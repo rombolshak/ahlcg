@@ -41,3 +41,17 @@ export default meta;
 type Story = StoryObj<MenuItemsListComponent>;
 
 export const Normal: Story = {};
+
+export const Busy: Story = {
+  args: {
+    items: [
+      {
+        name: 'new_game',
+        busy: true,
+        process: () => {
+          alert('new game');
+        },
+      },
+    ],
+  },
+};
