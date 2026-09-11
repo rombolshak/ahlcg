@@ -52,6 +52,14 @@ public static class GameEndpoints
                 "returns the game created the first time instead of creating a new one.")
             .Produces(StatusCodes.Status401Unauthorized);
 
+        group.MapGet("", ListGames)
+            .RequireAuthorization()
+            .WithDescription(
+                "Lists the games the calling user is a member of, most recently played first. " +
+                "lastPlayedAt is the caller's own last play, not the game's. " +
+                "Each configuration payload is opaque and returned exactly as stored.")
+            .Produces(StatusCodes.Status401Unauthorized);
+
         return group;
     }
 
@@ -106,5 +114,31 @@ public static class GameEndpoints
             game.CreatedAt,
             game.LastPlayedAt,
             game.Configuration.RootElement.Clone()));
+    }
+
+    public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> ListGames(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null) return TypedResults.Unauthorized();
+
+        var memberships = await db.GameMembers
+            .AsNoTracking()
+            .Where(m => m.UserId == user.Id)
+            .Include(m => m.Game)
+            .OrderByDescending(m => m.LastPlayedAt)
+            .ToListAsync();
+
+        IReadOnlyList<GameDto> games = memberships
+            .Select(m => new GameDto(
+                m.Game!.Id,
+                m.Game.CreatedAt,
+                m.LastPlayedAt,
+                m.Game.Configuration.RootElement.Clone()))
+            .ToList();
+
+        return TypedResults.Ok(games);
     }
 }

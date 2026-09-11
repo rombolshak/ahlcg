@@ -4,7 +4,7 @@ Source of truth: `backend/Ahlcg.ApiService/AuthEndpoints.cs`, `GameEndpoints.cs`
 
 Two route groups exist: `/auth` (`app.MapGroup("auth")`, tagged `Auth`) and `/games` (`app.MapGroup("games")`, tagged `Games`). From the frontend dev server the same routes are reached as `/api/auth/*` / `/api/games` — see [architecture.md](architecture.md).
 
-`AddIdentityApiEndpoints<AppUser>()` is called for its services, but `MapIdentityApi()` is **not** — the stock Identity routes (`/register`, `/login`, `/refresh`, `/confirmEmail`, …) do not exist. The four `/auth` routes below plus `POST /games` are the entire API.
+`AddIdentityApiEndpoints<AppUser>()` is called for its services, but `MapIdentityApi()` is **not** — the stock Identity routes (`/register`, `/login`, `/refresh`, `/confirmEmail`, …) do not exist. The four `/auth` routes below plus `POST /games` and `GET /games` are the entire API.
 
 ## POST /auth/loginAnonymously
 
@@ -78,6 +78,15 @@ Request headers:
 
 - `200 OK` → `{ "id": "guid", "createdAt": "...", "lastPlayedAt": "...", "configuration": {...} }` (`GameDto`). `createdAt` and `lastPlayedAt` are equal on creation.
 - `400 Bad Request` (`ValidationProblem`) — the `configuration` field was omitted.
+- `401 Unauthorized` — no valid cookie.
+
+## GET /games
+
+Lists the games the calling user is a member of, ordered by the caller's own last play, most recent first. Requires authorization.
+
+Access is a `GameMember` row, not `Game.OwnerId` — a game the caller created but is not a member of is absent, and a game the caller joined but did not create is present. `OwnerId` grants nothing here.
+
+- `200 OK` → `GameDto[]`, same shape as `POST /games`'s response. `lastPlayedAt` on each entry is *the caller's own* last play (`GameMember.LastPlayedAt`), not the game's; two members of the same game can see different values for the same game. A user with no games gets `[]`.
 - `401 Unauthorized` — no valid cookie.
 
 ## Error bodies
