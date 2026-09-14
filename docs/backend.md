@@ -90,7 +90,7 @@ The CAS works because `GameSession.Connections` is an `ImmutableDictionary`, whi
 
 **Do not remove a disconnecting connection from its groups.** SignalR does that itself, which is why `Disconnect` takes no `IGroupManager` while `Connect` does.
 
-**Unclean disconnects are not handled.** `OnDisconnectedAsync` fires on clean disconnects only, so a killed browser leaves a connection in the session until SignalR's own client timeout drops it, and a session can read as live slightly longer than it is. This is by design until a heartbeat exists: it must fail toward "the session is still running", never toward "this game is unreachable".
+**An unclean disconnect is detected late, not missed.** `OnDisconnectedAsync` still runs for a killed browser or a closed laptop lid — but only once SignalR's own keep-alive timeout notices, so the session reads as live for as long as that takes, and only then is the connection removed, the group told, and `LastPlayedAt` written. This is by design until a heartbeat exists: it must fail toward "the session is still running", never toward "this game is unreachable". The case the callback genuinely misses is the process dying, which is the argument for not persisting sessions above.
 
 **The hub injects a scoped `ApplicationDbContext` by constructor.** This reads like the classic captured-context mistake and is not one — SignalR creates a DI scope per hub invocation, including the connect and disconnect callbacks, so each gets its own context. Endpoints take their dependencies as handler parameters because their handlers are static; a hub is a class and uses constructor injection.
 

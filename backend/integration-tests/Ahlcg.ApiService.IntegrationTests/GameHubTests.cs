@@ -116,7 +116,7 @@ public class GameHubTests(AppFixture fixture)
             .Build();
     }
 
-    private async Task<Guid> CreateGameAsync(HttpClient client)
+    private static async Task<Guid> CreateGameAsync(HttpClient client)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
         {

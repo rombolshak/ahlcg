@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ahlcg.ApiService;
 
+public readonly record struct GameConnection(Guid GameId, string UserId, string ConnectionId);
+
 public interface IGameClient
 {
     Task Ping(DateTime timestamp);
@@ -24,7 +26,8 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
             ?? throw new HubException("A gameId query parameter is required.");
         var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
 
-        await Connect(sessions, db, timeProvider, Clients, Groups, gameId, userId, Context.ConnectionId);
+        var connection = new GameConnection(gameId, userId, Context.ConnectionId);
+        await Connect(sessions, db, timeProvider, Clients, Groups, connection);
         await base.OnConnectedAsync();
     }
 
@@ -34,7 +37,8 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
             ?? throw new HubException("A gameId query parameter is required.");
         var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
 
-        await Disconnect(sessions, db, timeProvider, Clients, gameId, userId, Context.ConnectionId);
+        var connection = new GameConnection(gameId, userId, Context.ConnectionId);
+        await Disconnect(sessions, db, timeProvider, Clients, connection);
         await base.OnDisconnectedAsync(exception);
     }
 
@@ -50,10 +54,10 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
         TimeProvider timeProvider,
         IHubCallerClients<IGameClient> clients,
         IGroupManager groups,
-        Guid gameId,
-        string userId,
-        string connectionId)
+        GameConnection connection)
     {
+        var (gameId, userId, connectionId) = connection;
+
         var isMember = await db.GameMembers.AnyAsync(m => m.GameId == gameId && m.UserId == userId);
         if (!isMember) throw new HubException("You are not a member of this game.");
 
@@ -69,10 +73,10 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
         ApplicationDbContext db,
         TimeProvider timeProvider,
         IHubCallerClients<IGameClient> clients,
-        Guid gameId,
-        string userId,
-        string connectionId)
+        GameConnection connection)
     {
+        var (gameId, userId, connectionId) = connection;
+
         var now = timeProvider.GetUtcNow();
         var change = sessions.Leave(gameId, userId, connectionId, now);
 

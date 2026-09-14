@@ -20,7 +20,7 @@ public class GameHubTests
         var groups = new Mock<IGroupManager>();
 
         await Assert.ThrowsAsync<HubException>(() => GameHub.Connect(
-            sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-1"));
+            sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1")));
 
         Assert.Null(sessions.Find(gameId));
         groups.Verify(
@@ -39,7 +39,7 @@ public class GameHubTests
         clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
 
-        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
         groups.Verify(g => g.AddToGroupAsync("conn-1", gameId.ToString(), It.IsAny<CancellationToken>()), Times.Once);
         groupClient.Verify(c => c.MemberConnected(MemberUser), Times.Once);
@@ -55,9 +55,9 @@ public class GameHubTests
         var clients = new Mock<IHubCallerClients<IGameClient>>();
         clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
-        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
-        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-2");
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-2"));
 
         groupClient.Verify(c => c.MemberConnected(It.IsAny<string>()), Times.Once);
     }
@@ -71,9 +71,9 @@ public class GameHubTests
         var clients = new Mock<IHubCallerClients<IGameClient>>();
         clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
         var groups = new Mock<IGroupManager>();
-        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
-        await GameHub.Disconnect(sessions, db, FixedTimeProvider, clients.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Disconnect(sessions, db, FixedTimeProvider, clients.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
         var member = await db.GameMembers.SingleAsync(m => m.GameId == gameId && m.UserId == MemberUser);
         Assert.Equal(FixedNow, member.LastPlayedAt);
@@ -89,9 +89,9 @@ public class GameHubTests
         var clients = new Mock<IHubCallerClients<IGameClient>>();
         clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
-        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
-        await GameHub.Disconnect(sessions, db, FixedTimeProvider, clients.Object, gameId, MemberUser, "conn-1");
+        await GameHub.Disconnect(sessions, db, FixedTimeProvider, clients.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
         Assert.Null(sessions.Find(gameId));
         groupClient.Verify(c => c.MemberDisconnected(MemberUser), Times.Once);

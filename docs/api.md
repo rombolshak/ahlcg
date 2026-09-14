@@ -95,7 +95,7 @@ Auth endpoints return `IdentityResult` (`{ succeeded, errors: [{ code, descripti
 
 ## SignalR: /game
 
-**A connection is bound to one game, named in the query string:** `/game?gameId={guid}`. There is no join method — `OnConnectedAsync` reads the parameter, and `OnDisconnectedAsync` reads the same one to know which game it is leaving. This is what makes automatic reconnect work without client cooperation: the client reconnects to the same URL, so it re-enters the same session on its own.
+**A connection is bound to one game, named in the query string:** `/game?gameId={guid}`. There is no join method — `OnConnectedAsync` reads the parameter, and `OnDisconnectedAsync` reads the same one to know which game it is leaving. A client that opts into SignalR's automatic reconnect gets session re-entry for free, because it reconnects to the same URL — no separate join call. Opting in is still the client's job; nothing here makes a dropped connection come back on its own.
 
 Authenticated with the same session cookie as the endpoints; anonymous accounts qualify once signed in.
 

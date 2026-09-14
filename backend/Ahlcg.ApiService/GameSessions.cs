@@ -20,15 +20,13 @@ public sealed class GameSessions
     private readonly ConcurrentDictionary<Guid, GameSession> _sessions = new();
     private readonly Histogram<int> _playersHistogram;
     private readonly Histogram<double> _durationHistogram;
-    private readonly ObservableGauge<int> _activeSessionsGauge;
 
     public GameSessions(IMeterFactory meterFactory)
     {
         var meter = meterFactory.Create(MeterName);
         _playersHistogram = meter.CreateHistogram<int>("ahlcg.game_sessions.players", unit: "{player}");
         _durationHistogram = meter.CreateHistogram<double>("ahlcg.game_sessions.duration", unit: "s");
-        _activeSessionsGauge =
-            meter.CreateObservableGauge("ahlcg.game_sessions.active", () => _sessions.Count, unit: "{session}");
+        meter.CreateObservableGauge("ahlcg.game_sessions.active", () => _sessions.Count, unit: "{session}");
     }
 
     public GameSession? Find(Guid gameId) => _sessions.GetValueOrDefault(gameId);
@@ -71,33 +69,51 @@ public sealed class GameSessions
     {
         while (true)
         {
-            if (!_sessions.TryGetValue(gameId, out var observed))
-                return new SessionChange(null, false);
-
-            if (!observed.Connections.TryGetValue(userId, out var existingConnections))
-                return new SessionChange(observed, false);
-
-            var remainingConnections = existingConnections.Remove(connectionId);
-            var memberLeft = remainingConnections.Count == 0;
-            var connections = memberLeft
-                ? observed.Connections.Remove(userId)
-                : observed.Connections.SetItem(userId, remainingConnections);
-
-            if (connections.Count == 0)
-            {
-                if (_sessions.TryRemove(KeyValuePair.Create(gameId, observed)))
-                {
-                    _playersHistogram.Record(observed.PeakMemberCount);
-                    _durationHistogram.Record((now - observed.StartedAt).TotalSeconds);
-                    return new SessionChange(null, memberLeft);
-                }
-            }
-            else
-            {
-                var next = observed with { Connections = connections };
-                if (_sessions.TryUpdate(gameId, next, observed))
-                    return new SessionChange(next, memberLeft);
-            }
+            if (TryLeave(gameId, userId, connectionId, now, out var change)) return change;
         }
+    }
+
+    private bool TryLeave(
+        Guid gameId, string userId, string connectionId, DateTimeOffset now, out SessionChange change)
+    {
+        change = default;
+
+        if (!_sessions.TryGetValue(gameId, out var observed))
+        {
+            change = new SessionChange(null, false);
+            return true;
+        }
+
+        if (!observed.Connections.TryGetValue(userId, out var memberConnections))
+        {
+            change = new SessionChange(observed, false);
+            return true;
+        }
+
+        var remaining = memberConnections.Remove(connectionId);
+        var memberLeft = remaining.Count == 0;
+        var connections = memberLeft
+            ? observed.Connections.Remove(userId)
+            : observed.Connections.SetItem(userId, remaining);
+
+        if (connections.Count == 0) return TryEndSession(gameId, observed, now, memberLeft, out change);
+
+        var next = observed with { Connections = connections };
+        if (!_sessions.TryUpdate(gameId, next, observed)) return false;
+
+        change = new SessionChange(next, memberLeft);
+        return true;
+    }
+
+    private bool TryEndSession(
+        Guid gameId, GameSession observed, DateTimeOffset now, bool memberLeft, out SessionChange change)
+    {
+        change = default;
+        if (!_sessions.TryRemove(KeyValuePair.Create(gameId, observed))) return false;
+
+        _playersHistogram.Record(observed.PeakMemberCount);
+        _durationHistogram.Record((now - observed.StartedAt).TotalSeconds);
+        change = new SessionChange(null, memberLeft);
+        return true;
     }
 }
