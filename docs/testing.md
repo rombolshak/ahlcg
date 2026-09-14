@@ -161,6 +161,8 @@ This is why handlers return `Results<...>` rather than `IResult` — keep new ha
 
 `backend/integration-tests/Ahlcg.ApiService.IntegrationTests` exists because EF's InMemory provider does not enforce unique indexes, so it cannot prove the `POST /games` idempotency behaviour (same key + same user → one row; same key + different users → two rows). Everything InMemory *can't* cover goes here instead, driven over real HTTP against the real app and real Postgres — not by calling handlers with mocks.
 
+**`GameHub`'s connect/disconnect lifecycle is here for a harder reason: it cannot be tested at the unit tier at all.** The overrides read the game id via `HubCallerContext.GetHttpContext()`, and the `IHttpContextFeature` that backs it is not public API — it resolves from no reference assembly, even with `FrameworkReference Microsoft.AspNetCore.App`, while `IHttpRequestFeature` beside it resolves fine. So a fake `HubCallerContext` cannot carry an `HttpContext`, and the only way to run those methods is a real `HubConnection` against the running app (`Microsoft.AspNetCore.SignalR.Client`). Testing them meant discovering that a hub rejecting a caller in `OnConnectedAsync` cannot fail the handshake — see [api.md](api.md#signalr-game).
+
 A collection fixture (`AppFixture`, shared across the test class via `[Collection]`/`ICollectionFixture`) starts the app once:
 
 - `DistributedApplicationTestingBuilder.CreateAsync<Projects.Ahlcg_AppHost>()`, with the `webfrontend`/`webfrontend-installer` resources (no Node in CI) and `pgadmin` (dev convenience only) removed from `builder.Resources` before building. `postgresdb`, `migrator`, and `apiservice` stay — running the real migrator is what proves the migration applies.

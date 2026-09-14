@@ -19,6 +19,8 @@ public sealed class AppFixture : IAsyncLifetime
 
     public string ConnectionString { get; private set; } = null!;
 
+    public Uri ApiBaseAddress => _apiBaseAddress;
+
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Ahlcg_AppHost>();
@@ -50,12 +52,18 @@ public sealed class AppFixture : IAsyncLifetime
     /// validation is disabled: the dev cert is trusted locally but never in CI, and the auth
     /// cookie's Secure attribute means it cannot travel over plain HTTP instead.
     /// </summary>
-    public HttpClient CreateClient()
+    public HttpClient CreateClient() => CreateClient(new CookieContainer());
+
+    /// <summary>
+    /// As <see cref="CreateClient()"/>, but over a caller-supplied cookie jar, so a SignalR
+    /// <c>HubConnection</c> can be given the same authenticated session the client signed in with.
+    /// </summary>
+    public HttpClient CreateClient(CookieContainer cookies)
     {
         var handler = new HttpClientHandler
         {
             UseCookies = true,
-            CookieContainer = new CookieContainer(),
+            CookieContainer = cookies,
             ServerCertificateCustomValidationCallback =
                 HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };

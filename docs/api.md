@@ -101,7 +101,9 @@ Authenticated with the same session cookie as the endpoints; anonymous accounts 
 
 **Connecting is what starts a game.** The first member to connect creates the session; from that moment the game is running. There is no separate "started" flag anywhere, and nothing in the hub knows or asks what is being played — whether a connected member may act or only watch is game state, decided game-side.
 
-**Membership is the only gate.** A caller with no `GameMember` row for that game is refused with a `HubException`, which fails the handshake rather than returning an error to a connected client. A game that does not exist takes the same path, so the refusal leaks nothing about whether it does.
+**Membership is the only gate.** A caller with no `GameMember` row for that game is rejected in `OnConnectedAsync` with a `HubException`. A game that does not exist takes the same path, so the rejection leaks nothing about whether it does. A missing or unparseable `gameId` is rejected the same way.
+
+**Rejection is a close, not a refused handshake** — SignalR has already completed the handshake by the time `OnConnectedAsync` runs. The client's `start()` therefore *succeeds*, and the connection is closed with an error immediately afterwards. A rejected caller never joins the session or the group, but a client cannot treat "start resolved" as "I am a member": it has to handle the close. An unauthenticated caller is different — `[Authorize]` rejects it at negotiate, so `start()` itself fails there.
 
 **Server → client messages are an interface, not strings.** `GameHub` is a `Hub<IGameClient>`, so every broadcast is a method call the compiler checks — there are no message-name constants to drift. **SignalR takes the wire name from the interface method verbatim, so these names are PascalCase**, and renaming a method on `IGameClient` is a breaking wire change even though nothing in C# will complain.
 
