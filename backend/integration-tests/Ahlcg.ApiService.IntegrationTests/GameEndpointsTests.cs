@@ -202,6 +202,62 @@ public class GameEndpointsTests(AppFixture fixture)
         Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
     }
 
+    [Fact]
+    public async Task GetLatestGame_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games/latest");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_NoGames_ReturnsNoContent()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+
+        var response = await client.GetAsync("/games/latest");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_AfterTwoCreates_ReturnsTheMostRecent()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+
+        var first = await PostGameAsync(client, $"latest-first-{Guid.NewGuid()}", """{"a":1}""");
+        first.EnsureSuccessStatusCode();
+        await ReadGameAsync(first);
+
+        var second = await PostGameAsync(client, $"latest-second-{Guid.NewGuid()}", """{"a":2}""");
+        second.EnsureSuccessStatusCode();
+        var secondDto = await ReadGameAsync(second);
+
+        var response = await client.GetAsync("/games/latest");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        Assert.Equal(secondDto.Id, dto.Id);
+    }
+
+    [Fact]
+    public async Task OpenApi_DescribesGetLatestGame()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var get = document.RootElement.GetProperty("paths").GetProperty("/games/latest").GetProperty("get");
+
+        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
+    }
+
     private static JsonElement ParseConfig(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<HttpResponseMessage> PostGameAsync(

@@ -78,6 +78,7 @@
   "main_menu": {
     "login_to_continue": "Sign in to continue",
     "continue": "Continue",
+    "continue_tooltip": "Continue your investigation\nLast played {{lastPlayed}}",
     "new_game": "New investigation",
     "new_game_error": {
       "title": "The case remains closed",

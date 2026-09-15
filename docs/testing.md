@@ -122,6 +122,7 @@ Test names read as sentences: `it('should fire event after animation')`.
 | "Unsafe call of an error typed value" on `vi` | Add an explicit `import { vi } from 'vitest';` to that spec |
 | Input assignment does not compile | Use `componentRef.setInput` |
 | Emission never resolves | `output()` is not an Observable |
+| A resource still reads as loading after its stream emits | `TestBed.tick()` is synchronous; `rxResource` settles through a microtask. `await fixture.whenStable()` |
 
 ESLint runs `strictTypeChecked` on specs too, and `eslint-plugin-jasmine` is still configured for `src/**/*.spec.ts` — its `no-expect-in-setup-teardown` rule warns; the Jasmine matcher rules are inert since the Vitest migration. `@types/jasmine` and the plugin remain in `package.json` as leftovers.
 

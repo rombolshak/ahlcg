@@ -10,7 +10,7 @@ const meta: Meta<MenuItemsListComponent> = {
     items: [
       {
         name: 'new_game',
-        tooltip: 'Start new game',
+        tooltip: { key: 'main_menu.new_game' },
         process: () => {
           alert('new game');
         },

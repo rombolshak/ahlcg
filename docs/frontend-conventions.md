@@ -139,6 +139,24 @@ No `index.ts` re-export files: import the symbol from the module that declares i
 
 Suppress with a narrowly scoped `// eslint-disable-next-line` or `@ts-expect-error` plus a reason, as `card-info.service.ts` does when building an object before validating it. Never widen types to `any`.
 
+## Async data
+
+Services return `Observable`s and own the URL and the validation (`GamesService.latest()`). The page that needs the data wraps that call in **`rxResource`**, keyed on whatever signal decides whether and what to fetch:
+
+```typescript
+private readonly latestGame = rxResource({
+  params: () => this.currentUser(),
+  stream: () => this.games.latest(),
+});
+```
+
+Two things about the resource API are load-bearing and easy to get wrong:
+
+- **`params()` returning `undefined` means "do not fetch".** The resource stays `idle` and the loader never runs, so a signed-out page issues no request at all. Do not write your own guard for this.
+- **`value()` throws while the resource is in the error state.** Read it only behind `hasValue()`, which is also false while loading and when the loaded value is itself `undefined` — so one guard covers "still loading", "nothing there" and "the request failed", which is usually the behaviour you want anyway.
+
+`httpResource` is the wrong tool whenever the request has to react to app state: making it reactive drags the URL and the validation step out of the service and up into the page.
+
 ## Validation
 
 Runtime data (anything from HTTP, storage, or a fixture) is validated with arktype at the boundary, and failures are surfaced via `ArkErrors`:

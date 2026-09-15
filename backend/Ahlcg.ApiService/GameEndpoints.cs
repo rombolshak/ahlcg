@@ -47,17 +47,34 @@ public static class GameEndpoints
             .RequireAuthorization()
             .WithDescription(
                 "Creates a new game owned by the calling user. " +
-                "The configuration payload is opaque and stored unchanged. " +
+                "The configuration payload is opaque: it is stored in a jsonb column and handed back unchanged, and " +
+                "only its presence is checked — omitting it is the one thing that yields a 400. " +
+                "createdAt and lastPlayedAt are equal on creation. " +
                 "Requires an Idempotency-Key header; repeating the same key for the same user " +
-                "returns the game created the first time instead of creating a new one.")
+                "returns the game created the first time instead of creating a new one, while the same key from a " +
+                "different user creates a separate game. A unique index on (OwnerId, IdempotencyKey) enforces this, " +
+                "not a check-then-insert.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         group.MapGet("", ListGames)
             .RequireAuthorization()
             .WithDescription(
-                "Lists the games the calling user is a member of, most recently played first. " +
-                "lastPlayedAt is the caller's own last play, not the game's. " +
+                "Lists the games the calling user is a member of, most recently played first, or an empty array. " +
+                "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member " +
+                "of is absent, and a game the caller joined but did not create is present. " +
+                "lastPlayedAt is the caller's own last play, not the game's, so two members of one game can see " +
+                "different values for it. " +
                 "Each configuration payload is opaque and returned exactly as stored.")
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapGet("latest", GetLatestGame)
+            .RequireAuthorization()
+            .WithDescription(
+                "Returns the game the calling user played most recently — GET /games' first entry, without the rest, " +
+                "for callers that need one game and nothing else. Same membership rule and same caller-relative " +
+                "lastPlayedAt as GET /games. " +
+                "A caller who is a member of no game gets 204, not 404: having nothing to resume is a normal state, " +
+                "not a missing resource.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         return group;
@@ -131,14 +148,34 @@ public static class GameEndpoints
             .OrderByDescending(m => m.LastPlayedAt)
             .ToListAsync();
 
-        IReadOnlyList<GameDto> games = memberships
-            .Select(m => new GameDto(
-                m.Game!.Id,
-                m.Game.CreatedAt,
-                m.LastPlayedAt,
-                m.Game.Configuration.RootElement.Clone()))
-            .ToList();
+        IReadOnlyList<GameDto> games = memberships.Select(ToDto).ToList();
 
         return TypedResults.Ok(games);
     }
+
+    public static async Task<Results<Ok<GameDto>, NoContent, UnauthorizedHttpResult>> GetLatestGame(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null) return TypedResults.Unauthorized();
+
+        var membership = await db.GameMembers
+            .AsNoTracking()
+            .Where(m => m.UserId == user.Id)
+            .Include(m => m.Game)
+            .OrderByDescending(m => m.LastPlayedAt)
+            .FirstOrDefaultAsync();
+
+        if (membership is null) return TypedResults.NoContent();
+
+        return TypedResults.Ok(ToDto(membership));
+    }
+
+    private static GameDto ToDto(GameMember membership) => new(
+        membership.Game!.Id,
+        membership.Game.CreatedAt,
+        membership.LastPlayedAt,
+        membership.Game.Configuration.RootElement.Clone());
 }

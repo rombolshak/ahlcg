@@ -6,9 +6,9 @@ import { AuthService, User } from '@core/auth/auth.service';
 import { AlertDialogService } from '@core/dialog/alert/alert-dialog.service';
 import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
-import { CreatedGame, GamesService } from '@features/games/games.service';
+import { CreatedGame, GamesService, LatestGame } from '@features/games/games.service';
 import { getTranslocoModule } from '@testing/transloco.testing';
-import { BehaviorSubject, EMPTY, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { MainMenuComponent } from './main-menu.component';
 
@@ -26,12 +26,14 @@ describe('MainMenuComponent', () => {
   let mockAuthService: AuthMockService;
   let openDialog: ReturnType<typeof vi.fn>;
   let createGame: ReturnType<typeof vi.fn>;
+  let latestGame: ReturnType<typeof vi.fn>;
   let navigate: ReturnType<typeof vi.fn>;
   let alertDialog: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     openDialog = vi.fn().mockReturnValue(EMPTY);
     createGame = vi.fn().mockReturnValue(EMPTY);
+    latestGame = vi.fn().mockReturnValue(of(undefined));
     navigate = vi.fn().mockResolvedValue(true);
     alertDialog = vi.fn().mockReturnValue(EMPTY);
 
@@ -48,7 +50,7 @@ describe('MainMenuComponent', () => {
         },
         {
           provide: GamesService,
-          useValue: { create: createGame },
+          useValue: { create: createGame, latest: latestGame },
         },
         {
           provide: Router,
@@ -92,6 +94,79 @@ describe('MainMenuComponent', () => {
     TestBed.tick();
 
     expect(fixture.debugElement.query(By.css('[data-testId=continue]'))).toBeTruthy();
+  });
+
+  describe('continue', () => {
+    const continueButton = () => fixture.debugElement.query(By.css('[data-testId=continue]')).nativeElement as HTMLButtonElement;
+
+    const signIn = (game?: LatestGame) => {
+      latestGame.mockReturnValue(of(game));
+      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      TestBed.tick();
+    };
+
+    it('should not fetch the latest game while signed out', () => {
+      TestBed.tick();
+
+      expect(latestGame).not.toHaveBeenCalled();
+    });
+
+    it('should be disabled when the caller has no game to resume', () => {
+      signIn(undefined);
+
+      expect(continueButton().disabled).toBe(true);
+    });
+
+    it('should be enabled and navigate to the most recently played game when clicked', () => {
+      signIn({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') });
+
+      expect(continueButton().disabled).toBe(false);
+
+      continueButton().click();
+
+      expect(navigate).toHaveBeenCalledWith(['/game', 'game-1']);
+    });
+
+    it('should render the real translated tooltip with the last-played timestamp', () => {
+      signIn({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') });
+
+      const tooltip = fixture.debugElement.query(By.css('.tooltip-content')).nativeElement as HTMLElement;
+      expect(tooltip.textContent).toContain('Continue your investigation');
+      expect(tooltip.textContent).toContain('Last played');
+    });
+
+    it('should enable itself when a slow request finally answers', async () => {
+      const latest$ = new Subject<LatestGame | undefined>();
+      latestGame.mockReturnValue(latest$);
+      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      TestBed.tick();
+
+      expect(continueButton().disabled).toBe(true);
+
+      latest$.next({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') });
+      await fixture.whenStable();
+
+      expect(continueButton().disabled).toBe(false);
+    });
+
+    it('should be disabled and not alert when the request fails', () => {
+      latestGame.mockReturnValue(throwError(() => new Error('boom')));
+      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      TestBed.tick();
+
+      expect(continueButton().disabled).toBe(true);
+      expect(alertDialog).not.toHaveBeenCalled();
+    });
+
+    it('should become enabled once the user signs in, without recreating the component', () => {
+      TestBed.tick();
+      expect(latestGame).not.toHaveBeenCalled();
+
+      signIn({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') });
+
+      expect(latestGame).toHaveBeenCalledTimes(1);
+      expect(continueButton().disabled).toBe(false);
+    });
   });
 
   describe('new game', () => {
@@ -138,6 +213,7 @@ describe('MainMenuComponent', () => {
     });
 
     it('should re-enable the other menu items once the request settles', () => {
+      latestGame.mockReturnValue(of({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') }));
       mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
       const create$ = new Subject<CreatedGame>();
       createGame.mockReturnValue(create$);

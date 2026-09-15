@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, Signal, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { AlertDialogService } from '@core/dialog/alert/alert-dialog.service';
@@ -9,7 +9,7 @@ import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { GamesService } from '@features/games/games.service';
 import { SettingsComponent } from '@features/settings/settings.component';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { finalize } from 'rxjs';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
@@ -30,8 +30,15 @@ export class MainMenuComponent {
   private readonly router = inject(Router);
   private readonly alertDialog = inject(AlertDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco = inject(TranslocoService);
   private readonly currentUser = toSignal(this.authService.currentUser);
+  private readonly activeLang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
   private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
+
+  private readonly latestGame = rxResource({
+    params: () => this.currentUser(),
+    stream: () => this.games.latest(),
+  });
 
   private readonly creatingGame = signal(false);
   private newGameIdempotencyKey: string | undefined;
@@ -52,21 +59,36 @@ export class MainMenuComponent {
     return items.map(item => (item.busy === true ? item : { ...item, disabled: true }));
   });
 
-  private createContinueButton(isAuthenticated: boolean) {
-    return isAuthenticated
-      ? {
-          name: 'continue',
-          tooltip: 'Night of the Zealot\nScenario 1 — The Gathering',
-          process: () => {
-            alert('continue');
-          },
-        }
-      : {
-          name: 'login_to_continue',
-          process: () => {
-            this.signIn();
-          },
-        };
+  private createContinueButton(isAuthenticated: boolean): MenuItem {
+    if (!isAuthenticated) {
+      return {
+        name: 'login_to_continue',
+        process: () => {
+          this.signIn();
+        },
+      };
+    }
+
+    if (!this.latestGame.hasValue()) {
+      return {
+        name: 'continue',
+        disabled: true,
+        process: () => {
+          /* empty */
+        },
+      };
+    }
+
+    const game = this.latestGame.value();
+    const lastPlayed = new Intl.DateTimeFormat(this.activeLang(), { dateStyle: 'medium', timeStyle: 'short' }).format(game.lastPlayedAt);
+
+    return {
+      name: 'continue',
+      tooltip: { key: 'main_menu.continue_tooltip', params: { lastPlayed } },
+      process: () => {
+        void this.router.navigate(['/game', game.id]);
+      },
+    };
   }
 
   /**
