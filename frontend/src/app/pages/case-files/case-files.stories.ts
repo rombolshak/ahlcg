@@ -9,10 +9,14 @@ const user: User = { isAnonymous: true, email: null, userName: 'anon-guid' };
 
 const dayInMs = 24 * 60 * 60 * 1000;
 
+// Fixed rather than `Date.now()`-derived: Chromatic snapshots have to be identical run to run, and
+// a relative date would drift the rendered text on every build.
+const referenceInstant = new Date('2026-09-12T18:40:00Z').getTime();
+
 const game = (id: string, daysAgoPlayed: number): GameSummary => ({
   id,
-  createdAt: new Date(Date.now() - (daysAgoPlayed + 5) * dayInMs),
-  lastPlayedAt: new Date(Date.now() - daysAgoPlayed * dayInMs),
+  createdAt: new Date(referenceInstant - (daysAgoPlayed + 5) * dayInMs),
+  lastPlayedAt: new Date(referenceInstant - daysAgoPlayed * dayInMs),
 });
 
 // `AuthService.currentUser` and `Router.navigate` never resolve real navigation or accounts — the

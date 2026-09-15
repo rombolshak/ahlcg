@@ -1,42 +1,52 @@
 <ng-container *transloco="let t; prefix: 'case_files'">
-  <div class="flex h-[min(90vh,56rem)] w-2xl flex-col items-center text-primary-content">
-    <h1 class="mb-8 font-[Conkordia] text-4xl tracking-wide">{{ t("title") }}</h1>
+  <div class="absolute inset-0 bg-zinc-900/60"></div>
 
-    @if (isLoading()) {
-      <div class="flex w-full flex-1 flex-col gap-4" data-testId="loading">
-        <div class="h-[110px] w-full skeleton rounded-box opacity-80"></div>
-        <div class="h-[110px] w-full skeleton rounded-box opacity-60"></div>
-        <div class="h-[110px] w-full skeleton rounded-box opacity-40"></div>
-        <div class="h-[110px] w-full skeleton rounded-box opacity-20"></div>
+  <div class="relative z-10 flex size-full flex-col items-center pt-10 text-primary-content">
+    <div class="grid w-full grid-cols-[1fr_auto_1fr] items-center px-10">
+      <button ah-art-button type="button" class="justify-self-start tracking-wide btn-lg" data-testId="back" (click)="goBack()">{{ t("back") }}</button>
+      <div class="flex items-center gap-6">
+        <span class="h-px w-[140px] bg-base-content/45"></span>
+        <h1 class="font-[Conkordia] text-[52px] tracking-wide">{{ t("title") }}</h1>
+        <span class="h-px w-[140px] bg-base-content/45"></span>
       </div>
-      <button ah-art-button type="button" class="mt-8 tracking-wide btn-lg" data-testId="back" (click)="goBack()">{{ t("back") }}</button>
-    } @else if (hasFailed()) {
-      <div class="flex w-full flex-1 flex-col items-center justify-center gap-6">
-        <div role="alert" class="alert w-full alert-soft alert-error" data-testId="error">
-          <span>
-            <strong class="block">{{ t("error.title") }}</strong>
-            {{ t("error.message") }}
-          </span>
+    </div>
+
+    <div class="mt-8 flex min-h-0 w-2xl flex-1 flex-col items-center">
+      @if (isLoading()) {
+        <div class="flex w-full flex-1 flex-col gap-4" data-testId="loading">
+          <div class="h-[110px] w-full skeleton rounded-box opacity-80"></div>
+          <div class="h-[110px] w-full skeleton rounded-box opacity-60"></div>
+          <div class="h-[110px] w-full skeleton rounded-box opacity-40"></div>
+          <div class="h-[110px] w-full skeleton rounded-box opacity-20"></div>
         </div>
-        <div class="flex gap-4">
-          <button ah-art-button type="button" class="tracking-wide btn-lg" data-testId="retry" (click)="retry()">{{ t("error.retry") }}</button>
-          <button ah-art-button type="button" class="tracking-wide btn-lg" data-testId="back" (click)="goBack()">{{ t("back") }}</button>
+      } @else if (hasFailed()) {
+        <div class="flex w-full flex-1 flex-col items-center justify-center gap-8 pb-24">
+          <div
+            role="alert"
+            class="flex w-full flex-col items-center gap-4 rounded-box border-2 border-error bg-base-200/94 px-8 py-10 text-center"
+            data-testId="error"
+          >
+            <h2 class="font-[Conkordia] text-[36px] text-error">{{ t("error.title") }}</h2>
+            <p class="text-[22px] text-base-content/80">{{ t("error.message") }}</p>
+          </div>
+          <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="retry" (click)="retry()">{{ t("error.retry") }}</button>
         </div>
-      </div>
-    } @else if (entries().length === 0) {
-      <div class="flex w-full flex-1 flex-col items-center justify-center gap-6 text-center" data-testId="empty">
-        <p class="whitespace-pre-line text-base-content/80">{{ t("empty.message") }}</p>
-        <button ah-art-button type="button" class="tracking-wide btn-lg" data-testId="begin" (click)="goBack()">{{ t("empty.action") }}</button>
-      </div>
-    } @else {
-      <div class="min-h-0 w-full flex-1 overflow-y-auto" data-testId="list">
-        <div class="flex flex-col gap-4 p-1">
-          @for (game of entries(); track game.id) {
-            <ah-case-file-card [game]="game" [active]="$index === selectedIndex()" (mouseenter)="selectedIndex.set($index)" (click)="open(game)" />
-          }
+      } @else if (entries().length === 0) {
+        <div class="flex w-full flex-1 flex-col items-center justify-center gap-8 pb-24">
+          <div class="flex w-full flex-col items-center rounded-box border-2 border-base-content/20 bg-base-200/94 px-8 py-10 text-center" data-testId="empty">
+            <p class="text-[22px] whitespace-pre-line text-base-content/80">{{ t("empty.message") }}</p>
+          </div>
+          <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="begin" (click)="goBack()">{{ t("empty.action") }}</button>
         </div>
-      </div>
-      <button ah-art-button type="button" class="mt-8 tracking-wide btn-lg" data-testId="back" (click)="goBack()">{{ t("back") }}</button>
-    }
+      } @else {
+        <div class="case-files-scroll min-h-0 w-full flex-1 overflow-y-auto" data-testId="list" (mouseleave)="clearSelection()">
+          <div class="flex flex-col gap-4 p-1 pb-10">
+            @for (game of entries(); track game.id) {
+              <ah-case-file-card [game]="game" [active]="$index === selectedIndex()" (mouseenter)="selectedIndex.set($index)" (click)="open(game)" />
+            }
+          </div>
+        </div>
+      }
+    </div>
   </div>
 </ng-container>

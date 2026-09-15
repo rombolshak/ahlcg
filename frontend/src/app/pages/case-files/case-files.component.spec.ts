@@ -156,10 +156,41 @@ describe('CaseFilesComponent', () => {
 
     void resolveLayer().moveDown?.();
     void resolveLayer().moveDown?.();
+    void resolveLayer().moveDown?.();
     TestBed.tick();
     fixture.detectChanges();
 
-    const activeCard = fixture.debugElement.query(By.css('.ring-primary'));
+    const activeCard = fixture.debugElement.query(By.css('.active'));
     expect((activeCard.nativeElement as HTMLElement).getAttribute('data-testId')).toBe('game-1');
+  });
+
+  it('should select nothing until the user navigates or hovers', async () => {
+    list.mockReturnValue(of([gameSummary('game-1', '2026-01-01T00:00:00Z'), gameSummary('game-2', '2026-02-01T00:00:00Z')]));
+
+    signIn();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.active'))).toBeNull();
+  });
+
+  it('should clear the selection when the pointer leaves the list', async () => {
+    list.mockReturnValue(of([gameSummary('game-1', '2026-01-01T00:00:00Z'), gameSummary('game-2', '2026-02-01T00:00:00Z')]));
+
+    signIn();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const listElement = fixture.debugElement.query(By.css('[data-testId=list]'));
+    fixture.debugElement.queryAll(By.css('ah-case-file-card'))[1]?.triggerEventHandler('mouseenter', {});
+    TestBed.tick();
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('.active'))).not.toBeNull();
+
+    listElement.triggerEventHandler('mouseleave', {});
+    TestBed.tick();
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.active'))).toBeNull();
   });
 });

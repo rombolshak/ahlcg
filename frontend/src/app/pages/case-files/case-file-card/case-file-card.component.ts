@@ -7,9 +7,10 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
   selector: 'ah-case-file-card',
   imports: [TranslocoDirective],
   templateUrl: './case-file-card.component.html',
+  styles: '.active { @apply bg-[oklch(0.74_0.14_70)] text-[oklch(0.20_0.03_80)] }',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'block',
+    class: 'block cursor-reset',
   },
 })
 export class CaseFileCardComponent {
@@ -20,10 +21,10 @@ export class CaseFileCardComponent {
 
   private readonly lang = toSignal(this.transloco.langChanges$);
 
-  protected readonly openedAt = computed(() => this.formatDate(this.game().createdAt));
-  protected readonly lastPlayedAt = computed(() => this.formatDate(this.game().lastPlayedAt));
+  protected readonly openedAt = computed(() => this.formatDate(this.game().createdAt, { dateStyle: 'medium' }));
+  protected readonly lastPlayedAt = computed(() => this.formatDate(this.game().lastPlayedAt, { dateStyle: 'medium', timeStyle: 'short' }));
 
-  private formatDate(date: Date): string {
-    return new Intl.DateTimeFormat(this.lang() ?? 'en', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  private formatDate(date: Date, options: Intl.DateTimeFormatOptions): string {
+    return new Intl.DateTimeFormat(this.lang() ?? 'en', options).format(date);
   }
 }
