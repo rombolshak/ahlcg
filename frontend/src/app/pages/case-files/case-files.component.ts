@@ -1,0 +1,100 @@
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, viewChildren } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
+import { AuthService } from '@core/auth/auth.service';
+import { InputLayer, InputManagerService, LayerRef } from '@core/input-manager.service';
+import { listNavigation } from '@core/list-navigation';
+import { GamesService, GameSummary } from '@features/games/games.service';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
+import { CaseFileCardComponent } from './case-file-card/case-file-card.component';
+
+@Component({
+  selector: 'ah-case-files',
+  imports: [ArtButtonComponent, CaseFileCardComponent, TranslocoDirective],
+  templateUrl: './case-files.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'h-screen w-screen flex items-center justify-center bg-[url("/assets/images/main-menu.webp")] bg-cover bg-center bg-no-repeat bg-black',
+  },
+})
+export class CaseFilesComponent implements OnInit, OnDestroy {
+  private readonly authService = inject(AuthService);
+  private readonly games = inject(GamesService);
+  private readonly router = inject(Router);
+  private readonly inputManager = inject(InputManagerService);
+
+  private readonly currentUser = toSignal(this.authService.currentUser);
+
+  private readonly gamesResource = rxResource({
+    params: () => this.currentUser(),
+    stream: () => this.games.list(),
+  });
+
+  protected readonly isLoading = this.gamesResource.isLoading;
+  protected readonly hasFailed = computed(() => this.gamesResource.status() === 'error');
+  protected readonly entries = computed(() => (this.gamesResource.hasValue() ? this.gamesResource.value() : []));
+
+  private readonly navigation = listNavigation({
+    items: this.entries,
+    onConfirm: game => {
+      this.open(game);
+    },
+  });
+  protected readonly selectedIndex = this.navigation.selectedIndex;
+
+  private readonly cards = viewChildren<CaseFileCardComponent, ElementRef<HTMLElement>>(CaseFileCardComponent, { read: ElementRef });
+
+  private inputLayer: LayerRef | undefined;
+
+  constructor() {
+    effect(() => {
+      this.cards()[this.selectedIndex()]?.nativeElement.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  public ngOnInit(): void {
+    this.inputLayer = this.inputManager.pushLayer(() => this.buildInputLayer());
+  }
+
+  public ngOnDestroy(): void {
+    this.inputLayer?.destroy();
+  }
+
+  protected goBack(): void {
+    void this.router.navigate(['/']);
+  }
+
+  protected retry(): void {
+    this.gamesResource.reload();
+  }
+
+  protected open(game: GameSummary): void {
+    void this.router.navigate(['/game', game.id]);
+  }
+
+  private buildInputLayer(): InputLayer {
+    const cancel = () => {
+      this.goBack();
+    };
+
+    if (this.hasFailed()) {
+      return {
+        cancel,
+        confirm: () => {
+          this.retry();
+        },
+      };
+    }
+
+    if (!this.isLoading() && this.entries().length === 0) {
+      return { cancel, confirm: cancel };
+    }
+
+    if (!this.isLoading()) {
+      return { cancel, ...this.navigation.handlers };
+    }
+
+    return { cancel };
+  }
+}
