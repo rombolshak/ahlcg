@@ -96,6 +96,15 @@ describe('MainMenuComponent', () => {
     expect(fixture.debugElement.query(By.css('[data-testId=continue]'))).toBeTruthy();
   });
 
+  it('should navigate to the case files screen when the load game button is clicked', () => {
+    mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    TestBed.tick();
+
+    (fixture.debugElement.query(By.css('[data-testId=load_game]')).nativeElement as HTMLButtonElement).click();
+
+    expect(navigate).toHaveBeenCalledWith(['/case-files']);
+  });
+
   describe('continue', () => {
     const continueButton = () => fixture.debugElement.query(By.css('[data-testId=continue]')).nativeElement as HTMLButtonElement;
 

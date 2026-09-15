@@ -162,7 +162,7 @@ export class MainMenuComponent {
       name: 'load_game',
       disabled: !isAuthenticated,
       process: () => {
-        alert('load game');
+        void this.router.navigate(['/case-files']);
       },
     };
   }
