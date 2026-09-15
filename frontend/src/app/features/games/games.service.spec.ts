@@ -47,4 +47,41 @@ describe('GamesService', () => {
 
     expect(error).toBeTruthy();
   });
+
+  it('should GET /api/games/latest and map the body to an id and a lastPlayedAt date', () => {
+    let result: { id: string; lastPlayedAt: Date } | undefined;
+    service.latest().subscribe(game => {
+      result = game;
+    });
+
+    const req = http.expectOne('/api/games/latest');
+    req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', lastPlayedAt: '2026-01-01T00:00:00+00:00' });
+
+    expect(result?.id).toBe('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+    expect(result?.lastPlayedAt).toEqual(new Date('2026-01-01T00:00:00+00:00'));
+  });
+
+  it('should map a 204 to undefined', () => {
+    let result: { id: string; lastPlayedAt: Date } | undefined = { id: 'placeholder', lastPlayedAt: new Date() };
+    service.latest().subscribe(game => {
+      result = game;
+    });
+
+    http.expectOne('/api/games/latest').flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(result).toBeUndefined();
+  });
+
+  it('should throw when the response is malformed', () => {
+    let error: unknown;
+    service.latest().subscribe({
+      error: err => {
+        error = err;
+      },
+    });
+
+    http.expectOne('/api/games/latest').flush({ id: 'not-a-uuid' });
+
+    expect(error).toBeTruthy();
+  });
 });

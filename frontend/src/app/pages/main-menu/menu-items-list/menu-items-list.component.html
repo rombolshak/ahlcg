@@ -1,14 +1,14 @@
 <ng-container *transloco="let t">
   <ah-title class="my-16 min-w-80" />
   @for (item of items(); track item.name) {
-    @if (item.tooltip) {
+    @if (item.tooltip; as tooltip) {
       <div
         class="tooltip tooltip-right [--color-neutral-content:oklch(0.92_0.02_95)] [--tt-bg:oklch(0.55_0.06_65)]"
         [class.tooltip-open]="$index === selectedIndex()"
         (mouseenter)="selectedIndex.set($index)"
       >
         <div class="tooltip-content p-4 font-[ArnoPro] text-xl whitespace-pre-line">
-          {{ item.tooltip }}
+          {{ t(tooltip.key, tooltip.params) }}
         </div>
         <button
           ah-art-button

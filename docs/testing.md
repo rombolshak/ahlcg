@@ -75,6 +75,23 @@ No coverage is collected for this tier — see the coverage-accounting rule abov
 
 Opening a dialog for real does **not** by itself justify F1: happy-dom runs `showModal()` and the rest of `DialogService.open()` fine (`dialog.service.spec.ts`), so a story earns its place only with an assertion that needs real layout or real focus, not merely a real dialog.
 
+### Visual regression (F3)
+
+The same story files are Chromatic's fixtures. One behaviour catches people out: **Chromatic pauses a CSS animation at the *end* of its cycle**, which is the right frame for a transition and a meaningless one for an infinite animation — a daisyUI `loading-spinner` has no end, so the captured frame is arbitrary and the story diffs against itself on every build.
+
+Pin such a story to the first frame instead:
+
+```typescript
+export const Busy: Story = {
+  parameters: {
+    chromatic: { pauseAnimationAtEnd: false },
+  },
+  // …
+};
+```
+
+Set it per story, not in `.storybook/preview.ts` — globally it would also pin finite transitions to their *pre*-animation frame, which is exactly the state their snapshot should not capture.
+
 ### Writing component specs
 
 The pattern used throughout the codebase (`numeric-text.component.spec.ts` is representative):
@@ -122,6 +139,7 @@ Test names read as sentences: `it('should fire event after animation')`.
 | "Unsafe call of an error typed value" on `vi` | Add an explicit `import { vi } from 'vitest';` to that spec |
 | Input assignment does not compile | Use `componentRef.setInput` |
 | Emission never resolves | `output()` is not an Observable |
+| A resource still reads as loading after its stream emits | `TestBed.tick()` is synchronous; `rxResource` settles through a microtask. `await fixture.whenStable()` |
 
 ESLint runs `strictTypeChecked` on specs too, and `eslint-plugin-jasmine` is still configured for `src/**/*.spec.ts` — its `no-expect-in-setup-teardown` rule warns; the Jasmine matcher rules are inert since the Vitest migration. `@types/jasmine` and the plugin remain in `package.json` as leftovers.
 
@@ -211,4 +229,4 @@ Attach mode waits 30s for that URL rather than the 5 minutes a cold `ng serve` c
 
 ## What is not tested
 
-The game view renders `@domain/testing/test-game-state`, a hardcoded fixture — there is no server for the end-to-end tier to reach there, and `POST /games` has no frontend caller yet, so it is untested end-to-end too. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
+The game view renders `@domain/testing/test-game-state`, a hardcoded fixture — there is no server for the end-to-end tier to reach there. The main menu does call `POST /games` and `GET /games/latest`, but only against a mocked `GamesService`; neither is exercised end-to-end. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.

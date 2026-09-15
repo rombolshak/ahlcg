@@ -166,6 +166,60 @@ public class GameEndpointsTests
         Assert.Equal([newerGame.Id, olderGame.Id], ok.Value!.Select(g => g.Id));
     }
 
+    [Fact]
+    public async Task GetLatestGame_NoMemberships_ReturnsNoContent()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+
+        var result = await GameEndpoints.GetLatestGame(LoggedInPrincipal, userManager.Object, db);
+
+        Assert.IsType<NoContent>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_ReturnsMostRecentlyPlayedByCaller()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var olderGame = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, olderGame.Id, LoggedInUser, FixedNow);
+        var newerGame = await SeedGameAsync(db, LoggedInUser, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, newerGame.Id, LoggedInUser, FixedNow.AddDays(1));
+
+        var result = await GameEndpoints.GetLatestGame(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        Assert.Equal(newerGame.Id, ok.Value!.Id);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_OtherUsersGame_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+
+        var result = await GameEndpoints.GetLatestGame(LoggedInPrincipal, userManager.Object, db);
+
+        Assert.IsType<NoContent>(result.Result);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_UsesCallersOwnLastPlayedAt()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow.AddDays(5));
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetLatestGame(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        Assert.Equal(FixedNow, ok.Value!.LastPlayedAt);
+    }
+
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<Game> SeedGameAsync(

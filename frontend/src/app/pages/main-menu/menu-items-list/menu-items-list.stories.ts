@@ -10,7 +10,7 @@ const meta: Meta<MenuItemsListComponent> = {
     items: [
       {
         name: 'new_game',
-        tooltip: 'Start new game',
+        tooltip: { key: 'main_menu.new_game' },
         process: () => {
           alert('new game');
         },
@@ -42,7 +42,12 @@ type Story = StoryObj<MenuItemsListComponent>;
 
 export const Normal: Story = {};
 
+// Chromatic pauses a CSS animation at the end of its cycle, and `loading-spinner` is infinite —
+// it has no end, so the captured frame is arbitrary. `false` pins it to the first frame instead.
 export const Busy: Story = {
+  parameters: {
+    chromatic: { pauseAnimationAtEnd: false },
+  },
   args: {
     items: [
       {
