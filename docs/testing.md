@@ -229,4 +229,4 @@ Attach mode waits 30s for that URL rather than the 5 minutes a cold `ng serve` c
 
 ## What is not tested
 
-The game view renders `@domain/testing/test-game-state`, a hardcoded fixture — there is no server for the end-to-end tier to reach there. The main menu does call `POST /games` and `GET /games/latest`, but only against a mocked `GamesService`; neither is exercised end-to-end. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
+The game view renders `@domain/testing/test-game-state`, a hardcoded fixture — there is no server for the end-to-end tier to reach there. The main menu does call `POST /games` and `GET /games/latest`, and the Case files screen `GET /games`, but only against a mocked `GamesService`; none is exercised end-to-end. Storybook stories do double duty: the same story files are the component tier's (F1) specs and Chromatic's visual-regression fixtures — F1 owns behaviour, Chromatic owns pixels.
