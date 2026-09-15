@@ -2,6 +2,7 @@ using Ahlcg.ApiService;
 using Ahlcg.ServiceDefaults;
 using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenTelemetry.Metrics;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ builder.Services
     .AddValidation();
 
 builder.Services.AddSignalR().AddHubInstrumentation();
+builder.Services.AddSingleton<GameSessions>();
+builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
 builder.Services.TryAddSingleton(TimeProvider.System);
 
 builder.Services

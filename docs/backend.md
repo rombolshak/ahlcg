@@ -75,13 +75,39 @@ Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside 
 
 ## SignalR
 
-`GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. It is a `Ping` stub — no groups, no game methods, no client anywhere in the frontend.
+`GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. There is still no client anywhere in the frontend. The wire contract — the `gameId` query parameter, the membership gate, the message names — is in [api.md](api.md#signalr-game); what follows is why the server is shaped this way.
+
+**A session is live-connection state and is deliberately not persisted.** `GameSessions` is a singleton `ConcurrentDictionary` and there is no entity, `DbSet`, or migration for it. Persisting it inverts on restart: `OnDisconnectedAsync` does not fire when the process dies, so a deploy would leave rows claiming members are online with nothing to reap them. An empty registry after a restart is the correct answer, not lost state. The cost is a **single-replica ceiling** — a second instance would need a backplane, which `Program.cs` does not configure and `AppHost.cs` does not ask for.
+
+**The registry keys connections by user**, `userId -> connection ids`, not as a flat set of connection ids. Every consumer asks a user-shaped question — is this member online, who is at the table — and it is what lets a member with two tabs open produce one connect and one disconnect broadcast instead of four.
+
+**`Join` and `Leave` are compare-and-swap loops, not `AddOrUpdate`.** Two hazards make this necessary and neither is visible to a single-threaded reading:
+
+- Dropping a session when its last connection leaves must be atomic against a connection arriving at the same instant, or that arrival is left in a group nothing broadcasts to. `AddOrUpdate` cannot express this at all; `TryRemove(KeyValuePair)` can, because a join landing in between changes the value and fails the CAS.
+- `AddOrUpdate`'s update delegate re-runs under contention, which loses exactly the answer the hub needs — *was this the member's first connection?*
+
+The CAS works because `GameSession.Connections` is an `ImmutableDictionary`, which does not override `Equals`. Giving the record a structural comparer would silently turn both `TryUpdate` and `TryRemove` into no-ops that always succeed.
+
+**Do not remove a disconnecting connection from its groups.** SignalR does that itself, which is why `Disconnect` takes no `IGroupManager` while `Connect` does.
+
+**An unclean disconnect is detected late, not missed.** `OnDisconnectedAsync` still runs for a killed browser or a closed laptop lid — but only once SignalR's own keep-alive timeout notices, so the session reads as live for as long as that takes, and only then is the connection removed, the group told, and `LastPlayedAt` written. This is by design until a heartbeat exists: it must fail toward "the session is still running", never toward "this game is unreachable". The case the callback genuinely misses is the process dying, which is the argument for not persisting sessions above.
+
+**The hub injects a scoped `ApplicationDbContext` by constructor.** This reads like the classic captured-context mistake and is not one — SignalR creates a DI scope per hub invocation, including the connect and disconnect callbacks, so each gets its own context. Endpoints take their dependencies as handler parameters because their handlers are static; a hub is a class and uses constructor injection.
+
+**The hub is a `Hub<IGameClient>`, not a `Hub`.** The client contract is an interface declared alongside it, so broadcasts are compiler-checked method calls rather than `SendAsync("someName", …)` — a typo becomes a build error instead of a message nobody receives, and the tests mock `IGameClient` directly instead of asserting against `SendCoreAsync` argument arrays. The cost is that the wire name is now the method name: renaming an `IGameClient` method silently changes the contract, and nothing in C# will flag it.
+
+Connect and disconnect live in static methods taking their dependencies as parameters, with the overrides as thin wiring, so they are unit-testable the same way the endpoint handlers are.
 
 ## Observability and health
 
 Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefaults()`:
 
 - OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `Program.cs`.
+
+Game sessions carry their own meter, `GameSessions.MeterName`, registered in `Program.cs` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
+
+- **The active-session count is an `ObservableGauge`, not an `UpDownCounter`.** The registry can simply be asked how many it holds, so a callback cannot drift; a counter needs a matching decrement at every exit path and is permanently wrong the first time one is missed.
+- **The per-session histograms are recorded after the CAS succeeds, never inside the retry loop.** A contended swap retries, and a `Record()` inside the loop is counted once per attempt. They also record the session's *peak* member count, not its final one — the final one is always zero, that being why the session ended.
 - Standard resilience handler for outbound `HttpClient`s, plus service discovery.
 - `MapDefaultEndpoints()` maps `/health` (all checks) and `/alive` (checks tagged `live`) **only in Development** — it returns early otherwise, by design.
 
