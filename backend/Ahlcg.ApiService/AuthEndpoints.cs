@@ -29,17 +29,22 @@ public static class AuthEndpoints
                               "1) either create an anonymous account via /loginAnonymously and play with it as long " +
                               "as needed on a single device, or sign in directly via /signIn, \n" +
                               "2) call /signIn again when ready to turn an anonymous account into a permanent one — " +
-                              "it upgrades the account in place, keeping its data.");
+                              "it upgrades the account in place, keeping its data. \n" +
+                              "Every route here signs the caller in or out with the persistent " +
+                              "AspNetCore.Identity.Application cookie. A 400 from this group carries an IdentityResult " +
+                              "body ({ succeeded, errors: [{ code, description }] }), not RFC 7807 ProblemDetails.");
 
         group.MapGet("info", GetCurrentUser)
             .RequireAuthorization()
-            .WithDescription("Returns information of the logged in user.")
+            .WithDescription(
+                "Returns information of the logged in user. Email is null for an anonymous account, and userName is " +
+                "set for every account — a raw GUID for anonymous ones. The account id is never returned.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         group.MapPost("loginAnonymously", LoginAnonymously)
             .WithDescription(
-                "Creates an anonymous user without password. " +
-                "After logout this user cannot be logged in again. " +
+                "Creates an anonymous user without password. The account gets a GUID user name, no email and no " +
+                "password. After logout this user cannot be logged in again. " +
                 "If the user is already logged in, this method cannot be called.");
 
         group.MapPost("signIn", SignIn)
@@ -47,12 +52,17 @@ public static class AuthEndpoints
                 "Signs in with an email and password, from a logged-out, anonymous or permanent session. " +
                 "If the email is already on record, the password is checked against that account and it is signed in. " +
                 "If it is not, and the caller holds an anonymous account, that account is upgraded in place — " +
-                "it keeps its id and therefore its data. If it is not and the caller is logged out, a new permanent " +
-                "account is created. A permanent session cannot create a second account: log out first.");
+                "it keeps its id and therefore its data, and its existing cookie stays valid. If it is not and the " +
+                "caller is logged out, a new permanent account is created. A permanent session cannot create a second " +
+                "account: log out first. " +
+                "A 403 means the email is on record and the password was wrong, or the account is locked out — the two " +
+                "are deliberately indistinguishable, so the route never confirms that an email is registered.")
+            .Produces(StatusCodes.Status403Forbidden);
 
         group.MapPost("logout", Logout)
             .WithDescription(
-                "Log out current user. If user is anonymous, it will be deleted with all associated data.");
+                "Log out current user. If user is anonymous, it will be deleted with all associated data. " +
+                "Authorization is not required, so calling it while logged out is a no-op rather than a 401.");
         return group;
     }
 

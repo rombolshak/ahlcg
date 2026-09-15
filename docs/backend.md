@@ -30,12 +30,12 @@ One route group per feature: a static class with a `Map*Endpoints(this RouteGrou
 - Handlers return `Results<TOk, TError…>` (typed results), not `IResult`. That is what makes them directly unit-testable — the tests call the handler with mocks and assert on `result.Result`. Keep new handlers testable the same way.
 - Dependencies arrive as handler parameters, resolved by the framework — no constructor injection, since the handlers are static.
 - Request/response DTOs are `record`s nested in the endpoint class, annotated `[PublicAPI]`, with data-annotation validation. Validation runs via `AddValidation()`.
-- Every route carries `.WithDescription(...)`, and so does the group. These become the Scalar/OpenAPI docs, and an integration test asserts they are non-empty.
+- Every route carries `.WithDescription(...)`, and so does the group. These become the Scalar/OpenAPI docs, and an integration test asserts they are non-empty. **The description is where a route is documented — there is no markdown copy of it.** Anything a caller needs to know about a route (what a status code means, which field is optional, what a header does, why a normal-but-empty answer is a `204` rather than a `404`) goes in `.WithDescription()` and `.Produces()`, so it ships with the spec and cannot drift away from the code. See [api.md](api.md) for the little that is left over.
 - Auth is opt-in per route with `.RequireAuthorization()`.
 
 There is no service layer, repository layer, or DTO folder. Do not invent one for a single handler; extract only when logic is genuinely shared.
 
-Identity is ASP.NET Core Identity with cookie auth. The account lifecycle — how one route serves sign-in, registration and anonymous upgrade, and which branches destroy an anonymous account — is in [api.md](api.md); the hardening and its known gaps are in [security.md](security.md).
+Identity is ASP.NET Core Identity with cookie auth. How one route serves sign-in, registration and anonymous upgrade is in that route's own OpenAPI description; the hardening, and which branches destroy an anonymous account, are in [security.md](security.md).
 
 ## Entities and the DbContext
 
