@@ -61,12 +61,17 @@ Fixtures split by whether they touch a framework. The ten pure fixtures (`entiti
 
 ## Routing
 
-`app.routes.ts` — two lazy routes, no guards or resolvers:
+`app.routes.ts` — three lazy routes, no guards or resolvers:
 
 - `''` → `MainMenuComponent` (`pathMatch: 'full'`)
+- `'case-files'` → `CaseFilesComponent`
 - `'game/:id'` → `GameViewComponent` (`pathMatch: 'prefix'`)
 
 There is no wildcard route. The `:id` param is currently ignored — the game view loads a fixture.
+
+`case-files` has no auth guard: the menu item that reaches it is disabled when signed out, and the
+screen's `rxResource` is keyed on the current user, so a signed-out visitor issues no request at all
+and lands on the empty state rather than an error.
 
 ## Application config
 

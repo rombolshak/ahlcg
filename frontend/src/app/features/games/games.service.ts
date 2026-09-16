@@ -9,6 +9,10 @@ export type CreatedGame = typeof createdGame.infer;
 const latestGame = type({ id: 'string.uuid', lastPlayedAt: 'string.date.parse' });
 export type LatestGame = typeof latestGame.infer;
 
+const gameSummary = type({ id: 'string.uuid', createdAt: 'string.date.parse', lastPlayedAt: 'string.date.parse' });
+export type GameSummary = typeof gameSummary.infer;
+const gameSummaries = gameSummary.array();
+
 @Service()
 export class GamesService {
   private readonly http = inject(HttpClient);
@@ -39,6 +43,20 @@ export class GamesService {
         }
 
         return game;
+      }),
+    );
+  }
+
+  public list(): Observable<GameSummary[]> {
+    return this.http.get<unknown>('/api/games').pipe(
+      map(response => {
+        const games = gameSummaries(response);
+        if (games instanceof ArkErrors) {
+          console.error('Invalid games list response', games.summary);
+          return games.throw();
+        }
+
+        return games;
       }),
     );
   }

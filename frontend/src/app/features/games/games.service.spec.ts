@@ -84,4 +84,33 @@ describe('GamesService', () => {
 
     expect(error).toBeTruthy();
   });
+
+  it('should GET /api/games and map the body to a list of ids and dates', () => {
+    let result: { id: string; createdAt: Date; lastPlayedAt: Date }[] | undefined;
+    service.list().subscribe(games => {
+      result = games;
+    });
+
+    const req = http.expectOne('/api/games');
+    req.flush([
+      { id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01T00:00:00+00:00', lastPlayedAt: '2026-01-02T00:00:00+00:00', configuration: {} },
+    ]);
+
+    expect(result?.[0]?.id).toBe('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+    expect(result?.[0]?.createdAt).toEqual(new Date('2026-01-01T00:00:00+00:00'));
+    expect(result?.[0]?.lastPlayedAt).toEqual(new Date('2026-01-02T00:00:00+00:00'));
+  });
+
+  it('should throw when the games list response is malformed', () => {
+    let error: unknown;
+    service.list().subscribe({
+      error: err => {
+        error = err;
+      },
+    });
+
+    http.expectOne('/api/games').flush([{ id: 'not-a-uuid' }]);
+
+    expect(error).toBeTruthy();
+  });
 });

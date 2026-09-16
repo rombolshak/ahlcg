@@ -131,7 +131,7 @@ export default defineConfig(
           detectComponentClasses: true,
           // Classes that exist outside anything Tailwind compiles: a component's own `styles`,
           // the splash screen's inline <style> in index.html, and vanilla-jsoneditor's theme.
-          ignore: ["^active$", "^background$", "^progress-(track|fill)$", "^jse-theme-dark$"],
+          ignore: ["^active$", "^background$", "^progress-(track|fill)$", "^jse-theme-dark$", "^case-files-scroll$"],
         },
       ],
     },
