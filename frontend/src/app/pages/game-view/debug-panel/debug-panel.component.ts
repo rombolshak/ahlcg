@@ -34,12 +34,20 @@ export class DebugPanelComponent {
     return state.reason === 'initial' ? 'status' : 'status status-error';
   });
   readonly pingTimestamp = signal<Date | undefined>(undefined);
+  readonly pingError = signal('');
   stateErrors = '';
   selectedPatch = 0;
 
   ping() {
-    this.connectionService.ping().subscribe(timestamp => {
-      this.pingTimestamp.set(timestamp);
+    this.connectionService.ping().subscribe({
+      next: timestamp => {
+        this.pingError.set('');
+        this.pingTimestamp.set(timestamp);
+      },
+      error: (error: unknown) => {
+        this.pingTimestamp.set(undefined);
+        this.pingError.set(error instanceof Error ? error.message : String(error));
+      },
     });
   }
 

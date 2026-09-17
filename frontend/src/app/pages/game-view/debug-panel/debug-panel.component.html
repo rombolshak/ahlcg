@@ -39,6 +39,9 @@
       @if (pingTimestamp(); as timestamp) {
         <p class="mt-2">{{ timestamp }}</p>
       }
+      @if (pingError(); as error) {
+        <p class="mt-2 text-error">{{ error }}</p>
+      }
     </div>
   </div>
 
