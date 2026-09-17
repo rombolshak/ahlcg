@@ -76,8 +76,8 @@
     "@tailwindcss/postcss": "^4.3.3",
     "@toolwind/anchors": "^1.0.10",
     "@typescript-eslint/parser": "^8.67.0",
-    "@vitest/browser-playwright": "4.1.10",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/browser-playwright": "4.1.11",
+    "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
     "angular-eslint": "^22.1.0",
     "chromatic": "^18.5.0",
@@ -111,7 +111,7 @@
     "tsc-files": "^1.1.4",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.60.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "@ngrx/signals": {
