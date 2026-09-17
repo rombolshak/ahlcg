@@ -4,7 +4,7 @@ Reference docs for agents working in this repository. Every claim here is checke
 
 ## Read this first
 
-The backend implements **authentication and game records** — creating a game, listing the ones you are a member of, and fetching the most recent — nothing more. The frontend calls those from the main menu and the Case files screen; the game view itself renders from a **hardcoded fixture** (`@domain/testing/test-game-state`), not from the server. There is no API for game *state*, no SignalR client, and no deployment pipeline. Do not write code that assumes any of them exist.
+The backend implements **authentication and game records** — creating a game, listing the ones you are a member of, and fetching the most recent — nothing more. The frontend calls those from the main menu and the Case files screen; the game view itself renders from a **hardcoded fixture** (`@domain/testing/test-game-state`), not from the server. There is a SignalR client, but it carries **no game state** — it connects, reports its connection state, and answers `Ping`. There is no API for game *state* and no deployment pipeline. Do not write code that assumes either exists.
 
 ## Which file do I need?
 

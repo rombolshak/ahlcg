@@ -49,6 +49,7 @@
     "@bugsnag/js": "^8.10.0",
     "@bugsnag/plugin-angular": "^8.10.0",
     "@jsverse/transloco": "^8.4.0",
+    "@microsoft/signalr": "^10.0.11",
     "@ngrx/signals": "^21.1.1",
     "@panzoom/panzoom": "^4.6.2",
     "arktype": "^2.2.3",

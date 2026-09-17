@@ -23,6 +23,23 @@
         <ah-json-editor class="block h-150 grow" [data]="timelineService.patches()[selectedPatch]" />
       </div>
     </div>
+
+    <input type="radio" name="debug-tabs" class="tab" aria-label="Connection" />
+    <div class="tab-content border-base-300 bg-base-100 p-6">
+      @let state = connectionState();
+      <div class="flex items-center gap-2">
+        <div [class]="connectionStatusClass()"></div>
+        <span>{{ state.status }}</span>
+        @if (state.status === "disconnected") {
+          <span>({{ state.reason }})</span>
+        }
+      </div>
+
+      <button type="button" class="btn mt-4 btn-secondary" (click)="ping()">Ping</button>
+      @if (pingTimestamp(); as timestamp) {
+        <p class="mt-2">{{ timestamp }}</p>
+      }
+    </div>
   </div>
 
   @if (stateErrors) {

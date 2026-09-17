@@ -1,5 +1,5 @@
 import { ApplicationConfig, ErrorHandler, isDevMode, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import BugsnagPerformance from '@bugsnag/browser-performance';
@@ -21,7 +21,7 @@ function errorHandlerFactory() {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideSignInPrompt(),
     {

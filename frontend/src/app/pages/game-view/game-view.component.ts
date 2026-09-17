@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, viewChild, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnDestroy, OnInit, viewChild, ViewContainerRef } from '@angular/core';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
 import { testGameState } from '@domain/testing/test-game-state';
+import { GameConnectionService } from '@features/games/game-connection.service';
 import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
@@ -30,11 +31,14 @@ import { GameStateStore } from './store/game-state.store';
     class: 'h-screen w-screen text-neutral-900 block bg-[url("/assets/images/bg-min.webp")]',
   },
 })
-export class GameViewComponent implements OnInit {
+export class GameViewComponent implements OnInit, OnDestroy {
   protected readonly gameState = inject(GameStateStore);
   protected readonly timelineService = inject(DebugTimelineService);
   private readonly inputManager = inject(InputManagerService);
+  private readonly connection = inject(GameConnectionService);
   protected readonly settingsDialog = viewChild.required<DialogComponent>('settings');
+
+  public readonly id = input.required<string>();
 
   protected readonly cards = computed(() => {
     return this.gameState.currentInvestigator()?.hand.map(card => this.gameState.getPlayerCard(card)) ?? [];
@@ -62,6 +66,11 @@ export class GameViewComponent implements OnInit {
       },
     });
     this.gameState.setState(testGameState);
+    this.connection.connect(this.id());
+  }
+
+  public ngOnDestroy() {
+    this.connection.disconnect();
   }
 
   public async toggleDebug() {

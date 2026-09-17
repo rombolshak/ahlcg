@@ -11,17 +11,20 @@ namespace Ahlcg.ApiService.Tests;
 public class GameHubTests
 {
     [Fact]
-    public async Task Connect_NonMember_ThrowsHubException()
+    public async Task Connect_NonMember_SendsExitAndDoesNotJoin()
     {
         var sessions = CreateSessions();
         await using var db = CreateInMemoryDb();
         var gameId = Guid.NewGuid();
+        var callerClient = new Mock<IGameClient>();
         var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Caller).Returns(callerClient.Object);
         var groups = new Mock<IGroupManager>();
 
-        await Assert.ThrowsAsync<HubException>(() => GameHub.Connect(
-            sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1")));
+        await GameHub.Connect(
+            sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
 
+        callerClient.Verify(c => c.Exit(ExitReason.NotAMember), Times.Once);
         Assert.Null(sessions.Find(gameId));
         groups.Verify(
             g => g.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),

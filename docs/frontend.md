@@ -67,7 +67,7 @@ Fixtures split by whether they touch a framework. The ten pure fixtures (`entiti
 - `'case-files'` → `CaseFilesComponent`
 - `'game/:id'` → `GameViewComponent` (`pathMatch: 'prefix'`)
 
-There is no wildcard route. The `:id` param is currently ignored — the game view loads a fixture.
+There is no wildcard route. `:id` reaches `GameViewComponent` as an `input.required<string>()` — that works because `provideRouter` is configured `withComponentInputBinding()`, without which the input would never be set and the component would throw. The id decides which game the SignalR connection binds to; the board itself still loads a fixture.
 
 `case-files` has no auth guard: the menu item that reaches it is disabled when signed out, and the
 screen's `rxResource` is keyed on the current user, so a signed-out visitor issues no request at all
@@ -75,7 +75,7 @@ and lands on the empty state rather than an error.
 
 ## Application config
 
-`app.config.ts` providers: `provideZonelessChangeDetection()`, `provideRouter(routes)`, `provideHttpClient(withInterceptors([authInterceptor]))`, a Bugsnag `ErrorHandler`, and `provideTransloco()`.
+`app.config.ts` providers: `provideZonelessChangeDetection()`, `provideRouter(routes, withComponentInputBinding())`, `provideHttpClient(withInterceptors([authInterceptor]))`, a Bugsnag `ErrorHandler`, and `provideTransloco()`.
 
 Bugsnag is started at module scope with a hardcoded browser API key — that is intentional and safe (browser keys are public).
 
@@ -88,6 +88,7 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. Called from `features/card/` and from the `pages/game-view/` components that lay out their own card details — never from `ui/`, whose card components take a resolved `CardInfo` as an input. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
+| `GameConnectionService` | The SignalR connection for one game, opened by `GameViewComponent` from the route's `:id` and closed on leave. Connects to **`/api/game?gameId=…`**, not `/game` — the hub path collides with the SPA's own `/game/:id` route, so it goes through the dev proxy's `^/api` rewrite. Exposes a `Signal` of `connecting` / `connected` / `disconnected`, the last carrying `initial`, `server_rejected` or `network_error`. A drop is retried by SignalR's automatic reconnect, which gives up after its default backoff (0s, 2s, 10s, 30s) and reports `network_error`. The one thing that stops it retrying *early* is an `Exit` message from the server, which the service answers by stopping the connection itself — a close on its own is indistinguishable from a drop, which is why the server asks rather than hangs up. `connect()` is idempotent per game id — calling it again for the game already connected is a no-op, and a different id replaces the connection. Message names are PascalCase (`'Ping'`, `'Exit'`) because SignalR takes them verbatim from the server — a lowercase handler silently never fires. The `HubConnection` is built by the `GAME_HUB_CONNECTION_FACTORY` token so specs can substitute a fake. Carries no game state yet — that is #251. |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
 
 `imageUrl(descriptor)` is a pure function in `domain/card-art/`, not a service — it maps a typed `ImageDescriptor` tuple (or a bare string) to `/assets/images/{...}.webp`. Add new image categories to the `ImageDescriptor` union, not as raw strings.
