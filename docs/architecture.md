@@ -9,7 +9,7 @@
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
 | Game creation (`POST /games`) and persistence of the game record | Implemented, backend only — no frontend client calls it |
 | Game API / persistence of game *state* within a game | **Does not exist** |
-| SignalR | Server hub with in-memory game sessions, one group per game, and connect/disconnect broadcasts; **no client** (`@microsoft/signalr` is not a dependency) |
+| SignalR | Server hub with in-memory game sessions, one group per game, and connect/disconnect broadcasts; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
 `GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server.

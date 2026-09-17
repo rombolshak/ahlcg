@@ -6,19 +6,24 @@ namespace Ahlcg.ApiService;
 
 public readonly record struct GameConnection(Guid GameId, string UserId, string ConnectionId);
 
+public enum ExitReason
+{
+    NotAMember
+}
+
 public interface IGameClient
 {
-    Task Ping(DateTime timestamp);
-
     Task MemberConnected(string userId);
 
     Task MemberDisconnected(string userId);
+
+    Task Exit(ExitReason reason);
 }
 
 [Authorize]
 public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvider timeProvider) : Hub<IGameClient>
 {
-    public async Task Ping() => await Clients.Caller.Ping(DateTime.UtcNow);
+    public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
 
     public override async Task OnConnectedAsync()
     {
@@ -59,7 +64,11 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
         var (gameId, userId, connectionId) = connection;
 
         var isMember = await db.GameMembers.AnyAsync(m => m.GameId == gameId && m.UserId == userId);
-        if (!isMember) throw new HubException("You are not a member of this game.");
+        if (!isMember)
+        {
+            await clients.Caller.Exit(ExitReason.NotAMember);
+            return;
+        }
 
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());

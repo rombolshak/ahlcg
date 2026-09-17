@@ -75,7 +75,9 @@ Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside 
 
 ## SignalR
 
-`GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. There is still no client anywhere in the frontend. The wire contract — the `gameId` query parameter, the membership gate, the message names — is in [api.md](api.md#signalr-game); what follows is why the server is shaped this way.
+`GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. The wire contract — the `gameId` query parameter, the membership gate, the message names — is in [api.md](api.md#signalr-game); what follows is why the server is shaped this way.
+
+**A caller the hub turns away is asked to leave rather than cut off.** `Connect` sends `Exit(NotAMember)` and returns instead of throwing, so the connection stays open and stopping it is the client's decision. The reason is on the client side: a close is indistinguishable from a network drop, so a client that inferred rejection from one could not also use automatic reconnect. Keep any future "you may not be here" answer on that path — throw only for a malformed request, which is a client bug rather than an answer.
 
 **A session is live-connection state and is deliberately not persisted.** `GameSessions` is a singleton `ConcurrentDictionary` and there is no entity, `DbSet`, or migration for it. Persisting it inverts on restart: `OnDisconnectedAsync` does not fire when the process dies, so a deploy would leave rows claiming members are online with nothing to reap them. An empty registry after a restart is the correct answer, not lost state. The cost is a **single-replica ceiling** — a second instance would need a backplane, which `Program.cs` does not configure and `AppHost.cs` does not ask for.
 

@@ -47,11 +47,13 @@ public class GameHubTests(AppFixture fixture)
         await LoginAnonymouslyAsync(outsider);
 
         await using var connection = BuildConnection(outsiderCookies, $"gameId={gameId}");
+        var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        connection.On<string>("Exit", reason => exited.TrySetResult(reason));
 
-        var error = await StartAndWaitForCloseAsync(connection);
+        await connection.StartAsync();
 
-        Assert.NotNull(error);
-        Assert.NotEqual(HubConnectionState.Connected, connection.State);
+        Assert.Equal(HubConnectionState.Connected, connection.State);
+        Assert.Equal("NotAMember", await WithTimeoutAsync(exited.Task));
     }
 
     [Fact]

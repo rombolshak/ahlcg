@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Ahlcg.ApiService;
 using Ahlcg.ServiceDefaults;
 using AspNetCore.SignalR.OpenTelemetry;
@@ -15,7 +16,9 @@ builder.Services
     .AddOpenApi()
     .AddValidation();
 
-builder.Services.AddSignalR().AddHubInstrumentation();
+builder.Services.AddSignalR()
+    .AddHubInstrumentation()
+    .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSingleton<GameSessions>();
 builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
 builder.Services.TryAddSingleton(TimeProvider.System);

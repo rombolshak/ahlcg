@@ -4,5 +4,6 @@
     pathRewrite: {
       "^/api": "",
     },
+    ws: true,
   },
 };

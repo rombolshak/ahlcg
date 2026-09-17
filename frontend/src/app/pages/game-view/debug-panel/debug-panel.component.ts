@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GameState, gameState } from '@domain/game-state';
+import { GameConnectionService } from '@features/games/game-connection.service';
 import { JsonEditorComponent } from '@ui/kit/json-editor/json-editor.component';
 import { ArkErrors } from 'arktype';
 import { createPatch } from 'rfc6902';
@@ -21,11 +22,34 @@ import { GameStateStore } from '../store/game-state.store';
 export class DebugPanelComponent {
   private readonly gameStateService = inject(GameStateStore);
   readonly timelineService = inject(DebugTimelineService);
+  private readonly connectionService = inject(GameConnectionService);
 
   readonly originalGameState = signal(this.gameStateService.gameState());
   readonly gameState = linkedSignal(() => this.gameStateService.gameState());
+  readonly connectionState = this.connectionService.state;
+  readonly connectionStatusClass = computed(() => {
+    const state = this.connectionState();
+    if (state.status === 'connected') return 'status status-success';
+    if (state.status === 'connecting') return 'status status-warning';
+    return state.reason === 'initial' ? 'status' : 'status status-error';
+  });
+  readonly pingTimestamp = signal<Date | undefined>(undefined);
+  readonly pingError = signal('');
   stateErrors = '';
   selectedPatch = 0;
+
+  ping() {
+    this.connectionService.ping().subscribe({
+      next: timestamp => {
+        this.pingError.set('');
+        this.pingTimestamp.set(timestamp);
+      },
+      error: (error: unknown) => {
+        this.pingTimestamp.set(undefined);
+        this.pingError.set(error instanceof Error ? error.message : String(error));
+      },
+    });
+  }
 
   validateState(data: GameState | null): ValidationError[] {
     const newState = gameState(data);
