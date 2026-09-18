@@ -111,6 +111,8 @@ Transloco. `TranslocoHttpLoader` fetches `/assets/i18n/{lang}.json`.
 
 Use the `TranslocoDirective` (`*transloco`) in templates; `TranslocoService.load()` for scopes resolved at runtime.
 
+**The English values are not yours to invent.** What a string *says* is decided by [voice-and-tone.md](voice-and-tone.md) and chosen by the user from variants the `wordsmith` agent proposes — run `/wording`. Adding a key to `en.json` with a wording nobody chose is a convention violation, not a detail. Only `en.json` is ever hand-edited; the other languages lag and fall back key by key.
+
 ## Styling
 
 Tailwind CSS 4 via `@tailwindcss/postcss`, plus daisyUI 5. `src/styles.css` imports Tailwind, `@toolwind/anchors`, and the jsoneditor dark theme, then declares the custom daisyUI theme `abyss` (dark, `default: true`) with all colour, radius, and size tokens. Change design tokens there; consume them as daisyUI/Tailwind classes or `var(--color-…)`.

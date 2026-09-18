@@ -95,7 +95,7 @@ const meta: Meta<AccountComponent> = {
   // it switches to this view, so the story hardcodes the name that swap produces.
   render: () => ({
     template: `
-      <ah-dialog [isOpen]="true" title="Your Account" size="s">
+      <ah-dialog [isOpen]="true" title="Your admission" size="s">
         <ah-account />
       </ah-dialog>`,
   }),

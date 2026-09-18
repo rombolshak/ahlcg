@@ -48,7 +48,7 @@ export class MainMenuComponent {
     const items: MenuItem[] = [
       this.createContinueButton(isAuthenticated),
       this.createNewGameButton(),
-      this.createLoadGameButton(isAuthenticated),
+      this.createLoadGameButton(),
       this.createDecksButton(),
       this.createSettingsButton(),
     ];
@@ -157,10 +157,13 @@ export class MainMenuComponent {
     this.alertDialog.alert({ titleKey: 'main_menu.new_game_error.title', messageKey: 'main_menu.new_game_error.message' });
   }
 
-  private createLoadGameButton(isAuthenticated: boolean) {
+  /**
+   * Enabled while signed out too: the list request 401s, `authInterceptor` prompts and replays it,
+   * and a dismissal surfaces the 401 into the page's own error state.
+   */
+  private createLoadGameButton() {
     return {
       name: 'load_game',
-      disabled: !isAuthenticated,
       process: () => {
         void this.router.navigate(['/case-files']);
       },

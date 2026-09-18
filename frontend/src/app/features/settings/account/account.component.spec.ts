@@ -212,7 +212,7 @@ describe('AccountComponent through the real DialogService and ConfirmDialogServi
     expect(accountDialog.open).toBe(true);
     expect(credentialsDialog.open).toBe(true);
     expect(credentialsDialog.querySelector('form')).toBeTruthy();
-    expect(credentialsDialog.querySelector('h1')?.textContent.trim()).toBe('The Binding Rite');
+    expect(credentialsDialog.querySelector('h1')?.textContent.trim()).toBe('Credentials, please');
   });
 
   // Owns what the mocked block cannot: that confirming the *real* confirm dialog's own button

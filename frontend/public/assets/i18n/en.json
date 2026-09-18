@@ -76,7 +76,7 @@
     }
   },
   "main_menu": {
-    "login_to_continue": "Sign in to continue",
+    "login_to_continue": "Sign in",
     "continue": "Continue",
     "continue_tooltip": "Continue your investigation\nLast played {{lastPlayed}}",
     "new_game": "New investigation",
@@ -105,37 +105,37 @@
   },
   "auth": {
     "sign_in": {
-      "title": "Confront the Mythos",
-      "message": "Before the first draw, choose your anchor. Prefer a lightweight charm for quick entry. You can always bind a heavier pact later.",
+      "title": "Admission to the archives",
+      "message": "Choose how the desk should record you. A visitor's ticket asks nothing of you, and nothing stops you enrolling properly later.",
       "anonymous": {
-        "title": "The Lucky Talisman",
-        "lead": "Perfect for trying new decks or solo runs.",
-        "credentials": "No credentials required",
+        "title": "A visitor's ticket",
+        "lead": "For trying a deck out, or playing alone.",
+        "credentials": "No credentials taken",
         "device": "This device only",
-        "name": "A random alias in the multiplayer",
-        "duration": "Cases are deleted after 90 days of inactivity"
+        "name": "A name drawn for you",
+        "duration": "Files cleared after 90 days unused"
       },
       "credentials": {
-        "title": "The Tome of Binding",
-        "lead": "Choose if you want to investigate from multiple devices.",
-        "credentials": "Full account registration",
-        "device": "Access from any device",
-        "name": "Your own name online",
-        "duration": "Data is stored for at least 1 year"
+        "title": "An admission pass",
+        "lead": "For playing from more than one place.",
+        "credentials": "Credentials taken once",
+        "device": "Any device you sign in from",
+        "name": "The name you give",
+        "duration": "Files kept a year at the least"
       }
     },
     "credentials_form": {
-      "title": "The Binding Rite",
-      "legend": "Your particulars",
+      "title": "Credentials, please",
+      "legend": "Your credentials",
       "email": "Email",
       "username": "Name",
       "password": "Password",
-      "submit": "Bind account",
-      "back": "Go back",
+      "submit": "Continue",
+      "back": "Back",
       "cancel": "Not now",
       "errors": {
-        "wrong_password": "The sigil is incorrect. The Tome rejects your touch. Forgot your binding?",
-        "generic": "The archives are silent. An eldritch interference blocks our reach. Try again later."
+        "wrong_password": "You are not admitted. The desk gives no reason.",
+        "generic": "The archives are silent. Try again in a moment."
       }
     }
   },
@@ -143,34 +143,36 @@
     "language": "Language",
     "account": {
       "row": "Account",
-      "title": "Your Account",
+      "title": "Your admission",
       "back": "Back",
       "anonymous": {
         "name_label": "Alias",
-        "state": "A wandering spirit, unbound.",
-        "detail": "This account lives on this device alone. Signing out deletes it beyond recall, along with everything it carries.",
-        "upgrade": "Bind account",
+        "state": "You are here on a visitor's ticket.",
+        "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
+        "upgrade": "Enrol",
         "sign_out": "Sign out"
       },
       "permanent": {
         "name_label": "Name",
         "email_label": "Email",
-        "state": "A pact sealed and lasting.",
-        "detail": "Reachable from any device, however far the investigation strays.",
+        "state": "You hold an admission pass.",
+        "detail": "Your case files come with you to any device you sign in from.",
         "sign_out": "Sign out"
       },
       "signed_out": {
-        "state": "No pact is sealed.",
+        "state": "You are not signed in.",
         "detail": "Sign in to resume an investigation already begun.",
         "sign_in": "Sign in"
       },
       "sign_out_warning": {
-        "title": "The Pact Unravels",
-        "message": "This account exists only here, only now. Signing out deletes it beyond recall, along with everything it carries.",
+        "title": "Nothing will be kept",
+        "message": "There is no record of you anywhere but here. Sign out and the account and all its case files are deleted for good.",
         "confirm": "Delete and sign out",
-        "cancel": "Stay bound"
+        "cancel": "Keep the ticket"
       }
-    }
+    },
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "confirm_dialog": {
     "confirm": "Confirm",

@@ -14,6 +14,7 @@ The backend implements **authentication and game records** — creating a game, 
 | Any frontend code change | [frontend-conventions.md](frontend-conventions.md) — mandatory, then the relevant file below |
 | Understand how the pieces connect | [architecture.md](architecture.md) |
 | Add/modify a component, service, route, translation, style | [frontend.md](frontend.md) |
+| Write or change any string a user reads | [voice-and-tone.md](voice-and-tone.md) — then run `/wording`; copy is not written in passing |
 | Touch the game state store, patches, or animations | [state-store.md](state-store.md) |
 | Add/modify a backend endpoint, entity, or migration | [backend.md](backend.md) |
 | Call an endpoint | `/openapi/v1.json` (or `/scalar/v1`) — then [api.md](api.md) for the SignalR hub and what the spec omits |

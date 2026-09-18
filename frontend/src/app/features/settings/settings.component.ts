@@ -15,7 +15,7 @@ type View = 'settings' | 'account';
 type Row = { kind: 'setting'; index: number } | { kind: 'account' } | { kind: 'buttons' };
 
 interface DialogButton {
-  key: 'apply' | 'discard';
+  key: 'save' | 'cancel';
   process: () => void;
 }
 
@@ -62,13 +62,13 @@ export class SettingsComponent implements DialogContent {
 
   private readonly buttons = signal<DialogButton[]>([
     {
-      key: 'apply',
+      key: 'save',
       process: () => {
         this.applySettings();
       },
     },
     {
-      key: 'discard',
+      key: 'cancel',
       process: () => {
         this.discardSettings();
       },

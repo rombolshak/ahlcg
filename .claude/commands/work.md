@@ -81,15 +81,26 @@ Call `EnterPlanMode`, write the plan to the plan file, and call `ExitPlanMode`.
 
 The plan should name the files to change and what changes in each, the tests to add, and any decision where you had a real choice — stated as a decision, not buried. If something in the issue is ambiguous, resolve it here with `AskUserQuestion` rather than picking silently.
 
+**List every new user-visible string the change needs** — key path, what it has to say, and **where it sits**: which component, what it is next to, what the call site passes it, and how much room it has (from the design if the screen was designed, from the nearest comparable screen otherwise). The wording is step 6's job. These facts are the plan's job, because at step 6 there is no template to read them from — the copy gate runs before the code exists, so the plan is where the slot gets described.
+
 **Nothing is written to the codebase until the user approves.** That gate is the point of this workflow.
 
-## 6. Implement — hand off to Sonnet
+## 6. Copy gate — only if the plan adds strings
+
+Skip this entirely when nothing user-visible changes. Otherwise, follow `.claude/commands/wording.md` for the strings the plan listed, before any code is written: brief `wordsmith` from the plan (and the design, and the nearest comparable built screen), put the variants in front of the user, write the chosen copy into `en.json`.
+
+It happens **here**, not after implementation, for two reasons. Copy chosen before the diff exists is chosen on its merits rather than waved through because the screen already works. And an implementer handed finished strings has nothing to invent — which is the failure this gate exists to stop, since a string invented mid-diff reads as just another line to approve.
+
+The cost of that ordering is that some layout constraints are inferred rather than measured. `/wording` states those as assumptions; carry them into step 7 so the implementer knows which strings are provisional, and bring any that turn out not to fit back to step 6 rather than trimming them in the template.
+
+## 7. Implement — hand off to Sonnet
 
 Once approved, delegate to the `implementer` agent (`subagent_type: "implementer"`, `run_in_background: false`). Pass it:
 
 - the plan file path
 - the issue number and its full body
 - the branch name
+- if step 6 ran: the key paths that are already in `en.json`, and that it must use them verbatim and invent no new user-visible string. If it needs one the plan missed, or a chosen string does not fit the slot once the slot is real, it stops and says so — that goes back to step 6, not into the template.
 
 The plan file is the handoff artifact — it carries the approved decisions across the model switch. Do not re-summarise it into the prompt; point at it.
 
@@ -97,11 +108,11 @@ The plan file is the handoff artifact — it carries the approved decisions acro
 
 If the implementer reports the plan is unbuildable, do not paper over it — bring it back to the user with what it found and what you would do instead.
 
-## 7. Verify
+## 8. Verify
 
 Follow `.claude/commands/verify.md`. Green means green in CI; do not proceed on a failing tree.
 
-## 8. Self-review
+## 9. Self-review
 
 Invoke the `reviewer` agent (`subagent_type: "reviewer"`, `run_in_background: false`) with the issue number and body, the plan file path, and `git diff main...HEAD`.
 
@@ -109,7 +120,7 @@ If it reports unmet acceptance criteria, unexplained deviations, or convention v
 
 Scope creep findings are for the user to judge, not for you to quietly accept.
 
-## 9. Report and stop
+## 10. Report and stop
 
 Give the user:
 

@@ -35,7 +35,7 @@
         (click)="applySettings()"
         (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(0)"
       >
-        {{ t("Apply") }}
+        {{ t("settings.save") }}
       </button>
       <button
         type="reset"
@@ -44,7 +44,7 @@
         (click)="discardSettings()"
         (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(1)"
       >
-        {{ t("Discard") }}
+        {{ t("settings.cancel") }}
       </button>
     </div>
   } @else {
