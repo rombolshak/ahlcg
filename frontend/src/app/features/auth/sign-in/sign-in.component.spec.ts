@@ -81,7 +81,7 @@ describe('SignInComponent', () => {
 
     const alert = fixture.debugElement.query(By.css('.alert')).nativeElement as HTMLElement;
 
-    expect(alert.textContent).toContain('incorrect');
+    expect(alert.textContent).toContain('not admitted');
   });
 
   it('should render the credentials form when choosing to bind an account', () => {

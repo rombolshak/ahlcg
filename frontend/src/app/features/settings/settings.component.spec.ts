@@ -157,7 +157,7 @@ describe('SettingsComponent', () => {
     await component.getInputHandlers().confirm?.();
     fixture.detectChanges(); // `ah-account` must exist before its handlers can be delegated to
 
-    expect(component.getTitle()).toBe('Your Account');
+    expect(component.getTitle()).toBe('Your admission');
 
     await component.getInputHandlers().cancel?.();
 
@@ -210,7 +210,7 @@ describe('SettingsComponent projected inside a real DialogComponent', () => {
     hostFixture.detectChanges();
 
     expect((hostFixture.nativeElement as HTMLElement).querySelector('[data-testId=upgrade]')).toBeTruthy();
-    expect(heading()).toBe('Your Account');
+    expect(heading()).toBe('Your admission');
     expect(heading()).not.toBe(initialTitle);
 
     await settings.getInputHandlers().cancel?.();

@@ -325,4 +325,13 @@ describe('MainMenuComponent', () => {
       expect(button.disabled).toBe(false);
     });
   });
+
+  // The title is bound with no transloco prefix, so an unprefixed key would resolve the root
+  // `settings` *object* and render nothing readable. This pins the resolved string.
+  it('should label the settings dialog', () => {
+    (fixture.debugElement.query(By.css('[data-testId=settings]')).nativeElement as HTMLButtonElement).click();
+    TestBed.tick();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent.trim()).toBe('Settings');
+  });
 });
