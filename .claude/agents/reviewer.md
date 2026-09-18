@@ -52,6 +52,7 @@ Read whichever apply to the diff:
 | Any code at all | `docs/comments.md` |
 | Any frontend file | `docs/frontend-conventions.md` — mandatory, in full |
 | Components, services, routes, translations, styles | `docs/frontend.md` |
+| Any new or changed string a user reads | `docs/voice-and-tone.md` — and flag any `en.json` value the user did not choose through `/wording` |
 | The game state store, patches, animations | `docs/state-store.md` |
 | Backend endpoints, entities, migrations | `docs/backend.md` |
 | Any `*.spec.ts` or `*Tests.cs` | `docs/testing.md` |

@@ -8,7 +8,7 @@ How this project is built with Claude Code. Issues are the spec store; slash com
 /decompose 455   epic → child issues, linked as sub-issues, added to the board
 /redecompose 142 parent that ALREADY has children → audit the breakdown, fill in thin bodies
 /groom 57        thin issue → audit what it claims → implementable spec, written back to the issue body
-/work 57         issue → audit → branch → PLAN GATE → implementation → verify → self-review
+/work 57         issue → audit → branch → PLAN GATE → COPY GATE → implementation → verify → self-review
 /ship            commit → push → PR that closes the issue
 ```
 
@@ -18,6 +18,7 @@ Two supporting commands:
 
 - `/verify` — run exactly what CI would run for whatever changed, and fix failures. Called automatically by `/work`; run it directly when you have edited something by hand.
 - `/sync-docs` — fix claims in `docs/` that a change made untrue.
+- `/wording` — get the words for new user-visible strings written and chosen. Called by `/work` when the plan adds any; run it directly to rewrite copy that already ships.
 
 One setup command:
 
@@ -32,6 +33,8 @@ One setup command:
 **Conventions live in `docs/`, and only in `docs/`.** The `implementer` and `reviewer` agents are told which doc governs their change and required to read it; they do not carry their own copy of the rules. A checklist pasted into a prompt goes stale silently and then two sources disagree with no way to tell which is current. If a rule changes, it changes in one file.
 
 **The issue body is checked before it is trusted.** Bodies are written once and then rot — a spec groomed two months ago names files that have been renamed and services that have been deleted, and it reads exactly as confidently as it did the day it was written. So `/groom` and `/work` both run the read-only `issue-auditor` agent first: it extracts every checkable claim in the body, verifies it against the current code, and reports what is stale, wrong, or unverifiable. It never edits anything. `/work` then plans against reality and tells you where the body was wrong; it stops only when the acceptance criteria themselves cannot be built as written. Sonnet does this, because checking a claim against a grep is mechanical, and running it in a subagent keeps the search output out of the planning context.
+
+**Copy is chosen, not produced.** A string a user reads is a design decision, and until `/wording` existed it was made silently in the middle of a diff — one plausible sentence, never compared against an alternative, approved because the rest of the change was fine. So `/work` stops a second time whenever the plan adds strings: the `wordsmith` agent proposes several genuinely different wordings against `docs/voice-and-tone.md`, you pick, and only then is the implementer handed anything. It runs before implementation on purpose — copy judged next to a working screen gets waved through.
 
 **One approval gate, at the plan.** `/work` explores, then stops and shows you a plan. Nothing is written until you approve. Reviewing an approach costs a minute; reviewing a wrong 400-line diff costs an afternoon.
 
@@ -52,12 +55,16 @@ Cheap models do the mechanical work; Opus is spent where judgment is.
 | `/verify` | sonnet |
 | `/ship` | haiku |
 | `/sync-docs` | sonnet |
+| `/wording` | opus |
 | `issue-auditor` agent | sonnet |
 | `reviewer` agent | sonnet |
+| `wordsmith` agent | opus |
 
 `/work` runs on Opus, plans, and hands the **approved plan file** to the Sonnet `implementer` — the plan file is the handoff artifact, so the decisions survive the model switch.
 
 Each is a single `model:` line in the command or agent frontmatter. If a stage disappoints, change that one word. `/groom` on Sonnet is the most likely candidate for promotion to `opus`.
+
+**There is no temperature dial.** Agent frontmatter takes `name`, `description`, `tools` and `model` — nothing that turns creativity up. `wordsmith` needs variance more than any other stage here, so the divergence is written into its prompt as an explicit standard (variants must differ in *approach*, one must reach past the safe centre) rather than bought with a sampling parameter. If a future Claude Code exposes one, that prompt section is where it belongs.
 
 ## Issue types
 
@@ -121,7 +128,8 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 ├── agents/
 │   ├── issue-auditor.md read-only check of an issue body against the code (sonnet)
 │   ├── implementer.md executes an approved plan (sonnet)
-│   └── reviewer.md    read-only three-axis review (sonnet)
+│   ├── reviewer.md    read-only three-axis review (sonnet)
+│   └── wordsmith.md   read-only copy variants for new strings (opus)
 ├── lib/
 │   ├── project-status.md      shared board-mutation procedure
 │   ├── issue-dependencies.md  reading and writing Blocked by / Blocking
@@ -153,5 +161,5 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 ## What is deliberately not here
 
 - **No GitHub Actions `@claude`.** Work happens in local sessions.
-- **No background delegation.** Every subagent — `issue-auditor`, `implementer`, `reviewer` — is synchronous, inside the command that invoked it.
+- **No background delegation.** Every subagent — `issue-auditor`, `implementer`, `reviewer`, `wordsmith` — is synchronous, inside the command that invoked it.
 - **No enforcement hooks.** The husky hooks and CI already gate quality. Extra hooks are worth adding once real recurring mistakes are observed — building them pre-emptively is guessing.
