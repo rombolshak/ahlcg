@@ -1,5 +1,5 @@
 {
-  "a1": "#r#: После того как свойство карты игрока поместило в вашу локацию хотя бы 1 вашу улику: Положите на эту карту столько же ресурсов как подтверждения.",
-  "a2": "#n#: Пройдите проверку #i#(0). За каждую единицу, на которую превысили сложность, можете потратить 1 подтверждение, чтобы найти 1 улику в вашей локации.",
-  "title": "Исследовательские заметки"
+  "a1": "#r#: After a player card ability places 1 or more of your clues on your location: Place that many resources on Research Notes, as evidence.",
+  "a2": "#n#: Test #i#(0). For each point you succeed by, you may spend 1 evidence to discover 1 clue at your location.",
+  "title": "Research notes"
 }
