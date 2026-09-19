@@ -1,15 +1,15 @@
 {
   "game_header": {
     "game_actions": {
-      "chaosbag": "View chaos bag",
-      "mute": "Mute sound",
-      "fullscreen": "Switch to fullscreen",
-      "menu": "Open menu"
+      "chaosbag": "Mostra Sacchetto del Caos",
+      "mute": "Mute suono",
+      "fullscreen": "Espandi a schermo intero",
+      "menu": "Apri menu"
     },
     "current_game_phase": {
       "round": "Round",
-      "mythos": "Mythos phase",
-      "investigators": "Investigators phase",
+      "mythos": "Fase dei Miti",
+      "investigators": "Fase degli Investigatori",
       "enemy": "Enemy phase",
       "upkeep": "Upkeep phase"
     }
