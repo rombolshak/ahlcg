@@ -1,21 +1,21 @@
 {
   "game_header": {
     "game_actions": {
-      "chaosbag": "View chaos bag",
-      "mute": "Mute sound",
-      "fullscreen": "Switch to fullscreen",
-      "menu": "Open menu"
+      "chaosbag": "Voir le réserve du Chaos",
+      "mute": "Muet son",
+      "fullscreen": "Basculer vers plein écran",
+      "menu": "Ouvrir menu"
     },
     "current_game_phase": {
       "round": "Round",
-      "mythos": "Mythos phase",
-      "investigators": "Investigators phase",
-      "enemy": "Enemy phase",
-      "upkeep": "Upkeep phase"
+      "mythos": "La phase du Mythe",
+      "investigators": "La phase d’Investigation",
+      "enemy": "La phase des Ennemis",
+      "upkeep": "La phase d’Entretien"
     }
   },
   "global_game_info": {
-    "act": "Act",
+    "act": "Acte",
     "agenda": "Agenda"
   },
   "game_view": {
@@ -149,7 +149,7 @@
         "name_label": "Alias",
         "state": "You are here on a visitor's ticket.",
         "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
-        "upgrade": "Enrol",
+        "upgrade": "Intrigue",
         "sign_out": "Sign out"
       },
       "permanent": {
