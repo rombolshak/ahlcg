@@ -1,7 +1,7 @@
 {
-    "insight": "Чутьё",
-    "tactic": "Тактика",
-    "item": "Вещь",
-    "arkham": "Аркхэм",
-    "science": "Наука"
+  "arkham": "Аркхэм",
+  "insight": "Чутьё",
+  "item": "Вещь",
+  "science": "Наука",
+  "tactic": "Тактика"
 }

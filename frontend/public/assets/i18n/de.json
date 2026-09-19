@@ -1,1 +1,184 @@
-{}
+{
+  "game_header": {
+    "game_actions": {
+      "chaosbag": "",
+      "mute": "",
+      "fullscreen": "",
+      "menu": ""
+    },
+    "current_game_phase": {
+      "round": "",
+      "mythos": "",
+      "investigators": "",
+      "enemy": "",
+      "upkeep": ""
+    }
+  },
+  "global_game_info": {
+    "act": "",
+    "agenda": ""
+  },
+  "game_view": {
+    "current_investigator_panel": {
+      "actions_area": {
+        "given_action": "",
+        "standard_action": "",
+        "end_turn": "",
+        "buttons": {
+          "draw_card": "",
+          "take_resource": "",
+          "view_discard": ""
+        },
+        "spent_on": {
+          "investigate": "",
+          "move": "",
+          "draw": "",
+          "resource": "",
+          "play": "",
+          "activate": "",
+          "fight": "",
+          "engage": "",
+          "evade": ""
+        },
+        "restrictions": {
+          "evade_only": ""
+        }
+      },
+      "threat_area": {
+        "no_threats": {
+          "1": "",
+          "2": "You are safe. But not for long.",
+          "3": "All clear. The calm before the storm.",
+          "4": "",
+          "5": "The silence is deafening. It is not a comfort, but a prelude.",
+          "6": "A fragile peace. One that could shatter at any moment.",
+          "7": "",
+          "8": "",
+          "9": "",
+          "10": "",
+          "11": "",
+          "12": "",
+          "13": "",
+          "14": "A moment of respite. The shadows are quiet, but watching.",
+          "15": "No immediate threats. Catch your breath.",
+          "16": "",
+          "17": "",
+          "18": "",
+          "19": "",
+          "20": "For a blessed moment, there is nothing. You dare to hope.",
+          "21": "A lull in the madness. A chance to prepare for what comes next.",
+          "22": "",
+          "23": "",
+          "24": "",
+          "25": ""
+        }
+      }
+    }
+  },
+  "main_menu": {
+    "login_to_continue": "",
+    "continue": "",
+    "continue_tooltip": "",
+    "new_game": "",
+    "new_game_error": {
+      "title": "",
+      "message": "The investigation could not be started. Try again in a moment."
+    },
+    "load_game": "",
+    "decks": "",
+    "settings": ""
+  },
+  "case_files": {
+    "title": "",
+    "opened": "",
+    "last_played": "",
+    "empty": {
+      "message": "No case files yet.\nEvery investigation you begin is filed here.",
+      "action": ""
+    },
+    "error": {
+      "title": "",
+      "message": "",
+      "retry": ""
+    },
+    "back": ""
+  },
+  "auth": {
+    "sign_in": {
+      "title": "",
+      "message": "Choose how the desk should record you. A visitor's ticket asks nothing of you, and nothing stops you enrolling properly later.",
+      "anonymous": {
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
+      },
+      "credentials": {
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
+      }
+    },
+    "credentials_form": {
+      "title": "",
+      "legend": "",
+      "email": "",
+      "username": "",
+      "password": "",
+      "submit": "",
+      "back": "",
+      "cancel": "",
+      "errors": {
+        "wrong_password": "You are not admitted. The desk gives no reason.",
+        "generic": "The archives are silent. Try again in a moment."
+      }
+    }
+  },
+  "settings": {
+    "language": "",
+    "account": {
+      "row": "",
+      "title": "",
+      "back": "",
+      "anonymous": {
+        "name_label": "",
+        "state": "",
+        "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
+        "upgrade": "",
+        "sign_out": ""
+      },
+      "permanent": {
+        "name_label": "",
+        "email_label": "",
+        "state": "",
+        "detail": "",
+        "sign_out": ""
+      },
+      "signed_out": {
+        "state": "",
+        "detail": "",
+        "sign_in": ""
+      },
+      "sign_out_warning": {
+        "title": "",
+        "message": "There is no record of you anywhere but here. Sign out and the account and all its case files are deleted for good.",
+        "confirm": "",
+        "cancel": ""
+      }
+    },
+    "save": "",
+    "cancel": ""
+  },
+  "confirm_dialog": {
+    "confirm": "",
+    "cancel": ""
+  },
+  "alert_dialog": {
+    "ok": ""
+  }
+}
