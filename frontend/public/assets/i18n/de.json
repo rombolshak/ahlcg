@@ -1,138 +1,138 @@
 {
   "game_header": {
     "game_actions": {
-      "chaosbag": "View chaos bag",
-      "mute": "Mute sound",
-      "fullscreen": "Switch to fullscreen",
-      "menu": "Open menu"
+      "chaosbag": "",
+      "mute": "",
+      "fullscreen": "",
+      "menu": ""
     },
     "current_game_phase": {
-      "round": "Round",
-      "mythos": "Mythos phase",
-      "investigators": "Investigators phase",
-      "enemy": "Enemy phase",
-      "upkeep": "Upkeep phase"
+      "round": "",
+      "mythos": "",
+      "investigators": "",
+      "enemy": "",
+      "upkeep": ""
     }
   },
   "global_game_info": {
-    "act": "Act",
-    "agenda": "Agenda"
+    "act": "",
+    "agenda": ""
   },
   "game_view": {
     "current_investigator_panel": {
       "actions_area": {
-        "given_action": "Additional action from {{originator}}",
-        "standard_action": "Standard action",
-        "end_turn": "End turn",
+        "given_action": "",
+        "standard_action": "",
+        "end_turn": "",
         "buttons": {
-          "draw_card": "#n# Draw 1 card",
-          "take_resource": "#n# Gain 1 resource",
-          "view_discard": "#f# View discard pile"
+          "draw_card": "",
+          "take_resource": "",
+          "view_discard": ""
         },
         "spent_on": {
-          "investigate": "Investigated {{target}}",
-          "move": "Moved to {{target}}",
-          "draw": "Draw card",
-          "resource": "Got resource",
-          "play": "Played {{target}}",
-          "activate": "Activated {{target}}",
-          "fight": "Fought {{target}}",
-          "engage": "Engaged {{target}}",
-          "evade": "Attempted to evade {{target}}"
+          "investigate": "",
+          "move": "",
+          "draw": "",
+          "resource": "",
+          "play": "",
+          "activate": "",
+          "fight": "",
+          "engage": "",
+          "evade": ""
         },
         "restrictions": {
-          "evade_only": "Only @Evade@ actions"
+          "evade_only": ""
         }
       },
       "threat_area": {
         "no_threats": {
-          "1": "The coast is clear... for now.",
+          "1": "",
           "2": "You are safe. But not for long.",
           "3": "All clear. The calm before the storm.",
-          "4": "The path ahead is unguarded.",
+          "4": "",
           "5": "The silence is deafening. It is not a comfort, but a prelude.",
           "6": "A fragile peace. One that could shatter at any moment.",
-          "7": "The air itself holds its breath.",
-          "8": "A stillness that feels unnatural.",
-          "9": "The weight of anticipation hangs heavy.",
-          "10": "Nothing stirs in the immediate gloom.",
-          "11": "A precarious balance, soon to be broken.",
-          "12": "You stand unopposed, but the feeling of being watched persists.",
-          "13": "The darkness recedes, but does not sleep.",
+          "7": "",
+          "8": "",
+          "9": "",
+          "10": "",
+          "11": "",
+          "12": "",
+          "13": "",
           "14": "A moment of respite. The shadows are quiet, but watching.",
           "15": "No immediate threats. Catch your breath.",
-          "16": "The immediate danger has passed.",
-          "17": "A temporary lull in the chaos.",
-          "18": "A brief pause in the horror.",
-          "19": "A chance to regroup.",
+          "16": "",
+          "17": "",
+          "18": "",
+          "19": "",
           "20": "For a blessed moment, there is nothing. You dare to hope.",
           "21": "A lull in the madness. A chance to prepare for what comes next.",
-          "22": "A trick of fate has granted a moment's peace.",
-          "23": "The immediate peril has faded, but dread remains a constant companion.",
-          "24": "A deep breath is taken, the last one perhaps, before it begins again.",
-          "25": "Use this precious time to steel your nerves."
+          "22": "",
+          "23": "",
+          "24": "",
+          "25": ""
         }
       }
     }
   },
   "main_menu": {
-    "login_to_continue": "Sign in",
-    "continue": "Continue",
-    "continue_tooltip": "Continue your investigation\nLast played {{lastPlayed}}",
-    "new_game": "New investigation",
+    "login_to_continue": "",
+    "continue": "",
+    "continue_tooltip": "",
+    "new_game": "",
     "new_game_error": {
-      "title": "The case remains closed",
+      "title": "",
       "message": "The investigation could not be started. Try again in a moment."
     },
-    "load_game": "Case files",
-    "decks": "Dossiers",
-    "settings": "Settings"
+    "load_game": "",
+    "decks": "",
+    "settings": ""
   },
   "case_files": {
-    "title": "Case files",
-    "opened": "Opened {{date}}",
-    "last_played": "Last played {{date}}",
+    "title": "",
+    "opened": "",
+    "last_played": "",
     "empty": {
       "message": "No case files yet.\nEvery investigation you begin is filed here.",
-      "action": "Begin an investigation"
+      "action": ""
     },
     "error": {
-      "title": "The archive would not open",
-      "message": "Your case files could not be retrieved.",
-      "retry": "Try again"
+      "title": "",
+      "message": "",
+      "retry": ""
     },
-    "back": "Back"
+    "back": ""
   },
   "auth": {
     "sign_in": {
-      "title": "Admission to the archives",
+      "title": "",
       "message": "Choose how the desk should record you. A visitor's ticket asks nothing of you, and nothing stops you enrolling properly later.",
       "anonymous": {
-        "title": "A visitor's ticket",
-        "lead": "For trying a deck out, or playing alone.",
-        "credentials": "No credentials taken",
-        "device": "This device only",
-        "name": "A name drawn for you",
-        "duration": "Files cleared after 90 days unused"
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
       },
       "credentials": {
-        "title": "An admission pass",
-        "lead": "For playing from more than one place.",
-        "credentials": "Credentials taken once",
-        "device": "Any device you sign in from",
-        "name": "The name you give",
-        "duration": "Files kept a year at the least"
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
       }
     },
     "credentials_form": {
-      "title": "Credentials, please",
-      "legend": "Your credentials",
-      "email": "Email",
-      "username": "Name",
-      "password": "Password",
-      "submit": "Continue",
-      "back": "Back",
-      "cancel": "Not now",
+      "title": "",
+      "legend": "",
+      "email": "",
+      "username": "",
+      "password": "",
+      "submit": "",
+      "back": "",
+      "cancel": "",
       "errors": {
         "wrong_password": "You are not admitted. The desk gives no reason.",
         "generic": "The archives are silent. Try again in a moment."
@@ -140,45 +140,45 @@
     }
   },
   "settings": {
-    "language": "Language",
+    "language": "",
     "account": {
-      "row": "Account",
-      "title": "Your admission",
-      "back": "Back",
+      "row": "",
+      "title": "",
+      "back": "",
       "anonymous": {
-        "name_label": "Alias",
-        "state": "You are here on a visitor's ticket.",
+        "name_label": "",
+        "state": "",
         "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
-        "upgrade": "Enrol",
-        "sign_out": "Sign out"
+        "upgrade": "",
+        "sign_out": ""
       },
       "permanent": {
-        "name_label": "Name",
-        "email_label": "Email",
-        "state": "You hold an admission pass.",
-        "detail": "Your case files come with you to any device you sign in from.",
-        "sign_out": "Sign out"
+        "name_label": "",
+        "email_label": "",
+        "state": "",
+        "detail": "",
+        "sign_out": ""
       },
       "signed_out": {
-        "state": "You are not signed in.",
-        "detail": "Sign in to resume an investigation already begun.",
-        "sign_in": "Sign in"
+        "state": "",
+        "detail": "",
+        "sign_in": ""
       },
       "sign_out_warning": {
-        "title": "Nothing will be kept",
+        "title": "",
         "message": "There is no record of you anywhere but here. Sign out and the account and all its case files are deleted for good.",
-        "confirm": "Delete and sign out",
-        "cancel": "Keep the ticket"
+        "confirm": "",
+        "cancel": ""
       }
     },
-    "save": "Save",
-    "cancel": "Cancel"
+    "save": "",
+    "cancel": ""
   },
   "confirm_dialog": {
-    "confirm": "Confirm",
-    "cancel": "Cancel"
+    "confirm": "",
+    "cancel": ""
   },
   "alert_dialog": {
-    "ok": "OK"
+    "ok": ""
   }
 }
