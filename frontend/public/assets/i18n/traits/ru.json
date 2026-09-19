@@ -1,15 +1,15 @@
 {
-  "arkham": "Arkham",
+  "arkham": "Аркхэм",
   "book": "Book",
   "cursed": "Cursed",
   "ghoul": "Ghoul",
   "humanoid": "Humanoid",
   "innate": "Innate",
-  "insight": "Insight",
-  "item": "Item",
+  "insight": "Чутьё",
+  "item": "Вещь",
   "miskatonic": "Miskatonic",
   "monster": "Monster",
   "ritual": "Ritual",
-  "science": "Science",
-  "tactic": "Tactic"
+  "science": "Наука",
+  "tactic": "Тактика"
 }
