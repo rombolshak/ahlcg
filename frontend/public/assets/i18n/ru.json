@@ -3,8 +3,8 @@
     "game_actions": {
       "chaosbag": "Мешок хаоса",
       "mute": "Отключить звук",
-      "fullscreen": "Переключиться на весь экран",
-      "menu": "Меню"
+      "fullscreen": "Развернуть на полный экран",
+      "menu": "Открыть меню"
     },
     "current_game_phase": {
       "round": "Раунд",
