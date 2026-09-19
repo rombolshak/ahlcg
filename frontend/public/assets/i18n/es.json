@@ -1,22 +1,22 @@
 {
   "game_header": {
     "game_actions": {
-      "chaosbag": "View chaos bag",
-      "mute": "Mute sound",
-      "fullscreen": "Switch to fullscreen",
-      "menu": "Open menu"
+      "chaosbag": "Ver la bolsa de caos",
+      "mute": "Apagar el sonido",
+      "fullscreen": "Cambiar a pantalla completa",
+      "menu": "Abrir menú"
     },
     "current_game_phase": {
-      "round": "Round",
-      "mythos": "Mythos phase",
-      "investigators": "Investigators phase",
-      "enemy": "Enemy phase",
-      "upkeep": "Upkeep phase"
+      "round": "Ronda",
+      "mythos": "Fase de Mitos",
+      "investigators": "Fase de Investigación",
+      "enemy": "Fase de Enemigos",
+      "upkeep": "Fase de Mantenimiento"
     }
   },
   "global_game_info": {
-    "act": "Act",
-    "agenda": "Agenda"
+    "act": "Acto",
+    "agenda": "Plan"
   },
   "game_view": {
     "current_investigator_panel": {
