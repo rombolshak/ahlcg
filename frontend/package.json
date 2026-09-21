@@ -34,6 +34,7 @@
     "lint:i18n": "node scripts/i18n-langs.mjs --check",
     "i18n:screenshots": "node scripts/capture-screenshots.mjs",
     "i18n:screenshots:upload": "node --use-system-ca scripts/upload-screenshots.mjs",
+    "i18n:context": "node --use-system-ca scripts/upload-context.mjs",
     "lint:all": "npm run i18n:langs && npm run lint:tsc:all && npm run lint && npm run lint:style && npm run lint:spelling && npm run lint:format && npm run lint:i18n",
     "ci:all": "npm run lint:all && npm run test:ci && npm run test:scripts",
     "shove": "git config push.autoSetupRemote true && git add . && git commit -m 'wip: shoved' --no-verify && git push --no-verify",

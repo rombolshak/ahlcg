@@ -94,6 +94,15 @@ Two things exist to make the context above unnecessary to remember:
 - The **glossary** carries every term in the two categories above — the fixed Fantasy Flight rules words and this app's own coinages — with a note on each saying which it is and what sense is meant. Its source of truth is `crowdin/glossary.csv` in this repository, imported into Crowdin; the English side is maintained here, and the per-language terms are yours to fill in on Crowdin.
 - **Screenshots** are captured from Storybook, so every state has one, including the ones that are awkward to reach in a running app — the empty Case files screen, its error state, the signed-out account panel. They are regenerated with `npm run i18n:screenshots` and uploaded with `npm run i18n:screenshots:upload`, which auto-tags strings by matching the text Crowdin reads off the image. They are not committed; they are build output.
 
+### Where context comes from
+
+Two things reach Crowdin alongside the strings, and **CI sends both** — no one has to remember:
+
+- **Screenshots**, captured from every Storybook story that actually renders a translatable string. Which stories qualify is discovered by matching the rendered text against `en.json`, not listed anywhere, so a new screen gets screenshots because it has a story. Variants that show the same strings — eleven agenda percentages, four faction colours — collapse to one.
+- **Per-string notes**, from `frontend/i18n-context.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
+
+A note is written when the string is, by whoever ran `/wording`. `npm run i18n:context` reports any string without one and any note whose string is gone; neither fails the build, but both mean a translator is working blind.
+
 ### Running the upload yourself
 
 ```bash
