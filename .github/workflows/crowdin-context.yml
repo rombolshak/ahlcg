@@ -76,7 +76,7 @@ jobs:
         run: |
           shopt -s nullglob
           for file in crowdin/screenshots/*.png; do
-            $CROWDIN screenshot upload "$file" --auto-tag --label storybook -f "main/frontend/public/assets/i18n/en.json"
+            $CROWDIN screenshot upload "$file" --auto-tag --label storybook 
           done
 
       # Upsert leaves behind whatever this run did not produce — a story that was renamed, or one
