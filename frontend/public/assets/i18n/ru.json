@@ -34,7 +34,7 @@
           "move": "Передвижение в {{target}}",
           "draw": "Взята карта",
           "resource": "Получен ресурс",
-          "play": "Разыграно {{target}}",
+          "play": "Сыграть {{target}}",
           "activate": "Активировано {{target}}",
           "fight": "Бой с {{target}}",
           "engage": "",
