@@ -1,1 +1,184 @@
-{}
+{
+  "game_header": {
+    "game_actions": {
+      "chaosbag": "",
+      "mute": "",
+      "fullscreen": "",
+      "menu": ""
+    },
+    "current_game_phase": {
+      "round": "",
+      "mythos": "",
+      "investigators": "",
+      "enemy": "",
+      "upkeep": ""
+    }
+  },
+  "global_game_info": {
+    "act": "",
+    "agenda": ""
+  },
+  "game_view": {
+    "current_investigator_panel": {
+      "actions_area": {
+        "given_action": "",
+        "standard_action": "",
+        "end_turn": "",
+        "buttons": {
+          "draw_card": "",
+          "take_resource": "",
+          "view_discard": ""
+        },
+        "spent_on": {
+          "investigate": "",
+          "move": "",
+          "draw": "",
+          "resource": "",
+          "play": "",
+          "activate": "",
+          "fight": "",
+          "engage": "",
+          "evade": ""
+        },
+        "restrictions": {
+          "evade_only": ""
+        }
+      },
+      "threat_area": {
+        "no_threats": {
+          "1": "",
+          "2": "",
+          "3": "",
+          "4": "",
+          "5": "",
+          "6": "",
+          "7": "",
+          "8": "",
+          "9": "",
+          "10": "",
+          "11": "",
+          "12": "",
+          "13": "",
+          "14": "",
+          "15": "",
+          "16": "",
+          "17": "",
+          "18": "",
+          "19": "",
+          "20": "",
+          "21": "",
+          "22": "",
+          "23": "",
+          "24": "",
+          "25": ""
+        }
+      }
+    }
+  },
+  "main_menu": {
+    "login_to_continue": "",
+    "continue": "",
+    "continue_tooltip": "",
+    "new_game": "",
+    "new_game_error": {
+      "title": "",
+      "message": ""
+    },
+    "load_game": "",
+    "decks": "",
+    "settings": ""
+  },
+  "case_files": {
+    "title": "",
+    "opened": "",
+    "last_played": "",
+    "empty": {
+      "message": "",
+      "action": ""
+    },
+    "error": {
+      "title": "",
+      "message": "",
+      "retry": ""
+    },
+    "back": ""
+  },
+  "auth": {
+    "sign_in": {
+      "title": "",
+      "message": "",
+      "anonymous": {
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
+      },
+      "credentials": {
+        "title": "",
+        "lead": "",
+        "credentials": "",
+        "device": "",
+        "name": "",
+        "duration": ""
+      }
+    },
+    "credentials_form": {
+      "title": "",
+      "legend": "",
+      "email": "",
+      "username": "",
+      "password": "",
+      "submit": "",
+      "back": "",
+      "cancel": "",
+      "errors": {
+        "wrong_password": "",
+        "generic": ""
+      }
+    }
+  },
+  "settings": {
+    "language": "",
+    "account": {
+      "row": "",
+      "title": "",
+      "back": "",
+      "anonymous": {
+        "name_label": "",
+        "state": "",
+        "detail": "",
+        "upgrade": "",
+        "sign_out": ""
+      },
+      "permanent": {
+        "name_label": "",
+        "email_label": "",
+        "state": "",
+        "detail": "",
+        "sign_out": ""
+      },
+      "signed_out": {
+        "state": "",
+        "detail": "",
+        "sign_in": ""
+      },
+      "sign_out_warning": {
+        "title": "",
+        "message": "",
+        "confirm": "",
+        "cancel": ""
+      }
+    },
+    "save": "",
+    "cancel": ""
+  },
+  "confirm_dialog": {
+    "confirm": "",
+    "cancel": ""
+  },
+  "alert_dialog": {
+    "ok": ""
+  }
+}
