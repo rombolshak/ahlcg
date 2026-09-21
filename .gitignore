@@ -4,3 +4,6 @@
 # A Windows program redirecting to the NUL device under Git Bash writes a literal file instead.
 # Podman does this from the end-to-end suite, dropping one next to whatever it was run from.
 NUL
+
+# Crowdin screenshots are regenerated from Storybook and uploaded; not source.
+crowdin/screenshots/

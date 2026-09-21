@@ -1,0 +1,24 @@
+# Crowdin project configuration.
+#
+# Both the project id and the token come from the environment — never commit either.
+# Locally: set CROWDIN_PROJECT_ID and CROWDIN_PERSONAL_TOKEN in your shell.
+# In CI: repository secrets of the same names.
+#
+# See docs/translating.md for the workflow this serves.
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+preserve_hierarchy: true
+
+files:
+  # The app's own chrome, and nothing else. Card, trait and campaign text under
+  # cards/, traits/ and campaigns/ is deliberately absent: Fantasy Flight has already
+  # published those in every language this project targets, so translating them here
+  # would contradict the printed card. See docs/translating.md.
+  #
+  # `%two_letters_code%` is what makes the filenames match this repo's `i18n-languages.json`, and
+  # it is also a constraint: only one regional variant per language can be enabled, or two targets
+  # would write the same file. The project therefore uses es-ES, pt-BR and zh-CN — switching to
+  # pt-PT or zh-TW is a project setting, not a change here.
+  - source: /frontend/public/assets/i18n/en.json
+    translation: /frontend/public/assets/i18n/%two_letters_code%.json

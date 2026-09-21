@@ -1,0 +1,41 @@
+Term [en],Description [en],Part of Speech [en]
+act,"FIXED — Fantasy Flight rules term. The scenario card tracking investigator progress; advancing it moves the scenario toward success. Use the word the official edition in your language prints on the card, not a translation of ""act"" in its theatrical or legal sense.",noun
+agenda,"FIXED — Fantasy Flight rules term. The scenario card tracking the opposing threat; advancing it moves the scenario toward failure. Not ""agenda"" in the sense of a meeting's list of topics.",noun
+chaos bag,"FIXED — Fantasy Flight rules term. The bag of tokens drawn from to resolve a skill test.",noun
+clue,"FIXED — Fantasy Flight rules term. A token gathered at locations; clues advance acts.",noun
+doom,"FIXED — Fantasy Flight rules term. A token that accumulates on cards; doom advances agendas.",noun
+resource,"FIXED — Fantasy Flight rules term. The token spent to pay card costs. Not ""resource"" in a general computing or economic sense.",noun
+round,"FIXED — Fantasy Flight rules term. One full cycle of the game's phases. Several editions keep the English word as a loanword — the French and Italian files already do. Use whatever the official edition prints.",noun
+mythos phase,"FIXED — Fantasy Flight rules term. The phase in which the encounter deck acts.",noun
+upkeep phase,"FIXED — Fantasy Flight rules term. The phase that resets the board at the end of a round.",noun
+investigation phase,"FIXED — Fantasy Flight rules term. The phase in which investigators take their actions.",noun
+enemy phase,"FIXED — Fantasy Flight rules term. The phase in which engaged enemies attack.",noun
+investigator,"FIXED — Fantasy Flight rules term. The character a player controls. In this app's fiction the investigator is the person the case file is about.",noun
+location,"FIXED — Fantasy Flight rules term. A place on the scenario map.",noun
+enemy,"FIXED — Fantasy Flight rules term. A hostile card; when engaged it sits in an investigator's threat area.",noun
+asset,"FIXED — Fantasy Flight rules term. A persistent card an investigator controls, occupying an asset slot.",noun
+threat area,"FIXED — Fantasy Flight rules term. The area holding enemies engaged with an investigator, and their attached cards.",noun
+trauma,"FIXED — Fantasy Flight rules term. Permanent damage carried between scenarios.",noun
+evade,"FIXED — Fantasy Flight rules term, used as an action name. Disengage from an enemy by passing a test.",verb
+trait,"FIXED — Fantasy Flight rules term. An italic keyword on a card (Item, Tome, Ally). Traits themselves are translated separately and are not part of this project's strings.",noun
+scenario,"FIXED — Fantasy Flight rules term. One self-contained play session.",noun
+campaign,"FIXED — Fantasy Flight rules term. A series of linked scenarios.",noun
+willpower,"FIXED — Fantasy Flight rules term. One of the four investigator skills.",noun
+intellect,"FIXED — Fantasy Flight rules term. One of the four investigator skills.",noun
+combat,"FIXED — Fantasy Flight rules term. One of the four investigator skills.",noun
+agility,"FIXED — Fantasy Flight rules term. One of the four investigator skills.",noun
+health,"FIXED — Fantasy Flight rules term. Physical vitality; reduced by damage.",noun
+sanity,"FIXED — Fantasy Flight rules term. Mental resilience; reduced by horror.",noun
+archive,"APP COINAGE — the app itself, framed as a restricted collection of case files. Atmospheric register: it appears in titles, errors and empty states, never on a button. Pick one word per language and use it everywhere; it is the central metaphor. Avoid a word meaning a mere computer backup.",noun
+case file,"APP COINAGE — a saved game. The user's list of them is the ""Case files"" screen. Never ""saved game"", ""session"", ""slot"" or ""match"". Keep the archive metaphor: this is a paper file about an investigation.",noun
+investigation,"APP COINAGE for a play session, distinct from the rules term ""investigation phase"". Starting a game is ""begin an investigation"". Never ""create game"" or ""new session"".",noun
+dossier,"APP COINAGE — a deck of cards, framed as a folder of papers. Never ""deck"" or ""collection"" in the UI, though the rules term for a deck stays intact on cards themselves.",noun
+visitor,"APP COINAGE — the user. Someone admitted to read the archive, never its owner. The copy never calls them a reader, a player or a scholar.",noun
+the desk,"APP COINAGE — the archive's gatekeeper, the voice that refuses. Failures and limits speak as the desk rather than as software: ""the desk declines"", not ""permission denied"".",noun
+admission,"APP COINAGE — having an account, framed as being admitted to the archive rather than owning a profile. Never ""account"" in the SaaS sense, and never a supernatural pact or binding.",noun
+visitor's ticket,"APP COINAGE — an anonymous account: no credentials taken, no record kept, this device alone. Keep it concrete and paper-like.",noun
+admission pass,"APP COINAGE — a registered account: credentials given once, good from any device. Contrast with visitor's ticket.",noun
+credentials,"APP COINAGE for email, name and password together. Never ""personal information"", ""particulars"" or ""details"".",noun
+enrol,"APP COINAGE for registering an account. Never ""sign up"" or ""create account"". British spelling in the English source.",verb
+sign in,"Operative register, plain and short. Never ""log in"" or ""log on"". Use whatever a native speaker expects on an authentication button in your language.",verb
+sign out,"Operative register, plain and short. Pairs with sign in.",verb
