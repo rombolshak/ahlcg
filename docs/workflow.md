@@ -55,14 +55,48 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Production build → `dist/ahlcg/` | `npm run build` |
 | Tests (single run — there is no watch script) | `npm test` / `npm run test:ci` |
 | Component tests (real Chromium) | `npm run test:component` |
-| Everything CI runs | `npm run ci:all` (= `lint:all` + `test:ci`) — CI also runs `test:component` as a separate step; `ci:all` deliberately excludes it (see [testing.md](testing.md)) |
+| Everything CI runs | `npm run ci:all` (= `lint:all` + `test:ci` + `test:scripts`) — CI also runs `test:component` as a separate step; `ci:all` deliberately excludes it (see [testing.md](testing.md)) |
 | All linters | `npm run lint:all` |
 | Type check only | `npm run lint:tsc:all` (app + spec tsconfigs) |
 | ESLint (+ dependency cycles) / Stylelint / cspell | `npm run lint` / `lint:style` / `lint:spelling` |
 | Import cycles only | `npm run lint:deps` |
 | Format check / fix | `npm run lint:format` / `npm run format` |
 | Storybook | `npm run storybook` / `npm run build-storybook` |
-| Transloco key management | `npm run loco-join` / `npm run loco-split` |
+| Translation coverage table (+ generate the enabled-language list) | `npm run lint:i18n` |
+| Regenerate the enabled-language list only | `npm run i18n:langs` |
+| Build-time script unit tests | `npm run test:scripts` |
+| Capture translator screenshots from Storybook → `crowdin/screenshots/` | `npm run i18n:screenshots` (needs a current `build-storybook`) |
+| Fill a downloaded context JSONL from `en.context.json` | `npm run i18n:context:fill -- ../crowdin-context.jsonl` |
+| Everything Crowdin-side (screenshots, context, status) | the official CLI — `npx --prefix frontend crowdin …` |
+
+`src/app/generated/available-langs.ts` is **generated and gitignored** — it carries each language's translation
+coverage, and `app.config.ts` derives the enabled languages from it.
+
+Exactly one module imports it — `app.config.ts` — and exactly one module imports *that*: `src/main.ts`. So the
+consumers are the four commands that compile from `main.ts`: `start`, `build`, `watch`, and `lint:tsc:app` (whose
+`tsconfig.app.json` lists `./src/main.ts` as its only entry). Those four have a `pre` hook calling `i18n:langs`;
+`prepare` has one too, so `npm ci` produces the file before anything else runs. **`test:ci`, `lint:tsc:spec`,
+`lint:deps` and Storybook deliberately have no hook** — verified by deleting the file and running each directly:
+they pass, because nothing in the spec graph or Storybook's preview reaches `app.config.ts`. A spec that imports it
+one day would need a hook added; nothing else would.
+
+A fresh clone therefore needs no manual step. If you ever see `available-langs` missing, run `npm run i18n:langs`.
+
+Coverage counts a string as translated only when it is present, non-blank, **and different from the English** —
+Crowdin exports untranslated strings either as `""` or as the source text, and counting key presence alone would
+report a wholly English locale as complete. The source language is exempt, being its own reference.
+
+**Crowdin owns every locale file except `en.json`.** `crowdin.yml` at the repo root maps that one source file and
+deliberately excludes the `cards/`, `traits/` and `campaigns/` subtrees. Both `CROWDIN_PROJECT_ID` (the numeric id,
+not the slug) and `CROWDIN_PERSONAL_TOKEN` are read from the environment and must never be committed. Translations
+arrive as pull requests Crowdin opens against `main`, so a hand-edit to a non-`en` locale will be overwritten on the
+next sync. See [translating.md](translating.md).
+
+**Context is uploaded by CI, not by hand.** `.github/workflows/crowdin-context.yml` builds Storybook, captures
+screenshots and pushes `frontend/public/assets/i18n/en.context.json` on every merge to `main` that touches `en.json`, the notes, a
+story or the scripts — and again nightly, because Crowdin pulls new strings on its own schedule and a push-triggered
+run can upload a screenshot before the string it describes exists. Both uploads are idempotent, so the nightly pass
+repairs that race. Run them locally only to see the result before merging.
 
 `npm run lint` chains `lint:deps`, which cruises `src/` with dependency-cruiser (`.dependency-cruiser.mjs`) for
 module- and folder-level import cycles. Its rules are `severity: "warn"`, so it prints violations and still exits

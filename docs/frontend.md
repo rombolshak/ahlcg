@@ -101,8 +101,9 @@ It returns an `InputLayer` fragment rather than registering one, so **layer life
 
 Transloco. `TranslocoHttpLoader` fetches `/assets/i18n/{lang}.json`.
 
-- `app.config.ts` enables **en, es, fr, ru, de, it, pl**; `defaultLang`/`fallbackLang` are `en` with `useFallbackTranslation`. Several more (`zh`, `pt`, `cs`, `vi`, `ko`, `uk`) have JSON files and are commented out in the config — uncomment there to enable.
-- `transloco.config.ts` (`rootTranslationsPath: public/assets/i18n/`) drives the `loco-join` / `loco-split` keys-manager scripts and lists a wider `langs` array than the app enables.
+- **`availableLangs` is derived, never hand-written.** `app.config.ts` computes it from `src/app/generated/available-langs.ts` — a gitignored module carrying each language's translation coverage — keeping those at or above a **90%** threshold. A language is enabled by being translated, not by editing a list. `defaultLang`/`fallbackLang` are `en` with `useFallbackTranslation`, so a missing key renders English silently.
+- **An explicit choice outranks the threshold.** `?lang=xx`, or an `xx` already persisted in the user's preferences, adds that language to `availableLangs` even at 0% coverage — that is how a translator previews unfinished work, and how someone who chose a language before it fell below the bar keeps it. Both paths go through the same pure `resolveAvailableLangs()` in `core/i18n/`; the threshold governs what the app *advertises*, never what it can load. An id the generated module does not know is ignored.
+- `transloco.config.ts` (`rootTranslationsPath: public/assets/i18n/`) is **not** read by anything — the app config is inline in `app.config.ts`, and the tooling that consumed this file (the Transloco schematics, `transloco-keys-manager`) is no longer installed. `i18n-languages.json` is the authoritative language list.
 - **Scopes** are lazily loaded subtrees under `public/assets/i18n/`:
   - `cards/{set}/{index}/{lang}.json` — one file per card, loaded by `CardInfoService`
   - `traits/{lang}.json` — shared trait names

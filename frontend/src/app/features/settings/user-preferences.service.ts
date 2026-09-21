@@ -9,9 +9,11 @@ const userPreferences = type({
 
 export type UserPreferences = typeof userPreferences.infer;
 
+export const USER_PREFERENCES_SUFFIX = 'user-preferences';
+
 export function provideUserPreferencesService(): Provider {
   return [
-    { provide: STORAGE_KEY_SUFFIX, useValue: 'user-preferences' },
+    { provide: STORAGE_KEY_SUFFIX, useValue: USER_PREFERENCES_SUFFIX },
     {
       provide: DEFAULT_SETTINGS,
       useFactory: (transloco: TranslocoService) => {

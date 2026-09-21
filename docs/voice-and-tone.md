@@ -92,7 +92,7 @@ The test is what the string is about, not how atmospheric it is: if it describes
 
 ## Mechanics that constrain the words
 
-- `frontend/public/assets/i18n/en.json` is the source. **English is the only language you write** — the other files lag behind it and fall back to English key by key. Never hand-translate.
+- `frontend/public/assets/i18n/en.json` is the source. **English is the only language you write** — the other files lag behind it and fall back to English key by key. Never hand-translate. The other languages are written by human translators who speak them, briefed by [translating.md](translating.md).
 - Keys are `snake_case` and nested by feature area, mirroring where the string appears.
 - **British spelling** — *enrol*, *flavour*, *apologising*. It is what `docs/` already uses; `en.json` had nothing either way until `settings.account.anonymous.upgrade` forced the call.
 - Interpolation is `{{param}}` — the token must survive rewording verbatim; where it sits in the sentence is free.

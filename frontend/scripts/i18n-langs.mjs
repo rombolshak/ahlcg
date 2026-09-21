@@ -1,0 +1,178 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(scriptsDir, '..');
+
+/** The source language is translated by definition — comparing it against itself would report 0%. */
+const SOURCE_LANG = 'en';
+
+const defaultPaths = {
+  i18nDir: path.join(frontendRoot, 'public', 'assets', 'i18n'),
+  languagesFile: path.join(frontendRoot, 'i18n-languages.json'),
+  outputFile: path.join(frontendRoot, 'src', 'app', 'generated', 'available-langs.ts'),
+};
+
+/** Flattens a nested translation object into a `dotted.path` → leaf value map. */
+export function flattenEntries(value, prefix = '', into = new Map()) {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    if (prefix) into.set(prefix, value);
+    return into;
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    flattenEntries(child, prefix ? `${prefix}.${key}` : key, into);
+  }
+  return into;
+}
+
+/** Flattens a nested translation object into its leaf keys, joined by `.`. */
+export function flattenKeys(value) {
+  return [...flattenEntries(value).keys()];
+}
+
+/**
+ * Coverage of a locale against English. A key counts as translated only when it is present, carries
+ * a non-blank value, and that value differs from the English one — Crowdin exports untranslated
+ * strings either as `""` or as the source text, and counting mere key presence would report a
+ * wholly English locale as complete.
+ */
+export function coverageFor(enEntries, localeEntries) {
+  const missing = [];
+  const untranslated = [];
+
+  for (const [key, enValue] of enEntries) {
+    if (!localeEntries.has(key)) {
+      missing.push(key);
+      continue;
+    }
+
+    const value = localeEntries.get(key);
+    const blank = typeof value !== 'string' ? value === null || value === undefined : value.trim() === '';
+    if (blank || String(value) === String(enValue)) untranslated.push(key);
+  }
+
+  const total = enEntries.size;
+  const present = total - missing.length - untranslated.length;
+
+  return { present, missing, untranslated, total, percentage: total === 0 ? 100 : Math.round((present / total) * 100) };
+}
+
+/** The source file is its own reference, so it is complete by definition. */
+function sourceCoverage(total) {
+  return { present: total, missing: [], untranslated: [], total, percentage: 100 };
+}
+
+/** Keys that `localeKeys` has and `enKeys` does not — a rename left the locale file behind. */
+export function orphanKeysOf(enKeys, localeKeys) {
+  const enSet = new Set(enKeys);
+  return localeKeys.filter(key => !enSet.has(key));
+}
+
+function loadJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function buildReport({ i18nDir, languagesFile }) {
+  const languageLabels = loadJson(languagesFile);
+  const enEntries = flattenEntries(loadJson(path.join(i18nDir, `${SOURCE_LANG}.json`)));
+  const enKeys = [...enEntries.keys()];
+
+  // `*.context.json` sits beside the locale it describes and is translator notes, not translations.
+  // Everything else ending in `.json` is treated as a locale, so an unknown one is still reported
+  // rather than silently ignored.
+  const localeFiles = fs
+    .readdirSync(i18nDir, { withFileTypes: true })
+    .filter(entry => entry.isFile() && entry.name.endsWith('.json') && !entry.name.endsWith('.context.json'))
+    .map(entry => entry.name);
+
+  const errors = [];
+  const entries = [];
+
+  for (const fileName of localeFiles) {
+    const id = fileName.replace(/\.json$/, '');
+
+    if (!Object.hasOwn(languageLabels, id)) {
+      errors.push(`${fileName}: no entry in i18n-languages.json`);
+      continue;
+    }
+
+    let content;
+    try {
+      content = loadJson(path.join(i18nDir, fileName));
+    } catch (error) {
+      errors.push(`${fileName}: malformed JSON (${error.message})`);
+      continue;
+    }
+
+    const localeEntries = flattenEntries(content);
+    const orphans = orphanKeysOf(enKeys, [...localeEntries.keys()]);
+    if (orphans.length > 0) {
+      errors.push(`${fileName}: orphan keys not present in en.json: ${orphans.join(', ')}`);
+    }
+
+    const coverage = id === SOURCE_LANG ? sourceCoverage(enEntries.size) : coverageFor(enEntries, localeEntries);
+    entries.push({
+      id,
+      label: languageLabels[id],
+      coverage: coverage.percentage,
+      missing: coverage.missing.length,
+      untranslated: coverage.untranslated.length,
+      orphans: orphans.length,
+    });
+  }
+
+  entries.sort((a, b) => a.id.localeCompare(b.id));
+
+  return { entries, errors };
+}
+
+function writeGeneratedModule(entries, outputFile) {
+  fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+
+  const body = entries.map(entry => `  { id: '${entry.id}', label: ${JSON.stringify(entry.label)}, coverage: ${entry.coverage} },`).join('\n');
+
+  const contents = `// Generated by \`npm run i18n:langs\`. Do not edit by hand.
+
+export interface GeneratedLangEntry {
+  id: string;
+  label: string;
+  coverage: number;
+}
+
+export const availableLangs: GeneratedLangEntry[] = [
+${body}
+];
+`;
+
+  fs.writeFileSync(outputFile, contents);
+}
+
+function printTable(entries, log) {
+  log(entries.map(({ id, label, coverage, missing, untranslated, orphans }) => ({ id, label, coverage: `${coverage}%`, missing, untranslated, orphans })));
+}
+
+export function main(options = {}) {
+  const { i18nDir = defaultPaths.i18nDir, languagesFile = defaultPaths.languagesFile, outputFile = defaultPaths.outputFile, log = console.table } = options;
+
+  const { entries, errors } = buildReport({ i18nDir, languagesFile });
+
+  writeGeneratedModule(entries, outputFile);
+  printTable(entries, log);
+
+  for (const error of errors) {
+    console.error(error);
+  }
+
+  return { entries, errors };
+}
+
+if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  const check = process.argv.includes('--check');
+  const { errors } = main();
+
+  if (check && errors.length > 0) {
+    process.exitCode = 1;
+  }
+}

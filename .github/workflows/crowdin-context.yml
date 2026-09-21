@@ -1,0 +1,120 @@
+name: "Crowdin context"
+
+# Screenshots and per-string notes are what make a source string translatable. Uploading them by
+# hand meant they arrived late or not at all, and a forgotten upload has no symptom — so this runs
+# on every merge that could change them.
+#
+# The nightly run is not redundant: Crowdin pulls new strings from main on its own schedule, so a
+# push-triggered run can upload context before the strings it describes exist. Every step here is
+# idempotent, so the nightly pass repairs that race.
+#
+# All Crowdin traffic goes through the official CLI, which reads `crowdin.yml` at the repo root and
+# takes its credentials from the environment.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "frontend/public/assets/i18n/en.json"
+      - "frontend/public/assets/i18n/en.context.json"
+      - "frontend/src/**/*.stories.ts"
+      - "frontend/scripts/**"
+      - "crowdin.yml"
+      - ".github/workflows/crowdin-context.yml"
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A second run overlapping the first would race on the same screenshots and strings.
+concurrency:
+  group: crowdin-context
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    name: Upload screenshots and context
+    runs-on: ubuntu-latest
+    env:
+      CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+      CROWDIN: npx --prefix frontend crowdin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: "npm"
+          cache-dependency-path: "frontend/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --force # tailwind 4 fails to resolve in angular-builder 19.1
+
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      # The capture reads the built story index to decide what to screenshot, so this is a
+      # prerequisite rather than a convenience.
+      - name: Build Storybook
+        working-directory: frontend
+        run: npm run build-storybook
+
+      - name: Capture screenshots
+        working-directory: frontend
+        run: npm run i18n:screenshots
+
+      # `--auto-tag` matches the text Crowdin reads off each image against the source strings, and
+      # `-f` keeps that search on our own file rather than card and trait text. Upload upserts on
+      # filename, so re-running re-tags each screen against its current image.
+      - name: Upload screenshots
+        run: |
+          shopt -s nullglob
+          for file in crowdin/screenshots/*.png; do
+            $CROWDIN screenshot upload "$file" --auto-tag --label storybook -f "main/frontend/public/assets/i18n/en.json"
+          done
+
+      # Upsert leaves behind whatever this run did not produce — a story that was renamed, or one
+      # that stopped showing translatable text, keeps a screenshot nothing will ever update again.
+      # Only those are removed; the `storybook` label keeps the comparison to screenshots this job
+      # made, so anything uploaded by hand is untouched. The recursive jq is deliberate: it finds
+      # id and name whether or not the payload comes wrapped.
+      - name: Remove screenshots this run no longer produces
+        run: |
+          ls crowdin/screenshots/*.png | xargs -n1 basename | sort > "$RUNNER_TEMP/current.txt"
+          $CROWDIN screenshot list --label storybook -o json --no-colors --no-progress \
+            | jq -r '.. | objects | select(has("id") and has("name")) | "\(.id)\t\(.name)"' | sort -u \
+            | while IFS=$'\t' read -r id name; do
+                if ! grep -qxF "$name" "$RUNNER_TEMP/current.txt"; then
+                  echo "removing $name — no story produces it any more"
+                  $CROWDIN screenshot delete "$id"
+                fi
+              done
+
+      - name: Download strings needing context
+        run: $CROWDIN context download -f "**/i18n/en.json" --to crowdin-context.jsonl
+
+      - name: Fill context from the authored notes
+        working-directory: frontend
+        run: npm run i18n:context:fill -- ../crowdin-context.jsonl
+
+      - name: Upload context
+        run: $CROWDIN context upload --from crowdin-context.jsonl
+
+      - name: Report coverage
+        if: always()
+        run: $CROWDIN context status -f "**/i18n/en.json"
+
+      - name: Keep the screenshots for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crowdin-screenshots
+          path: crowdin/screenshots/
+          retention-days: 7
+          if-no-files-found: warn

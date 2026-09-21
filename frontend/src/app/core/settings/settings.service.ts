@@ -5,12 +5,16 @@ const STORAGE_KEY_PREFIX = 'ahlcg_';
 export const DEFAULT_SETTINGS = new InjectionToken('Default settings value');
 export const STORAGE_KEY_SUFFIX = new InjectionToken<string>('Storage key suffix');
 
+export function storageKeyFor(suffix: string): string {
+  return STORAGE_KEY_PREFIX + suffix;
+}
+
 @Service()
 export class SettingsService<T extends object> {
   private readonly defaultSettings = inject<T>(DEFAULT_SETTINGS);
   private readonly storageKeySuffix = inject(STORAGE_KEY_SUFFIX);
 
-  private readonly storageKey = STORAGE_KEY_PREFIX + this.storageKeySuffix;
+  private readonly storageKey = storageKeyFor(this.storageKeySuffix);
   private readonly settings = signal(this.defaultSettings);
 
   constructor() {

@@ -1,5 +1,18 @@
+# Crowdin project configuration.
+#
+# Both the project id and the token come from the environment — never commit either.
+# Locally: set CROWDIN_PROJECT_ID and CROWDIN_PERSONAL_TOKEN in your shell.
+# In CI: repository secrets of the same names.
+#
+# See docs/translating.md for the workflow this serves.
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+preserve_hierarchy: true
+
 bundles:
   - 1
+
 files:
-  - source: /frontend/public/assets/i18n/**/en.json
-    translation: /frontend/public/assets/i18n/**/%two_letters_code%.json
+  - source: /frontend/public/assets/i18n/en.json
+    translation: /frontend/public/assets/i18n/%two_letters_code%.json
