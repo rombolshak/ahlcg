@@ -47,11 +47,11 @@
       "threat_area": {
         "no_threats": {
           "1": "",
-          "2": "You are safe. But not for long.",
-          "3": "All clear. The calm before the storm.",
+          "2": "",
+          "3": "",
           "4": "",
-          "5": "The silence is deafening. It is not a comfort, but a prelude.",
-          "6": "A fragile peace. One that could shatter at any moment.",
+          "5": "",
+          "6": "",
           "7": "",
           "8": "",
           "9": "",
@@ -59,14 +59,14 @@
           "11": "",
           "12": "",
           "13": "",
-          "14": "A moment of respite. The shadows are quiet, but watching.",
-          "15": "No immediate threats. Catch your breath.",
+          "14": "",
+          "15": "",
           "16": "",
           "17": "",
           "18": "",
           "19": "",
-          "20": "For a blessed moment, there is nothing. You dare to hope.",
-          "21": "A lull in the madness. A chance to prepare for what comes next.",
+          "20": "",
+          "21": "",
           "22": "",
           "23": "",
           "24": "",
@@ -82,7 +82,7 @@
     "new_game": "",
     "new_game_error": {
       "title": "",
-      "message": "The investigation could not be started. Try again in a moment."
+      "message": ""
     },
     "load_game": "",
     "decks": "",
@@ -93,7 +93,7 @@
     "opened": "",
     "last_played": "",
     "empty": {
-      "message": "No case files yet.\nEvery investigation you begin is filed here.",
+      "message": "",
       "action": ""
     },
     "error": {
@@ -106,7 +106,7 @@
   "auth": {
     "sign_in": {
       "title": "",
-      "message": "Choose how the desk should record you. A visitor's ticket asks nothing of you, and nothing stops you enrolling properly later.",
+      "message": "",
       "anonymous": {
         "title": "",
         "lead": "",
@@ -134,8 +134,8 @@
       "back": "",
       "cancel": "",
       "errors": {
-        "wrong_password": "You are not admitted. The desk gives no reason.",
-        "generic": "The archives are silent. Try again in a moment."
+        "wrong_password": "",
+        "generic": ""
       }
     }
   },
@@ -148,7 +148,7 @@
       "anonymous": {
         "name_label": "",
         "state": "",
-        "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
+        "detail": "",
         "upgrade": "Intrigue",
         "sign_out": ""
       },
@@ -166,7 +166,7 @@
       },
       "sign_out_warning": {
         "title": "",
-        "message": "There is no record of you anywhere but here. Sign out and the account and all its case files are deleted for good.",
+        "message": "",
         "confirm": "",
         "cancel": ""
       }
