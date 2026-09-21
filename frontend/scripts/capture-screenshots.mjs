@@ -70,7 +70,7 @@ function readStories() {
 
   return Object.values(JSON.parse(fs.readFileSync(indexFile, 'utf8')).entries)
     .filter(entry => entry.type === 'story' && inScope.test(entry.title))
-    .map(entry => ({ id: entry.id, name: entry.id.replace(/^app-/, '').replace('--', '--') }));
+    .map(entry => ({ id: entry.id, name: entry.id.replace(/^app-/, '') }));
 }
 
 export async function capture({ log = console.log } = {}) {
