@@ -66,7 +66,7 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Regenerate the enabled-language list only | `npm run i18n:langs` |
 | Build-time script unit tests | `npm run test:scripts` |
 | Capture translator screenshots from Storybook → `crowdin/screenshots/` | `npm run i18n:screenshots` (needs a current `build-storybook`) |
-| Fill a downloaded context JSONL from `i18n-context.json` | `npm run i18n:context:fill -- ../crowdin-context.jsonl` |
+| Fill a downloaded context JSONL from `en.context.json` | `npm run i18n:context:fill -- ../crowdin-context.jsonl` |
 | Everything Crowdin-side (screenshots, context, status) | the official CLI — `npx --prefix frontend crowdin …` |
 
 `src/app/generated/available-langs.ts` is **generated and gitignored** — it carries each language's translation
@@ -93,7 +93,7 @@ arrive as pull requests Crowdin opens against `main`, so a hand-edit to a non-`e
 next sync. See [translating.md](translating.md).
 
 **Context is uploaded by CI, not by hand.** `.github/workflows/crowdin-context.yml` builds Storybook, captures
-screenshots and pushes `frontend/i18n-context.json` on every merge to `main` that touches `en.json`, the notes, a
+screenshots and pushes `frontend/public/assets/i18n/en.context.json` on every merge to `main` that touches `en.json`, the notes, a
 story or the scripts — and again nightly, because Crowdin pulls new strings on its own schedule and a push-triggered
 run can upload a screenshot before the string it describes exists. Both uploads are idempotent, so the nightly pass
 repairs that race. Run them locally only to see the result before merging.

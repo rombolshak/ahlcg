@@ -98,6 +98,17 @@ describe('main', () => {
     expect(fs.readFileSync(outputFile, 'utf8')).toContain('{ id: \'es\', label: "Español", coverage: 50 }');
   });
 
+  it('should ignore a .context.json sitting beside the locales', () => {
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English' }));
+    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));
+    fs.writeFileSync(path.join(i18nDir, 'en.context.json'), JSON.stringify({ a: 'A note about where a sits.' }));
+
+    const { entries, errors } = main({ i18nDir, languagesFile, outputFile, log });
+
+    expect(entries.map(entry => entry.id)).toEqual(['en']);
+    expect(errors).toEqual([]);
+  });
+
   it('should report a malformed locale file rather than throw', () => {
     fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', de: 'Deutsch' }));
     fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));

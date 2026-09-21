@@ -79,9 +79,12 @@ function buildReport({ i18nDir, languagesFile }) {
   const enEntries = flattenEntries(loadJson(path.join(i18nDir, `${SOURCE_LANG}.json`)));
   const enKeys = [...enEntries.keys()];
 
+  // `*.context.json` sits beside the locale it describes and is translator notes, not translations.
+  // Everything else ending in `.json` is treated as a locale, so an unknown one is still reported
+  // rather than silently ignored.
   const localeFiles = fs
     .readdirSync(i18nDir, { withFileTypes: true })
-    .filter(entry => entry.isFile() && entry.name.endsWith('.json'))
+    .filter(entry => entry.isFile() && entry.name.endsWith('.json') && !entry.name.endsWith('.context.json'))
     .map(entry => entry.name);
 
   const errors = [];

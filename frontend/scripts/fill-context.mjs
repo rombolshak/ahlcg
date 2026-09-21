@@ -4,11 +4,11 @@ import { fileURLToPath } from 'node:url';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptsDir, '..');
-const notesFile = path.join(frontendRoot, 'i18n-context.json');
+const notesFile = path.join(frontendRoot, 'public', 'assets', 'i18n', 'en.context.json');
 
 /**
  * Fills the `ai_context` of a JSONL produced by `crowdin context download` from the notes authored
- * in `i18n-context.json`, and touches nothing else on the line. The notes live in the repository
+ * in `en.context.json`, and touches nothing else on the line. The notes live in the repository
  * rather than being generated from the string alone, because what a translator needs — that a
  * button has three words of room, that `#n#` must survive verbatim, that a line belongs to a
  * randomised pool — is knowledge the source text does not carry.
@@ -53,7 +53,7 @@ if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === path.res
     fs.writeFileSync(target, `${out.join('\n')}\n`);
     console.log(`${filled.length} of ${lines.length} strings given context`);
 
-    if (withoutNote.length > 0) console.log(`\n${withoutNote.length} string(s) have no note in i18n-context.json:\n  ${withoutNote.join('\n  ')}`);
+    if (withoutNote.length > 0) console.log(`\n${withoutNote.length} string(s) have no note in en.context.json:\n  ${withoutNote.join('\n  ')}`);
     if (unused.length > 0) console.log(`\n${unused.length} note(s) describe a string that no longer exists:\n  ${unused.join('\n  ')}`);
   }
 }

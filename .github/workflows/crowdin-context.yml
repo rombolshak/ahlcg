@@ -16,7 +16,7 @@ on:
     branches: ["main"]
     paths:
       - "frontend/public/assets/i18n/en.json"
-      - "frontend/i18n-context.json"
+      - "frontend/public/assets/i18n/en.context.json"
       - "frontend/src/**/*.stories.ts"
       - "frontend/scripts/**"
       - "crowdin.yml"

@@ -99,7 +99,7 @@ Two things exist to make the context above unnecessary to remember:
 Two things reach Crowdin alongside the strings, and **CI sends both** — no one has to remember:
 
 - **Screenshots**, captured from every Storybook story that actually renders a translatable string. Which stories qualify is discovered by matching the rendered text against `en.json`, not listed anywhere, so a new screen gets screenshots because it has a story. Variants that show the same strings — eleven agenda percentages, four faction colours — collapse to one.
-- **Per-string notes**, from `frontend/i18n-context.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
+- **Per-string notes**, from `frontend/public/assets/i18n/en.context.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
 
 A note is written when the string is, by whoever ran `/wording`. The notes are authored here rather than generated from the string alone precisely because that knowledge is not in the source text.
 
@@ -127,6 +127,6 @@ npx --prefix frontend crowdin context status -f "**/i18n/en.json"
 Two traps worth knowing, both hit while wiring this up:
 
 - **The project id is numeric.** `ahlcg-online` is the slug, and the API rejects it.
-- **Behind a TLS-intercepting proxy, the CLI's writes fail** with `self signed certificate in certificate chain`, while its reads succeed — `context status` and `context download` work, `context upload` and `screenshot upload` do not. The CLI is a Java program with its own trust store, so `NODE_EXTRA_CA_CERTS` and Node's `--use-system-ca` do nothing for it; the fix is to import the proxy's root CA into the JDK truststore. CI has no proxy, which is where these uploads actually run.
+- **Behind a TLS-intercepting proxy the CLI fails intermittently** with `self signed certificate in certificate chain` — the same command succeeds and fails on alternate runs, roughly one attempt in three, whatever it is doing. Retrying usually works. The CLI is a Java program with its own trust store, so `NODE_EXTRA_CA_CERTS` and Node's `--use-system-ca` do nothing for it; the real fix is importing the proxy's root CA into the JDK truststore. CI has no proxy, which is where these uploads actually run.
 
 Each run re-captures the whole local folder from scratch and re-uploads it, so auto-tag always runs against the current image rather than a re-captured screen keeping tags that point at text which has since moved. Upload upserts on filename, so it then **removes only the screenshots the run no longer produces** — a renamed story, or one that stopped showing translatable text, would otherwise leave an image nothing ever updates again. The comparison is scoped by the `storybook` label, so screenshots a person uploaded by hand are never touched.
