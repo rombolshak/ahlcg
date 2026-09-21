@@ -8,13 +8,19 @@ import { storybookAngularVitest } from '@storybook/angular-vite/vitest';
 
 import { playwright } from '@vitest/browser-playwright';
 
-const dirname =
-  typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   test: {
     projects: [
+      {
+        test: {
+          name: 'scripts',
+          environment: 'node',
+          include: ['scripts/**/*.spec.mjs'],
+        },
+      },
       {
         extends: true,
         plugins: [

@@ -12,7 +12,7 @@ import { configs as tsConfigs } from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: [".angular/*", ".storybook/*", "dist/*", "coverage/*", "eslint.config.js", "karma.conf.cjs"],
+    ignores: [".angular/*", ".storybook/*", "dist/*", "coverage/*", "eslint.config.js", "karma.conf.cjs", "src/app/generated/*"],
   },
   {
     files: ["**/*.js"],
