@@ -7,3 +7,6 @@ NUL
 
 # Crowdin screenshots are regenerated from Storybook and uploaded; not source.
 crowdin/screenshots/
+
+# Transient: downloaded by `crowdin context download`, filled, uploaded, discarded.
+crowdin-context.jsonl

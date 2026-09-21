@@ -92,7 +92,7 @@ One consequence worth knowing: if the correct translation genuinely *is* the Eng
 Two things exist to make the context above unnecessary to remember:
 
 - The **glossary** carries every term in the two categories above — the fixed Fantasy Flight rules words and this app's own coinages — with a note on each saying which it is and what sense is meant. **It lives in Crowdin and is maintained there**, because the half that matters most is the per-language terms, and those are yours to fill in as you go. It was seeded from [glossary.md](glossary.md) and the lexicon in [voice-and-tone.md](voice-and-tone.md), which stay the repo-side record of what the English terms mean and which of them are not ours to change; if you change a term's meaning, change it in those too.
-- **Screenshots** are captured from Storybook, so every state has one, including the ones that are awkward to reach in a running app — the empty Case files screen, its error state, the signed-out account panel. They are regenerated with `npm run i18n:screenshots` and uploaded with `npm run i18n:screenshots:upload`, which auto-tags strings by matching the text Crowdin reads off the image. They are not committed; they are build output.
+- **Screenshots** are captured from Storybook, so every state has one, including the ones that are awkward to reach in a running app — the empty Case files screen, its error state, the signed-out account panel. They are regenerated with `npm run i18n:screenshots` and uploaded by `crowdin screenshot upload --auto-tag`, which tags strings by matching the text Crowdin reads off the image. They are not committed; they are build output.
 
 ### Where context comes from
 
@@ -101,20 +101,32 @@ Two things reach Crowdin alongside the strings, and **CI sends both** — no one
 - **Screenshots**, captured from every Storybook story that actually renders a translatable string. Which stories qualify is discovered by matching the rendered text against `en.json`, not listed anywhere, so a new screen gets screenshots because it has a story. Variants that show the same strings — eleven agenda percentages, four faction colours — collapse to one.
 - **Per-string notes**, from `frontend/i18n-context.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
 
-A note is written when the string is, by whoever ran `/wording`. `npm run i18n:context` reports any string without one and any note whose string is gone; neither fails the build, but both mean a translator is working blind.
+A note is written when the string is, by whoever ran `/wording`. The notes are authored here rather than generated from the string alone precisely because that knowledge is not in the source text.
 
-### Running the upload yourself
+They reach Crowdin through its own CLI, as three steps CI runs in order:
 
 ```bash
-cd frontend
-export CROWDIN_PROJECT_ID=932245          # the NUMERIC id, not the `ahlcg-online` slug
-export CROWDIN_TOKEN_FILE=/path/to/token  # or CROWDIN_PERSONAL_TOKEN directly
-npm run build-storybook && npm run i18n:screenshots && npm run i18n:screenshots:upload
+crowdin context download -f "**/i18n/en.json" --to crowdin-context.jsonl
+npm run i18n:context:fill -- ../crowdin-context.jsonl   # writes ai_context, touches nothing else
+crowdin context upload --from crowdin-context.jsonl
+```
+
+The JSONL is transient and gitignored. `crowdin context status` reports coverage, and `crowdin context reset` clears AI-written context without touching anything a person wrote by hand — which is why the notes go in `ai_context` rather than the manual `context` field. The fill step reports any string without a note and any note whose string is gone; neither fails the build, but both mean a translator is working blind.
+
+### Running it yourself
+
+CI does all of this on merge, so you only need it to see the result before merging.
+
+```bash
+export CROWDIN_PROJECT_ID=932245        # the NUMERIC id, not the `ahlcg-online` slug
+export CROWDIN_PERSONAL_TOKEN=…         # never commit it; CI reads it from a repo secret
+cd frontend && npm run build-storybook && npm run i18n:screenshots && cd ..
+npx --prefix frontend crowdin context status -f "**/i18n/en.json"
 ```
 
 Two traps worth knowing, both hit while wiring this up:
 
-- **The project id is numeric.** `ahlcg-online` is the slug and the API rejects it.
-- **Node must be told to trust the OS certificate store.** On Windows it otherwise ignores it entirely, and behind a TLS-intercepting proxy every call dies with `SELF_SIGNED_CERT_IN_CHAIN`. That is why the upload script runs under `--use-system-ca`. The Crowdin **CLI** cannot be fixed this way — it is a Java program with its own trust store — which is why the uploader talks to the REST API directly instead of shelling out to it.
+- **The project id is numeric.** `ahlcg-online` is the slug, and the API rejects it.
+- **Behind a TLS-intercepting proxy, the CLI's writes fail** with `self signed certificate in certificate chain`, while its reads succeed — `context status` and `context download` work, `context upload` and `screenshot upload` do not. The CLI is a Java program with its own trust store, so `NODE_EXTRA_CA_CERTS` and Node's `--use-system-ca` do nothing for it; the fix is to import the proxy's root CA into the JDK truststore. CI has no proxy, which is where these uploads actually run.
 
-Re-running the upload replaces each screenshot and re-tags it, so a re-captured screen never keeps tags pointing at text that has since moved.
+Re-running replaces each screenshot and re-tags it, so a re-captured screen never keeps tags pointing at text that has since moved.

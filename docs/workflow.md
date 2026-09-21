@@ -66,8 +66,8 @@ Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
 | Regenerate the enabled-language list only | `npm run i18n:langs` |
 | Build-time script unit tests | `npm run test:scripts` |
 | Capture translator screenshots from Storybook → `crowdin/screenshots/` | `npm run i18n:screenshots` (needs a current `build-storybook`) |
-| Upload those screenshots to Crowdin, auto-tagging strings | `npm run i18n:screenshots:upload` |
-| Push per-string notes from `i18n-context.json` to Crowdin | `npm run i18n:context` |
+| Fill a downloaded context JSONL from `i18n-context.json` | `npm run i18n:context:fill -- ../crowdin-context.jsonl` |
+| Everything Crowdin-side (screenshots, context, status) | the official CLI — `npx --prefix frontend crowdin …` |
 
 `src/app/generated/available-langs.ts` is **generated and gitignored** — it carries each language's translation
 coverage, and `app.config.ts` derives the enabled languages from it.
