@@ -69,13 +69,26 @@ jobs:
         working-directory: frontend
         run: npm run i18n:screenshots
 
+      # Wiping before uploading is what keeps the set honest: `screenshot upload` upserts on filename,
+      # so a story that is renamed or stops showing translatable text would otherwise leave an image
+      # nothing ever updates again. The `storybook` label scopes the wipe to the ones this job
+      # produced, leaving anything a person uploaded by hand alone. The recursive jq is deliberate —
+      # it reads an id out of the listing whether or not the payload is wrapped.
+      - name: Remove previously generated screenshots
+        run: |
+          ids=$($CROWDIN screenshot list --label storybook -o json --no-colors --no-progress \
+                | jq -r '.. | objects | select(has("id") and has("name")) | .id' | sort -u)
+          for id in $ids; do
+            $CROWDIN screenshot delete "$id"
+          done
+
       # `--auto-tag` matches the text Crowdin reads off each image against the source strings, and
       # `-f` keeps that search on our own file rather than card and trait text.
       - name: Upload screenshots
         run: |
           shopt -s nullglob
           for file in crowdin/screenshots/*.png; do
-            $CROWDIN screenshot upload "$file" --auto-tag -f "main/frontend/public/assets/i18n/en.json"
+            $CROWDIN screenshot upload "$file" --auto-tag --label storybook -f "main/frontend/public/assets/i18n/en.json"
           done
 
       - name: Download strings needing context
