@@ -1,4 +1,6 @@
-<ng-container *transloco="let t; prefix: 'game_view.current_investigator_panel.actions_area'">
+<ng-container
+  *transloco="let t; scope: 'pages/game-view/current-investigator-panel/actions-area'; prefix: 'pages/game-view/current-investigator-panel/actions-area'"
+>
   @let _action = action();
   @if (_action.originator) {
     <p>{{ t("given_action", { originator: _action.originator }) }}</p>

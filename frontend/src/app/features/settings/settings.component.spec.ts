@@ -148,10 +148,10 @@ describe('SettingsComponent', () => {
     expect(fixture.debugElement.query(By.directive(SettingItemComponent))).toBeTruthy();
   });
 
-  // The account view renames the dialog rather than printing a heading of its own. The dialog asks
-  // for the title, so what this owns is the answer — `undefined` leaves the dialog's own in place.
+  // The account view renames the dialog rather than printing a heading of its own, which would sit
+  // under a "Settings" title that no longer describes it.
   it('should offer the account title only while the account view is open', async () => {
-    expect(component.getTitle()).toBeUndefined();
+    expect(component.getTitle()).toBe('Settings');
 
     await component.getInputHandlers().moveDown?.();
     await component.getInputHandlers().confirm?.();
@@ -161,7 +161,7 @@ describe('SettingsComponent', () => {
 
     await component.getInputHandlers().cancel?.();
 
-    expect(component.getTitle()).toBeUndefined();
+    expect(component.getTitle()).toBe('Settings');
   });
 });
 

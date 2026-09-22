@@ -1,10 +1,10 @@
-<ng-container *transloco="let t">
+<ng-container *transloco="let t; scope: 'features/settings'; prefix: 'features/settings'">
   @if (view() === "settings") {
     <div class="text-center text-xl">
       <ah-setting-item
         #setting
         tabindex="0"
-        [name]="t('settings.language')"
+        [name]="t('language')"
         [template]="lang"
         [currentValue]="settings().lang"
         [selected]="selectedIndex() === 0"
@@ -23,7 +23,7 @@
         (click)="view.set('account')"
         (mouseenter)="selectedIndex.set(accountRowIndex())"
       >
-        <p>{{ t("settings.account.row") }}</p>
+        <p>{{ t("account.row") }}</p>
       </button>
     </div>
 
@@ -35,7 +35,7 @@
         (click)="applySettings()"
         (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(0)"
       >
-        {{ t("settings.save") }}
+        {{ t("save") }}
       </button>
       <button
         type="reset"
@@ -44,7 +44,7 @@
         (click)="discardSettings()"
         (mouseenter)="selectedIndex.set(buttonsRowIndex()); selectedButtonIndex.set(1)"
       >
-        {{ t("settings.cancel") }}
+        {{ t("cancel") }}
       </button>
     </div>
   } @else {

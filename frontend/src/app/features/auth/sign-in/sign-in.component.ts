@@ -1,20 +1,22 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal, Signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService, User } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
 import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { CredentialsFormComponent } from '../credentials-form/credentials-form.component';
+
+const SIGN_IN_I18N_SCOPE = 'features/auth/sign-in';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
  * interceptor's 401 — so the same dialog appears however it was reached. `m`: the choice view puts
  * two cards side by side, which 32rem squeezes into columns too narrow for their bullet lists.
  */
-export const SIGN_IN_DIALOG_OPTIONS = { titleKey: 'auth.sign_in.title', size: 'm' } as const satisfies DialogOptions;
+export const SIGN_IN_DIALOG_OPTIONS = { size: 'm' } as const satisfies DialogOptions;
 
 type View = 'choice' | 'credentials';
 
@@ -53,8 +55,12 @@ interface IdentityResult {
 export class SignInComponent implements DialogContentWithResult<User> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco = inject(TranslocoService);
 
   public readonly result = output<User>();
+
+  private readonly titleText = toSignal(this.transloco.selectTranslate<string>('title', {}, SIGN_IN_I18N_SCOPE));
+  public getTitle = () => this.titleText();
 
   protected readonly view = signal<View>('choice');
   protected readonly busy = signal(false);
@@ -143,7 +149,7 @@ export class SignInComponent implements DialogContentWithResult<User> {
 
   private toErrorMessage(err: unknown): ErrorMessage {
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 403) return { kind: 'key', key: 'wrong_password' };
+      if (err.status === 403) return { kind: 'key', key: 'errors.wrong_password' };
 
       if (err.status === 400) {
         const body = err.error as IdentityResult | null;
@@ -152,6 +158,6 @@ export class SignInComponent implements DialogContentWithResult<User> {
       }
     }
 
-    return { kind: 'key', key: 'generic' };
+    return { kind: 'key', key: 'errors.generic' };
   }
 }

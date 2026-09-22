@@ -92,9 +92,9 @@ The test is what the string is about, not how atmospheric it is: if it describes
 
 ## Mechanics that constrain the words
 
-- `frontend/public/assets/i18n/en.json` is the source. **English is the only language you write** — the other files lag behind it and fall back to English key by key. Never hand-translate. The other languages are written by human translators who speak them, briefed by [translating.md](translating.md).
-- Keys are `snake_case` and nested by feature area, mirroring where the string appears.
-- **British spelling** — *enrol*, *flavour*, *apologising*. It is what `docs/` already uses; `en.json` had nothing either way until `settings.account.anonymous.upgrade` forced the call.
+- An **`en.json` in the folder of the component that renders the string** is the source, one per component. **English is the only language you write** — the files beside it lag behind and fall back to English key by key. Never hand-translate. The other languages are written by human translators who speak them, briefed by [translating.md](translating.md).
+- Keys are `snake_case`, nested only within the file. What used to be a feature-area prefix is now the folder the file sits in — see [frontend.md](frontend.md#internationalization).
+- **British spelling** — *enrol*, *flavour*, *apologising*. It is what `docs/` already uses; the English strings had nothing either way until `account.anonymous.upgrade` forced the call.
 - Interpolation is `{{param}}` — the token must survive rewording verbatim; where it sits in the sentence is free.
 - `#x#` and `@x@` are markup for `WithAhSymbolsPipe` (`frontend/src/app/ui/pipes/with-ah-symbols.pipe.ts`): `#n#` becomes the glyph in the Arkham symbol font, `@Evade@` becomes bold italic. **They only render where the template pipes the string through `withAhSymbols`** — anywhere else they show as literal hashes, so do not introduce one without checking the template.
 - `\n` in a value is a real line break, used where a message is deliberately two lines (`case_files.empty.message`).

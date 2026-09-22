@@ -1,16 +1,16 @@
-<ng-container *transloco="let t">
+<ng-container *transloco="let t; scope: 'pages/game-view/game-header/current-game-phase'; prefix: 'pages/game-view/game-header/current-game-phase'">
   <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
   <div
     class="flex h-full min-w-80 flex-col items-center justify-center rounded-full bg-linear-to-b from-(--baseColor)/50 via-(--accentColor)/70 to-(--baseColor)/50 px-4"
     [style.--baseColor]="colorSet().baseColor"
     [style.--accentColor]="colorSet().accentColor"
   >
-    <span class="text-xs/3"> {{ t("game_header.current_game_phase.round") }} {{ roundNumber() }} </span>
+    <span class="text-xs/3"> {{ t("round") }} {{ roundNumber() }} </span>
     <span class="text-xl/5">
-      {{ t(`game_header.current_game_phase.${this.gamePhase()}`) }}
+      {{ t(this.gamePhase()) }}
       @let entityTitle = actingEntityTitle();
       @if (entityTitle) {
-        — {{ t(entityTitle) }}
+        <ng-container *transloco="let tc">— {{ tc(entityTitle) }}</ng-container>
       }
     </span>
   </div>

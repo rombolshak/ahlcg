@@ -1,40 +1,42 @@
-<ng-container *transloco="let t">
-  <div class="peer text-center">
-    <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("global_game_info.act") }} {{ act().stage }}</p>
-    <p class="font-[Conkordia] text-xl">
-      {{ t(title() ?? "") }}
-    </p>
-  </div>
+<ng-container *transloco="let t; scope: 'pages/game-view/global-game-info-panel'; prefix: 'pages/game-view/global-game-info-panel'">
+  <ng-container *transloco="let tc">
+    <div class="peer text-center">
+      <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("act") }} {{ act().stage }}</p>
+      <p class="font-[Conkordia] text-xl">
+        {{ tc(title() ?? "") }}
+      </p>
+    </div>
 
-  @for (objective of act().objectives; track $index) {
-    <p data-testId="objective" [innerHTML]="t(objective.description) | withAhSymbols"></p>
-    @switch (objective.type) {
-      @case ("health") {
-        <ah-single-bar
-          class="mb-2 h-5 w-full"
-          goodColor="bg-health-damaged"
-          badColor="bg-slate-950"
-          [current]="objective.currentValue"
-          [max]="objective.startValue || objective.requiredValue"
-        />
-      }
-      @default {
-        <div
-          class="mb-2 grid grid-flow-col gap-1"
-          [class.grid-rows-1]="maxLines()[$index] === 1"
-          [class.grid-rows-2]="maxLines()[$index] === 2"
-          [class.grid-rows-3]="maxLines()[$index] === 3"
-        >
-          @for (_ of [].constructor(objective.currentValue); track $index) {
-            <img width="36" height="36" alt="objective token" class="flex-none brightness-125" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
-          }
-          @for (_ of [].constructor(emptySlots()[$index]); track $index) {
-            <img width="36" height="36" alt="objective token" class="flex-none brightness-25" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
-          }
-        </div>
+    @for (objective of act().objectives; track $index) {
+      <p data-testId="objective" [innerHTML]="tc(objective.description) | withAhSymbols"></p>
+      @switch (objective.type) {
+        @case ("health") {
+          <ah-single-bar
+            class="mb-2 h-5 w-full"
+            goodColor="bg-health-damaged"
+            badColor="bg-slate-950"
+            [current]="objective.currentValue"
+            [max]="objective.startValue || objective.requiredValue"
+          />
+        }
+        @default {
+          <div
+            class="mb-2 grid grid-flow-col gap-1"
+            [class.grid-rows-1]="maxLines()[$index] === 1"
+            [class.grid-rows-2]="maxLines()[$index] === 2"
+            [class.grid-rows-3]="maxLines()[$index] === 3"
+          >
+            @for (_ of [].constructor(objective.currentValue); track $index) {
+              <img width="36" height="36" alt="objective token" class="flex-none brightness-125" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
+            }
+            @for (_ of [].constructor(emptySlots()[$index]); track $index) {
+              <img width="36" height="36" alt="objective token" class="flex-none brightness-25" [ngSrc]="imageUrl(['card-overlay', objective.type])" />
+            }
+          </div>
+        }
       }
     }
-  }
+  </ng-container>
 </ng-container>
 
 <!-- eslint-disable @angular-eslint/template/prefer-class-binding -->

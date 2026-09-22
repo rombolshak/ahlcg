@@ -4,7 +4,6 @@ import { InputManagerService } from '@core/input-manager.service';
 import { testGameState } from '@domain/testing/test-game-state';
 import { GameConnectionService } from '@features/games/game-connection.service';
 import { SettingsComponent } from '@features/settings/settings.component';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
 import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';
 import { GameHeaderComponent } from './game-header/game-header.component';
@@ -23,7 +22,6 @@ import { GameStateStore } from './store/game-state.store';
     PlayAreaComponent,
     GameHeaderComponent,
     DialogComponent,
-    TranslocoDirective,
   ],
   templateUrl: './game-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

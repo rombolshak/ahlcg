@@ -9,7 +9,7 @@ const frontendRoot = path.resolve(scriptsDir, '..');
 const SOURCE_LANG = 'en';
 
 const defaultPaths = {
-  i18nDir: path.join(frontendRoot, 'public', 'assets', 'i18n'),
+  i18nRoot: path.join(frontendRoot, 'src', 'app'),
   languagesFile: path.join(frontendRoot, 'i18n-languages.json'),
   outputFile: path.join(frontendRoot, 'src', 'app', 'generated', 'available-langs.ts'),
 };
@@ -74,52 +74,120 @@ function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function buildReport({ i18nDir, languagesFile }) {
+/**
+ * Every directory under `root` that holds its own `en.json` is a scope — nested scopes are real
+ * (`features/settings` and `features/settings/account` both own one), so a match does not stop the
+ * walk into that directory's children.
+ */
+function findScopeDirs(root) {
+  const scopeDirs = [];
+
+  function walk(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    if (entries.some(entry => entry.isFile() && entry.name === `${SOURCE_LANG}.json`)) {
+      scopeDirs.push(dir);
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) walk(path.join(dir, entry.name));
+    }
+  }
+
+  walk(root);
+  return scopeDirs;
+}
+
+/**
+ * Keys are namespaced by scope so two scopes sharing a leaf key name (`title`, `back`, …) never
+ * collide in the aggregate coverage map — the scope path can't contain `#`, so it is a safe
+ * separator against a key made only of `.`-joined identifiers.
+ */
+function namespaced(scopePath, key) {
+  return `${scopePath}#${key}`;
+}
+
+function buildReport({ i18nRoot, languagesFile }) {
   const languageLabels = loadJson(languagesFile);
-  const enEntries = flattenEntries(loadJson(path.join(i18nDir, `${SOURCE_LANG}.json`)));
-  const enKeys = [...enEntries.keys()];
+  const scopeDirs = findScopeDirs(i18nRoot);
 
-  // `*.context.json` sits beside the locale it describes and is translator notes, not translations.
-  // Everything else ending in `.json` is treated as a locale, so an unknown one is still reported
-  // rather than silently ignored.
-  const localeFiles = fs
-    .readdirSync(i18nDir, { withFileTypes: true })
-    .filter(entry => entry.isFile() && entry.name.endsWith('.json') && !entry.name.endsWith('.context.json'))
-    .map(entry => entry.name);
-
+  const enEntries = new Map();
+  const scopes = [];
   const errors = [];
+
+  for (const scopeDir of scopeDirs) {
+    const scopePath = path.relative(i18nRoot, scopeDir).split(path.sep).join('/');
+    const scopeEnEntries = flattenEntries(loadJson(path.join(scopeDir, `${SOURCE_LANG}.json`)));
+    for (const [key, value] of scopeEnEntries) enEntries.set(namespaced(scopePath, key), value);
+
+    // `*.context.json` sits beside the scope's `en.json` and is translator notes, not translations.
+    // Everything else ending in `.json` is treated as a locale, so an unknown one is still reported
+    // rather than silently ignored.
+    const localeFiles = fs
+      .readdirSync(scopeDir, { withFileTypes: true })
+      .filter(entry => entry.isFile() && entry.name.endsWith('.json') && !entry.name.endsWith('.context.json') && entry.name !== `${SOURCE_LANG}.json`)
+      .map(entry => entry.name);
+
+    scopes.push({ scopeDir, scopePath, enKeys: [...scopeEnEntries.keys()], localeFiles });
+  }
+
+  // Seeded from `i18n-languages.json`, not from the files on disk. A language nobody has started
+  // has no file in any scope, and deriving the list from files would drop it from the generated
+  // module entirely — which is what `?lang=xx` checks against, so a translator could no longer
+  // preview the language they are about to begin. It is reported at 0% instead.
+  const languageIds = new Set([SOURCE_LANG, ...Object.keys(languageLabels)]);
+  for (const scope of scopes) {
+    for (const fileName of scope.localeFiles) languageIds.add(fileName.replace(/\.json$/, ''));
+  }
+
   const entries = [];
 
-  for (const fileName of localeFiles) {
-    const id = fileName.replace(/\.json$/, '');
-
+  for (const id of languageIds) {
     if (!Object.hasOwn(languageLabels, id)) {
-      errors.push(`${fileName}: no entry in i18n-languages.json`);
+      errors.push(`${id}.json: no entry in i18n-languages.json`);
       continue;
     }
 
-    let content;
-    try {
-      content = loadJson(path.join(i18nDir, fileName));
-    } catch (error) {
-      errors.push(`${fileName}: malformed JSON (${error.message})`);
+    if (id === SOURCE_LANG) {
+      entries.push({ id, label: languageLabels[id], coverage: 100, missing: 0, untranslated: 0, orphans: 0 });
       continue;
     }
 
-    const localeEntries = flattenEntries(content);
-    const orphans = orphanKeysOf(enKeys, [...localeEntries.keys()]);
-    if (orphans.length > 0) {
-      errors.push(`${fileName}: orphan keys not present in en.json: ${orphans.join(', ')}`);
+    const localeEntries = new Map();
+    let orphanCount = 0;
+    let malformed = false;
+
+    for (const scope of scopes) {
+      const fileName = `${id}.json`;
+      if (!scope.localeFiles.includes(fileName)) continue;
+
+      let content;
+      try {
+        content = loadJson(path.join(scope.scopeDir, fileName));
+      } catch (error) {
+        errors.push(`${scope.scopePath}/${fileName}: malformed JSON (${error.message})`);
+        malformed = true;
+        continue;
+      }
+
+      const scopeLocaleEntries = flattenEntries(content);
+      const orphans = orphanKeysOf(scope.enKeys, [...scopeLocaleEntries.keys()]);
+      if (orphans.length > 0) {
+        errors.push(`${scope.scopePath}/${fileName}: orphan keys not present in en.json: ${orphans.join(', ')}`);
+        orphanCount += orphans.length;
+      }
+
+      for (const [key, value] of scopeLocaleEntries) localeEntries.set(namespaced(scope.scopePath, key), value);
     }
 
-    const coverage = id === SOURCE_LANG ? sourceCoverage(enEntries.size) : coverageFor(enEntries, localeEntries);
+    if (malformed) continue;
+
+    const coverage = coverageFor(enEntries, localeEntries);
     entries.push({
       id,
       label: languageLabels[id],
       coverage: coverage.percentage,
       missing: coverage.missing.length,
       untranslated: coverage.untranslated.length,
-      orphans: orphans.length,
+      orphans: orphanCount,
     });
   }
 
@@ -154,9 +222,9 @@ function printTable(entries, log) {
 }
 
 export function main(options = {}) {
-  const { i18nDir = defaultPaths.i18nDir, languagesFile = defaultPaths.languagesFile, outputFile = defaultPaths.outputFile, log = console.table } = options;
+  const { i18nRoot = defaultPaths.i18nRoot, languagesFile = defaultPaths.languagesFile, outputFile = defaultPaths.outputFile, log = console.table } = options;
 
-  const { entries, errors } = buildReport({ i18nDir, languagesFile });
+  const { entries, errors } = buildReport({ i18nRoot, languagesFile });
 
   writeGeneratedModule(entries, outputFile);
   printTable(entries, log);

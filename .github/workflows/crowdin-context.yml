@@ -15,8 +15,8 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "frontend/public/assets/i18n/en.json"
-      - "frontend/public/assets/i18n/en.context.json"
+      - "frontend/src/app/**/en.json"
+      - "frontend/src/app/**/en.context.json"
       - "frontend/src/**/*.stories.ts"
       - "frontend/scripts/**"
       - "crowdin.yml"
@@ -69,9 +69,8 @@ jobs:
         working-directory: frontend
         run: npm run i18n:screenshots
 
-      # `--auto-tag` matches the text Crowdin reads off each image against the source strings, and
-      # `-f` keeps that search on our own file rather than card and trait text. Upload upserts on
-      # filename, so re-running re-tags each screen against its current image.
+      # `--auto-tag` matches the text Crowdin reads off each image against the source strings.
+      # Upload upserts on filename, so re-running re-tags each screen against its current image.
       - name: Upload screenshots
         run: |
           shopt -s nullglob
@@ -97,7 +96,7 @@ jobs:
               done
 
       - name: Download strings needing context
-        run: $CROWDIN context download -f "**/i18n/en.json" --to crowdin-context.jsonl
+        run: $CROWDIN context download -f "**/en.json" --to crowdin-context.jsonl
 
       - name: Fill context from the authored notes
         working-directory: frontend
@@ -108,7 +107,7 @@ jobs:
 
       - name: Report coverage
         if: always()
-        run: $CROWDIN context status -f "**/i18n/en.json"
+        run: $CROWDIN context status -f "**/en.json"
 
       - name: Keep the screenshots for inspection
         if: always()

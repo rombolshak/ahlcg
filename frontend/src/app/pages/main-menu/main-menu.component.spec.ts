@@ -326,8 +326,8 @@ describe('MainMenuComponent', () => {
     });
   });
 
-  // The title is bound with no transloco prefix, so an unprefixed key would resolve the root
-  // `settings` *object* and render nothing readable. This pins the resolved string.
+  // The title comes from `SettingsComponent.getTitle()`, resolved from its own `features/settings`
+  // scope rather than passed in from here. This pins the resolved string.
   it('should label the settings dialog', () => {
     (fixture.debugElement.query(By.css('[data-testId=settings]')).nativeElement as HTMLButtonElement).click();
     TestBed.tick();

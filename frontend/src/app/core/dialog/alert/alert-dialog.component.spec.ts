@@ -15,7 +15,8 @@ describe('AlertDialogComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(AlertDialogComponent);
-    fixture.componentRef.setInput('messageKey', 'main_menu.new_game_error.message');
+    fixture.componentRef.setInput('title', 'The case remains closed');
+    fixture.componentRef.setInput('message', 'The investigation could not be started. Try again in a moment.');
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -24,13 +25,13 @@ describe('AlertDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Regression: `okKey` defaults to `alert_dialog.ok`. Nothing catches a missing entry for that
-  // key in `en.json` except actually reading the rendered label.
+  // Regression: `okText` falls back to the `core/dialog/alert` scope's `ok` key. Nothing catches a
+  // missing entry for that key except actually reading the rendered label.
   it('should render translated text for the default ok label', () => {
     const okButton = fixture.debugElement.query(By.css('[data-testId=ok]')).nativeElement as HTMLElement;
 
     expect(okButton.textContent.trim()).toBe('OK');
-    expect(okButton.textContent.trim()).not.toBe('alert_dialog.ok');
+    expect(okButton.textContent.trim()).not.toBe('ok');
   });
 
   it('should emit result when the button is clicked', () => {

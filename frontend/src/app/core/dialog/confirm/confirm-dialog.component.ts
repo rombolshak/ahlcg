@@ -50,9 +50,16 @@ const CANCEL_BUTTON_CLASSES = { selected: 'btn btn-accent', unselected: 'btn btn
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialogComponent implements DialogContentWithResult<boolean>, OnInit {
-  public readonly messageKey = input.required<string>();
-  public readonly confirmKey = input('confirm_dialog.confirm');
-  public readonly cancelKey = input('confirm_dialog.cancel');
+  /**
+   * Not `.required()`: `DialogComponent.displayedTitle` reads `getTitle()` reactively as soon as
+   * `attachContent` sets the content signal, which can happen before `DialogService`'s `Binding[]`
+   * are applied by this component's own first change detection — a required input would throw
+   * `NG0950` at that moment instead of just reading as `undefined` for one frame.
+   */
+  public readonly title = input<string>();
+  public readonly message = input.required<string>();
+  public readonly confirmText = input<string>();
+  public readonly cancelText = input<string>();
   public readonly appearance = input<ConfirmAppearance>('primary');
 
   /**
@@ -101,4 +108,6 @@ export class ConfirmDialogComponent implements DialogContentWithResult<boolean>,
       this.result.emit(false);
     },
   });
+
+  public getTitle = () => this.title();
 }

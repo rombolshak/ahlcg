@@ -1,0 +1,9 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "title": "Title of the settings dialog.",
+  "language": "Label of the language row in the settings dialog. The value beside it is the language's own name and is not translated.",
+  "save": "Settings dialog button. One word.",
+  "cancel": "Settings dialog button, discards changes. One word.",
+  "account.row": "Label of the account row in the settings dialog, which opens the account view.",
+  "account.title": "Title of the account view. Replaces the dialog's own title, so it must read as a heading on its own."
+}

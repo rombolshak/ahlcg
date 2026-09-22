@@ -7,15 +7,17 @@ import { DialogService } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { filter, switchMap } from 'rxjs';
+
+export const ACCOUNT_I18N_SCOPE = 'features/settings/account';
 
 type AccountState = 'anonymous' | 'permanent' | 'signed_out';
 
 interface AccountAction {
   key: 'upgrade' | 'sign_out' | 'sign_in' | 'back';
-  /** Relative to the `settings.account` prefix — `back` lives there directly, the rest under the
-   * current state's own sub-key. */
+  /** Relative to the `features/settings/account` scope — `back` lives there directly, the rest
+   * under the current state's own sub-key. */
   labelKey: string;
   process: () => void;
 }
@@ -47,6 +49,7 @@ export class AccountComponent implements DialogContent {
   private readonly dialog = inject(DialogService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco = inject(TranslocoService);
 
   public readonly back = output();
 
@@ -153,10 +156,10 @@ export class AccountComponent implements DialogContent {
   protected signOutAnonymous(): void {
     this.confirmDialog
       .confirm({
-        titleKey: 'settings.account.sign_out_warning.title',
-        messageKey: 'settings.account.sign_out_warning.message',
-        confirmKey: 'settings.account.sign_out_warning.confirm',
-        cancelKey: 'settings.account.sign_out_warning.cancel',
+        title: this.transloco.translate('sign_out_warning.title', {}, ACCOUNT_I18N_SCOPE),
+        message: this.transloco.translate('sign_out_warning.message', {}, ACCOUNT_I18N_SCOPE),
+        confirmText: this.transloco.translate('sign_out_warning.confirm', {}, ACCOUNT_I18N_SCOPE),
+        cancelText: this.transloco.translate('sign_out_warning.cancel', {}, ACCOUNT_I18N_SCOPE),
         appearance: 'error',
         // Deleting the account for good is never one Enter away from a dialog that just appeared.
         defaultButton: 'cancel',

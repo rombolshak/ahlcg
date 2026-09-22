@@ -1,0 +1,17 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "title": "Dialog title for the sign-in choice. Atmospheric. One line, does not wrap.",
+  "message": "Lead paragraph under that title, explaining the choice below. Two sentences.",
+  "anonymous.title": "Heading of the left-hand panel: the anonymous account option. Short.",
+  "anonymous.lead": "One-sentence summary under that heading, saying who the option suits.",
+  "anonymous.credentials": "Bullet in the anonymous panel. Terse, parallel with the other three bullets and with the opposite panel.",
+  "anonymous.device": "Bullet in the anonymous panel. Terse and parallel.",
+  "anonymous.name": "Bullet in the anonymous panel. Terse and parallel.",
+  "anonymous.duration": "Bullet in the anonymous panel. Terse and parallel.",
+  "credentials.title": "Heading of the right-hand panel: the registered account option. Short.",
+  "credentials.lead": "One-sentence summary under that heading.",
+  "credentials.credentials": "Bullet in the registered panel. Reads against its opposite number in the anonymous panel.",
+  "credentials.device": "Bullet in the registered panel. Reads against its opposite number.",
+  "credentials.name": "Bullet in the registered panel. Reads against its opposite number.",
+  "credentials.duration": "Bullet in the registered panel. Reads against its opposite number."
+}

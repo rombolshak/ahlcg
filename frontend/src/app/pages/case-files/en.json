@@ -1,0 +1,15 @@
+{
+  "title": "Case files",
+  "opened": "Opened {{date}}",
+  "last_played": "Last played {{date}}",
+  "empty": {
+    "message": "No case files yet.\nEvery investigation you begin is filed here.",
+    "action": "Begin an investigation"
+  },
+  "error": {
+    "title": "The archive would not open",
+    "message": "Your case files could not be retrieved.",
+    "retry": "Try again"
+  },
+  "back": "Back"
+}

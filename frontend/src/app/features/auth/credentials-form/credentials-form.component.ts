@@ -1,21 +1,23 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { email, form, FormField, FormRoot, required } from '@angular/forms/signals';
 import { AuthService, Credentials, User } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
 import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
 import { InputLayer } from '@core/input-manager.service';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { FocusTrapDirective } from '@ui/directives/focus-trap.directive';
 import { firstValueFrom } from 'rxjs';
 import { toValidationError } from './credentials-form.errors';
+
+const CREDENTIALS_FORM_I18N_SCOPE = 'features/auth/credentials-form';
 
 /**
  * The dialog title when the form is opened directly (bind an anonymous account, sign in from
  * Settings). `SignInComponent` never uses this — it opens the form as a view inside its own
  * already-titled dialog.
  */
-export const CREDENTIALS_DIALOG_OPTIONS = { titleKey: 'auth.credentials_form.title', size: 's' } as const satisfies DialogOptions;
+export const CREDENTIALS_DIALOG_OPTIONS = { size: 's' } as const satisfies DialogOptions;
 
 /**
  * The email/username/password sign-in-or-register-or-upgrade form, extracted from `SignInComponent`
@@ -38,8 +40,10 @@ export const CREDENTIALS_DIALOG_OPTIONS = { titleKey: 'auth.credentials_form.tit
 export class CredentialsFormComponent implements DialogContentWithResult<User | undefined> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco = inject(TranslocoService);
 
-  /** Relative to the `auth.credentials_form` prefix, so a host can relabel the secondary button. */
+  /** Relative to the `features/auth/credentials-form` scope, so a host can relabel the secondary
+   * button. */
   public readonly submitKey = input('submit');
   public readonly dismissKey = input('cancel');
 
@@ -47,6 +51,9 @@ export class CredentialsFormComponent implements DialogContentWithResult<User | 
    * closes itself on either outcome, while `SignInComponent` maps `undefined` back to its choice
    * view. No further plumbing is needed for either host. */
   public readonly result = output<User | undefined>();
+
+  private readonly titleText = toSignal(this.transloco.selectTranslate<string>('title', {}, CREDENTIALS_FORM_I18N_SCOPE));
+  public getTitle = () => this.titleText();
 
   private readonly formElement = viewChild.required<ElementRef<HTMLFormElement>>('form');
 

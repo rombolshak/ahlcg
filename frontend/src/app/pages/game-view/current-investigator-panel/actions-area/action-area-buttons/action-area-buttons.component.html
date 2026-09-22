@@ -1,4 +1,10 @@
-<ng-container *transloco="let t; prefix: 'game_view.current_investigator_panel.actions_area.buttons'">
+<ng-container
+  *transloco="
+    let t;
+    scope: 'pages/game-view/current-investigator-panel/actions-area';
+    prefix: 'pages/game-view/current-investigator-panel/actions-area.buttons'
+  "
+>
   @for (button of buttons; track button.icon) {
     <div class="tooltip">
       <div class="tooltip-content" [innerHTML]="t(button.tooltip) | withAhSymbols"></div>

@@ -14,5 +14,5 @@ bundles:
   - 1
 
 files:
-  - source: /frontend/public/assets/i18n/en.json
-    translation: /frontend/public/assets/i18n/%two_letters_code%.json
+  - source: /frontend/src/app/**/en.json
+    translation: /frontend/src/app/**/%two_letters_code%.json

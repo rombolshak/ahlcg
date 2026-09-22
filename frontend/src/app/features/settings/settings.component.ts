@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal, viewChild, viewChildren } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
 import { InputLayer } from '@core/input-manager.service';
@@ -9,6 +10,8 @@ import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
+
+const SETTINGS_I18N_SCOPE = 'features/settings';
 
 type View = 'settings' | 'account';
 
@@ -40,6 +43,9 @@ export class SettingsComponent implements DialogContent {
   private readonly userPrefs = inject<SettingsService<UserPreferences>>(SettingsService<UserPreferences>);
   private readonly transloco = inject(TranslocoService);
   private readonly dialog = inject(AH_DIALOG_CONTEXT, { host: true });
+
+  private readonly settingsTitle = toSignal(this.transloco.selectTranslate<string>('title', {}, SETTINGS_I18N_SCOPE));
+  private readonly accountTitle = toSignal(this.transloco.selectTranslate<string>('account.title', {}, SETTINGS_I18N_SCOPE));
 
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();
@@ -97,10 +103,9 @@ export class SettingsComponent implements DialogContent {
 
   /**
    * The account view renames the dialog rather than printing a heading of its own, which would sit
-   * under a "Settings" title that no longer describes it. `undefined` leaves the dialog's own title
-   * in place, so the settings view needs no key here.
+   * under a "Settings" title that no longer describes it.
    */
-  public getTitle = () => (this.view() === 'account' ? this.transloco.translate('settings.account.title') : undefined);
+  public getTitle = () => (this.view() === 'account' ? this.accountTitle() : this.settingsTitle());
 
   public getInputHandlers: () => InputLayer = () => {
     if (this.view() === 'account') {

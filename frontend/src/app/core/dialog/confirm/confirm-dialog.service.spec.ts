@@ -22,7 +22,7 @@ describe('ConfirmDialogService', () => {
 
   it('should resolve true when confirmed', () => {
     let result: boolean | undefined;
-    service.confirm({ titleKey: 'settings.account.sign_out_warning.title', messageKey: 'settings.account.sign_out_warning.message' }).subscribe(value => {
+    service.confirm({ title: 'Nothing will be kept', message: 'There is no record of you anywhere but here.' }).subscribe(value => {
       result = value;
     });
     TestBed.tick();
@@ -35,7 +35,7 @@ describe('ConfirmDialogService', () => {
 
   it('should resolve false when cancelled', () => {
     let result: boolean | undefined;
-    service.confirm({ titleKey: 'settings.account.sign_out_warning.title', messageKey: 'settings.account.sign_out_warning.message' }).subscribe(value => {
+    service.confirm({ title: 'Nothing will be kept', message: 'There is no record of you anywhere but here.' }).subscribe(value => {
       result = value;
     });
     TestBed.tick();
@@ -50,7 +50,7 @@ describe('ConfirmDialogService', () => {
   // dialog closed by any other route — not just its own Cancel button — still answers.
   it('should resolve false when the dialog is dismissed without a decision', () => {
     let result: boolean | undefined;
-    service.confirm({ titleKey: 'settings.account.sign_out_warning.title', messageKey: 'settings.account.sign_out_warning.message' }).subscribe(value => {
+    service.confirm({ title: 'Nothing will be kept', message: 'There is no record of you anywhere but here.' }).subscribe(value => {
       result = value;
     });
     TestBed.tick();

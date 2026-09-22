@@ -1,0 +1,21 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "back": "Button returning from the account view to settings.",
+  "anonymous.name_label": "Label beside the generated name of an anonymous account.",
+  "anonymous.state": "One-line statement of what kind of admission the reader holds. Sits above the detail line.",
+  "anonymous.detail": "Explains the consequence of the state above: this account lives on one device only. Two sentences at most.",
+  "anonymous.upgrade": "Button turning an anonymous account into a permanent one. In-world word for registering.",
+  "anonymous.sign_out": "Button. Destructive for an anonymous account — it opens the warning dialog below.",
+  "permanent.name_label": "Label beside the reader's chosen name.",
+  "permanent.email_label": "Label beside the reader's email.",
+  "permanent.state": "One-line statement of what kind of admission the reader holds.",
+  "permanent.detail": "Explains the consequence: files follow them to any device.",
+  "permanent.sign_out": "Button. Not destructive here — the account survives.",
+  "signed_out.state": "One-line statement shown when nobody is signed in.",
+  "signed_out.detail": "Explains what signing in would get them.",
+  "signed_out.sign_in": "Button opening the sign-in dialog.",
+  "sign_out_warning.title": "Title of the confirm dialog before an anonymous sign-out. States the stake plainly; this is the one irreversible action in the app.",
+  "sign_out_warning.message": "Body of that dialog. Must make the loss unmistakable without scolding.",
+  "sign_out_warning.confirm": "Confirm button naming both halves of what happens. Deliberately longer than the usual button budget — do not shorten it into a lie.",
+  "sign_out_warning.cancel": "Cancel button, in-world: it names the thing being kept rather than saying Cancel. Must still be unmistakable as the safe choice."
+}

@@ -1,7 +1,6 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, viewChild } from '@angular/core';
 import { AuthService, User } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { applicationConfig, Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { of } from 'rxjs';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -53,8 +52,10 @@ const anonymousUser: User = { isAnonymous: true, email: null, userName: '4139f1e
  * keydowns, unlike the meta's static `[isOpen]="true"` dialog. */
 @Component({
   selector: 'ah-story-account-dialog-host',
-  imports: [DialogComponent, AccountComponent, TranslocoDirective],
-  template: ` <ah-dialog *transloco="let t" #dialog size="s" [title]="t('settings.account.title')">
+  imports: [DialogComponent, AccountComponent],
+  // The heading is the dialog's, not `AccountComponent`'s — see the meta's `render` below for why
+  // it is hardcoded rather than resolved.
+  template: ` <ah-dialog #dialog title="Your admission" size="s">
     <ah-account />
   </ah-dialog>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
