@@ -1,0 +1,12 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "login_to_continue": "Main menu button, shown in place of Continue when signed out. Three words at most — the button does not grow.",
+  "continue": "Main menu button, resumes the most recent game. Three words at most.",
+  "continue_tooltip": "Tooltip on the Continue button. Two lines: the `\\n` is deliberate. {{lastPlayed}} is a formatted date.",
+  "new_game": "Main menu button. Three words at most.",
+  "new_game_error.title": "Title of the dialog shown when creating a game fails. Atmospheric — the world speaks, not the software. One line, does not wrap.",
+  "new_game_error.message": "Body of that dialog. Plain and factual, saying what happened and what to do. One or two sentences.",
+  "load_game": "Main menu button, opens the Case files screen. Should match case_files.title.",
+  "decks": "Main menu button. In-world word for decks; see the glossary.",
+  "settings": "Main menu button, opens the settings dialog."
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Settings",
+  "language": "Language",
+  "save": "Save",
+  "cancel": "Cancel",
+  "account": {
+    "row": "Account",
+    "title": "Your admission"
+  }
+}

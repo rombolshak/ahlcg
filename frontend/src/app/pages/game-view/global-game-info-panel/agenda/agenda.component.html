@@ -1,10 +1,12 @@
-<ng-container *transloco="let t">
-  <div class="peer text-center text-accent-content">
-    <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("global_game_info.agenda") }} {{ agenda().stage }}</p>
-    <p class="font-[Conkordia] text-xl">
-      {{ t(title() ?? "") }}
-    </p>
-  </div>
+<ng-container *ahTransloco="scope; let t">
+  <ng-container *transloco="let tc">
+    <div class="peer text-center text-accent-content">
+      <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("agenda", { num: agenda().stage }) }}</p>
+      <p class="font-[Conkordia] text-xl">
+        {{ tc(title() ?? "") }}
+      </p>
+    </div>
+  </ng-container>
 </ng-container>
 
 <!--suppress JSUnusedLocalSymbols -->

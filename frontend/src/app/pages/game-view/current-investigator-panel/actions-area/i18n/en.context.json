@@ -1,0 +1,19 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "given_action": "Tooltip on an action pip granted by another card. {{originator}} is that card's name.",
+  "standard_action": "Tooltip on an ordinary, unspent action pip.",
+  "end_turn": "Button below the action pips. Two words at most.",
+  "buttons.draw_card": "Button in the actions area. `#n#` renders as the Arkham symbol glyph and must survive verbatim.",
+  "buttons.take_resource": "Button in the actions area. `#n#` renders as the Arkham symbol glyph and must survive verbatim.",
+  "buttons.view_discard": "Button in the actions area. `#f#` renders as the Arkham symbol glyph and must survive verbatim.",
+  "spent_on.investigate": "Tooltip on a spent action pip, naming what it was spent on. {{target}} is a location.",
+  "spent_on.move": "Tooltip on a spent action pip. {{target}} is a location.",
+  "spent_on.draw": "Tooltip on a spent action pip. No target.",
+  "spent_on.resource": "Tooltip on a spent action pip. No target.",
+  "spent_on.play": "Tooltip on a spent action pip. {{target}} is a card name.",
+  "spent_on.activate": "Tooltip on a spent action pip. {{target}} is a card name.",
+  "spent_on.fight": "Tooltip on a spent action pip. {{target}} is an enemy.",
+  "spent_on.engage": "Tooltip on a spent action pip. {{target}} is an enemy.",
+  "spent_on.evade": "Tooltip on a spent action pip. {{target}} is an enemy. Evade is a Fantasy Flight action name.",
+  "restrictions.evade_only": "Restriction shown on the actions area. `@Evade@` renders bold italic and must survive verbatim."
+}

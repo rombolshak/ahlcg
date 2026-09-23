@@ -1,0 +1,28 @@
+{
+  "back": "Back",
+  "anonymous": {
+    "name_label": "Alias",
+    "state": "You are here on a visitor's ticket.",
+    "detail": "This admission exists on this device and nowhere else. Signing out destroys it, and every case file it holds, past recovery.",
+    "upgrade": "Enrol",
+    "sign_out": "Sign out"
+  },
+  "permanent": {
+    "name_label": "Name",
+    "email_label": "Email",
+    "state": "You hold an admission pass.",
+    "detail": "Your case files come with you to any device you sign in from.",
+    "sign_out": "Sign out"
+  },
+  "signed_out": {
+    "state": "You are not signed in.",
+    "detail": "Sign in to resume an investigation already begun.",
+    "sign_in": "Sign in"
+  },
+  "sign_out_warning": {
+    "title": "Nothing will be kept",
+    "message": "There is no record of you anywhere but here. Sign out and the account and all its case files are deleted for good.",
+    "confirm": "Delete and sign out",
+    "cancel": "Keep the ticket"
+  }
+}

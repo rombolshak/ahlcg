@@ -9,14 +9,15 @@ import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { GamesService } from '@features/games/games.service';
 import { SettingsComponent } from '@features/settings/settings.component';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { finalize } from 'rxjs';
+import { I18N_SCOPE } from './i18n/scope';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
   selector: 'ah-main-menu',
-  imports: [MenuItemsListComponent, SettingsComponent, DialogComponent, TranslocoDirective],
+  imports: [MenuItemsListComponent, SettingsComponent, DialogComponent],
   templateUrl: './main-menu.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -84,7 +85,7 @@ export class MainMenuComponent {
 
     return {
       name: 'continue',
-      tooltip: { key: 'main_menu.continue_tooltip', params: { lastPlayed } },
+      tooltip: { key: 'continue_tooltip', params: { lastPlayed } },
       process: () => {
         void this.router.navigate(['/game', game.id]);
       },
@@ -154,7 +155,10 @@ export class MainMenuComponent {
   }
 
   private showCreateError(): void {
-    this.alertDialog.alert({ titleKey: 'main_menu.new_game_error.title', messageKey: 'main_menu.new_game_error.message' });
+    this.alertDialog.alert({
+      title: this.transloco.translate('new_game_error.title', {}, I18N_SCOPE),
+      message: this.transloco.translate('new_game_error.message', {}, I18N_SCOPE),
+    });
   }
 
   /**

@@ -1,14 +1,12 @@
 import { DOCUMENT } from '@angular/common';
 import { ApplicationRef, Binding, createComponent, EnvironmentInjector, inject, OutputRef, Service, Type } from '@angular/core';
 import { outputToObservable } from '@angular/core/rxjs-interop';
-import { TranslocoService } from '@jsverse/transloco';
 import { Observable, ReplaySubject, take } from 'rxjs';
 import { DialogContent } from './dialog-content';
 import { DialogComponent, DialogSize } from './dialog.component';
 
 export type DialogContentWithResult<TResult> = DialogContent & { readonly result: OutputRef<TResult> };
 export interface DialogOptions {
-  readonly titleKey?: string;
   readonly size?: DialogSize;
   /**
    * Forwarded to `attachContent`. Applied by change detection, which has not run by the time
@@ -18,17 +16,16 @@ export interface DialogOptions {
 }
 
 /**
- * Depends only on `ApplicationRef`, `EnvironmentInjector`, `DOCUMENT` and `TranslocoService` — never
- * on `AuthService`. `AuthService`'s constructor issues a request synchronously, and the auth
- * interceptor injects this service from inside that construction; a dependency back onto
- * `AuthService` here would be a cyclic-DI error.
+ * Depends only on `ApplicationRef`, `EnvironmentInjector` and `DOCUMENT` — never on `AuthService`.
+ * `AuthService`'s constructor issues a request synchronously, and the auth interceptor injects this
+ * service from inside that construction; a dependency back onto `AuthService` here would be a
+ * cyclic-DI error.
  */
 @Service()
 export class DialogService {
   private readonly appRef = inject(ApplicationRef);
   private readonly environmentInjector = inject(EnvironmentInjector);
   private readonly document = inject(DOCUMENT);
-  private readonly transloco = inject(TranslocoService);
 
   private readonly openDialogs = new Map<Type<unknown>, Observable<unknown>>();
 
@@ -43,9 +40,6 @@ export class DialogService {
       environmentInjector: this.environmentInjector,
       hostElement: host,
     });
-    if (options?.titleKey) {
-      dialogRef.setInput('title', this.transloco.translate(options.titleKey));
-    }
     if (options?.size) {
       dialogRef.setInput('size', options.size);
     }

@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input, OnInit, output, signal } from '@angular/core';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { AH_DIALOG_CONTENT } from '../dialog-content';
 import { DialogContentWithResult } from '../dialog.service';
+import { I18N_SCOPE } from './i18n/scope';
 
 export type ConfirmAppearance = 'primary' | 'error';
 export type ConfirmButtonKey = 'confirm' | 'cancel';
@@ -39,7 +40,7 @@ const CANCEL_BUTTON_CLASSES = { selected: 'btn btn-accent', unselected: 'btn btn
  */
 @Component({
   selector: 'ah-confirm-dialog',
-  imports: [TranslocoDirective],
+  imports: [ScopedTranslocoDirective],
   templateUrl: './confirm-dialog.component.html',
   providers: [
     {
@@ -50,9 +51,18 @@ const CANCEL_BUTTON_CLASSES = { selected: 'btn btn-accent', unselected: 'btn btn
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialogComponent implements DialogContentWithResult<boolean>, OnInit {
-  public readonly messageKey = input.required<string>();
-  public readonly confirmKey = input('confirm_dialog.confirm');
-  public readonly cancelKey = input('confirm_dialog.cancel');
+  protected readonly scope = I18N_SCOPE;
+
+  /**
+   * Not `.required()`: `DialogComponent.displayedTitle` reads `getTitle()` reactively as soon as
+   * `attachContent` sets the content signal, which can happen before `DialogService`'s `Binding[]`
+   * are applied by this component's own first change detection — a required input would throw
+   * `NG0950` at that moment instead of just reading as `undefined` for one frame.
+   */
+  public readonly title = input<string>();
+  public readonly message = input.required<string>();
+  public readonly confirmText = input<string>();
+  public readonly cancelText = input<string>();
   public readonly appearance = input<ConfirmAppearance>('primary');
 
   /**
@@ -101,4 +111,6 @@ export class ConfirmDialogComponent implements DialogContentWithResult<boolean>,
       this.result.emit(false);
     },
   });
+
+  public getTitle = () => this.title();
 }

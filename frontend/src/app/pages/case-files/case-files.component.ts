@@ -2,16 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, injec
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer, InputManagerService, LayerRef } from '@core/input-manager.service';
 import { listNavigation, NO_SELECTION } from '@core/list-navigation';
 import { GamesService, GameSummary } from '@features/games/games.service';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
 import { CaseFileCardComponent } from './case-file-card/case-file-card.component';
+import { I18N_SCOPE } from './i18n/scope';
 
 @Component({
   selector: 'ah-case-files',
-  imports: [ArtButtonComponent, CaseFileCardComponent, TranslocoDirective],
+  imports: [ArtButtonComponent, CaseFileCardComponent, ScopedTranslocoDirective],
   templateUrl: './case-files.component.html',
   styles: '.case-files-scroll { scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--color-base-content) 45%, transparent) transparent; }',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +25,8 @@ export class CaseFilesComponent implements OnInit, OnDestroy {
   private readonly games = inject(GamesService);
   private readonly router = inject(Router);
   private readonly inputManager = inject(InputManagerService);
+
+  protected readonly scope = I18N_SCOPE;
 
   private readonly currentUser = toSignal(this.authService.currentUser);
 

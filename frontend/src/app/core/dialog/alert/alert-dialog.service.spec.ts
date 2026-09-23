@@ -22,7 +22,7 @@ describe('AlertDialogService', () => {
 
   it('should show the given title and message and resolve when acknowledged', () => {
     let resolved = false;
-    service.alert({ titleKey: 'main_menu.new_game_error.title', messageKey: 'main_menu.new_game_error.message' }).subscribe(() => {
+    service.alert({ title: 'The case remains closed', message: 'The investigation could not be started. Try again in a moment.' }).subscribe(() => {
       resolved = true;
     });
     TestBed.tick();

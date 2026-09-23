@@ -1,0 +1,7 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "chaosbag": "Tooltip on an icon button in the game header. No visible label, so this is the only text naming the action.",
+  "mute": "Tooltip on an icon button in the game header.",
+  "fullscreen": "Tooltip on an icon button in the game header.",
+  "menu": "Tooltip on an icon button in the game header."
+}

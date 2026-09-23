@@ -23,7 +23,7 @@ Where those facts come from depends on whether the screen exists yet, and both c
 2. **The Figma frame, if the screen was designed.** For a new screen it usually was, and it is the only place the *real* room for the string is visible — how wide the button is, where a title wraps, how many lines the body gets. Read it rather than estimating.
 3. **The nearest comparable existing screen.** A confirm dialog is shaped like the other confirm dialogs; its template and its keys tell you what a control in that position can carry.
 
-What is available either way, built or not: the neighbouring keys in `frontend/public/assets/i18n/en.json`, the semantic siblings elsewhere in the tree, and the standard.
+What is available either way, built or not: the neighbouring keys in the owning component's `en.json`, the semantic siblings in the other components' files, and the standard.
 
 Ask the user only for what none of those can give you — normally just the scenario and the semantics, and only when they are genuinely missing. `AskUserQuestion` where the answer is a choice, plainly otherwise. **Do not guess the scenario.** Copy written for a scenario you invented cannot be reviewed, because the user cannot see which half you made up.
 
@@ -52,17 +52,19 @@ Two rounds is usually the limit. If the third pass is still wrong, the brief was
 
 ## 5. Write the chosen strings
 
-Only after an explicit choice, and only into `frontend/public/assets/i18n/en.json`:
+Only after an explicit choice, and only into an `en.json` under `frontend/src/app/`:
 
+- **A string goes in the `i18n/` folder of the component that renders it.** That folder is the transloco scope, and the key is written without the scope prefix. A string for a component that has no `i18n/` folder yet gets a new one, holding `en.json`, `en.context.json` and the `scope.ts` that names the scope — see [frontend.md](../../docs/frontend.md#internationalization) for how a component names its scope.
 - Place each key in the tree where the UI puts it, next to its neighbours — not appended at the end.
 - Match the file: two-space indent, existing key style, `\n` and `{{param}}` tokens exactly as approved.
+- **Write the translator's note too**, in the `en.context.json` beside the file you just edited, under the same key. One line saying where the string sits and what constrains it — the room it has, a `#n#` that must survive, a randomised pool it belongs to. That knowledge is in your head right now and nowhere else; `scripts/fill-context.mjs` reports every string that lacks one.
 - **English only.** The other language files lag and fall back key by key; never hand-translate.
 - If the key is already wired into a template, replacing the value is the whole change. If it is not — the usual case when the copy gate runs ahead of the code — say so: the key exists and the implementer will bind to it. Wiring is `/work`'s job, not this command's.
 
-Confirm the file still parses:
+Confirm each file you touched still parses:
 
 ```powershell
-Get-Content frontend/public/assets/i18n/en.json -Raw | ConvertFrom-Json | Out-Null
+Get-Content <path>/en.json -Raw | ConvertFrom-Json | Out-Null
 ```
 
 ## 6. Report

@@ -1,6 +1,5 @@
 import { AuthService } from '@core/auth/auth.service';
 import { DialogComponent } from '@core/dialog/dialog.component';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { NEVER } from 'rxjs';
 import { userEvent, within } from 'storybook/test';
@@ -10,7 +9,7 @@ const meta: Meta<SignInComponent> = {
   component: SignInComponent,
   decorators: [
     moduleMetadata({
-      imports: [DialogComponent, TranslocoDirective],
+      imports: [DialogComponent],
       providers: [
         {
           // Requests never resolve — the stories only exercise the two static views, not a real sign-in.
@@ -28,12 +27,14 @@ const meta: Meta<SignInComponent> = {
     layout: 'fullscreen',
   },
   // Projected into a real dialog, opened through the `isOpen` input rather than `showModal()` —
-  // the same width, padding and title the prompt gets in the app, from the options both entry
-  // points pass. `DialogService` is not involved: it appends its own host to `document.body`,
-  // outside the story canvas the play functions and Chromatic snapshots look at.
+  // the same width and padding the prompt gets in the app, from the options both entry points
+  // pass. The title comes from `SignInComponent.getTitle()`, resolved automatically by
+  // `DialogComponent` from the projected content. `DialogService` is not involved: it appends its
+  // own host to `document.body`, outside the story canvas the play functions and Chromatic
+  // snapshots look at.
   render: () => ({
     template: `
-      <ah-dialog *transloco="let t" [isOpen]="true" [title]="t('${SIGN_IN_DIALOG_OPTIONS.titleKey}')" size="${SIGN_IN_DIALOG_OPTIONS.size}">
+      <ah-dialog [isOpen]="true" size="${SIGN_IN_DIALOG_OPTIONS.size}">
         <ah-sign-in />
       </ah-dialog>`,
   }),

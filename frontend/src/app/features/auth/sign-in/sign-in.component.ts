@@ -4,17 +4,20 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService, User } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
 import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { translateSignal } from '@jsverse/transloco';
 import { CredentialsFormComponent } from '../credentials-form/credentials-form.component';
+import { I18N_SCOPE as CREDENTIALS_FORM_SCOPE } from '../credentials-form/i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
  * interceptor's 401 — so the same dialog appears however it was reached. `m`: the choice view puts
  * two cards side by side, which 32rem squeezes into columns too narrow for their bullet lists.
  */
-export const SIGN_IN_DIALOG_OPTIONS = { titleKey: 'auth.sign_in.title', size: 'm' } as const satisfies DialogOptions;
+export const SIGN_IN_DIALOG_OPTIONS = { size: 'm' } as const satisfies DialogOptions;
 
 type View = 'choice' | 'credentials';
 
@@ -37,7 +40,7 @@ interface IdentityResult {
 
 @Component({
   selector: 'ah-sign-in',
-  imports: [TranslocoDirective, CredentialsFormComponent],
+  imports: [ScopedTranslocoDirective, CredentialsFormComponent],
   templateUrl: './sign-in.component.html',
   providers: [
     {
@@ -54,7 +57,13 @@ export class SignInComponent implements DialogContentWithResult<User> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly scope = I18N_SCOPE;
+  protected readonly credentialsScope = CREDENTIALS_FORM_SCOPE;
+
   public readonly result = output<User>();
+
+  private readonly titleText = translateSignal('title', {}, I18N_SCOPE);
+  public getTitle = () => this.titleText();
 
   protected readonly view = signal<View>('choice');
   protected readonly busy = signal(false);
@@ -143,7 +152,7 @@ export class SignInComponent implements DialogContentWithResult<User> {
 
   private toErrorMessage(err: unknown): ErrorMessage {
     if (err instanceof HttpErrorResponse) {
-      if (err.status === 403) return { kind: 'key', key: 'wrong_password' };
+      if (err.status === 403) return { kind: 'key', key: 'errors.wrong_password' };
 
       if (err.status === 400) {
         const body = err.error as IdentityResult | null;
@@ -152,6 +161,6 @@ export class SignInComponent implements DialogContentWithResult<User> {
       }
     }
 
-    return { kind: 'key', key: 'generic' };
+    return { kind: 'key', key: 'errors.generic' };
   }
 }

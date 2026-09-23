@@ -1,16 +1,18 @@
 import { NgClass, NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Act, Objective } from '@domain/entities/act.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { SingleBarComponent } from '@ui/kit/single-bar/single-bar.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
+import { I18N_SCOPE } from '../i18n/scope';
 
 @Component({
   selector: 'ah-act',
-  imports: [CardDetailsTextComponent, WithAhSymbolsPipe, NgOptimizedImage, NgClass, SingleBarComponent, TranslocoDirective],
+  imports: [ScopedTranslocoDirective, CardDetailsTextComponent, WithAhSymbolsPipe, NgOptimizedImage, NgClass, SingleBarComponent, TranslocoDirective],
   templateUrl: './act.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -20,6 +22,8 @@ import { CardDetailsTextComponent } from '../../card-details-text/card-details-t
 })
 export class ActComponent {
   private readonly cardInfoService = inject(CardInfoService);
+
+  protected readonly scope = I18N_SCOPE;
   protected readonly imageUrl = imageUrl;
 
   readonly act = input.required<Act>();

@@ -65,15 +65,23 @@ describe('orphanKeysOf', () => {
 
 describe('main', () => {
   let tmpDir;
-  let i18nDir;
+  let i18nRoot;
   let languagesFile;
   let outputFile;
   let log;
 
+  const scope = (relativeDir, files) => {
+    const dir = path.join(i18nRoot, ...relativeDir.split('/'));
+    fs.mkdirSync(dir, { recursive: true });
+    for (const [name, content] of Object.entries(files)) {
+      fs.writeFileSync(path.join(dir, name), typeof content === 'string' ? content : JSON.stringify(content));
+    }
+  };
+
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'i18n-langs-'));
-    i18nDir = path.join(tmpDir, 'i18n');
-    fs.mkdirSync(i18nDir);
+    i18nRoot = path.join(tmpDir, 'app');
+    fs.mkdirSync(i18nRoot);
     languagesFile = path.join(tmpDir, 'i18n-languages.json');
     outputFile = path.join(tmpDir, 'generated', 'available-langs.ts');
     log = vi.fn();
@@ -83,12 +91,24 @@ describe('main', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
+  it('should list a language that has no file in any scope, at 0%', () => {
+    // given a language nobody has started translating — no scope carries a file for it
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', de: 'Deutsch' }));
+    scope('pages/one', { 'en.json': { a: 'A', b: 'B' } });
+
+    // when the report is built
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
+
+    // then it is still offered to `?lang=`, rather than dropping out of the generated module
+    expect(errors).toEqual([]);
+    expect(entries).toContainEqual({ id: 'de', label: 'Deutsch', coverage: 0, missing: 2, untranslated: 0, orphans: 0 });
+  });
+
   it('should write a generated module with every language found', () => {
     fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', es: 'Español' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A', b: 'B' }));
-    fs.writeFileSync(path.join(i18nDir, 'es.json'), JSON.stringify({ a: 'Á' }));
+    scope('pages/one', { 'en.json': { a: 'A', b: 'B' }, 'es.json': { a: 'Á' } });
 
-    const { entries, errors } = main({ i18nDir, languagesFile, outputFile, log });
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
 
     expect(errors).toEqual([]);
     expect(entries).toEqual([
@@ -98,12 +118,32 @@ describe('main', () => {
     expect(fs.readFileSync(outputFile, 'utf8')).toContain('{ id: \'es\', label: "Español", coverage: 50 }');
   });
 
-  it('should ignore a .context.json sitting beside the locales', () => {
-    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.context.json'), JSON.stringify({ a: 'A note about where a sits.' }));
+  it('should aggregate coverage across every scope, not just the first', () => {
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', es: 'Español' }));
+    scope('pages/one', { 'en.json': { a: 'A' }, 'es.json': { a: 'Á' } });
+    scope('pages/two', { 'en.json': { a: 'A' }, 'es.json': { a: 'A' } }); // untranslated: identical to English
 
-    const { entries, errors } = main({ i18nDir, languagesFile, outputFile, log });
+    const { entries } = main({ i18nRoot, languagesFile, outputFile, log });
+
+    // One key present, one identical to English — 50% over the union of both scopes' `a` key.
+    expect(entries.find(entry => entry.id === 'es')).toEqual({ id: 'es', label: 'Español', coverage: 50, missing: 0, untranslated: 1, orphans: 0 });
+  });
+
+  it('should treat a scope with no file at all for a language as entirely missing for that language', () => {
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', es: 'Español' }));
+    scope('pages/one', { 'en.json': { a: 'A' }, 'es.json': { a: 'Á' } });
+    scope('pages/two', { 'en.json': { a: 'A' } }); // no es.json at all
+
+    const { entries } = main({ i18nRoot, languagesFile, outputFile, log });
+
+    expect(entries.find(entry => entry.id === 'es')).toEqual({ id: 'es', label: 'Español', coverage: 50, missing: 1, untranslated: 0, orphans: 0 });
+  });
+
+  it('should ignore a .context.json sitting beside a scope’s en.json', () => {
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English' }));
+    scope('pages/one', { 'en.json': { a: 'A' }, 'en.context.json': { a: 'A note about where a sits.' } });
+
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
 
     expect(entries.map(entry => entry.id)).toEqual(['en']);
     expect(errors).toEqual([]);
@@ -111,33 +151,44 @@ describe('main', () => {
 
   it('should report a malformed locale file rather than throw', () => {
     fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', de: 'Deutsch' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));
-    fs.writeFileSync(path.join(i18nDir, 'de.json'), '{ not json');
+    scope('pages/one', { 'en.json': { a: 'A' }, 'de.json': '{ not json' });
 
-    const { entries, errors } = main({ i18nDir, languagesFile, outputFile, log });
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
 
     expect(entries.map(entry => entry.id)).toEqual(['en']);
     expect(errors.some(error => error.includes('de.json'))).toBe(true);
   });
 
-  it('should report an orphan key that en.json does not have', () => {
+  it('should report an orphan in one scope without failing a healthy scope', () => {
     fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', es: 'Español' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));
-    fs.writeFileSync(path.join(i18nDir, 'es.json'), JSON.stringify({ a: 'A', b: 'B' }));
+    scope('pages/one', { 'en.json': { a: 'A' }, 'es.json': { a: 'A', b: 'B' } }); // b is an orphan here
+    scope('pages/two', { 'en.json': { a: 'A' }, 'es.json': { a: 'Á' } });
 
-    const { errors } = main({ i18nDir, languagesFile, outputFile, log });
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
 
-    expect(errors.some(error => error.includes('orphan keys'))).toBe(true);
+    expect(errors.some(error => error.includes('pages/one/es.json') && error.includes('orphan keys'))).toBe(true);
+    expect(errors.some(error => error.includes('pages/two'))).toBe(false);
+    expect(entries.find(entry => entry.id === 'es').orphans).toBe(1);
   });
 
   it('should report a locale file with no entry in i18n-languages.json as an orphan file', () => {
     fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English' }));
-    fs.writeFileSync(path.join(i18nDir, 'en.json'), JSON.stringify({ a: 'A' }));
-    fs.writeFileSync(path.join(i18nDir, 'de.json'), JSON.stringify({}));
+    scope('pages/one', { 'en.json': { a: 'A' }, 'de.json': {} });
 
-    const { entries, errors } = main({ i18nDir, languagesFile, outputFile, log });
+    const { entries, errors } = main({ i18nRoot, languagesFile, outputFile, log });
 
     expect(entries.map(entry => entry.id)).toEqual(['en']);
     expect(errors.some(error => error.includes('de.json'))).toBe(true);
+  });
+
+  it('should treat a nested scope as its own scope, distinct from its parent', () => {
+    fs.writeFileSync(languagesFile, JSON.stringify({ en: 'English', es: 'Español' }));
+    scope('features/settings', { 'en.json': { title: 'Settings' }, 'es.json': { title: 'Ajustes' } });
+    scope('features/settings/account', { 'en.json': { title: 'Your account' }, 'es.json': { title: 'Your account' } });
+
+    const { entries } = main({ i18nRoot, languagesFile, outputFile, log });
+
+    // Both scopes share the leaf key `title`; the parent's is translated and the child's is not.
+    expect(entries.find(entry => entry.id === 'es')).toEqual({ id: 'es', label: 'Español', coverage: 50, missing: 0, untranslated: 1, orphans: 0 });
   });
 });

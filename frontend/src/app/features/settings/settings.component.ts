@@ -1,12 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal, viewChild, viewChildren } from '@angular/core';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { SettingsService } from '@core/settings/settings.service';
-import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { LangDefinition, translateSignal, TranslocoService } from '@jsverse/transloco';
 import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
+import { I18N_SCOPE } from './i18n/scope';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
 
@@ -21,7 +23,7 @@ interface DialogButton {
 
 @Component({
   selector: 'ah-settings',
-  imports: [SettingItemComponent, AccountComponent, TranslocoDirective],
+  imports: [SettingItemComponent, AccountComponent, ScopedTranslocoDirective],
   templateUrl: './settings.component.html',
   styles: ``,
   providers: [
@@ -40,6 +42,11 @@ export class SettingsComponent implements DialogContent {
   private readonly userPrefs = inject<SettingsService<UserPreferences>>(SettingsService<UserPreferences>);
   private readonly transloco = inject(TranslocoService);
   private readonly dialog = inject(AH_DIALOG_CONTEXT, { host: true });
+
+  protected readonly scope = I18N_SCOPE;
+
+  private readonly settingsTitle = translateSignal('title', {}, I18N_SCOPE);
+  private readonly accountTitle = translateSignal('account.title', {}, I18N_SCOPE);
 
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();
@@ -97,10 +104,9 @@ export class SettingsComponent implements DialogContent {
 
   /**
    * The account view renames the dialog rather than printing a heading of its own, which would sit
-   * under a "Settings" title that no longer describes it. `undefined` leaves the dialog's own title
-   * in place, so the settings view needs no key here.
+   * under a "Settings" title that no longer describes it.
    */
-  public getTitle = () => (this.view() === 'account' ? this.transloco.translate('settings.account.title') : undefined);
+  public getTitle = () => (this.view() === 'account' ? this.accountTitle() : this.settingsTitle());
 
   public getInputHandlers: () => InputLayer = () => {
     if (this.view() === 'account') {

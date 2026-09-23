@@ -16,7 +16,8 @@ describe('ConfirmDialogComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConfirmDialogComponent);
-    fixture.componentRef.setInput('messageKey', 'settings.account.sign_out_warning.message');
+    fixture.componentRef.setInput('title', 'Nothing will be kept');
+    fixture.componentRef.setInput('message', 'There is no record of you anywhere but here.');
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -25,17 +26,18 @@ describe('ConfirmDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // Regression: `confirmKey`/`cancelKey` default to `confirm_dialog.confirm`/`.cancel`. Nothing
-  // catches a missing entry for those keys in `en.json` except actually reading the rendered
-  // label — `toBeTruthy()` on the button passes just as well for the untranslated key string.
+  // Regression: `confirmText`/`cancelText` fall back to the `core/dialog/confirm` scope's
+  // `confirm`/`cancel` keys. Nothing catches a missing entry for those keys except actually
+  // reading the rendered label — `toBeTruthy()` on the button passes just as well for the
+  // untranslated key string.
   it('should render translated text for the default confirm and cancel labels', () => {
     const confirmButton = fixture.debugElement.query(By.css('[data-testId=confirm]')).nativeElement as HTMLElement;
     const cancelButton = fixture.debugElement.query(By.css('[data-testId=cancel]')).nativeElement as HTMLElement;
 
     expect(confirmButton.textContent.trim()).toBe('Confirm');
-    expect(confirmButton.textContent.trim()).not.toBe('confirm_dialog.confirm');
+    expect(confirmButton.textContent.trim()).not.toBe('confirm');
     expect(cancelButton.textContent.trim()).toBe('Cancel');
-    expect(cancelButton.textContent.trim()).not.toBe('confirm_dialog.cancel');
+    expect(cancelButton.textContent.trim()).not.toBe('cancel');
   });
 
   it('should emit true when confirmed', () => {
@@ -76,7 +78,8 @@ describe('ConfirmDialogComponent', () => {
   // this was read from `onOpened` instead.
   const createWith = (inputs: Record<string, unknown>): ComponentFixture<ConfirmDialogComponent> => {
     const created = TestBed.createComponent(ConfirmDialogComponent);
-    created.componentRef.setInput('messageKey', 'settings.account.sign_out_warning.message');
+    created.componentRef.setInput('title', 'Nothing will be kept');
+    created.componentRef.setInput('message', 'There is no record of you anywhere but here.');
     for (const [name, value] of Object.entries(inputs)) created.componentRef.setInput(name, value);
     created.detectChanges();
     return created;
@@ -123,7 +126,8 @@ describe('ConfirmDialogComponent', () => {
     dialogFixture.detectChanges();
 
     dialogFixture.componentInstance.attachContent(ConfirmDialogComponent, [
-      inputBinding('messageKey', () => 'settings.account.sign_out_warning.message'),
+      inputBinding('title', () => 'Nothing will be kept'),
+      inputBinding('message', () => 'There is no record of you anywhere but here.'),
       inputBinding('appearance', () => 'error'),
       inputBinding('defaultButton', () => 'cancel'),
     ]);

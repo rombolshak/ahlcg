@@ -8,7 +8,7 @@ import { flattenEntries } from './i18n-langs.mjs';
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptsDir, '..');
 const staticDir = path.join(frontendRoot, 'storybook-static');
-const sourceFile = path.join(frontendRoot, 'public', 'assets', 'i18n', 'en.json');
+const appDir = path.join(frontendRoot, 'src', 'app');
 const outputDir = path.resolve(frontendRoot, '..', 'crowdin', 'screenshots');
 
 /** Layers that can render translatable text. `ui/kit` primitives take their text as an input. */
@@ -61,6 +61,22 @@ function literalRuns(value) {
     .filter(part => part.length >= minimumMatchLength);
 }
 
+/** Every `en.json` under `src/app` — one per scope. */
+function findSourceFiles(root) {
+  const found = [];
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(entryPath);
+      else if (entry.isFile() && entry.name === 'en.json') found.push(entryPath);
+    }
+  }
+
+  walk(root);
+  return found;
+}
+
 function readStories() {
   const indexFile = path.join(staticDir, 'index.json');
 
@@ -75,7 +91,9 @@ function readStories() {
 
 export async function capture({ log = console.log } = {}) {
   const stories = readStories();
-  const phrases = [...flattenEntries(JSON.parse(fs.readFileSync(sourceFile, 'utf8'))).values()].flatMap(literalRuns);
+  const phrases = findSourceFiles(appDir)
+    .flatMap(file => [...flattenEntries(JSON.parse(fs.readFileSync(file, 'utf8'))).values()])
+    .flatMap(literalRuns);
 
   fs.rmSync(outputDir, { recursive: true, force: true });
   fs.mkdirSync(outputDir, { recursive: true });

@@ -1,12 +1,12 @@
-<ng-container *transloco="let t">
-  <p class="mb-6 text-center text-base-content/80">{{ t(messageKey()) }}</p>
+<ng-container *ahTransloco="scope; let t">
+  <p class="mb-6 text-center text-base-content/80">{{ message() }}</p>
 
   <div class="flex items-center justify-center gap-4">
     <button type="button" data-testId="confirm" [class]="confirmButtonClass()" (click)="result.emit(true)" (mouseenter)="selectedIndex.set(0)">
-      {{ t(confirmKey()) }}
+      {{ confirmText() ?? t("confirm") }}
     </button>
     <button type="button" data-testId="cancel" [class]="cancelButtonClass()" (click)="result.emit(false)" (mouseenter)="selectedIndex.set(1)">
-      {{ t(cancelKey()) }}
+      {{ cancelText() ?? t("cancel") }}
     </button>
   </div>
 </ng-container>

@@ -6,11 +6,11 @@ const noop = () => {
   /* empty */
 };
 
-// `name` is a translation key — the template renders `t('main_menu.' + name)` — so a placeholder
-// like "Item 1" shows an unresolved key. These mirror `MainMenuComponent.mainItems()`, so the story
-// shows the menu a player actually sees and the Crowdin screenshot tags real strings.
+// `name` is a translation key in the `pages/main-menu/i18n` scope — the template renders `t(name)` — so
+// a placeholder like "Item 1" shows an unresolved key. These mirror `MainMenuComponent.mainItems()`,
+// so the story shows the menu a player actually sees and the Crowdin screenshot tags real strings.
 const signedInItems: MenuItem[] = [
-  { name: 'continue', tooltip: { key: 'main_menu.continue_tooltip', params: { lastPlayed: '12 September 1926' } }, process: noop },
+  { name: 'continue', tooltip: { key: 'continue_tooltip', params: { lastPlayed: '12 September 1926' } }, process: noop },
   { name: 'new_game', process: noop },
   { name: 'load_game', process: noop },
   { name: 'decks', process: noop },

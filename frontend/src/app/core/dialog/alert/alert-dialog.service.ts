@@ -4,9 +4,9 @@ import { DialogService } from '../dialog.service';
 import { AlertDialogComponent } from './alert-dialog.component';
 
 export interface AlertOptions {
-  readonly titleKey: string;
-  readonly messageKey: string;
-  readonly okKey?: string;
+  readonly title: string;
+  readonly message: string;
+  readonly okText?: string;
 }
 
 /**
@@ -18,13 +18,13 @@ export class AlertDialogService {
   private readonly dialog = inject(DialogService);
 
   public alert(options: AlertOptions): Observable<void> {
-    const bindings: Binding[] = [inputBinding('messageKey', () => options.messageKey)];
+    const bindings: Binding[] = [inputBinding('title', () => options.title), inputBinding('message', () => options.message)];
 
-    // Omitted rather than defaulted here: `AlertDialogComponent`'s own `input()` default is the
-    // one place that fallback lives, for the same reason `ConfirmDialogService.confirm` omits it.
-    const okKey = options.okKey;
-    if (okKey !== undefined) bindings.push(inputBinding('okKey', () => okKey));
+    // Omitted rather than defaulted here: the template's own `t('ok')` fallback is the one place
+    // that default lives, for the same reason `ConfirmDialogService.confirm` omits it.
+    const okText = options.okText;
+    if (okText !== undefined) bindings.push(inputBinding('okText', () => okText));
 
-    return this.dialog.open(AlertDialogComponent, { titleKey: options.titleKey, bindings });
+    return this.dialog.open(AlertDialogComponent, { bindings });
   }
 }

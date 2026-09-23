@@ -1,4 +1,4 @@
-<ng-container *transloco="let t">
+<ng-container *ahTransloco="scope; let t">
   <ah-title class="my-16 min-w-80" />
   @for (item of items(); track item.name) {
     @if (item.tooltip; as tooltip) {
@@ -22,7 +22,7 @@
           @if (item.busy) {
             <span class="loading loading-sm loading-spinner"></span>
           }
-          {{ t(`main_menu.${item.name}`) }}
+          {{ t(item.name) }}
         </button>
       </div>
     } @else {
@@ -39,7 +39,7 @@
         @if (item.busy) {
           <span class="loading loading-sm loading-spinner"></span>
         }
-        {{ t(`main_menu.${item.name}`) }}
+        {{ t(item.name) }}
       </button>
     }
   }

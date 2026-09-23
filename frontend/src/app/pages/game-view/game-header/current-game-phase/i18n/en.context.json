@@ -1,0 +1,8 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "round": "Label beside the round number in the game header. Very tight — one short word. Several editions keep the English loanword.",
+  "mythos": "Current phase, shown in the game header. Fantasy Flight rules term.",
+  "investigators": "Current phase, shown in the game header. Fantasy Flight rules term.",
+  "enemy": "Current phase, shown in the game header. Fantasy Flight rules term.",
+  "upkeep": "Current phase, shown in the game header. Fantasy Flight rules term."
+}

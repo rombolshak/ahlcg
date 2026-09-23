@@ -1,0 +1,5 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "confirm": "Default confirm button for the generic confirm dialog. One word — it has no context of its own.",
+  "cancel": "Default cancel button for the generic confirm dialog. One word."
+}

@@ -6,9 +6,11 @@ How a language gets from empty to shipped. This file is the brief for a **human 
 
 ## What you are translating, and what you are not
 
-Only `frontend/public/assets/i18n/<lang>.json` — the app's own chrome. `en.json` is the source; every other file mirrors its key structure.
+The app's own chrome, and nothing else. It is **not one file**: each screen or panel keeps its strings in an `i18n/` folder beside the code that draws it, under `frontend/src/app/`, so `frontend/src/app/features/settings/account/i18n/en.json` holds the account panel and nothing else. `en.json` is the source in every one of those folders; every other file beside it mirrors that file's key structure.
 
-**Card, trait, campaign and scenario text is not yours to translate.** Those live in the `cards/`, `traits/` and `campaigns/` subtrees and carry text Fantasy Flight has already published in your language. Inventing a second translation of a card would contradict the printed card in the player's hand. If a subtree is empty for your language, it stays empty until someone imports the official text.
+You are unlikely to meet the file paths at all — on Crowdin the files appear under the same tree, and the folder name tells you which screen you are looking at. The practical effect is that **a file is one screen's worth of strings**, so the ones you see together are the ones that appear together, and a file finished is a screen finished.
+
+**Card, trait, campaign and scenario text is not yours to translate.** Those live under `frontend/public/assets/i18n/` in the `cards/`, `traits/` and `campaigns/` subtrees, and carry text Fantasy Flight has already published in your language. Inventing a second translation of a card would contradict the printed card in the player's hand. If a subtree is empty for your language, it stays empty until someone imports the official text.
 
 ## The two registers
 
@@ -64,7 +66,7 @@ To see where every language stands:
 cd frontend && npm run lint:i18n
 ```
 
-which prints the per-language coverage table — `missing` keys absent from your file, `untranslated` ones present but blank or still English, and `orphans` your file has that `en.json` does not. It also runs in CI, where **orphans fail the build** (usually the sign that a key was renamed upstream), while missing and untranslated counts are reported and never fail.
+which prints the per-language coverage table — one row per language, summed across every file. `missing` counts keys absent from your files, `untranslated` ones present but blank or still English, and `orphans` ones your files carry that the `en.json` beside them does not. It also runs in CI, where **orphans fail the build** (usually the sign that a key was renamed upstream), while missing and untranslated counts are reported and never fail.
 
 ## Submitting — through Crowdin, not a pull request
 
@@ -98,15 +100,15 @@ Two things exist to make the context above unnecessary to remember:
 
 Two things reach Crowdin alongside the strings, and **CI sends both** — no one has to remember:
 
-- **Screenshots**, captured from every Storybook story that actually renders a translatable string. Which stories qualify is discovered by matching the rendered text against `en.json`, not listed anywhere, so a new screen gets screenshots because it has a story. Variants that show the same strings — eleven agenda percentages, four faction colours — collapse to one.
-- **Per-string notes**, from `frontend/public/assets/i18n/en.context.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
+- **Screenshots**, captured from every Storybook story that actually renders a translatable string. Which stories qualify is discovered by matching the rendered text against the English strings, not listed anywhere, so a new screen gets screenshots because it has a story. Variants that show the same strings — eleven agenda percentages, four faction colours — collapse to one.
+- **Per-string notes**, from an `en.context.json` beside each `en.json`: one line per key saying where the string sits and what constrains it. This is the part a screenshot cannot carry — that a button has three words of room, that `#n#` must survive verbatim, that a line belongs to a randomised pool.
 
 A note is written when the string is, by whoever ran `/wording`. The notes are authored here rather than generated from the string alone precisely because that knowledge is not in the source text.
 
 They reach Crowdin through its own CLI, as three steps CI runs in order:
 
 ```bash
-crowdin context download -f "**/i18n/en.json" --to crowdin-context.jsonl
+crowdin context download -f "**/en.json" --to crowdin-context.jsonl
 npm run i18n:context:fill -- ../crowdin-context.jsonl   # writes ai_context, touches nothing else
 crowdin context upload --from crowdin-context.jsonl
 ```
@@ -121,7 +123,7 @@ CI does all of this on merge, so you only need it to see the result before mergi
 export CROWDIN_PROJECT_ID=932245        # the NUMERIC id, not the `ahlcg-online` slug
 export CROWDIN_PERSONAL_TOKEN=…         # never commit it; CI reads it from a repo secret
 cd frontend && npm run build-storybook && npm run i18n:screenshots && cd ..
-npx --prefix frontend crowdin context status -f "**/i18n/en.json"
+npx --prefix frontend crowdin context status -f "**/en.json"
 ```
 
 Two traps worth knowing, both hit while wiring this up:

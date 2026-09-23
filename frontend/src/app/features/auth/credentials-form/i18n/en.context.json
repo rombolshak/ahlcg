@@ -1,0 +1,13 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "title": "Dialog title once the reader chooses to give credentials. Atmospheric, one line.",
+  "legend": "Fieldset legend above the three inputs.",
+  "email": "Label for the email input. One word.",
+  "username": "Label for the name input. One word.",
+  "password": "Label for the password input. One word.",
+  "submit": "Primary button of the credentials form.",
+  "back": "Button returning to the previous choice.",
+  "cancel": "Button dismissing the form without signing in. Softer than a bare Cancel.",
+  "errors.wrong_password": "Inline error under the form when the credentials are rejected. The desk refuses without explaining — do not add a reason.",
+  "errors.generic": "Inline error under the form when the request itself failed. Says the fault is the archive's, not the reader's."
+}

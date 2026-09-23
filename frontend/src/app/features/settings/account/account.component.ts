@@ -4,18 +4,20 @@ import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { DialogService } from '@core/dialog/dialog.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { filter, switchMap } from 'rxjs';
+import { I18N_SCOPE } from './i18n/scope';
 
 type AccountState = 'anonymous' | 'permanent' | 'signed_out';
 
 interface AccountAction {
   key: 'upgrade' | 'sign_out' | 'sign_in' | 'back';
-  /** Relative to the `settings.account` prefix — `back` lives there directly, the rest under the
-   * current state's own sub-key. */
+  /** Relative to this component's own scope — `back` lives there directly, the rest
+   * under the current state's own sub-key. */
   labelKey: string;
   process: () => void;
 }
@@ -32,7 +34,7 @@ interface AccountAction {
  */
 @Component({
   selector: 'ah-account',
-  imports: [TranslocoDirective],
+  imports: [ScopedTranslocoDirective],
   templateUrl: './account.component.html',
   providers: [
     {
@@ -47,6 +49,9 @@ export class AccountComponent implements DialogContent {
   private readonly dialog = inject(DialogService);
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly transloco = inject(TranslocoService);
+
+  protected readonly scope = I18N_SCOPE;
 
   public readonly back = output();
 
@@ -153,10 +158,10 @@ export class AccountComponent implements DialogContent {
   protected signOutAnonymous(): void {
     this.confirmDialog
       .confirm({
-        titleKey: 'settings.account.sign_out_warning.title',
-        messageKey: 'settings.account.sign_out_warning.message',
-        confirmKey: 'settings.account.sign_out_warning.confirm',
-        cancelKey: 'settings.account.sign_out_warning.cancel',
+        title: this.transloco.translate('sign_out_warning.title', {}, I18N_SCOPE),
+        message: this.transloco.translate('sign_out_warning.message', {}, I18N_SCOPE),
+        confirmText: this.transloco.translate('sign_out_warning.confirm', {}, I18N_SCOPE),
+        cancelText: this.transloco.translate('sign_out_warning.cancel', {}, I18N_SCOPE),
         appearance: 'error',
         // Deleting the account for good is never one Enter away from a dialog that just appeared.
         defaultButton: 'cancel',

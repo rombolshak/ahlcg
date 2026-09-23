@@ -53,7 +53,7 @@ frontend/
 │   └── main.ts / index.html
 ├── public/assets/                    cards/, images/, fonts/, i18n/
 ├── .storybook/
-├── angular.json, proxy.conf.js, transloco.config.ts, eslint.config.js,
+├── angular.json, proxy.conf.js, eslint.config.js,
 └── sonar-project.properties
 ```
 
@@ -99,18 +99,59 @@ It returns an `InputLayer` fragment rather than registering one, so **layer life
 
 ## Internationalization
 
-Transloco. `TranslocoHttpLoader` fetches `/assets/i18n/{lang}.json`.
+Transloco, with **every string in a scope** — there is no root translation file. `TranslocoHttpLoader` returns `{}` for a bare language and fetches `/assets/i18n/{path}/{lang}.json` for everything else.
 
-- **`availableLangs` is derived, never hand-written.** `app.config.ts` computes it from `src/app/generated/available-langs.ts` — a gitignored module carrying each language's translation coverage — keeping those at or above a **90%** threshold. A language is enabled by being translated, not by editing a list. `defaultLang`/`fallbackLang` are `en` with `useFallbackTranslation`, so a missing key renders English silently.
+### Where a string lives
+
+A component's strings sit in an `i18n/` folder beside the component as `{lang}.json`, and `angular.json` mirrors `src/app` into `assets/i18n`. **The scope name is therefore the path of that `i18n/` folder under `src/app`** — `features/settings/account/i18n/en.json` is the scope `features/settings/account/i18n`, and its keys are read without that prefix. The folder also holds `scope.ts`, the single place that string is written, always exporting it as `I18N_SCOPE` — the name says what it is, and the import path says whose it is, so a file needing two aliases the second (`import { I18N_SCOPE as CREDENTIALS_FORM_SCOPE }`). A scope is owned by one component, and a child that renders its parent's strings (`case-file-card` inside `case-files`) imports the same constant — from `i18n/` rather than from the parent component, which keeps the folder edge one-way as `no-folder-cycles` requires.
+
+Card, trait and campaign text stays under `public/assets/i18n/` — it is content addressed by card id, not chrome. `cards/{set}/{index}/{lang}.json` is loaded by `CardInfoService` through `TranslocoService.load()`; `traits/` and `campaigns/notz/…` likewise.
+
+### Naming the scope — the trap
+
+**`scope:` and `prefix:` do different jobs and the directive needs both, spelled the same** — which is why templates use `*ahTransloco` (`ScopedTranslocoDirective` in `core/i18n/`) and name the scope once.
+
+`scope:` makes the directive *load* that file. It does **not** shorten your keys: `LangResolver.resolveLangBasedOnScope()` strips the scope back to a bare language before the directive calls `TranslocoService.translate()`, so the auto-prefixing that `scopes.autoPrefixKeys` performs never fires on the directive's path. (It does fire for a direct `translate()` / `selectTranslate()` call given a scope — that asymmetry is the whole trap.) `prefix:` is what lets you write `t("round")` instead of the full key.
+
+So the two are written together, spelled identically:
+
+```html
+<ng-container *transloco="let t; scope: 'features/settings'; prefix: 'features/settings'">
+```
+
+A `scope:` with no `prefix:` renders raw keys, and a `prefix:` with no `scope:` renders them too because nothing loaded the file. Neither is caught by most specs, which assert on `data-testId` rather than on rendered text — **assert the text when you add a scope.**
+
+A component that renders both its own strings and card text uses **two blocks**, because a card key is already fully qualified and must not be prefixed:
+
+```html
+<ng-container *transloco="let t; scope: 'pages/…/global-game-info-panel'; prefix: 'pages/…/global-game-info-panel'">
+  {{ t("act") }}
+  <ng-container *transloco="let tc">{{ tc(title()) }}</ng-container>
+</ng-container>
+```
+
+From TypeScript the pair collapses: `translate(key, {}, scope)` and `selectTranslate(key, {}, scope)` take the scope as their *lang* argument and prefix the key themselves. Components that resolve a string outside a template — a dialog title, text for an imperative `confirm()` — export a `…_I18N_SCOPE` const and pass that.
+
+The scope is named inline rather than through `providers: [provideTranslocoScope(…)]` because the prefix has to be written on the block anyway — a provider would put half the pair out of sight in the class and buy nothing.
+
+### A missing scope file must not look like a failure
+
+A scope only carries a file for a language someone has actually translated it into, so **most scopes 404 for most languages**, and that is the ordinary case. `TranslocoHttpLoader` turns a 404 into an empty translation for exactly that reason.
+
+It has to. `TranslocoService`'s constructor subscribes to its own events and, on any `translationLoadSuccess` that follows a failure, calls `setActiveLang` with the language that succeeded — globally. So one 404 on `features/settings/fr.json` makes the English fallback load, and the *whole app* switches from French to English a frame after it rendered in French. The per-key fallback is the mechanism that supplies English for an untranslated string; a load failure is not.
+
+Only a 404 is swallowed. A 500 is a real fault and still propagates.
+
+### Dialog titles
+
+A dialog's heading comes from its content, through `DialogContent.getTitle()` — not from `DialogService`. `TranslocoService.translate()` is a synchronous lookup that never triggers a load, so a root-injected service cannot resolve a key belonging to a scope no one has loaded yet, and `provideSignInPrompt()` opens its dialog from a DI factory with no component to resolve one. Content that knows its own title reads it with `translateSignal(key, {}, scope)`, which loads the scope and re-emits on language change; content given its title by a caller (`ConfirmDialogComponent`) takes finished text as an input.
+
+### The rest
+
+- **`availableLangs` is derived, never hand-written.** `app.config.ts` computes it from `src/app/generated/available-langs.ts` — a gitignored module carrying each language's translation coverage — keeping those at or above a **90%** threshold. A language is enabled by being translated, not by editing a list. `defaultLang`/`fallbackLang` are `en` with `useFallbackTranslation`, so a missing key renders English silently, and a scope with no file for the active language falls back on its own without affecting the rest.
 - **An explicit choice outranks the threshold.** `?lang=xx`, or an `xx` already persisted in the user's preferences, adds that language to `availableLangs` even at 0% coverage — that is how a translator previews unfinished work, and how someone who chose a language before it fell below the bar keeps it. Both paths go through the same pure `resolveAvailableLangs()` in `core/i18n/`; the threshold governs what the app *advertises*, never what it can load. An id the generated module does not know is ignored.
-- `transloco.config.ts` (`rootTranslationsPath: public/assets/i18n/`) is **not** read by anything — the app config is inline in `app.config.ts`, and the tooling that consumed this file (the Transloco schematics, `transloco-keys-manager`) is no longer installed. `i18n-languages.json` is the authoritative language list.
-- **Scopes** are lazily loaded subtrees under `public/assets/i18n/`:
-  - `cards/{set}/{index}/{lang}.json` — one file per card, loaded by `CardInfoService`
-  - `traits/{lang}.json` — shared trait names
-  - `campaigns/notz/…` — campaign/scenario text
-- `scopes: { keepCasing: true }` — scope keys are case-sensitive, so paths like `cards/01/002` must match the folder exactly.
-
-Use the `TranslocoDirective` (`*transloco`) in templates; `TranslocoService.load()` for scopes resolved at runtime.
+- `scopes: { keepCasing: true }` — scope names are case-sensitive and must match the folder exactly.
+- **Only `en.json` and `en.context.json` are ours.** Crowdin writes every other language and formats them its own way, so they are excluded from `lint:format` (`.prettierignore`) and from `lint:spelling` (`.cspell.json` `ignorePaths`). Both exclusions name the languages explicitly, so a new locale needs adding to both.
 
 **The English values are not yours to invent.** What a string *says* is decided by [voice-and-tone.md](voice-and-tone.md) and chosen by the user from variants the `wordsmith` agent proposes — run `/wording`. Adding a key to `en.json` with a wording nobody chose is a convention violation, not a detail. Only `en.json` is ever hand-edited; the other languages lag and fall back key by key.
 

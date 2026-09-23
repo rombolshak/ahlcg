@@ -4,22 +4,56 @@ import { fileURLToPath } from 'node:url';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendRoot = path.resolve(scriptsDir, '..');
-const notesFile = path.join(frontendRoot, 'public', 'assets', 'i18n', 'en.context.json');
+const appDir = path.join(frontendRoot, 'src', 'app');
+
+/** Every `en.context.json` under `src/app`, paired with the `en.json` path (relative to the
+ * frontend root, `/`-joined) it sits beside — that path is what a downloaded record's `file`
+ * field ends with, whatever prefix Crowdin puts in front of it. */
+function findNotesFiles(root) {
+  const found = [];
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(entryPath);
+      } else if (entry.isFile() && entry.name === 'en.context.json') {
+        const enJsonPath = path.relative(frontendRoot, path.join(dir, 'en.json')).split(path.sep).join('/');
+        found.push({ enJsonPath, notes: JSON.parse(fs.readFileSync(entryPath, 'utf8')) });
+      }
+    }
+  }
+
+  walk(root);
+  return found;
+}
+
+function notesFor(recordFile, notesFiles) {
+  return notesFiles.find(({ enJsonPath }) => recordFile.endsWith(enJsonPath));
+}
 
 /**
  * Fills the `ai_context` of a JSONL produced by `crowdin context download` from the notes authored
- * in `en.context.json`, and touches nothing else on the line. The notes live in the repository
+ * beside each source file, and touches nothing else on the line. The notes live in the repository
  * rather than being generated from the string alone, because what a translator needs — that a
  * button has three words of room, that `#n#` must survive verbatim, that a line belongs to a
  * randomised pool — is knowledge the source text does not carry.
  */
-export function fill(lines, notes) {
+export function fill(lines, notesFiles) {
   const filled = [];
   const withoutNote = [];
+  const usedKeysByFile = new Map();
 
   const out = lines.map(line => {
     const record = JSON.parse(line);
-    const note = notes[record.key];
+    const match = notesFor(record.file, notesFiles);
+    const note = match?.notes[record.key];
+
+    if (match) {
+      const used = usedKeysByFile.get(match.enJsonPath) ?? new Set();
+      used.add(record.key);
+      usedKeysByFile.set(match.enJsonPath, used);
+    }
 
     if (note === undefined) {
       withoutNote.push(record.key);
@@ -30,14 +64,20 @@ export function fill(lines, notes) {
     return JSON.stringify({ ...record, ai_context: note });
   });
 
-  const keys = new Set(lines.map(line => JSON.parse(line).key));
-  const unused = Object.keys(notes).filter(key => !key.startsWith('_') && !keys.has(key));
+  const unused = [];
+  for (const { enJsonPath, notes } of notesFiles) {
+    const used = usedKeysByFile.get(enJsonPath) ?? new Set();
+    for (const key of Object.keys(notes)) {
+      if (key === '_comment' || used.has(key)) continue;
+      unused.push(`${enJsonPath}#${key}`);
+    }
+  }
 
   return { out, filled, withoutNote, unused };
 }
 
 export function readNotes() {
-  return JSON.parse(fs.readFileSync(notesFile, 'utf8'));
+  return findNotesFiles(appDir);
 }
 
 if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
