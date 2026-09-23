@@ -1,0 +1,13 @@
+{
+  "login_to_continue": "Sign in",
+  "continue": "Continue",
+  "continue_tooltip": "Continue your investigation\nLast played {{lastPlayed}}",
+  "new_game": "New investigation",
+  "new_game_error": {
+    "title": "The case remains closed",
+    "message": "The investigation could not be started. Try again in a moment."
+  },
+  "load_game": "Case files",
+  "decks": "Dossiers",
+  "settings": "Settings"
+}
