@@ -1,0 +1,13 @@
+{
+  "login_to_continue": "",
+  "continue": "",
+  "continue_tooltip": "",
+  "new_game": "",
+  "new_game_error": {
+    "title": "",
+    "message": ""
+  },
+  "load_game": "",
+  "decks": "",
+  "settings": ""
+}
