@@ -1,4 +1,4 @@
-<ng-container *transloco="let t; scope: 'pages/game-view/game-header/global-game-actions'; prefix: 'pages/game-view/game-header/global-game-actions'">
+<ng-container *ahTransloco="scope; let t">
   @for (button of actions(); track button.icon) {
     @if (button.isVisible) {
       <div class="tooltip tooltip-bottom" [attr.data-tip]="t(button.tooltip)">

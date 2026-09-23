@@ -1,14 +1,16 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CardInfoService } from '@core/card-info.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { imageUrl } from '@domain/card-art/image-url';
 import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
+import { GLOBAL_GAME_INFO_PANEL_I18N_SCOPE } from '../i18n/scope';
 
 @Component({
   selector: 'ah-agenda',
-  imports: [NgOptimizedImage, CardDetailsTextComponent, TranslocoDirective],
+  imports: [ScopedTranslocoDirective, NgOptimizedImage, CardDetailsTextComponent, TranslocoDirective],
   templateUrl: './agenda.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -18,6 +20,8 @@ import { CardDetailsTextComponent } from '../../card-details-text/card-details-t
 })
 export class AgendaComponent {
   private readonly cardInfoService = inject(CardInfoService);
+
+  protected readonly scope = GLOBAL_GAME_INFO_PANEL_I18N_SCOPE;
   protected readonly imageUrl = imageUrl;
 
   readonly agenda = input.required<Agenda>();

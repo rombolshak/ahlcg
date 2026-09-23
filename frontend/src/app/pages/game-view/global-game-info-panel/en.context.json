@@ -1,5 +1,0 @@
-{
-  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
-  "act": "Caption above the current act card. One word. Fantasy Flight rules term — use the printed word.",
-  "agenda": "Caption above the current agenda card. One word. Fantasy Flight rules term — use the printed word."
-}

@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { Enemy } from '@domain/entities/enemy.model';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { THREAT_AREA_I18N_SCOPE } from './i18n/scope';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item/investigator-threat-item.component';
 import { ThreatsSeverity } from './threats-severity.service';
 
 @Component({
   selector: 'ah-threat-area',
-  imports: [InvestigatorThreatItemComponent, TranslocoDirective],
+  imports: [InvestigatorThreatItemComponent, ScopedTranslocoDirective],
   templateUrl: './threat-area.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -23,6 +24,8 @@ import { ThreatsSeverity } from './threats-severity.service';
   },
 })
 export class ThreatAreaComponent {
+  protected readonly scope = THREAT_AREA_I18N_SCOPE;
+
   readonly threatArea = input.required<Enemy[]>();
   readonly noThreatsText = input.required<string>();
   readonly threatsSeverity = input.required<ThreatsSeverity>();

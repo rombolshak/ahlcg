@@ -1,7 +1,7 @@
-<ng-container *transloco="let t; scope: 'pages/game-view/global-game-info-panel'; prefix: 'pages/game-view/global-game-info-panel'">
+<ng-container *ahTransloco="scope; let t">
   <ng-container *transloco="let tc">
     <div class="peer text-center text-accent-content">
-      <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("agenda") }} {{ agenda().stage }}</p>
+      <p class="-my-1 font-[ArnoPro] text-sm/4">{{ t("agenda", { num: agenda().stage }) }}</p>
       <p class="font-[Conkordia] text-xl">
         {{ tc(title() ?? "") }}
       </p>
