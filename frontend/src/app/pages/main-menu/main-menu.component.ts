@@ -12,9 +12,8 @@ import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoService } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { finalize } from 'rxjs';
+import { MAIN_MENU_I18N_SCOPE } from './i18n/scope';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
-
-const MAIN_MENU_I18N_SCOPE = 'pages/main-menu';
 
 @Component({
   selector: 'ah-main-menu',

@@ -1,5 +1,5 @@
 <div class="card w-full cursor-pointer bg-base-200 transition card-border" [class.active]="active()" [attr.data-testId]="game().id">
-  <div *transloco="let t; scope: 'pages/case-files'; prefix: 'pages/case-files'" class="card-body">
+  <div *ahTransloco="scope; let t" class="card-body">
     <h2 class="card-title">{{ t("opened", { date: openedAt() }) }}</h2>
     <p>{{ t("last_played", { date: lastPlayedAt() }) }}</p>
   </div>

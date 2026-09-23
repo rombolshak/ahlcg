@@ -6,7 +6,7 @@ const noop = () => {
   /* empty */
 };
 
-// `name` is a translation key in the `pages/main-menu` scope — the template renders `t(name)` — so
+// `name` is a translation key in the `pages/main-menu/i18n` scope — the template renders `t(name)` — so
 // a placeholder like "Item 1" shows an unresolved key. These mirror `MainMenuComponent.mainItems()`,
 // so the story shows the menu a player actually sees and the Crowdin screenshot tags real strings.
 const signedInItems: MenuItem[] = [

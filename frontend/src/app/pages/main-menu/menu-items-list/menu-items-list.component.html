@@ -1,4 +1,4 @@
-<ng-container *transloco="let t; scope: 'pages/main-menu'; prefix: 'pages/main-menu'">
+<ng-container *ahTransloco="scope; let t">
   <ah-title class="my-16 min-w-80" />
   @for (item of items(); track item.name) {
     @if (item.tooltip; as tooltip) {
