@@ -1,0 +1,14 @@
+{
+  "title": "Credentials, please",
+  "legend": "Your credentials",
+  "email": "Email",
+  "username": "Name",
+  "password": "Password",
+  "submit": "Continue",
+  "back": "Back",
+  "cancel": "Not now",
+  "errors": {
+    "wrong_password": "You are not admitted. The desk gives no reason.",
+    "generic": "The archives are silent. Try again in a moment."
+  }
+}
