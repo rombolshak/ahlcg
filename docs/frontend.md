@@ -53,7 +53,7 @@ frontend/
 │   └── main.ts / index.html
 ├── public/assets/                    cards/, images/, fonts/, i18n/
 ├── .storybook/
-├── angular.json, proxy.conf.js, transloco.config.ts, eslint.config.js,
+├── angular.json, proxy.conf.js, eslint.config.js,
 └── sonar-project.properties
 ```
 
@@ -103,13 +103,13 @@ Transloco, with **every string in a scope** — there is no root translation fil
 
 ### Where a string lives
 
-A component's strings sit in that component's own folder as `{lang}.json`, and `angular.json` mirrors `src/app` into `assets/i18n`. **The scope name is therefore the component's path under `src/app`** — `features/settings/account/en.json` is the scope `features/settings/account`, and its keys are read without that prefix. A scope is owned by one component; where a child renders its parent's strings (`case-file-card` inside `case-files`), the child names the parent's scope rather than getting a file of its own.
+A component's strings sit in an `i18n/` folder beside the component as `{lang}.json`, and `angular.json` mirrors `src/app` into `assets/i18n`. **The scope name is therefore the path of that `i18n/` folder under `src/app`** — `features/settings/account/i18n/en.json` is the scope `features/settings/account/i18n`, and its keys are read without that prefix. The folder also holds `scope.ts`, the single place that string is written; every component rendering those strings imports the constant from there. A scope is owned by one component, and a child that renders its parent's strings (`case-file-card` inside `case-files`) imports the same constant — from `i18n/` rather than from the parent component, which keeps the folder edge one-way as `no-folder-cycles` requires.
 
 Card, trait and campaign text stays under `public/assets/i18n/` — it is content addressed by card id, not chrome. `cards/{set}/{index}/{lang}.json` is loaded by `CardInfoService` through `TranslocoService.load()`; `traits/` and `campaigns/notz/…` likewise.
 
 ### Naming the scope — the trap
 
-**`scope:` and `prefix:` do different jobs and a template needs both, spelled the same.**
+**`scope:` and `prefix:` do different jobs and the directive needs both, spelled the same** — which is why templates use `*ahTransloco` (`ScopedTranslocoDirective` in `core/i18n/`) and name the scope once.
 
 `scope:` makes the directive *load* that file. It does **not** shorten your keys: `LangResolver.resolveLangBasedOnScope()` strips the scope back to a bare language before the directive calls `TranslocoService.translate()`, so the auto-prefixing that `scopes.autoPrefixKeys` performs never fires on the directive's path. (It does fire for a direct `translate()` / `selectTranslate()` call given a scope — that asymmetry is the whole trap.) `prefix:` is what lets you write `t("round")` instead of the full key.
 
@@ -144,7 +144,7 @@ Only a 404 is swallowed. A 500 is a real fault and still propagates.
 
 ### Dialog titles
 
-A dialog's heading comes from its content, through `DialogContent.getTitle()` — not from `DialogService`. `TranslocoService.translate()` is a synchronous lookup that never triggers a load, so a root-injected service cannot resolve a key belonging to a scope no one has loaded yet, and `provideSignInPrompt()` opens its dialog from a DI factory with no component to resolve one. Content that knows its own title reads it with `selectTranslate(key, {}, scope)`, which loads the scope and re-emits on language change; content given its title by a caller (`ConfirmDialogComponent`) takes finished text as an input.
+A dialog's heading comes from its content, through `DialogContent.getTitle()` — not from `DialogService`. `TranslocoService.translate()` is a synchronous lookup that never triggers a load, so a root-injected service cannot resolve a key belonging to a scope no one has loaded yet, and `provideSignInPrompt()` opens its dialog from a DI factory with no component to resolve one. Content that knows its own title reads it with `translateSignal(key, {}, scope)`, which loads the scope and re-emits on language change; content given its title by a caller (`ConfirmDialogComponent`) takes finished text as an input.
 
 ### The rest
 
@@ -152,7 +152,6 @@ A dialog's heading comes from its content, through `DialogContent.getTitle()` �
 - **An explicit choice outranks the threshold.** `?lang=xx`, or an `xx` already persisted in the user's preferences, adds that language to `availableLangs` even at 0% coverage — that is how a translator previews unfinished work, and how someone who chose a language before it fell below the bar keeps it. Both paths go through the same pure `resolveAvailableLangs()` in `core/i18n/`; the threshold governs what the app *advertises*, never what it can load. An id the generated module does not know is ignored.
 - `scopes: { keepCasing: true }` — scope names are case-sensitive and must match the folder exactly.
 - **Only `en.json` and `en.context.json` are ours.** Crowdin writes every other language and formats them its own way, so they are excluded from `lint:format` (`.prettierignore`) and from `lint:spelling` (`.cspell.json` `ignorePaths`). Both exclusions name the languages explicitly, so a new locale needs adding to both.
-- `transloco.config.ts` is **not** read by anything — the app config is inline in `app.config.ts`, and the tooling that consumed the file (the Transloco schematics, `transloco-keys-manager`) is no longer installed. `i18n-languages.json` is the authoritative language list.
 
 **The English values are not yours to invent.** What a string *says* is decided by [voice-and-tone.md](voice-and-tone.md) and chosen by the user from variants the `wordsmith` agent proposes — run `/wording`. Adding a key to `en.json` with a wording nobody chose is a convention violation, not a detail. Only `en.json` is ever hand-edited; the other languages lag and fall back key by key.
 

@@ -50,7 +50,7 @@ If a doc turns out to be wrong about the code, say so in your report. Do not fix
 
 **Match the surrounding code.** Comment density, naming, file layout, test shape. New code should be unidentifiable as new.
 
-**Never invent or trim a string a user will read.** Button labels, titles, messages, empty states — the wording was chosen by the user before you were called, and the keys are already in the `en.json` beside the component that renders them, under `frontend/src/app/`. Use them verbatim. Two things are a stop, not a judgment call: the plan missed a string the screen cannot be built without, and a chosen string does not fit the slot now that the slot is real — it wraps, truncates, or collides. Report either with what you observed; `/wording` owns the fix. A plausible sentence written mid-diff, or a word quietly cut to make a line fit, is exactly what that gate exists to prevent.
+**Never invent or trim a string a user will read.** Button labels, titles, messages, empty states — the wording was chosen by the user before you were called, and the keys are already in the `i18n/en.json` beside the component that renders them, under `frontend/src/app/`. Use them verbatim. Two things are a stop, not a judgment call: the plan missed a string the screen cannot be built without, and a chosen string does not fit the slot now that the slot is real — it wraps, truncates, or collides. Report either with what you observed; `/wording` owns the fix. A plausible sentence written mid-diff, or a word quietly cut to make a line fit, is exactly what that gate exists to prevent.
 
 **Do not touch `docs/`.** Doc updates are `/sync-docs`, a separate step.
 

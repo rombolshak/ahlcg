@@ -54,7 +54,7 @@ Two rounds is usually the limit. If the third pass is still wrong, the brief was
 
 Only after an explicit choice, and only into an `en.json` under `frontend/src/app/`:
 
-- **A string goes in the folder of the component that renders it.** That file is the transloco scope, and the key is written without the scope prefix. A string for a component that has no `en.json` yet gets a new one in its folder, plus an `en.context.json` beside it — see [frontend.md](../../docs/frontend.md#internationalization) for how a component names its scope.
+- **A string goes in the `i18n/` folder of the component that renders it.** That folder is the transloco scope, and the key is written without the scope prefix. A string for a component that has no `i18n/` folder yet gets a new one, holding `en.json`, `en.context.json` and the `scope.ts` that names the scope — see [frontend.md](../../docs/frontend.md#internationalization) for how a component names its scope.
 - Place each key in the tree where the UI puts it, next to its neighbours — not appended at the end.
 - Match the file: two-space indent, existing key style, `\n` and `{{param}}` tokens exactly as approved.
 - **Write the translator's note too**, in the `en.context.json` beside the file you just edited, under the same key. One line saying where the string sits and what constrains it — the room it has, a `#n#` that must survive, a randomised pool it belongs to. That knowledge is in your head right now and nowhere else; `scripts/fill-context.mjs` reports every string that lacks one.

@@ -6,7 +6,7 @@ How a language gets from empty to shipped. This file is the brief for a **human 
 
 ## What you are translating, and what you are not
 
-The app's own chrome, and nothing else. It is **not one file**: each screen or panel keeps its strings beside the code that draws it, under `frontend/src/app/`, so `frontend/src/app/features/settings/account/en.json` holds the account panel and nothing else. `en.json` is the source in every one of those folders; every other file beside it mirrors that file's key structure.
+The app's own chrome, and nothing else. It is **not one file**: each screen or panel keeps its strings in an `i18n/` folder beside the code that draws it, under `frontend/src/app/`, so `frontend/src/app/features/settings/account/i18n/en.json` holds the account panel and nothing else. `en.json` is the source in every one of those folders; every other file beside it mirrors that file's key structure.
 
 You are unlikely to meet the file paths at all — on Crowdin the files appear under the same tree, and the folder name tells you which screen you are looking at. The practical effect is that **a file is one screen's worth of strings**, so the ones you see together are the ones that appear together, and a file finished is a screen finished.
 
