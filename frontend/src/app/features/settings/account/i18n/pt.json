@@ -1,0 +1,28 @@
+{
+  "back": "",
+  "anonymous": {
+    "name_label": "",
+    "state": "",
+    "detail": "",
+    "upgrade": "",
+    "sign_out": ""
+  },
+  "permanent": {
+    "name_label": "",
+    "email_label": "",
+    "state": "",
+    "detail": "",
+    "sign_out": ""
+  },
+  "signed_out": {
+    "state": "",
+    "detail": "",
+    "sign_in": ""
+  },
+  "sign_out_warning": {
+    "title": "",
+    "message": "",
+    "confirm": "",
+    "cancel": ""
+  }
+}
