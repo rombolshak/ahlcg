@@ -1,0 +1,15 @@
+{
+  "title": "",
+  "opened": "",
+  "last_played": "",
+  "empty": {
+    "message": "",
+    "action": ""
+  },
+  "error": {
+    "title": "",
+    "message": "",
+    "retry": ""
+  },
+  "back": ""
+}
