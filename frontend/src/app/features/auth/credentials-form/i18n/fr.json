@@ -1,0 +1,14 @@
+{
+  "title": "",
+  "legend": "",
+  "email": "",
+  "username": "",
+  "password": "",
+  "submit": "",
+  "back": "",
+  "cancel": "",
+  "errors": {
+    "wrong_password": "",
+    "generic": ""
+  }
+}
