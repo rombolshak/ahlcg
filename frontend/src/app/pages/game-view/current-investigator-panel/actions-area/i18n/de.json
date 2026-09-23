@@ -1,0 +1,24 @@
+{
+  "given_action": "",
+  "standard_action": "",
+  "end_turn": "",
+  "buttons": {
+    "draw_card": "",
+    "take_resource": "",
+    "view_discard": ""
+  },
+  "spent_on": {
+    "investigate": "",
+    "move": "",
+    "draw": "",
+    "resource": "",
+    "play": "",
+    "activate": "",
+    "fight": "",
+    "engage": "",
+    "evade": ""
+  },
+  "restrictions": {
+    "evade_only": ""
+  }
+}
