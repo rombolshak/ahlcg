@@ -1,15 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal, Signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService, User } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
 import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { translateSignal } from '@jsverse/transloco';
 import { CredentialsFormComponent } from '../credentials-form/credentials-form.component';
-
-const SIGN_IN_I18N_SCOPE = 'features/auth/sign-in';
+import { CREDENTIALS_FORM_I18N_SCOPE } from '../credentials-form/i18n/scope';
+import { SIGN_IN_I18N_SCOPE } from './i18n/scope';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
@@ -39,7 +40,7 @@ interface IdentityResult {
 
 @Component({
   selector: 'ah-sign-in',
-  imports: [TranslocoDirective, CredentialsFormComponent],
+  imports: [ScopedTranslocoDirective, CredentialsFormComponent],
   templateUrl: './sign-in.component.html',
   providers: [
     {
@@ -55,11 +56,13 @@ interface IdentityResult {
 export class SignInComponent implements DialogContentWithResult<User> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly transloco = inject(TranslocoService);
+
+  protected readonly scope = SIGN_IN_I18N_SCOPE;
+  protected readonly credentialsScope = CREDENTIALS_FORM_I18N_SCOPE;
 
   public readonly result = output<User>();
 
-  private readonly titleText = toSignal(this.transloco.selectTranslate<string>('title', {}, SIGN_IN_I18N_SCOPE));
+  private readonly titleText = translateSignal('title', {}, SIGN_IN_I18N_SCOPE);
   public getTitle = () => this.titleText();
 
   protected readonly view = signal<View>('choice');

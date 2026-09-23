@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { email, form, FormField, FormRoot, required } from '@angular/forms/signals';
 import { AuthService, Credentials, User } from '@core/auth/auth.service';
 import { AH_DIALOG_CONTENT } from '@core/dialog/dialog-content';
 import { DialogContentWithResult, DialogOptions } from '@core/dialog/dialog.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { translateSignal } from '@jsverse/transloco';
 import { FocusTrapDirective } from '@ui/directives/focus-trap.directive';
 import { firstValueFrom } from 'rxjs';
 import { toValidationError } from './credentials-form.errors';
-
-const CREDENTIALS_FORM_I18N_SCOPE = 'features/auth/credentials-form';
+import { CREDENTIALS_FORM_I18N_SCOPE } from './i18n/scope';
 
 /**
  * The dialog title when the form is opened directly (bind an anonymous account, sign in from
@@ -27,7 +27,7 @@ export const CREDENTIALS_DIALOG_OPTIONS = { size: 's' } as const satisfies Dialo
  */
 @Component({
   selector: 'ah-credentials-form',
-  imports: [FormField, FormRoot, TranslocoDirective, FocusTrapDirective],
+  imports: [ScopedTranslocoDirective, FormField, FormRoot, FocusTrapDirective],
   templateUrl: './credentials-form.component.html',
   providers: [
     {
@@ -40,9 +40,10 @@ export const CREDENTIALS_DIALOG_OPTIONS = { size: 's' } as const satisfies Dialo
 export class CredentialsFormComponent implements DialogContentWithResult<User | undefined> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly transloco = inject(TranslocoService);
 
-  /** Relative to the `features/auth/credentials-form` scope, so a host can relabel the secondary
+  protected readonly scope = CREDENTIALS_FORM_I18N_SCOPE;
+
+  /** Relative to `CREDENTIALS_FORM_I18N_SCOPE`, so a host can relabel the secondary
    * button. */
   public readonly submitKey = input('submit');
   public readonly dismissKey = input('cancel');
@@ -52,7 +53,7 @@ export class CredentialsFormComponent implements DialogContentWithResult<User | 
    * view. No further plumbing is needed for either host. */
   public readonly result = output<User | undefined>();
 
-  private readonly titleText = toSignal(this.transloco.selectTranslate<string>('title', {}, CREDENTIALS_FORM_I18N_SCOPE));
+  private readonly titleText = translateSignal('title', {}, CREDENTIALS_FORM_I18N_SCOPE);
   public getTitle = () => this.titleText();
 
   private readonly formElement = viewChild.required<ElementRef<HTMLFormElement>>('form');

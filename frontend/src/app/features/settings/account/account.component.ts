@@ -4,19 +4,19 @@ import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { DialogService } from '@core/dialog/dialog.service';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoService } from '@jsverse/transloco';
 import { filter, switchMap } from 'rxjs';
-
-export const ACCOUNT_I18N_SCOPE = 'features/settings/account';
+import { ACCOUNT_I18N_SCOPE } from './i18n/scope';
 
 type AccountState = 'anonymous' | 'permanent' | 'signed_out';
 
 interface AccountAction {
   key: 'upgrade' | 'sign_out' | 'sign_in' | 'back';
-  /** Relative to the `features/settings/account` scope — `back` lives there directly, the rest
+  /** Relative to `ACCOUNT_I18N_SCOPE` — `back` lives there directly, the rest
    * under the current state's own sub-key. */
   labelKey: string;
   process: () => void;
@@ -34,7 +34,7 @@ interface AccountAction {
  */
 @Component({
   selector: 'ah-account',
-  imports: [TranslocoDirective],
+  imports: [ScopedTranslocoDirective],
   templateUrl: './account.component.html',
   providers: [
     {
@@ -50,6 +50,8 @@ export class AccountComponent implements DialogContent {
   private readonly confirmDialog = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly transloco = inject(TranslocoService);
+
+  protected readonly scope = ACCOUNT_I18N_SCOPE;
 
   public readonly back = output();
 

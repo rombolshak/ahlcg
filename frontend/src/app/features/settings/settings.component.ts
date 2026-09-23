@@ -1,17 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, linkedSignal, signal, viewChild, viewChildren } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
 import { AH_DIALOG_CONTEXT } from '@core/dialog/dialog-context';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { SettingsService } from '@core/settings/settings.service';
-import { LangDefinition, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { LangDefinition, translateSignal, TranslocoService } from '@jsverse/transloco';
 import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
+import { SETTINGS_I18N_SCOPE } from './i18n/scope';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
-
-const SETTINGS_I18N_SCOPE = 'features/settings';
 
 type View = 'settings' | 'account';
 
@@ -24,7 +23,7 @@ interface DialogButton {
 
 @Component({
   selector: 'ah-settings',
-  imports: [SettingItemComponent, AccountComponent, TranslocoDirective],
+  imports: [SettingItemComponent, AccountComponent, ScopedTranslocoDirective],
   templateUrl: './settings.component.html',
   styles: ``,
   providers: [
@@ -44,8 +43,10 @@ export class SettingsComponent implements DialogContent {
   private readonly transloco = inject(TranslocoService);
   private readonly dialog = inject(AH_DIALOG_CONTEXT, { host: true });
 
-  private readonly settingsTitle = toSignal(this.transloco.selectTranslate<string>('title', {}, SETTINGS_I18N_SCOPE));
-  private readonly accountTitle = toSignal(this.transloco.selectTranslate<string>('account.title', {}, SETTINGS_I18N_SCOPE));
+  protected readonly scope = SETTINGS_I18N_SCOPE;
+
+  private readonly settingsTitle = translateSignal('title', {}, SETTINGS_I18N_SCOPE);
+  private readonly accountTitle = translateSignal('account.title', {}, SETTINGS_I18N_SCOPE);
 
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();

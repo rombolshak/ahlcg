@@ -1,4 +1,4 @@
-<ng-container *transloco="let t; scope: 'features/auth/sign-in'; prefix: 'features/auth/sign-in'">
+<ng-container *ahTransloco="scope; let t">
   @if (view() === "choice") {
     <p class="mb-6 text-base-content/80">{{ t("message") }}</p>
 
@@ -28,7 +28,7 @@
     </div>
 
     @if (error(); as err) {
-      <ng-container *transloco="let te; scope: 'features/auth/credentials-form'; prefix: 'features/auth/credentials-form'">
+      <ng-container *ahTransloco="credentialsScope; let te">
         <div role="alert" class="mt-4 alert alert-soft alert-error">
           @if (err.kind === "key") {
             <span>{{ te(err.key) }}</span>
