@@ -1,0 +1,20 @@
+{
+  "title": "Admission to the archives",
+  "message": "Choose how the desk should record you. A visitor's ticket asks nothing of you, and nothing stops you enrolling properly later.",
+  "anonymous": {
+    "title": "A visitor's ticket",
+    "lead": "For trying a deck out, or playing alone.",
+    "credentials": "No credentials taken",
+    "device": "This device only",
+    "name": "A name drawn for you",
+    "duration": "Files cleared after 90 days unused"
+  },
+  "credentials": {
+    "title": "An admission pass",
+    "lead": "For playing from more than one place.",
+    "credentials": "Credentials taken once",
+    "device": "Any device you sign in from",
+    "name": "The name you give",
+    "duration": "Files kept a year at the least"
+  }
+}
