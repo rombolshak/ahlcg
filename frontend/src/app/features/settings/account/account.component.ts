@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, output, Signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { anonymousAlias } from '@core/auth/anonymous-alias';
 import { AuthService } from '@core/auth/auth.service';
 import { ConfirmDialogService } from '@core/dialog/confirm/confirm-dialog.service';
 import { AH_DIALOG_CONTENT, DialogContent } from '@core/dialog/dialog-content';
@@ -56,6 +57,7 @@ export class AccountComponent implements DialogContent {
   public readonly back = output();
 
   protected readonly user = toSignal(this.auth.currentUser);
+  protected readonly alias = anonymousAlias(this.user);
   protected readonly state: Signal<AccountState> = computed(() => {
     const user = this.user();
     if (user === undefined) return 'signed_out';
