@@ -10,13 +10,13 @@ import { listNavigation } from '@core/list-navigation';
 import { CREDENTIALS_DIALOG_OPTIONS, CredentialsFormComponent } from '@features/auth/credentials-form/credentials-form.component';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter, switchMap } from 'rxjs';
-import { ACCOUNT_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 type AccountState = 'anonymous' | 'permanent' | 'signed_out';
 
 interface AccountAction {
   key: 'upgrade' | 'sign_out' | 'sign_in' | 'back';
-  /** Relative to `ACCOUNT_I18N_SCOPE` — `back` lives there directly, the rest
+  /** Relative to this component's own scope — `back` lives there directly, the rest
    * under the current state's own sub-key. */
   labelKey: string;
   process: () => void;
@@ -51,7 +51,7 @@ export class AccountComponent implements DialogContent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly transloco = inject(TranslocoService);
 
-  protected readonly scope = ACCOUNT_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   public readonly back = output();
 
@@ -158,10 +158,10 @@ export class AccountComponent implements DialogContent {
   protected signOutAnonymous(): void {
     this.confirmDialog
       .confirm({
-        title: this.transloco.translate('sign_out_warning.title', {}, ACCOUNT_I18N_SCOPE),
-        message: this.transloco.translate('sign_out_warning.message', {}, ACCOUNT_I18N_SCOPE),
-        confirmText: this.transloco.translate('sign_out_warning.confirm', {}, ACCOUNT_I18N_SCOPE),
-        cancelText: this.transloco.translate('sign_out_warning.cancel', {}, ACCOUNT_I18N_SCOPE),
+        title: this.transloco.translate('sign_out_warning.title', {}, I18N_SCOPE),
+        message: this.transloco.translate('sign_out_warning.message', {}, I18N_SCOPE),
+        confirmText: this.transloco.translate('sign_out_warning.confirm', {}, I18N_SCOPE),
+        cancelText: this.transloco.translate('sign_out_warning.cancel', {}, I18N_SCOPE),
         appearance: 'error',
         // Deleting the account for good is never one Enter away from a dialog that just appeared.
         defaultButton: 'cancel',

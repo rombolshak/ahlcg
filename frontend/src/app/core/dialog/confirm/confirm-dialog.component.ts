@@ -4,7 +4,7 @@ import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { AH_DIALOG_CONTENT } from '../dialog-content';
 import { DialogContentWithResult } from '../dialog.service';
-import { CONFIRM_DIALOG_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 export type ConfirmAppearance = 'primary' | 'error';
 export type ConfirmButtonKey = 'confirm' | 'cancel';
@@ -51,7 +51,7 @@ const CANCEL_BUTTON_CLASSES = { selected: 'btn btn-accent', unselected: 'btn btn
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialogComponent implements DialogContentWithResult<boolean>, OnInit {
-  protected readonly scope = CONFIRM_DIALOG_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   /**
    * Not `.required()`: `DialogComponent.displayedTitle` reads `getTitle()` reactively as soon as

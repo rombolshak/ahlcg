@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { GameSummary } from '@features/games/games.service';
 import { TranslocoService } from '@jsverse/transloco';
-import { CASE_FILES_I18N_SCOPE } from '../i18n/scope';
+import { I18N_SCOPE } from '../i18n/scope';
 
 @Component({
   selector: 'ah-case-file-card',
@@ -18,7 +18,7 @@ import { CASE_FILES_I18N_SCOPE } from '../i18n/scope';
 export class CaseFileCardComponent {
   private readonly transloco = inject(TranslocoService);
 
-  protected readonly scope = CASE_FILES_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   public readonly game = input.required<GameSummary>();
   public readonly active = input(false);

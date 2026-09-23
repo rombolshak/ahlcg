@@ -8,7 +8,7 @@ import { SettingsService } from '@core/settings/settings.service';
 import { LangDefinition, translateSignal, TranslocoService } from '@jsverse/transloco';
 import { produce } from 'immer';
 import { AccountComponent } from './account/account.component';
-import { SETTINGS_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 import { SettingItemComponent } from './setting-item/setting-item.component';
 import { provideUserPreferencesService, UserPreferences } from './user-preferences.service';
 
@@ -43,10 +43,10 @@ export class SettingsComponent implements DialogContent {
   private readonly transloco = inject(TranslocoService);
   private readonly dialog = inject(AH_DIALOG_CONTEXT, { host: true });
 
-  protected readonly scope = SETTINGS_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
-  private readonly settingsTitle = translateSignal('title', {}, SETTINGS_I18N_SCOPE);
-  private readonly accountTitle = translateSignal('account.title', {}, SETTINGS_I18N_SCOPE);
+  private readonly settingsTitle = translateSignal('title', {}, I18N_SCOPE);
+  private readonly accountTitle = translateSignal('account.title', {}, I18N_SCOPE);
 
   protected readonly settings = linkedSignal(() => this.userPrefs.get()());
   protected readonly availableLanguages = this.transloco.getAvailableLangs();

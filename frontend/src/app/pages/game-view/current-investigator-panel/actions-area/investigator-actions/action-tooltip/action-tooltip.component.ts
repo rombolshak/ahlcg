@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InvestigatorAction } from '@domain/action.model';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
-import { ACTIONS_AREA_I18N_SCOPE } from '../../i18n/scope';
+import { I18N_SCOPE } from '../../i18n/scope';
 
 @Component({
   selector: 'ah-action-tooltip',
@@ -12,7 +12,7 @@ import { ACTIONS_AREA_I18N_SCOPE } from '../../i18n/scope';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ActionTooltipComponent {
-  protected readonly scope = ACTIONS_AREA_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   readonly action = input.required<InvestigatorAction>();
 }

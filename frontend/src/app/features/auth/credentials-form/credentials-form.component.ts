@@ -10,7 +10,7 @@ import { translateSignal } from '@jsverse/transloco';
 import { FocusTrapDirective } from '@ui/directives/focus-trap.directive';
 import { firstValueFrom } from 'rxjs';
 import { toValidationError } from './credentials-form.errors';
-import { CREDENTIALS_FORM_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 /**
  * The dialog title when the form is opened directly (bind an anonymous account, sign in from
@@ -41,9 +41,9 @@ export class CredentialsFormComponent implements DialogContentWithResult<User | 
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly scope = CREDENTIALS_FORM_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
-  /** Relative to `CREDENTIALS_FORM_I18N_SCOPE`, so a host can relabel the secondary
+  /** Relative to this component's own scope, so a host can relabel the secondary
    * button. */
   public readonly submitKey = input('submit');
   public readonly dismissKey = input('cancel');
@@ -53,7 +53,7 @@ export class CredentialsFormComponent implements DialogContentWithResult<User | 
    * view. No further plumbing is needed for either host. */
   public readonly result = output<User | undefined>();
 
-  private readonly titleText = translateSignal('title', {}, CREDENTIALS_FORM_I18N_SCOPE);
+  private readonly titleText = translateSignal('title', {}, I18N_SCOPE);
   public getTitle = () => this.titleText();
 
   private readonly formElement = viewChild.required<ElementRef<HTMLFormElement>>('form');

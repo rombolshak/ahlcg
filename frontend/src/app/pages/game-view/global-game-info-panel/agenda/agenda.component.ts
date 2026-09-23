@@ -6,7 +6,7 @@ import { imageUrl } from '@domain/card-art/image-url';
 import { Agenda } from '@domain/entities/agenda.model';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
-import { GLOBAL_GAME_INFO_PANEL_I18N_SCOPE } from '../i18n/scope';
+import { I18N_SCOPE } from '../i18n/scope';
 
 @Component({
   selector: 'ah-agenda',
@@ -21,7 +21,7 @@ import { GLOBAL_GAME_INFO_PANEL_I18N_SCOPE } from '../i18n/scope';
 export class AgendaComponent {
   private readonly cardInfoService = inject(CardInfoService);
 
-  protected readonly scope = GLOBAL_GAME_INFO_PANEL_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
   protected readonly imageUrl = imageUrl;
 
   readonly agenda = input.required<Agenda>();

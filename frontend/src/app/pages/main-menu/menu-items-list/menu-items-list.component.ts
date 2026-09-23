@@ -4,7 +4,7 @@ import { InputManagerService, LayerRef } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { TitleComponent } from '@pages/main-menu/title/title.component';
 import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
-import { MAIN_MENU_I18N_SCOPE } from '../i18n/scope';
+import { I18N_SCOPE } from '../i18n/scope';
 import { MenuItem } from '../menu-item';
 
 @Component({
@@ -20,7 +20,7 @@ import { MenuItem } from '../menu-item';
 export class MenuItemsListComponent implements OnInit, OnDestroy {
   private readonly inputManager = inject(InputManagerService);
 
-  protected readonly scope = MAIN_MENU_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   public readonly items = input.required<MenuItem[]>();
 

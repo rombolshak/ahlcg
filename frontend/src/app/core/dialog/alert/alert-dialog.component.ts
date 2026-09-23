@@ -3,7 +3,7 @@ import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive'
 import { InputLayer } from '@core/input-manager.service';
 import { AH_DIALOG_CONTENT } from '../dialog-content';
 import { DialogContentWithResult } from '../dialog.service';
-import { ALERT_DIALOG_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 /**
  * A reusable message-and-OK prompt, opened through `AlertDialogService` rather than instantiated
@@ -23,7 +23,7 @@ import { ALERT_DIALOG_I18N_SCOPE } from './i18n/scope';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertDialogComponent implements DialogContentWithResult<void> {
-  protected readonly scope = ALERT_DIALOG_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   /**
    * Not `.required()`: `DialogComponent.displayedTitle` reads `getTitle()` reactively as soon as

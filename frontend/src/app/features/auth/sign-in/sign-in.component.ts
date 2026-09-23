@@ -9,8 +9,8 @@ import { InputLayer } from '@core/input-manager.service';
 import { listNavigation } from '@core/list-navigation';
 import { translateSignal } from '@jsverse/transloco';
 import { CredentialsFormComponent } from '../credentials-form/credentials-form.component';
-import { CREDENTIALS_FORM_I18N_SCOPE } from '../credentials-form/i18n/scope';
-import { SIGN_IN_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE as CREDENTIALS_FORM_SCOPE } from '../credentials-form/i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 /**
  * Shared by every entry point to the prompt — the main menu's "sign in to continue" and the auth
@@ -57,12 +57,12 @@ export class SignInComponent implements DialogContentWithResult<User> {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly scope = SIGN_IN_I18N_SCOPE;
-  protected readonly credentialsScope = CREDENTIALS_FORM_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
+  protected readonly credentialsScope = CREDENTIALS_FORM_SCOPE;
 
   public readonly result = output<User>();
 
-  private readonly titleText = translateSignal('title', {}, SIGN_IN_I18N_SCOPE);
+  private readonly titleText = translateSignal('title', {}, I18N_SCOPE);
   public getTitle = () => this.titleText();
 
   protected readonly view = signal<View>('choice');

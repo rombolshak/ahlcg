@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { Enemy } from '@domain/entities/enemy.model';
-import { THREAT_AREA_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 import { InvestigatorThreatItemComponent } from './investigator-threat-item/investigator-threat-item.component';
 import { ThreatsSeverity } from './threats-severity.service';
 
@@ -24,7 +24,7 @@ import { ThreatsSeverity } from './threats-severity.service';
   },
 })
 export class ThreatAreaComponent {
-  protected readonly scope = THREAT_AREA_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   readonly threatArea = input.required<Enemy[]>();
   readonly noThreatsText = input.required<string>();

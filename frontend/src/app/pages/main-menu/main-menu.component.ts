@@ -12,7 +12,7 @@ import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoService } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
 import { finalize } from 'rxjs';
-import { MAIN_MENU_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 import { MenuItemsListComponent } from './menu-items-list/menu-items-list.component';
 
 @Component({
@@ -156,8 +156,8 @@ export class MainMenuComponent {
 
   private showCreateError(): void {
     this.alertDialog.alert({
-      title: this.transloco.translate('new_game_error.title', {}, MAIN_MENU_I18N_SCOPE),
-      message: this.transloco.translate('new_game_error.message', {}, MAIN_MENU_I18N_SCOPE),
+      title: this.transloco.translate('new_game_error.title', {}, I18N_SCOPE),
+      message: this.transloco.translate('new_game_error.message', {}, I18N_SCOPE),
     });
   }
 

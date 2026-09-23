@@ -3,7 +3,7 @@ import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive'
 import { InvestigatorAction } from '@domain/action.model';
 import { ActionAreaButtonsComponent } from '@pages/game-view/current-investigator-panel/actions-area/action-area-buttons/action-area-buttons.component';
 import { InvestigatorActionsComponent } from '@pages/game-view/current-investigator-panel/actions-area/investigator-actions/investigator-actions.component';
-import { ACTIONS_AREA_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 @Component({
   selector: 'ah-actions-area',
@@ -15,7 +15,7 @@ import { ACTIONS_AREA_I18N_SCOPE } from './i18n/scope';
   },
 })
 export class ActionsAreaComponent {
-  protected readonly scope = ACTIONS_AREA_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   readonly actions = input.required<InvestigatorAction[]>();
 }

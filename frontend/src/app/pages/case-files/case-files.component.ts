@@ -8,7 +8,7 @@ import { listNavigation, NO_SELECTION } from '@core/list-navigation';
 import { GamesService, GameSummary } from '@features/games/games.service';
 import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
 import { CaseFileCardComponent } from './case-file-card/case-file-card.component';
-import { CASE_FILES_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 @Component({
   selector: 'ah-case-files',
@@ -26,7 +26,7 @@ export class CaseFilesComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly inputManager = inject(InputManagerService);
 
-  protected readonly scope = CASE_FILES_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   private readonly currentUser = toSignal(this.authService.currentUser);
 

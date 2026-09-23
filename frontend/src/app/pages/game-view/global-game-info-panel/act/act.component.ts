@@ -8,7 +8,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { SingleBarComponent } from '@ui/kit/single-bar/single-bar.component';
 import { WithAhSymbolsPipe } from '@ui/pipes/with-ah-symbols.pipe';
 import { CardDetailsTextComponent } from '../../card-details-text/card-details-text.component';
-import { GLOBAL_GAME_INFO_PANEL_I18N_SCOPE } from '../i18n/scope';
+import { I18N_SCOPE } from '../i18n/scope';
 
 @Component({
   selector: 'ah-act',
@@ -23,7 +23,7 @@ import { GLOBAL_GAME_INFO_PANEL_I18N_SCOPE } from '../i18n/scope';
 export class ActComponent {
   private readonly cardInfoService = inject(CardInfoService);
 
-  protected readonly scope = GLOBAL_GAME_INFO_PANEL_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
   protected readonly imageUrl = imageUrl;
 
   readonly act = input.required<Act>();

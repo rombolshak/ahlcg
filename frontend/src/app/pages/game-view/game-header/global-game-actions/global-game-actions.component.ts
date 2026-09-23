@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { SvgComponent } from '@ui/kit/svg/svg.component';
 import { ActionButton } from './action-button.model';
-import { GLOBAL_GAME_ACTIONS_I18N_SCOPE } from './i18n/scope';
+import { I18N_SCOPE } from './i18n/scope';
 
 @Component({
   selector: 'ah-global-game-actions',
@@ -14,7 +14,7 @@ import { GLOBAL_GAME_ACTIONS_I18N_SCOPE } from './i18n/scope';
   },
 })
 export class GlobalGameActionsComponent {
-  protected readonly scope = GLOBAL_GAME_ACTIONS_I18N_SCOPE;
+  protected readonly scope = I18N_SCOPE;
 
   readonly actions = input.required<ActionButton[]>();
 }
