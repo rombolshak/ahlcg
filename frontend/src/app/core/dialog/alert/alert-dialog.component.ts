@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ScopedTranslocoDirective } from '@core/i18n/scoped-transloco.directive';
 import { InputLayer } from '@core/input-manager.service';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { AH_DIALOG_CONTENT } from '../dialog-content';
 import { DialogContentWithResult } from '../dialog.service';
+import { ALERT_DIALOG_I18N_SCOPE } from './i18n/scope';
 
 /**
  * A reusable message-and-OK prompt, opened through `AlertDialogService` rather than instantiated
@@ -11,7 +12,7 @@ import { DialogContentWithResult } from '../dialog.service';
  */
 @Component({
   selector: 'ah-alert-dialog',
-  imports: [TranslocoDirective],
+  imports: [ScopedTranslocoDirective],
   templateUrl: './alert-dialog.component.html',
   providers: [
     {
@@ -22,6 +23,8 @@ import { DialogContentWithResult } from '../dialog.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertDialogComponent implements DialogContentWithResult<void> {
+  protected readonly scope = ALERT_DIALOG_I18N_SCOPE;
+
   /**
    * Not `.required()`: `DialogComponent.displayedTitle` reads `getTitle()` reactively as soon as
    * `attachContent` sets the content signal, which can happen before `DialogService`'s `Binding[]`

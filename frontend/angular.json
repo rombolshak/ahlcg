@@ -32,7 +32,7 @@
                 "ignore": ["**/*.context.json"]
               },
               {
-                "glob": "**/*.json",
+                "glob": "**/i18n/*.json",
                 "input": "src/app",
                 "output": "assets/i18n",
                 "ignore": ["**/*.context.json"]

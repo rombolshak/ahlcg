@@ -20,7 +20,7 @@ import traits from '../../public/assets/i18n/traits/en.json';
  * cycle at baseline 0. The glob is a Vite build-time construct, invisible to that static analysis,
  * and `eager: true` keeps it synchronous like the rest of this file's fixtures.
  */
-const scopeModules = import.meta.glob<{ default: Record<string, unknown> }>('/src/app/**/en.json', { eager: true });
+const scopeModules = import.meta.glob<{ default: Record<string, unknown> }>('/src/app/**/i18n/en.json', { eager: true });
 
 const scopeLangs = Object.fromEntries(
   Object.entries(scopeModules).map(([filePath, module]) => {

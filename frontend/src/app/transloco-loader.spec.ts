@@ -5,7 +5,7 @@ import { provideTransloco, Translation, TranslocoService } from '@jsverse/transl
 import { firstValueFrom } from 'rxjs';
 import { TranslocoHttpLoader } from './transloco-loader';
 
-const SCOPE = 'features/settings';
+const SCOPE = 'features/settings/i18n';
 
 describe('TranslocoHttpLoader', () => {
   let loader: TranslocoHttpLoader;

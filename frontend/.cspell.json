@@ -70,6 +70,6 @@
     "softwareTerms",
     "typescript"
   ],
-  "ignorePaths": ["*test*", "*spec.ts", "*.stories.ts", "assets", "src/app/generated", "src/app/**/{es,fr,ru,de,it,pl,zh,pt,cs,vi,ko,uk}.json"],
+  "ignorePaths": ["*test*", "*spec.ts", "*.stories.ts", "assets", "src/app/generated", "src/app/**/i18n/{es,fr,ru,de,it,pl,zh,pt,cs,vi,ko,uk}.json"],
   "import": ["@cspell/dict-ru_ru/cspell-ext.json"]
 }

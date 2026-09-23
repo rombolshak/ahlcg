@@ -1,1 +1,1 @@
-src/app/**/{es,fr,ru,de,it,pl,zh,pt,cs,vi,ko,uk}.json
+src/app/**/i18n/{es,fr,ru,de,it,pl,zh,pt,cs,vi,ko,uk}.json
