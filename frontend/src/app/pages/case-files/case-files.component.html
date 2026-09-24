@@ -11,7 +11,32 @@
       </div>
     </div>
 
-    <div class="mt-8 flex min-h-0 w-2xl flex-1 flex-col items-center">
+    <div class="mt-8 flex w-2xl flex-col items-center border-b border-base-content/20" role="tablist">
+      <div class="flex">
+        <button
+          type="button"
+          role="tab"
+          data-testId="tab-recent"
+          [attr.aria-selected]="tab() === 'recent'"
+          [class]="recentTabClass()"
+          (click)="selectTab('recent')"
+        >
+          {{ t("tabs.recent") }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-testId="tab-archive"
+          [attr.aria-selected]="tab() === 'archive'"
+          [class]="archiveTabClass()"
+          (click)="selectTab('archive')"
+        >
+          {{ t("tabs.archive") }}
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-[68px] flex min-h-0 w-2xl flex-1 flex-col items-center">
       @if (isLoading()) {
         <div class="flex w-full flex-1 flex-col gap-4" data-testId="loading">
           <div class="h-[110px] w-full skeleton rounded-box opacity-80"></div>
@@ -20,29 +45,29 @@
           <div class="h-[110px] w-full skeleton rounded-box opacity-20"></div>
         </div>
       } @else if (hasFailed()) {
-        <div class="flex w-full flex-1 flex-col items-center justify-center gap-8 pb-24">
-          <div
-            role="alert"
-            class="flex w-full flex-col items-center gap-4 rounded-box border-2 border-error bg-base-200/94 px-8 py-10 text-center"
-            data-testId="error"
-          >
-            <h2 class="font-[Conkordia] text-[36px] text-error">{{ t("error.title") }}</h2>
-            <p class="text-[22px] text-base-content/80">{{ t("error.message") }}</p>
-          </div>
+        <div class="flex w-full flex-1 flex-col items-center gap-8 pt-40">
+          <ah-case-files-notice tone="error" data-testId="error" [heading]="t('error.title')" [message]="t('error.message')" />
           <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="retry" (click)="retry()">{{ t("error.retry") }}</button>
         </div>
       } @else if (entries().length === 0) {
-        <div class="flex w-full flex-1 flex-col items-center justify-center gap-8 pb-24">
-          <div class="flex w-full flex-col items-center rounded-box border-2 border-base-content/20 bg-base-200/94 px-8 py-10 text-center" data-testId="empty">
-            <p class="text-[22px] whitespace-pre-line text-base-content/80">{{ t("empty.message") }}</p>
-          </div>
-          <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="begin" (click)="goBack()">{{ t("empty.action") }}</button>
+        <div class="flex w-full flex-1 flex-col items-center gap-8 pt-40">
+          @if (tab() === "recent") {
+            <ah-case-files-notice data-testId="empty" [heading]="t('empty.title')" [message]="t('empty.message')" />
+            <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="begin" (click)="goBack()">{{ t("empty.action") }}</button>
+          } @else {
+            <ah-case-files-notice data-testId="empty" [heading]="t('archive_empty.title')" [message]="t('archive_empty.message')" />
+          }
         </div>
       } @else {
-        <div class="case-files-scroll min-h-0 w-full flex-1 overflow-y-auto" data-testId="list" (mouseleave)="clearSelection()">
+        <div class="case-files-scroll min-h-0 w-full flex-1 overflow-y-auto" data-testId="list">
           <div class="flex flex-col gap-4 p-1 pb-10">
             @for (game of entries(); track game.id) {
-              <ah-case-file-card [game]="game" [active]="$index === selectedIndex()" (mouseenter)="selectedIndex.set($index)" (click)="open(game)" />
+              <ah-case-file-card
+                [game]="game"
+                [active]="$index === navigation().selectedIndex()"
+                (mouseenter)="navigation().selectedIndex.set($index)"
+                (click)="open(game)"
+              />
             }
           </div>
         </div>

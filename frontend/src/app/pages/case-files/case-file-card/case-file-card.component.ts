@@ -27,6 +27,10 @@ export class CaseFileCardComponent {
 
   protected readonly openedAt = computed(() => this.formatDate(this.game().createdAt, { dateStyle: 'medium' }));
   protected readonly lastPlayedAt = computed(() => this.formatDate(this.game().lastPlayedAt, { dateStyle: 'medium', timeStyle: 'short' }));
+  protected readonly completedAt = computed(() => {
+    const completedAt = this.game().completedAt;
+    return completedAt === null ? undefined : this.formatDate(completedAt, { dateStyle: 'medium' });
+  });
 
   private formatDate(date: Date, options: Intl.DateTimeFormatOptions): string {
     return new Intl.DateTimeFormat(this.lang() ?? 'en', options).format(date);

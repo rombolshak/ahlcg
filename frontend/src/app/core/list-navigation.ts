@@ -7,16 +7,10 @@ export interface ListNavigationConfig<T> {
   items: Signal<readonly T[]>;
   onConfirm?: (item: T) => void;
   orientation?: ListOrientation;
-  /**
-   * Whether the first enabled item is selected before the user has done anything. A menu always has
-   * a current item, so it defaults to `true`; a list of records should not preselect one the user
-   * could then activate by pressing Enter, so those pass `false` and start at {@link NO_SELECTION}.
-   */
-  preselect?: boolean;
 }
 
 /** `selectedIndex` when nothing is selected. Moving from here lands on the first or last item. */
-export const NO_SELECTION = -1;
+const NO_SELECTION = -1;
 
 export interface ListNavigation<T> {
   readonly selectedIndex: WritableSignal<number>;
@@ -33,7 +27,7 @@ const lastEnabledIndex = (items: readonly unknown[]): number => items.findLastIn
 
 const move = (items: readonly unknown[], from: number, direction: 1 | -1): number => {
   const count = items.length;
-  if (count === 0) return -1;
+  if (count === 0) return NO_SELECTION;
   if (from < 0 || from >= count) {
     return direction === 1 ? firstEnabledIndex(items) : lastEnabledIndex(items);
   }
@@ -46,9 +40,9 @@ const move = (items: readonly unknown[], from: number, direction: 1 | -1): numbe
 };
 
 export function listNavigation<T>(config: ListNavigationConfig<T>): ListNavigation<T> {
-  const { items, onConfirm, orientation = 'vertical', preselect = true } = config;
+  const { items, onConfirm, orientation = 'vertical' } = config;
 
-  const selectedIndex = linkedSignal(() => (preselect ? firstEnabledIndex(items()) : NO_SELECTION));
+  const selectedIndex = linkedSignal(() => firstEnabledIndex(items()));
   const selectedItem = computed(() => items()[selectedIndex()]);
 
   const moveNext = () => {

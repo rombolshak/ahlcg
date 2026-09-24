@@ -85,15 +85,21 @@ describe('GamesService', () => {
     expect(error).toBeTruthy();
   });
 
-  it('should GET /api/games and map the body to a list of ids and dates', () => {
+  it('should GET /api/games/recent and map the body to a list of ids and dates', () => {
     let result: { id: string; createdAt: Date; lastPlayedAt: Date }[] | undefined;
-    service.list().subscribe(games => {
+    service.recent().subscribe(games => {
       result = games;
     });
 
-    const req = http.expectOne('/api/games');
+    const req = http.expectOne('/api/games/recent');
     req.flush([
-      { id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01T00:00:00+00:00', lastPlayedAt: '2026-01-02T00:00:00+00:00', configuration: {} },
+      {
+        id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        createdAt: '2026-01-01T00:00:00+00:00',
+        lastPlayedAt: '2026-01-02T00:00:00+00:00',
+        completedAt: null,
+        configuration: {},
+      },
     ]);
 
     expect(result?.[0]?.id).toBe('3fa85f64-5717-4562-b3fc-2c963f66afa6');
@@ -101,16 +107,78 @@ describe('GamesService', () => {
     expect(result?.[0]?.lastPlayedAt).toEqual(new Date('2026-01-02T00:00:00+00:00'));
   });
 
-  it('should throw when the games list response is malformed', () => {
+  it('should throw when the recent games response is malformed', () => {
     let error: unknown;
-    service.list().subscribe({
+    service.recent().subscribe({
       error: err => {
         error = err;
       },
     });
 
-    http.expectOne('/api/games').flush([{ id: 'not-a-uuid' }]);
+    http.expectOne('/api/games/recent').flush([{ id: 'not-a-uuid' }]);
 
     expect(error).toBeTruthy();
+  });
+
+  it('should GET /api/games/archive and map the body to a list of ids and dates', () => {
+    let result: { id: string; createdAt: Date; lastPlayedAt: Date }[] | undefined;
+    service.archive().subscribe(games => {
+      result = games;
+    });
+
+    const req = http.expectOne('/api/games/archive');
+    req.flush([
+      {
+        id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        createdAt: '2026-01-01T00:00:00+00:00',
+        lastPlayedAt: '2026-01-02T00:00:00+00:00',
+        completedAt: '2026-01-03T00:00:00+00:00',
+        configuration: {},
+      },
+    ]);
+
+    expect(result?.[0]?.id).toBe('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+    expect(result?.[0]?.createdAt).toEqual(new Date('2026-01-01T00:00:00+00:00'));
+    expect(result?.[0]?.lastPlayedAt).toEqual(new Date('2026-01-02T00:00:00+00:00'));
+  });
+
+  it('should throw when the archive games response is malformed', () => {
+    let error: unknown;
+    service.archive().subscribe({
+      error: err => {
+        error = err;
+      },
+    });
+
+    http.expectOne('/api/games/archive').flush([{ id: 'not-a-uuid' }]);
+
+    expect(error).toBeTruthy();
+  });
+
+  it('should map completedAt to null or to a date depending on the response', () => {
+    let result: { completedAt: Date | null }[] | undefined;
+    service.recent().subscribe(games => {
+      result = games;
+    });
+
+    http.expectOne('/api/games/recent').flush([
+      {
+        id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        createdAt: '2026-01-01T00:00:00+00:00',
+        lastPlayedAt: '2026-01-02T00:00:00+00:00',
+        completedAt: null,
+        configuration: {},
+      },
+      {
+        id: '4fa85f64-5717-4562-b3fc-2c963f66afa7',
+        createdAt: '2026-01-01T00:00:00+00:00',
+        lastPlayedAt: '2026-01-02T00:00:00+00:00',
+        completedAt: '2026-01-05T00:00:00+00:00',
+        configuration: {},
+      },
+    ]);
+
+    expect(result?.[0]?.completedAt).toBeNull();
+    expect(result?.[1]?.completedAt).toEqual(new Date('2026-01-05T00:00:00+00:00'));
   });
 });

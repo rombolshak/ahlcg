@@ -7,7 +7,7 @@
 | Auth (anonymous login, sign-in and anonymous upgrade, logout, session info) | Implemented, backend + frontend |
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
-| Game creation (`POST /games`) and persistence of the game record | Implemented, backend only — no frontend client calls it |
+| Game records: create, list recent and completed, fetch the latest (`/games`) | Implemented, backend + frontend. The main menu creates and continues games; Case files lists them. Nothing sets a game completed yet |
 | Game API / persistence of game *state* within a game | **Does not exist** |
 | SignalR | Server hub with in-memory game sessions, one group per game, and connect/disconnect broadcasts; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
