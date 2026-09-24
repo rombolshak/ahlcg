@@ -15,7 +15,7 @@ describe('AlertDialogComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(AlertDialogComponent);
-    fixture.componentRef.setInput('title', 'The case remains closed');
+    fixture.componentRef.setInput('title', 'The page stays blank');
     fixture.componentRef.setInput('message', 'The investigation could not be started. Try again in a moment.');
     component = fixture.componentInstance;
     fixture.detectChanges();

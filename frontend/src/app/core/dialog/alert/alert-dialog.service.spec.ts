@@ -22,12 +22,12 @@ describe('AlertDialogService', () => {
 
   it('should show the given title and message and resolve when acknowledged', () => {
     let resolved = false;
-    service.alert({ title: 'The case remains closed', message: 'The investigation could not be started. Try again in a moment.' }).subscribe(() => {
+    service.alert({ title: 'The page stays blank', message: 'The investigation could not be started. Try again in a moment.' }).subscribe(() => {
       resolved = true;
     });
     TestBed.tick();
 
-    expect(document.querySelector('h1')?.textContent).toContain('The case remains closed');
+    expect(document.querySelector('h1')?.textContent).toContain('The page stays blank');
     expect(document.querySelector('p')?.textContent).toContain('The investigation could not be started');
 
     document.querySelector<HTMLElement>('[data-testId=ok]')?.click();
