@@ -95,53 +95,53 @@ public class GameEndpointsTests
     }
 
     [Fact]
-    public async Task ListGames_NoMemberships_ReturnsEmptyList()
+    public async Task GetRecentGames_NoMemberships_ReturnsEmptyList()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
 
-        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
         Assert.Empty(ok.Value!);
     }
 
     [Fact]
-    public async Task ListGames_OtherUsersGame_IsNotReturned()
+    public async Task GetRecentGames_OtherUsersGame_IsNotReturned()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
         var game = await SeedGameAsync(db, OtherUser, FixedNow);
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
-        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
         Assert.Empty(ok.Value!);
     }
 
     [Fact]
-    public async Task ListGames_GameOwnedByCallerWithoutMembership_IsNotReturned()
+    public async Task GetRecentGames_GameOwnedByCallerWithoutMembership_IsNotReturned()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
         await SeedGameAsync(db, LoggedInUser, FixedNow);
 
-        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
         Assert.Empty(ok.Value!);
     }
 
     [Fact]
-    public async Task ListGames_GameCallerDidNotCreate_IsReturned()
+    public async Task GetRecentGames_GameCallerDidNotCreate_IsReturned()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
         var game = await SeedGameAsync(db, OtherUser, FixedNow);
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
 
-        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
         var returned = Assert.Single(ok.Value!);
@@ -149,7 +149,7 @@ public class GameEndpointsTests
     }
 
     [Fact]
-    public async Task ListGames_OrdersByCallersOwnLastPlayedAt()
+    public async Task GetRecentGames_OrdersByCallersOwnLastPlayedAt()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
@@ -160,10 +160,136 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, newerGame.Id, LoggedInUser, FixedNow.AddDays(3));
         await AddMembershipAsync(db, newerGame.Id, OtherUser, FixedNow.AddDays(1));
 
-        var result = await GameEndpoints.ListGames(LoggedInPrincipal, userManager.Object, db);
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
         Assert.Equal([newerGame.Id, olderGame.Id], ok.Value!.Select(g => g.Id));
+    }
+
+    [Fact]
+    public async Task GetRecentGames_MoreThanTwoCompleted_ReturnsTwoMostRecentlyCompletedAndEveryActive()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var active = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, active.Id, LoggedInUser, FixedNow);
+        var oldestCompleted = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow);
+        await AddMembershipAsync(db, oldestCompleted.Id, LoggedInUser, FixedNow.AddDays(9));
+        var middleCompleted = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, middleCompleted.Id, LoggedInUser, FixedNow.AddDays(1));
+        var newestCompleted = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(2));
+        await AddMembershipAsync(db, newestCompleted.Id, LoggedInUser, FixedNow.AddDays(2));
+
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Equal([active.Id, newestCompleted.Id, middleCompleted.Id], ok.Value!.Select(g => g.Id));
+    }
+
+    [Fact]
+    public async Task GetRecentGames_ListsActiveBeforeCompleted()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var completed = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(5));
+        await AddMembershipAsync(db, completed.Id, LoggedInUser, FixedNow.AddDays(5));
+        var active = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, active.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Equal([active.Id, completed.Id], ok.Value!.Select(g => g.Id));
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_ReturnsEveryCompletedAndNoActive()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var active = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, active.Id, LoggedInUser, FixedNow);
+        var completedA = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow);
+        await AddMembershipAsync(db, completedA.Id, LoggedInUser, FixedNow);
+        var completedB = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, completedB.Id, LoggedInUser, FixedNow.AddDays(1));
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Equal([completedB.Id, completedA.Id], ok.Value!.Select(g => g.Id));
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_OrdersByCompletedAtNotLastPlayedAt()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var newerPlayedOlderCompleted = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow);
+        await AddMembershipAsync(db, newerPlayedOlderCompleted.Id, LoggedInUser, FixedNow.AddDays(9));
+        var olderPlayedNewerCompleted = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, olderPlayedNewerCompleted.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Equal([olderPlayedNewerCompleted.Id, newerPlayedOlderCompleted.Id], ok.Value!.Select(g => g.Id));
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_NoCompleted_ReturnsEmptyList()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var active = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, active.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_OtherUsersCompletedGame_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_GameOwnedByCallerWithoutMembership_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow);
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        Assert.Empty(ok.Value!);
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_MapsCompletedAtOntoDto()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow.AddDays(1));
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetArchivedGames(LoggedInPrincipal, userManager.Object, db);
+
+        var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
+        var returned = Assert.Single(ok.Value!);
+        Assert.Equal(FixedNow.AddDays(1), returned.CompletedAt);
     }
 
     [Fact]
@@ -220,10 +346,23 @@ public class GameEndpointsTests
         Assert.Equal(FixedNow, ok.Value!.LastPlayedAt);
     }
 
+    [Fact]
+    public async Task GetLatestGame_CompletedGame_IsNotReturned()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, FixedNow);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        var result = await GameEndpoints.GetLatestGame(LoggedInPrincipal, userManager.Object, db);
+
+        Assert.IsType<NoContent>(result.Result);
+    }
+
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<Game> SeedGameAsync(
-        ApplicationDbContext db, string ownerId, DateTimeOffset lastPlayedAt)
+        ApplicationDbContext db, string ownerId, DateTimeOffset lastPlayedAt, DateTimeOffset? completedAt = null)
     {
         var game = new Game
         {
@@ -231,7 +370,8 @@ public class GameEndpointsTests
             IdempotencyKey = Guid.NewGuid().ToString(),
             Configuration = JsonDocument.Parse("{}"),
             CreatedAt = lastPlayedAt,
-            LastPlayedAt = lastPlayedAt
+            LastPlayedAt = lastPlayedAt,
+            CompletedAt = completedAt
         };
         db.Games.Add(game);
         await db.SaveChangesAsync();

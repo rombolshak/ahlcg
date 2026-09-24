@@ -17,6 +17,7 @@ public class Game
     public required JsonDocument Configuration { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset LastPlayedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
     public int IntendedPlayersCount { get; set; } = 1;
     public ICollection<GameMember> Members { get; } = [];
 }
@@ -37,7 +38,8 @@ public static class GameEndpoints
     public record CreateGameRequest(JsonElement Configuration);
 
     [PublicAPI]
-    public record GameDto(Guid Id, DateTimeOffset CreatedAt, DateTimeOffset LastPlayedAt, JsonElement Configuration);
+    public record GameDto(
+        Guid Id, DateTimeOffset CreatedAt, DateTimeOffset LastPlayedAt, DateTimeOffset? CompletedAt, JsonElement Configuration);
 
     public static RouteGroupBuilder MapGameEndpoints(this RouteGroupBuilder group)
     {
@@ -56,25 +58,37 @@ public static class GameEndpoints
                 "not a check-then-insert.")
             .Produces(StatusCodes.Status401Unauthorized);
 
-        group.MapGet("", ListGames)
+        group.MapGet("recent", GetRecentGames)
             .RequireAuthorization()
             .WithDescription(
-                "Lists the games the calling user is a member of, most recently played first, or an empty array. " +
+                "Lists the games the calling user is a member of: every game still in progress, most recently " +
+                "played first, followed by the 2 most recently completed. " +
                 "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member " +
                 "of is absent, and a game the caller joined but did not create is present. " +
                 "lastPlayedAt is the caller's own last play, not the game's, so two members of one game can see " +
-                "different values for it. " +
+                "different values for it; the active games are ordered by that lastPlayedAt, while the completed " +
+                "games are ordered by Game.CompletedAt instead and always sort after every active game. " +
+                "Each configuration payload is opaque and returned exactly as stored.")
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapGet("archive", GetArchivedGames)
+            .RequireAuthorization()
+            .WithDescription(
+                "Lists every completed game the calling user is a member of, ordered by Game.CompletedAt " +
+                "descending — most recently completed first. " +
+                "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member " +
+                "of is absent, and a game the caller joined but did not create is present. " +
                 "Each configuration payload is opaque and returned exactly as stored.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         group.MapGet("latest", GetLatestGame)
             .RequireAuthorization()
             .WithDescription(
-                "Returns the game the calling user played most recently — GET /games' first entry, without the rest, " +
-                "for callers that need one game and nothing else. Same membership rule and same caller-relative " +
-                "lastPlayedAt as GET /games. " +
-                "A caller who is a member of no game gets 204, not 404: having nothing to resume is a normal state, " +
-                "not a missing resource.")
+                "Returns the most recently played game that is not completed, for callers that need one game and " +
+                "nothing else. Membership is a GameMember row, never Game.OwnerId, and lastPlayedAt is the " +
+                "caller's own last play, not the game's. completedAt is null for a game that is not completed. " +
+                "A caller who is a member of no active game gets 204, not 404: having nothing to resume is a " +
+                "normal state, not a missing resource.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         return group;
@@ -130,10 +144,39 @@ public static class GameEndpoints
             game.Id,
             game.CreatedAt,
             game.LastPlayedAt,
+            game.CompletedAt,
             game.Configuration.RootElement.Clone()));
     }
 
-    public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> ListGames(
+    public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null) return TypedResults.Unauthorized();
+
+        var active = await db.GameMembers
+            .AsNoTracking()
+            .Where(m => m.UserId == user.Id && m.Game!.CompletedAt == null)
+            .Include(m => m.Game)
+            .OrderByDescending(m => m.LastPlayedAt)
+            .ToListAsync();
+
+        var completed = await db.GameMembers
+            .AsNoTracking()
+            .Where(m => m.UserId == user.Id && m.Game!.CompletedAt != null)
+            .Include(m => m.Game)
+            .OrderByDescending(m => m.Game!.CompletedAt)
+            .Take(2)
+            .ToListAsync();
+
+        IReadOnlyList<GameDto> games = active.Concat(completed).Select(ToDto).ToList();
+
+        return TypedResults.Ok(games);
+    }
+
+    public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetArchivedGames(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db)
@@ -143,9 +186,9 @@ public static class GameEndpoints
 
         var memberships = await db.GameMembers
             .AsNoTracking()
-            .Where(m => m.UserId == user.Id)
+            .Where(m => m.UserId == user.Id && m.Game!.CompletedAt != null)
             .Include(m => m.Game)
-            .OrderByDescending(m => m.LastPlayedAt)
+            .OrderByDescending(m => m.Game!.CompletedAt)
             .ToListAsync();
 
         IReadOnlyList<GameDto> games = memberships.Select(ToDto).ToList();
@@ -163,7 +206,7 @@ public static class GameEndpoints
 
         var membership = await db.GameMembers
             .AsNoTracking()
-            .Where(m => m.UserId == user.Id)
+            .Where(m => m.UserId == user.Id && m.Game!.CompletedAt == null)
             .Include(m => m.Game)
             .OrderByDescending(m => m.LastPlayedAt)
             .FirstOrDefaultAsync();
@@ -177,5 +220,6 @@ public static class GameEndpoints
         membership.Game!.Id,
         membership.Game.CreatedAt,
         membership.LastPlayedAt,
+        membership.Game.CompletedAt,
         membership.Game.Configuration.RootElement.Clone());
 }

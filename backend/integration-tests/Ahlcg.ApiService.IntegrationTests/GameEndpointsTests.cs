@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Ahlcg.ApiService.IntegrationTests;
 
 /// <summary>
-/// Drives POST /games and GET /games over real HTTP against the real Aspire-orchestrated app
-/// and Postgres. EF's InMemory provider (used by the unit tests) does not enforce unique
-/// indexes, so the idempotency criteria can only be proven here.
+/// Drives POST /games, GET /games/recent, and GET /games/archive over real HTTP against the real
+/// Aspire-orchestrated app and Postgres. EF's InMemory provider (used by the unit tests) does not
+/// enforce unique indexes, so the idempotency criteria can only be proven here.
 /// </summary>
 [Collection(AppCollection.Name)]
 public class GameEndpointsTests(AppFixture fixture)
@@ -138,17 +138,17 @@ public class GameEndpointsTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task GetGames_WithoutCookie_ReturnsUnauthorized()
+    public async Task GetRecentGames_WithoutCookie_ReturnsUnauthorized()
     {
         using var client = fixture.CreateClient();
 
-        var response = await client.GetAsync("/games");
+        var response = await client.GetAsync("/games/recent");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
-    public async Task GetGames_Authenticated_ReturnsOnlyCallersGames()
+    public async Task GetRecentGames_Authenticated_ReturnsOnlyCallersGames()
     {
         using var clientA = fixture.CreateClient();
         using var clientB = fixture.CreateClient();
@@ -163,7 +163,7 @@ public class GameEndpointsTests(AppFixture fixture)
         responseB.EnsureSuccessStatusCode();
         var dtoB = await ReadGameAsync(responseB);
 
-        var gamesA = await GetGamesAsync(clientA);
+        var gamesA = await GetRecentGamesAsync(clientA);
         var idsA = gamesA.Select(g => g.Id).ToList();
 
         Assert.Contains(dtoA.Id, idsA);
@@ -171,7 +171,7 @@ public class GameEndpointsTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task GetGames_ReturnsConfigurationUnchanged()
+    public async Task GetRecentGames_ReturnsConfigurationUnchanged()
     {
         using var client = fixture.CreateClient();
         await LoginAnonymouslyAsync(client);
@@ -181,7 +181,7 @@ public class GameEndpointsTests(AppFixture fixture)
         createResponse.EnsureSuccessStatusCode();
         var created = await ReadGameAsync(createResponse);
 
-        var games = await GetGamesAsync(client);
+        var games = await GetRecentGamesAsync(client);
 
         var listed = Assert.Single(games, g => g.Id == created.Id);
         using var expected = JsonDocument.Parse(json);
@@ -189,7 +189,7 @@ public class GameEndpointsTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task OpenApi_DescribesGetGames()
+    public async Task OpenApi_DescribesGetRecentGames()
     {
         using var client = fixture.CreateClient();
 
@@ -197,9 +197,48 @@ public class GameEndpointsTests(AppFixture fixture)
         response.EnsureSuccessStatusCode();
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var get = document.RootElement.GetProperty("paths").GetProperty("/games").GetProperty("get");
+        var get = document.RootElement.GetProperty("paths").GetProperty("/games/recent").GetProperty("get");
 
         Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
+    }
+
+    [Fact]
+    public async Task OpenApi_DescribesGetArchivedGames()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var get = document.RootElement.GetProperty("paths").GetProperty("/games/archive").GetProperty("get");
+
+        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
+    }
+
+    [Fact]
+    public async Task OpenApi_GamesRootHasNoGet()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var games = document.RootElement.GetProperty("paths").GetProperty("/games");
+
+        Assert.True(games.TryGetProperty("post", out _));
+        Assert.False(games.TryGetProperty("get", out _));
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games/archive");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
@@ -280,9 +319,9 @@ public class GameEndpointsTests(AppFixture fixture)
         return dto;
     }
 
-    private static async Task<IReadOnlyList<GameEndpoints.GameDto>> GetGamesAsync(HttpClient client)
+    private static async Task<IReadOnlyList<GameEndpoints.GameDto>> GetRecentGamesAsync(HttpClient client)
     {
-        var response = await client.GetAsync("/games");
+        var response = await client.GetAsync("/games/recent");
         response.EnsureSuccessStatusCode();
 
         var games = await response.Content.ReadFromJsonAsync<IReadOnlyList<GameEndpoints.GameDto>>(

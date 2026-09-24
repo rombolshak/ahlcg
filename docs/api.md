@@ -51,7 +51,7 @@ One group per game, named by the game id. Both broadcasts go to the whole group,
 
 **The broadcasts are per member, not per connection.** A member with two tabs open produces one `memberConnected` when the first arrives and one `memberDisconnected` when the last goes — closing one tab does not announce them offline while they are still present in the other.
 
-**Disconnecting writes that member's `GameMember.LastPlayedAt`**, and nothing else in the backend writes it after creation. That is what makes it the last moment you were at the table rather than the moment you opened the app, and it is what orders `GET /games` and picks the one `GET /games/latest` returns.
+**Disconnecting writes that member's `GameMember.LastPlayedAt`**, and nothing else in the backend writes it after creation. That is what makes it the last moment you were at the table rather than the moment you opened the app, and it is what orders the active games in `GET /games/recent` and picks the one `GET /games/latest` returns. Completed games are ordered by `Game.CompletedAt` instead.
 
 **Sessions are in-memory and are not persisted** — see [backend.md](backend.md#signalr) for why, and for the single-replica ceiling that follows.
 
