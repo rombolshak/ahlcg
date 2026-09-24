@@ -8,17 +8,18 @@ import { listNavigation } from '@core/list-navigation';
 import { GamesService, GameSummary } from '@features/games/games.service';
 import { ArtButtonComponent } from '@ui/kit/art-button/art-button.component';
 import { CaseFileCardComponent } from './case-file-card/case-file-card.component';
+import { CaseFilesNoticeComponent } from './case-files-notice/case-files-notice.component';
 import { I18N_SCOPE } from './i18n/scope';
 
 type Tab = 'recent' | 'archive';
 
-const TAB_BASE_CLASS = 'border-b-2 px-6 pt-1 pb-2 font-[Conkordia] text-[24px] tracking-wide';
+const TAB_BASE_CLASS = 'border-b-2 outline-hidden px-6 pt-1 pb-2 font-[Conkordia] text-[24px] tracking-wide';
 const ACTIVE_TAB_CLASS = `${TAB_BASE_CLASS} border-[oklch(0.74_0.14_70)] text-base-content`;
 const INACTIVE_TAB_CLASS = `${TAB_BASE_CLASS} border-transparent text-base-content/55`;
 
 @Component({
   selector: 'ah-case-files',
-  imports: [ArtButtonComponent, CaseFileCardComponent, ScopedTranslocoDirective],
+  imports: [ArtButtonComponent, CaseFileCardComponent, CaseFilesNoticeComponent, ScopedTranslocoDirective],
   templateUrl: './case-files.component.html',
   styles: '.case-files-scroll { scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--color-base-content) 45%, transparent) transparent; }',
   changeDetection: ChangeDetectionStrategy.OnPush,

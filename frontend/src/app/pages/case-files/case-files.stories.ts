@@ -54,13 +54,7 @@ export const LongList: Story = {
 };
 
 export const RecentMixed: Story = {
-  decorators: [
-    moduleMetadata(
-      withGames(() =>
-        of([game('game-1', 0), game('game-2', 1), game('game-3', 2), game('game-4', 3), game('game-5', 4), game('game-6', 5, 1), game('game-7', 6, 2)]),
-      ),
-    ),
-  ],
+  decorators: [moduleMetadata(withGames(() => of([game('game-1', 0), game('game-2', 1), game('game-3', 5, 1), game('game-4', 6, 2)])))],
 };
 
 export const Empty: Story = {

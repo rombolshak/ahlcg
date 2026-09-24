@@ -46,27 +46,16 @@
         </div>
       } @else if (hasFailed()) {
         <div class="flex w-full flex-1 flex-col items-center gap-8 pt-40">
-          <div
-            role="alert"
-            class="flex w-full flex-col items-center gap-4 rounded-box border-2 border-error bg-base-200/94 px-8 py-10 text-center"
-            data-testId="error"
-          >
-            <h2 class="font-[Conkordia] text-[36px] text-error">{{ t("error.title") }}</h2>
-            <p class="text-[22px] text-base-content/80">{{ t("error.message") }}</p>
-          </div>
+          <ah-case-files-notice tone="error" data-testId="error" [heading]="t('error.title')" [message]="t('error.message')" />
           <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="retry" (click)="retry()">{{ t("error.retry") }}</button>
         </div>
       } @else if (entries().length === 0) {
         <div class="flex w-full flex-1 flex-col items-center gap-8 pt-40">
-          <div class="flex w-full flex-col items-center rounded-box border-2 border-base-content/20 bg-base-200/94 px-8 py-10 text-center" data-testId="empty">
-            @if (tab() === "recent") {
-              <p class="text-[22px] whitespace-pre-line text-base-content/80">{{ t("empty.message") }}</p>
-            } @else {
-              <p class="text-[22px] whitespace-pre-line text-base-content/80">{{ t("archive_empty.message") }}</p>
-            }
-          </div>
           @if (tab() === "recent") {
+            <ah-case-files-notice data-testId="empty" [heading]="t('empty.title')" [message]="t('empty.message')" />
             <button ah-art-button type="button" class="tracking-wide btn-lg btn-primary" data-testId="begin" (click)="goBack()">{{ t("empty.action") }}</button>
+          } @else {
+            <ah-case-files-notice data-testId="empty" [heading]="t('archive_empty.title')" [message]="t('archive_empty.message')" />
           }
         </div>
       } @else {
