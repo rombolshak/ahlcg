@@ -53,7 +53,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci --force # tailwind 4 fails to resolve in angular-builder 19.1
+        run: npm ci
 
       - name: Install Playwright Chromium
         working-directory: frontend
