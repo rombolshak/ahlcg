@@ -98,7 +98,6 @@ The test is what the string is about, not how atmospheric it is: if it describes
 - Interpolation is `{{param}}` — the token must survive rewording verbatim; where it sits in the sentence is free.
 - `#x#` and `@x@` are markup for `WithAhSymbolsPipe` (`frontend/src/app/ui/pipes/with-ah-symbols.pipe.ts`): `#n#` becomes the glyph in the Arkham symbol font, `@Evade@` becomes bold italic. **They only render where the template pipes the string through `withAhSymbols`** — anywhere else they show as literal hashes, so do not introduce one without checking the template.
 - `\n` in a value is a real line break, used where a message is deliberately two lines (`case_files.empty.message`).
-- A run of numbered sibling keys — `game_view…threat_area.no_threats.1` through `.25` — is a **randomised flavour pool**. Entries are shown one at a time with nothing around them, so each has to stand alone, and a new entry has to match the pool's rhythm and length or it will read as an intruder.
 
 ## Length budgets
 
@@ -108,7 +107,6 @@ The test is what the string is about, not how atmospheric it is: if it describes
 | Title | ≤ 40 characters, one line | Dialog and screen headers do not wrap gracefully |
 | Body, empty state, error message | 1–2 sentences | It is read at a glance, mid-game |
 | Tooltip | one clause | |
-| Flavour pool entry | whatever the pool already does | |
 
 **The button budget yields to a destructive action.** `settings.account.sign_out_warning.confirm` is `Delete and sign out` — four words, deliberately. The budget exists for German and Russian expansion; naming both halves of what the button does is a guarantee, and a guarantee outranks a layout risk. It is the only string licensed to exceed its budget, and if the row cannot take it the fix is a shorter *true* label, never a truncation of this one.
 

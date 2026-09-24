@@ -54,11 +54,14 @@ describe('AccountComponent', () => {
     expect(fixture.debugElement.query(By.css('[data-testId=sign_out]'))).toBeFalsy();
   });
 
-  it('should show the anonymous state with the raw userName and an upgrade action', () => {
+  it('should show the anonymous state with the drawn alias, not the raw userName, and an upgrade action', () => {
     user$.next({ isAnonymous: true, email: null, userName: 'guid-123' });
     fixture.detectChanges();
 
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('guid-123');
+    const text = (fixture.nativeElement as HTMLElement).textContent;
+
+    expect(text).toContain('Paranoid Preacher');
+    expect(text).not.toContain('guid-123');
     expect(fixture.debugElement.query(By.css('[data-testId=upgrade]'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('[data-testId=sign_out]'))).toBeTruthy();
   });

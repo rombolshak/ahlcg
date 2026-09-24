@@ -38,14 +38,16 @@ public static class AuthEndpoints
             .RequireAuthorization()
             .WithDescription(
                 "Returns information of the logged in user. Email is null for an anonymous account, and userName is " +
-                "set for every account — a raw GUID for anonymous ones. The account id is never returned.")
+                "set for every account — a raw GUID for anonymous ones, an opaque identifier rather than a name to " +
+                "render; a client displays it by deriving something from it, not by printing it. The account id is " +
+                "never returned.")
             .Produces(StatusCodes.Status401Unauthorized);
 
         group.MapPost("loginAnonymously", LoginAnonymously)
             .WithDescription(
-                "Creates an anonymous user without password. The account gets a GUID user name, no email and no " +
-                "password. After logout this user cannot be logged in again. " +
-                "If the user is already logged in, this method cannot be called.");
+                "Creates an anonymous user without password. The account gets a GUID user name — an opaque " +
+                "identifier, not a name to display as-is — no email and no password. After logout this user cannot " +
+                "be logged in again. If the user is already logged in, this method cannot be called.");
 
         group.MapPost("signIn", SignIn)
             .WithDescription(
