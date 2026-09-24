@@ -1,10 +1,20 @@
 {
   "title": "",
+  "tabs": {
+    "recent": "",
+    "archive": ""
+  },
   "opened": "",
   "last_played": "",
+  "completed": "",
   "empty": {
+    "title": "",
     "message": "",
     "action": ""
+  },
+  "archive_empty": {
+    "title": "",
+    "message": ""
   },
   "error": {
     "title": "",
