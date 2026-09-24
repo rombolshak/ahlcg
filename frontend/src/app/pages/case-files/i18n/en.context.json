@@ -1,11 +1,15 @@
 {
   "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
   "title": "Screen title. One line. Should match main_menu.load_game.",
+  "tabs.recent": "Left tab under the screen title, selected by default: games still in play plus the two most recently finished. One or two words; pairs with tabs.archive.",
+  "tabs.archive": "Right tab under the screen title: every finished investigation. One word if possible — a closed case, matching `completed`.",
   "opened": "Metadata line on a case file card. {{date}} is already formatted for the locale.",
   "last_played": "Metadata line on a case file card. {{date}} is already formatted for the locale.",
+  "completed": "Replaces last_played on the card of a finished investigation; pairs with `opened` as the case file's two dates. {{date}} is date-only, already formatted for the locale.",
   "empty.message": "Shown when the reader has no games yet. Two lines: the `\\n` is deliberate. Atmospheric but must still say plainly that the list is empty.",
   "empty.action": "Button under the empty state, starts a new game.",
-  "error.title": "Heading when the list fails to load. Atmospheric — dread in the heading. One line.",
+  "archive_empty.message": "Shown on the closed-cases tab when no investigation has finished yet. Two lines: the `\\n` is deliberate. No button under it. The first line must say plainly that nothing is here; the second hints, without naming it, that some cases never end.",
+  "error.title": "Heading when either tab's list fails to load. Atmospheric — dread in the heading. One line.",
   "error.message": "Body under that heading. Plain: what happened, in the reader's terms.",
   "error.retry": "Button beside that message. Two words at most.",
   "back": "Button returning to the main menu. One word if your language allows."

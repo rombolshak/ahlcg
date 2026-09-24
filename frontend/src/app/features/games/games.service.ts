@@ -9,7 +9,12 @@ export type CreatedGame = typeof createdGame.infer;
 const latestGame = type({ id: 'string.uuid', lastPlayedAt: 'string.date.parse' });
 export type LatestGame = typeof latestGame.infer;
 
-const gameSummary = type({ id: 'string.uuid', createdAt: 'string.date.parse', lastPlayedAt: 'string.date.parse' });
+const gameSummary = type({
+  id: 'string.uuid',
+  createdAt: 'string.date.parse',
+  lastPlayedAt: 'string.date.parse',
+  completedAt: 'string.date.parse | null',
+});
 export type GameSummary = typeof gameSummary.infer;
 const gameSummaries = gameSummary.array();
 
@@ -47,12 +52,20 @@ export class GamesService {
     );
   }
 
-  public list(): Observable<GameSummary[]> {
-    return this.http.get<unknown>('/api/games').pipe(
+  public recent(): Observable<GameSummary[]> {
+    return this.fetchGames('/api/games/recent', 'recent games');
+  }
+
+  public archive(): Observable<GameSummary[]> {
+    return this.fetchGames('/api/games/archive', 'archive games');
+  }
+
+  private fetchGames(url: string, label: string): Observable<GameSummary[]> {
+    return this.http.get<unknown>(url).pipe(
       map(response => {
         const games = gameSummaries(response);
         if (games instanceof ArkErrors) {
-          console.error('Invalid games list response', games.summary);
+          console.error(`Invalid ${label} response`, games.summary);
           return games.throw();
         }
 

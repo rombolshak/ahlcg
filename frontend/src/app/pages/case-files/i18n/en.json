@@ -1,10 +1,18 @@
 {
   "title": "Case files",
+  "tabs": {
+    "recent": "Recent",
+    "archive": "Closed"
+  },
   "opened": "Opened {{date}}",
   "last_played": "Last played {{date}}",
+  "completed": "Closed {{date}}",
   "empty": {
     "message": "No case files yet.\nEvery investigation you begin is filed here.",
     "action": "Begin an investigation"
+  },
+  "archive_empty": {
+    "message": "No case has been closed yet.\nNot every case ends. Those that do rest here."
   },
   "error": {
     "title": "The archive would not open",
