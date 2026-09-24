@@ -4,7 +4,7 @@
   "continue_tooltip": "Continue your investigation\nLast played {{lastPlayed}}",
   "new_game": "New investigation",
   "new_game_error": {
-    "title": "The case remains closed",
+    "title": "The page stays blank",
     "message": "The investigation could not be started. Try again in a moment."
   },
   "load_game": "Case files",
