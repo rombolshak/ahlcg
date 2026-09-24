@@ -88,7 +88,7 @@
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
     "angular-eslint": "^22.5.0",
-    "chromatic": "^18.5.0",
+    "chromatic": "^18.9.4",
     "cspell": "^10.0.1",
     "daisyui": "^5.7.42",
     "dependency-cruiser": "^18.2.0",
