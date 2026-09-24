@@ -90,7 +90,7 @@
     "angular-eslint": "^22.5.0",
     "chromatic": "^18.5.0",
     "cspell": "^10.0.1",
-    "daisyui": "^5.7.16",
+    "daisyui": "^5.7.42",
     "dependency-cruiser": "^18.2.0",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
