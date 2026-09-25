@@ -72,7 +72,7 @@ If the working tree is dirty, stop and ask — do not stash or discard someone's
 ## 4. Explore before planning
 
 - `docs/README.md` routes you to the right doc. **Any frontend change: read `docs/frontend-conventions.md`.** No exceptions.
-- `docs/architecture.md` for what actually exists — backend is auth only, the game view is fixture-driven, there is no game API or SignalR client.
+- `docs/architecture.md` for what actually exists — read its status table rather than assuming.
 - Read the real files you will change, plus a neighbouring implementation of the same kind and its spec. The local idiom matters more than any doc.
 
 ## 5. Plan gate — the approval point

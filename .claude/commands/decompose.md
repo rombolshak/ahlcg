@@ -44,7 +44,7 @@ Read its ancestors too, if any, for inherited context.
 
 The most common way this goes wrong is decomposing an idealised architecture instead of the one that exists. Before proposing anything:
 
-- Read `docs/architecture.md`. **The backend implements authentication only. The game view renders `@testing/test-game-state`, not server data. There is no game API, no SignalR client, no deployment pipeline.** A breakdown that assumes any of these produces issues nobody can implement.
+- Read the status table in `docs/architecture.md` — it says what exists and what does not. A breakdown that assumes something it lists as missing produces issues nobody can implement.
 - Read the docs for the areas involved (`docs/README.md` routes you).
 - Look at the real code. If a child issue says "extend the X service", X had better exist — or the breakdown needs an issue to create it first.
 
@@ -54,7 +54,7 @@ Read the parent's own dependencies too (`.claude/lib/issue-dependencies.md`) —
 
 Follow `.claude/lib/intent-interview.md`.
 
-Parents are the thinnest issues on this board — `#152 "Core meta-game mechanics"` is a six-line list of nouns. Two people reading it would produce completely different breakdowns, and the difference is not recoverable from the title.
+Parents are the thinnest issues on this board, often a short list of nouns. Two people reading it would produce completely different breakdowns, and the difference is not recoverable from the title.
 
 Ask before proposing, not after. A breakdown built on a guessed intent looks reasonable enough to approve, and then every child inherits the guess as if it were a decision.
 
@@ -69,7 +69,7 @@ Good children:
 - **Ordered**, with dependencies stated as real `Blocked by` edges. Say which must come first and why. Only genuine blockers — read the rules in `.claude/lib/issue-dependencies.md` before proposing any, and check the direction of each edge in a sentence: *"B is blocked by A."*
 - **Sized for a session.** If you cannot describe a child's acceptance criteria in a few bullets, it is still an epic — mark it as one to decompose again later rather than pretending it is a task.
 
-Watch for the work that is easy to forget: tests, translations (Transloco keys for every enabled language), Storybook stories, docs updates, EF migrations.
+Watch for the work that is easy to forget: tests, user-visible strings (English `en.json` keys chosen through `/wording`, with their `en.context.json` notes), Storybook stories, docs updates, EF migrations.
 
 Set each child's `Type` exactly one level down from the parent: `Initiative`→`Project`, `Project`→`Epic`, `Epic`→`Task`, `Task`→`Sub-task`. Never skip a level — a `Project` whose children you want to call tasks needs an `Epic` in between, so propose the Epic. A child that is a defect is `Bug` regardless of depth.
 

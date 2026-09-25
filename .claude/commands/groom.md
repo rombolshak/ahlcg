@@ -7,7 +7,7 @@ model: sonnet
 
 Turn issue **#$1** into a spec someone could implement without any of the context in your head.
 
-Most issues in this repo are a title and an empty body (`#455 "Multiplayer"` is typical). Grooming is what makes "the issue contains everything needed to implement it" actually true.
+Many issues in this repo start as a title and an empty body. Grooming is what makes "the issue contains everything needed to implement it" actually true.
 
 ## 1. Gather context
 
@@ -30,10 +30,10 @@ Read the parent's body, and its parent's, until you reach the top. Also check fo
 
 ## 2. Explore the actual code
 
-This is the step that makes the difference between a useful spec and a plausible-sounding one. Do not skip it.
+This is the step that makes the difference between a useful spec and a plausible-sounding one.
 
 - `docs/README.md` — routing table; read the doc your issue maps to.
-- `docs/architecture.md` — **what actually exists**. The backend is authentication only, the game view renders a hardcoded fixture, there is no game API and no SignalR client. Never write criteria that assume otherwise.
+- `docs/architecture.md` — **what actually exists**; its status table is the authority. Never write criteria that assume something it lists as missing.
 - Find and read the real files this would touch. Read a neighbouring implementation of the same kind.
 - `docs/glossary.md` for any card-game term you are unsure of. Getting a rules term wrong makes the whole spec wrong.
 
