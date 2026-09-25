@@ -65,7 +65,7 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
 
         var game = await db.Games
             .Where(g => g.Id == gameId && g.Members.Any(m => m.UserId == userId))
-            .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count() })
+            .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count })
             .SingleOrDefaultAsync();
         if (game is null)
         {
