@@ -32,6 +32,24 @@ public class GameHubTests
     }
 
     [Fact]
+    public async Task Connect_NonMemberOfExistingGame_SendsExitAndDoesNotJoin()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, OtherUser);
+        var callerClient = new Mock<IGameClient>();
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Caller).Returns(callerClient.Object);
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(
+            sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        callerClient.Verify(c => c.Exit(ExitReason.NotAMember), Times.Once);
+        Assert.Null(sessions.Find(gameId));
+    }
+
+    [Fact]
     public async Task Connect_Member_AddsToGroupAndTellsGroup()
     {
         var sessions = CreateSessions();
@@ -198,6 +216,7 @@ public class GameHubTests
     }
 
     private const string MemberUser = "4139F1EA-4901-4253-A391-021FAA001677";
+    private const string OtherUser = "B6E3B6BF-EFFF-4B94-9E13-2E27FFF3C7CE";
 
     private static readonly DateTimeOffset FixedNow = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly TimeProvider FixedTimeProvider = new FixedTimeProviderImpl();

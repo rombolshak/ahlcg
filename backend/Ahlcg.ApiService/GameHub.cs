@@ -63,8 +63,11 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
     {
         var (gameId, userId, connectionId) = connection;
 
-        var isMember = await db.GameMembers.AnyAsync(m => m.GameId == gameId && m.UserId == userId);
-        if (!isMember)
+        var game = await db.Games
+            .Where(g => g.Id == gameId && g.Members.Any(m => m.UserId == userId))
+            .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count() })
+            .SingleOrDefaultAsync();
+        if (game is null)
         {
             await clients.Caller.Exit(ExitReason.NotAMember);
             return;
@@ -72,12 +75,7 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
 
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
-
-        var counts = await db.Games
-            .Where(g => g.Id == gameId)
-            .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count() })
-            .SingleAsync();
-        sessions.SyncInviteCode(gameId, counts.MemberCount, counts.IntendedPlayersCount);
+        sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
 
         if (change.MemberPresenceChanged)
             await clients.Group(gameId.ToString()).MemberConnected(userId);
