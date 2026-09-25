@@ -90,6 +90,10 @@ Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside 
 
 The CAS works because `GameSession.Connections` is an `ImmutableDictionary`, which does not override `Equals`. Giving the record a structural comparer would silently turn both `TryUpdate` and `TryRemove` into no-ops that always succeed.
 
+**Invite-code assignment takes a lock; `Join` and `Leave` do not.** A code must be unique across every live session, and a per-key CAS cannot see other keys — two sessions starting together would each scan, find no clash, and commit the same code. The lock serialises only scan-and-assign; the commit inside it is still a `TryUpdate`, so a concurrent `Join` on that session just forces a retry. Uniqueness is checked by scanning the registry rather than through a `code → game` index, which would need unwinding on every clear and every session end.
+
+**The code is re-derived, not decided once.** `SyncInviteCode` runs on every connect and compares the member count with `IntendedPlayersCount`: a code while seats are open, none otherwise, and no write when that answer has not changed. Anything that later moves either number calls it again.
+
 **Do not remove a disconnecting connection from its groups.** SignalR does that itself, which is why `Disconnect` takes no `IGroupManager` while `Connect` does.
 
 **An unclean disconnect is detected late, not missed.** `OnDisconnectedAsync` still runs for a killed browser or a closed laptop lid — but only once SignalR's own keep-alive timeout notices, so the session reads as live for as long as that takes, and only then is the connection removed, the group told, and `LastPlayedAt` written. This is by design until a heartbeat exists: it must fail toward "the session is still running", never toward "this game is unreachable". The case the callback genuinely misses is the process dying, which is the argument for not persisting sessions above.

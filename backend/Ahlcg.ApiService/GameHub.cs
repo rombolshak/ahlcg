@@ -73,6 +73,12 @@ public class GameHub(GameSessions sessions, ApplicationDbContext db, TimeProvide
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
 
+        var counts = await db.Games
+            .Where(g => g.Id == gameId)
+            .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count() })
+            .SingleAsync();
+        sessions.SyncInviteCode(gameId, counts.MemberCount, counts.IntendedPlayersCount);
+
         if (change.MemberPresenceChanged)
             await clients.Group(gameId.ToString()).MemberConnected(userId);
     }

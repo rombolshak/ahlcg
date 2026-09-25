@@ -66,6 +66,53 @@ public class GameHubTests
     }
 
     [Fact]
+    public async Task Connect_GameWithOpenSeats_SessionGetsCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 2);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        Assert.NotNull(sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
+    public async Task Connect_FullySeatedGame_SessionHasNoCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 1);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        Assert.Null(sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
+    public async Task Connect_SecondConnection_KeepsCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 2);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+        var code = sessions.Find(gameId)!.InviteCode;
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-2"));
+
+        Assert.Equal(code, sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
     public async Task Disconnect_Member_WritesLastPlayedAt()
     {
         var sessions = CreateSessions();
@@ -117,7 +164,8 @@ public class GameHubTests
         Assert.Null(GameHub.ParseGameId(httpContext));
     }
 
-    private static async Task<Guid> SeedMembershipAsync(ApplicationDbContext db, string userId)
+    private static async Task<Guid> SeedMembershipAsync(
+        ApplicationDbContext db, string userId, int intendedPlayersCount = 1)
     {
         var game = new Game
         {
@@ -125,7 +173,8 @@ public class GameHubTests
             IdempotencyKey = Guid.NewGuid().ToString(),
             Configuration = JsonDocument.Parse("{}"),
             CreatedAt = FixedNow,
-            LastPlayedAt = FixedNow
+            LastPlayedAt = FixedNow,
+            IntendedPlayersCount = intendedPlayersCount
         };
         game.Members.Add(new GameMember { UserId = userId, JoinedAt = FixedNow, LastPlayedAt = FixedNow });
         db.Games.Add(game);
