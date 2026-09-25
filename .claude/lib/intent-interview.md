@@ -2,7 +2,7 @@
 
 Shared procedure. `/groom`, `/decompose`, and `/redecompose` all reference this.
 
-Most issues in this repo are a title and an empty body — `#455 "Multiplayer"`, `#152 "Core meta-game mechanics"`. A title is a reminder of a thought, not the thought. The person who wrote it knows what they meant; the issue does not record it.
+Many issues in this repo start as a title and an empty body. A title is a reminder of a thought, not the thought. The person who wrote it knows what they meant; the issue does not record it.
 
 **Do not reconstruct the intent from the title.** A confident guess written into a permanent issue body is the most expensive failure this workflow can produce: everything downstream — the breakdown, the plan, the implementation, the review — treats it as the spec, and nobody rereads the one-liner to check. Explore the code first so you ask informed questions, then ask.
 

@@ -44,11 +44,7 @@ This is **not** conventional commits, and `area` is not drawn from a fixed enum.
 
 Subject in the imperative, lowercase after the colon, no trailing period. Body only if it explains *why* — the diff already shows what.
 
-End the message with:
-
-```
-Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
-```
+End the message with the `Co-Authored-By` trailer from Claude Code's attribution instructions for this session — it names the model actually running.
 
 **Never use `--no-verify`.** The pre-commit hook runs lint-staged (ESLint, Stylelint, Prettier, cspell, `tsc-files`) and pre-push runs the full `ci:all` or `dotnet build && dotnet test`. If a hook fails, fix the cause and commit again. `npm run shove` exists and bypasses hooks — it is the user's personal escape hatch and is not yours to use.
 
@@ -69,7 +65,7 @@ git push -u origin <branch>
 Then:
 
 ```bash
-gh pr create --title "<conventional title>" --body-file <tmpfile>
+gh pr create --title "<area: what changed>" --body-file <tmpfile>
 ```
 
 Use a temp file for the body — never inline, since it contains newlines and backticks that will not survive shell quoting on Windows.

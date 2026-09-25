@@ -30,7 +30,7 @@ Ignore anything that is not checkable: intent, rationale, priorities, product de
 
 ## How to check
 
-Ground everything in the repo. `docs/README.md` routes you; `docs/architecture.md` states what actually exists — **the backend implements authentication and game creation only, the game view renders a hardcoded fixture (`@domain/testing/test-game-state`), there is no game-state API, no SignalR client, and no deployment pipeline.** A body that assumes any of those describes a system nobody has built.
+Ground everything in the repo. `docs/README.md` routes you; the status table in `docs/architecture.md` states what exists and what does not. A body that assumes something the table lists as missing describes a system nobody has built.
 
 Where the docs and the code disagree, the code wins. Verify against the code; cite the doc only when the doc is the thing being claimed.
 

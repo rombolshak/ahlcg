@@ -34,7 +34,7 @@ Map changed code to the docs that describe it:
 
 Grep the docs for names you changed — a renamed service or moved file is the most common source of a stale claim.
 
-Pay attention to `docs/architecture.md`: it asserts what does and does not exist. If a change makes "does not exist" untrue — a game API endpoint, a SignalR client, a deployment step — that table is now wrong and matters more than any other doc, because every other doc and agent trusts it.
+Pay attention to `docs/architecture.md`: it asserts what does and does not exist. If a change makes "does not exist" untrue — a game-state endpoint, game state carried over SignalR, a deployment step — that table is now wrong and matters more than any other doc, because every other doc and agent trusts it.
 
 ## 3. Fix
 
