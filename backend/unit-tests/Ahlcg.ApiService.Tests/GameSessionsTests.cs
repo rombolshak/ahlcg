@@ -194,6 +194,147 @@ public class GameSessionsTests
         Assert.Equal(gameIds.Length, duration.GetMeasurementSnapshot().Count);
     }
 
+    [Fact]
+    public void SyncInviteCode_NewSessionWithOpenSeats_AssignsOneCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+
+        var session = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        Assert.Equal(6, session!.InviteCode!.Length);
+        Assert.All(session.InviteCode, c => Assert.Contains(c, InviteCodeAlphabet));
+    }
+
+    [Fact]
+    public void SyncInviteCode_NewSessionFullySeated_AssignsNoCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+
+        var session = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 1);
+
+        Assert.Null(session!.InviteCode);
+    }
+
+    [Fact]
+    public void SyncInviteCode_MoreMembersThanSeats_AssignsNoCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+
+        var session = sessions.SyncInviteCode(gameId, memberCount: 2, intendedPlayersCount: 1);
+
+        Assert.Null(session!.InviteCode);
+    }
+
+    [Fact]
+    public void SyncInviteCode_SecondMemberJoinsLiveSession_KeepsCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        var withCode = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 3);
+
+        sessions.Join(gameId, UserB, "conn-2", FixedStart);
+        var session = sessions.SyncInviteCode(gameId, memberCount: 2, intendedPlayersCount: 3);
+
+        Assert.Equal(withCode!.InviteCode, session!.InviteCode);
+    }
+
+    [Fact]
+    public void SyncInviteCode_SeatsNowFilled_ClearsCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        var session = sessions.SyncInviteCode(gameId, memberCount: 2, intendedPlayersCount: 2);
+
+        Assert.Null(session!.InviteCode);
+    }
+
+    [Fact]
+    public void SyncInviteCode_UnchangedInputs_DoesNotWrite()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        var first = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        var second = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        Assert.Same(first, second);
+    }
+
+    [Fact]
+    public void SyncInviteCode_NoLiveSession_ReturnsNull()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+
+        var session = sessions.SyncInviteCode(gameId, memberCount: 0, intendedPlayersCount: 1);
+
+        Assert.Null(session);
+    }
+
+    [Fact]
+    public void SyncInviteCode_GeneratedCodeHeldByAnotherSession_Regenerates()
+    {
+        var codes = new Queue<string>(["AAAAAA", "AAAAAA", "BBBBBB"]);
+        var sessions = CreateSessions(codes.Dequeue);
+        var gameA = Guid.NewGuid();
+        var gameB = Guid.NewGuid();
+        sessions.Join(gameA, UserA, "conn-a", FixedStart);
+        sessions.Join(gameB, UserB, "conn-b", FixedStart);
+        sessions.SyncInviteCode(gameA, memberCount: 1, intendedPlayersCount: 2);
+
+        var session = sessions.SyncInviteCode(gameB, memberCount: 1, intendedPlayersCount: 2);
+
+        Assert.Equal("BBBBBB", session!.InviteCode);
+    }
+
+    [Fact]
+    public void SyncInviteCode_ConcurrentSessionStarts_NeverShareACode()
+    {
+        for (var round = 0; round < 50; round++)
+        {
+            var callCount = 0;
+            var sessions = CreateSessions(() =>
+            {
+                var call = Interlocked.Increment(ref callCount);
+                return call <= 2 ? "SAME00" : $"CODE{call}";
+            });
+            var gameA = Guid.NewGuid();
+            var gameB = Guid.NewGuid();
+            sessions.Join(gameA, UserA, "conn-a", FixedStart);
+            sessions.Join(gameB, UserB, "conn-b", FixedStart);
+
+            RunConcurrently(
+                () => sessions.SyncInviteCode(gameA, memberCount: 1, intendedPlayersCount: 2),
+                () => sessions.SyncInviteCode(gameB, memberCount: 1, intendedPlayersCount: 2));
+
+            Assert.NotEqual(sessions.Find(gameA)!.InviteCode, sessions.Find(gameB)!.InviteCode);
+        }
+    }
+
+    [Fact]
+    public void Leave_LastConnection_CodeNoLongerResolvable()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        var session = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        sessions.Leave(gameId, UserA, "conn-1", FixedStart.AddMinutes(1));
+
+        Assert.Null(sessions.FindByInviteCode(session!.InviteCode!));
+    }
+
     private static void RunConcurrently(params Action[] actions)
     {
         var barrier = new Barrier(actions.Length);
@@ -213,16 +354,20 @@ public class GameSessionsTests
         where T : struct =>
         new(meterFactory, GameSessions.MeterName, instrumentName, TimeProvider.System);
 
-    private static GameSessions CreateSessions() => CreateInstrumentedSessions().Sessions;
+    private static GameSessions CreateSessions(Func<string>? generateInviteCode = null) =>
+        CreateInstrumentedSessions(generateInviteCode).Sessions;
 
-    private static (GameSessions Sessions, IMeterFactory MeterFactory) CreateInstrumentedSessions()
+    private static (GameSessions Sessions, IMeterFactory MeterFactory) CreateInstrumentedSessions(
+        Func<string>? generateInviteCode = null)
     {
         var meterFactory = new ServiceCollection()
             .AddMetrics()
             .BuildServiceProvider()
             .GetRequiredService<IMeterFactory>();
-        return (new GameSessions(meterFactory), meterFactory);
+        return (new GameSessions(meterFactory, generateInviteCode), meterFactory);
     }
+
+    private const string InviteCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
     private const string UserA = "4139F1EA-4901-4253-A391-021FAA001677";
     private const string UserB = "B6E3B6BF-EFFF-4B94-9E13-2E27FFF3C7CE";

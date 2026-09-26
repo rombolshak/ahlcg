@@ -32,6 +32,24 @@ public class GameHubTests
     }
 
     [Fact]
+    public async Task Connect_NonMemberOfExistingGame_SendsExitAndDoesNotJoin()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, OtherUser);
+        var callerClient = new Mock<IGameClient>();
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Caller).Returns(callerClient.Object);
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(
+            sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        callerClient.Verify(c => c.Exit(ExitReason.NotAMember), Times.Once);
+        Assert.Null(sessions.Find(gameId));
+    }
+
+    [Fact]
     public async Task Connect_Member_AddsToGroupAndTellsGroup()
     {
         var sessions = CreateSessions();
@@ -63,6 +81,53 @@ public class GameHubTests
         await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-2"));
 
         groupClient.Verify(c => c.MemberConnected(It.IsAny<string>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Connect_GameWithOpenSeats_SessionGetsCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 2);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        Assert.NotNull(sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
+    public async Task Connect_FullySeatedGame_SessionHasNoCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 1);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+
+        Assert.Null(sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
+    public async Task Connect_SecondConnection_KeepsCode()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 2);
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
+        var groups = new Mock<IGroupManager>();
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-1"));
+        var code = sessions.Find(gameId)!.InviteCode;
+
+        await GameHub.Connect(sessions, db, FixedTimeProvider, clients.Object, groups.Object, new GameConnection(gameId, MemberUser, "conn-2"));
+
+        Assert.Equal(code, sessions.Find(gameId)!.InviteCode);
     }
 
     [Fact]
@@ -117,7 +182,8 @@ public class GameHubTests
         Assert.Null(GameHub.ParseGameId(httpContext));
     }
 
-    private static async Task<Guid> SeedMembershipAsync(ApplicationDbContext db, string userId)
+    private static async Task<Guid> SeedMembershipAsync(
+        ApplicationDbContext db, string userId, int intendedPlayersCount = 1)
     {
         var game = new Game
         {
@@ -125,7 +191,8 @@ public class GameHubTests
             IdempotencyKey = Guid.NewGuid().ToString(),
             Configuration = JsonDocument.Parse("{}"),
             CreatedAt = FixedNow,
-            LastPlayedAt = FixedNow
+            LastPlayedAt = FixedNow,
+            IntendedPlayersCount = intendedPlayersCount
         };
         game.Members.Add(new GameMember { UserId = userId, JoinedAt = FixedNow, LastPlayedAt = FixedNow });
         db.Games.Add(game);
@@ -149,6 +216,7 @@ public class GameHubTests
     }
 
     private const string MemberUser = "4139F1EA-4901-4253-A391-021FAA001677";
+    private const string OtherUser = "B6E3B6BF-EFFF-4B94-9E13-2E27FFF3C7CE";
 
     private static readonly DateTimeOffset FixedNow = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly TimeProvider FixedTimeProvider = new FixedTimeProviderImpl();
