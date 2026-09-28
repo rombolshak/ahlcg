@@ -1,0 +1,43 @@
+<ng-container *ahTransloco="scope; let t">
+  <form #form [formRoot]="joinForm">
+    <fieldset class="fieldset">
+      <legend id="join-game-legend" class="fieldset-legend text-center">{{ t("legend") }}</legend>
+
+      <input
+        type="text"
+        class="input w-full rounded-none border-0 border-b input-ghost text-center font-mono text-4xl tracking-[0.5em] uppercase focus:outline-none"
+        aria-labelledby="join-game-legend"
+        autocomplete="off"
+        spellcheck="false"
+        autocapitalize="characters"
+        ahFocusTrap
+        data-testId="join-game-code"
+        [class.border-error]="joinForm.code().touched() && joinForm.code().invalid()"
+        [class.border-b-2]="joinForm.code().touched() && joinForm.code().invalid()"
+        [formField]="joinForm.code"
+      />
+
+      @if (joinForm.code().touched() && joinForm.code().getError("pattern")) {
+        <p class="mt-2 text-center text-sm text-error" data-testId="join-game-format-hint">{{ t("format_hint") }}</p>
+      }
+    </fieldset>
+
+    @if (joinForm().errors()[0]; as err) {
+      <div role="alert" class="mt-4 alert alert-soft alert-error" data-testId="join-game-error">
+        <span>{{ t(`errors.${err.kind}`) }}</span>
+      </div>
+    }
+
+    <div class="mt-6 flex items-center justify-around gap-4">
+      <button type="submit" class="btn btn-primary" data-testId="join-game-submit" [disabled]="joinForm().invalid() || joinForm().submitting()">
+        @if (joinForm().submitting()) {
+          <span class="loading loading-sm loading-spinner"></span>
+        }
+        {{ t("submit") }}
+      </button>
+      <button type="button" class="btn btn-active" data-testId="join-game-cancel" [disabled]="joinForm().submitting()" (click)="dismiss()">
+        {{ t("cancel") }}
+      </button>
+    </div>
+  </form>
+</ng-container>

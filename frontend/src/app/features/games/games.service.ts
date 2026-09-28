@@ -36,6 +36,20 @@ export class GamesService {
     );
   }
 
+  public join(code: string): Observable<CreatedGame> {
+    return this.http.post('/api/games/join', { code }).pipe(
+      map(response => {
+        const game = createdGame(response);
+        if (game instanceof ArkErrors) {
+          console.error('Invalid game join response', game.summary);
+          return game.throw();
+        }
+
+        return game;
+      }),
+    );
+  }
+
   public latest(): Observable<LatestGame | undefined> {
     return this.http.get<unknown>('/api/games/latest').pipe(
       map(response => {

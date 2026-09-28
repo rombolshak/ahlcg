@@ -7,6 +7,7 @@ import { AlertDialogService } from '@core/dialog/alert/alert-dialog.service';
 import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { CreatedGame, GamesService, LatestGame } from '@features/games/games.service';
+import { JOIN_GAME_DIALOG_OPTIONS, JoinGameComponent } from '@features/games/join-game/join-game.component';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { BehaviorSubject, EMPTY, Observable, of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
@@ -103,6 +104,84 @@ describe('MainMenuComponent', () => {
     (fixture.debugElement.query(By.css('[data-testId=load_game]')).nativeElement as HTMLButtonElement).click();
 
     expect(navigate).toHaveBeenCalledWith(['/case-files']);
+  });
+
+  describe('join game', () => {
+    const joinButton = () => fixture.debugElement.query(By.css('[data-testId=join_game]')).nativeElement as HTMLButtonElement;
+
+    it('should display the join_game item and be enabled while signed out', () => {
+      mockAuthService._user.next(undefined);
+      TestBed.tick();
+
+      expect(joinButton()).toBeTruthy();
+      expect(joinButton().disabled).toBe(false);
+    });
+
+    it('should open the join dialog with no prefilled code when activated from the menu', () => {
+      joinButton().click();
+
+      expect(openDialog).toHaveBeenCalledWith(JoinGameComponent, { ...JOIN_GAME_DIALOG_OPTIONS, bindings: [] });
+    });
+
+    it('should navigate to the joined game when the dialog emits an id', () => {
+      openDialog.mockReturnValue(of('game-1'));
+
+      joinButton().click();
+
+      expect(navigate).toHaveBeenCalledWith(['/game', 'game-1'], { replaceUrl: false });
+    });
+
+    it('should do nothing when the dialog is cancelled from the menu', () => {
+      openDialog.mockReturnValue(of(undefined));
+
+      joinButton().click();
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('join by link', () => {
+    const createWithCode = (code: string) => {
+      const linkFixture = TestBed.createComponent(MainMenuComponent);
+      linkFixture.componentRef.setInput('code', code);
+      linkFixture.detectChanges();
+      return linkFixture;
+    };
+
+    it('should open the join dialog prefilled with the code from the route', () => {
+      createWithCode('ABCDEF');
+
+      const [, options] = openDialog.mock.calls.at(-1) as [unknown, { size: string; bindings: unknown[] }];
+      expect(options.size).toBe(JOIN_GAME_DIALOG_OPTIONS.size);
+      expect(options.bindings).toHaveLength(1);
+    });
+
+    it('should navigate to the joined game with the history entry replaced on success', () => {
+      openDialog.mockReturnValue(of('game-1'));
+
+      createWithCode('ABCDEF');
+
+      expect(navigate).toHaveBeenCalledWith(['/game', 'game-1'], { replaceUrl: true });
+    });
+
+    it('should navigate to the main menu with the history entry replaced on cancel', () => {
+      openDialog.mockReturnValue(of(undefined));
+
+      createWithCode('ABCDEF');
+
+      expect(navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+    });
+
+    it('should open the dialog again when the route binds a new code to the same instance', () => {
+      const linkFixture = createWithCode('AAAAAA');
+
+      linkFixture.componentRef.setInput('code', 'BBBBBB');
+      linkFixture.detectChanges();
+
+      expect(openDialog).toHaveBeenCalledTimes(2);
+      const [, options] = openDialog.mock.calls.at(-1) as [unknown, { bindings: unknown[] }];
+      expect(options.bindings).toHaveLength(1);
+    });
   });
 
   describe('continue', () => {
@@ -216,7 +295,7 @@ describe('MainMenuComponent', () => {
       clickNewGame();
       TestBed.tick();
 
-      for (const name of ['continue', 'load_game', 'decks', 'settings']) {
+      for (const name of ['continue', 'load_game', 'join_game', 'decks', 'settings']) {
         expect(menuButton(name).disabled).toBe(true);
       }
     });
@@ -232,7 +311,7 @@ describe('MainMenuComponent', () => {
       create$.error(new Error('boom'));
       TestBed.tick();
 
-      for (const name of ['continue', 'load_game', 'decks', 'settings']) {
+      for (const name of ['continue', 'load_game', 'join_game', 'decks', 'settings']) {
         expect(menuButton(name).disabled).toBe(false);
       }
     });
