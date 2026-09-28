@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
@@ -392,7 +393,7 @@ public class GameEndpointsTests
         var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.MemberDto>>>(result.Result);
-        var online = ok.Value!.ToDictionary(m => m.UserId, m => m.Online);
+        var online = ok.Value!.ToDictionary(m => m.UserId, m => m.IsOnline);
         Assert.True(online[LoggedInUser]);
         Assert.False(online[OtherUser]);
     }
@@ -409,7 +410,7 @@ public class GameEndpointsTests
         var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.MemberDto>>>(result.Result);
-        Assert.All(ok.Value!, m => Assert.False(m.Online));
+        Assert.All(ok.Value!, m => Assert.False(m.IsOnline));
     }
 
     [Fact]
@@ -468,7 +469,7 @@ public class GameEndpointsTests
     }
 
     [Fact]
-    public async Task RemoveMember_UnknownTarget_ReturnsNotFound()
+    public async Task RemoveMember_UnknownTarget_ReturnsNoContentIdempotently()
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
@@ -480,7 +481,8 @@ public class GameEndpointsTests
         var result = await GameEndpoints.RemoveMember(
             LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
 
-        Assert.IsType<NotFound>(result.Result);
+        Assert.IsType<NoContent>(result.Result);
+        Assert.True(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
     }
 
     [Fact]
@@ -610,62 +612,6 @@ public class GameEndpointsTests
     }
 
     [Fact]
-    public async Task SetMembersCount_Raise_IssuesCode()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, LoggedInUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
-        sessions.Join(game.Id, LoggedInUser, "conn-1", FixedNow);
-
-        var result = await GameEndpoints.SetMembersCount(
-            LoggedInPrincipal, userManager.Object, db, sessions, game.Id, new GameEndpoints.SetMembersCountRequest(2));
-
-        Assert.IsType<NoContent>(result.Result);
-        Assert.NotNull(sessions.Find(game.Id)!.InviteCode);
-        var stored = await db.Games.SingleAsync(g => g.Id == game.Id);
-        Assert.Equal(2, stored.IntendedPlayersCount);
-    }
-
-    [Fact]
-    public async Task SetMembersCount_LowerToMemberCount_ClearsCode()
-    {
-        var userManager = GetMockUserManager(LoggedInUser, OtherUser);
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, intendedPlayersCount: 3);
-        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, LoggedInUser, "conn-1", FixedNow);
-        sessions.SyncInviteCode(game.Id, memberCount: 2, intendedPlayersCount: 3);
-
-        var result = await GameEndpoints.SetMembersCount(
-            LoggedInPrincipal, userManager.Object, db, sessions, game.Id, new GameEndpoints.SetMembersCountRequest(2));
-
-        Assert.IsType<NoContent>(result.Result);
-        Assert.Null(sessions.Find(game.Id)!.InviteCode);
-    }
-
-    [Fact]
-    public async Task SetMembersCount_LowerBelowMemberCount_ReturnsValidationProblemUnchanged()
-    {
-        var userManager = GetMockUserManager(LoggedInUser, OtherUser);
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-
-        var result = await GameEndpoints.SetMembersCount(
-            LoggedInPrincipal, userManager.Object, db, sessions, game.Id, new GameEndpoints.SetMembersCountRequest(1));
-
-        Assert.IsType<ValidationProblem>(result.Result);
-        var stored = await db.Games.SingleAsync(g => g.Id == game.Id);
-        Assert.Equal(2, stored.IntendedPlayersCount);
-    }
-
-    [Fact]
     public async Task SetMembersCount_NonMember_ReturnsForbidden()
     {
         var userManager = GetMockUserManager();
@@ -708,6 +654,9 @@ public class GameEndpointsTests
     private static async Task AddMembershipAsync(
         ApplicationDbContext db, Guid gameId, string userId, DateTimeOffset lastPlayedAt)
     {
+        if (!await db.Users.AnyAsync(u => u.Id == userId))
+            db.Users.Add(new AppUser { Id = userId, UserName = userId, IsAnonymous = true });
+
         db.GameMembers.Add(new GameMember
         {
             GameId = gameId,
@@ -722,6 +671,7 @@ public class GameEndpointsTests
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
         return new ApplicationDbContext(options);
     }

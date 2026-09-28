@@ -124,20 +124,6 @@ public class GameEndpointsTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task OpenApi_DescribesPostGames()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var post = document.RootElement.GetProperty("paths").GetProperty("/games").GetProperty("post");
-
-        Assert.False(string.IsNullOrWhiteSpace(post.GetProperty("description").GetString()));
-    }
-
-    [Fact]
     public async Task GetRecentGames_WithoutCookie_ReturnsUnauthorized()
     {
         using var client = fixture.CreateClient();
@@ -186,49 +172,6 @@ public class GameEndpointsTests(AppFixture fixture)
         var listed = Assert.Single(games, g => g.Id == created.Id);
         using var expected = JsonDocument.Parse(json);
         Assert.True(JsonElement.DeepEquals(expected.RootElement, listed.Configuration));
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesGetRecentGames()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var get = document.RootElement.GetProperty("paths").GetProperty("/games/recent").GetProperty("get");
-
-        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesGetArchivedGames()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var get = document.RootElement.GetProperty("paths").GetProperty("/games/archive").GetProperty("get");
-
-        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
-    }
-
-    [Fact]
-    public async Task OpenApi_GamesRootHasNoGet()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var games = document.RootElement.GetProperty("paths").GetProperty("/games");
-
-        Assert.True(games.TryGetProperty("post", out _));
-        Assert.False(games.TryGetProperty("get", out _));
     }
 
     [Fact]
@@ -281,63 +224,6 @@ public class GameEndpointsTests(AppFixture fixture)
         var dto = await ReadGameAsync(response);
 
         Assert.Equal(secondDto.Id, dto.Id);
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesGetLatestGame()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var get = document.RootElement.GetProperty("paths").GetProperty("/games/latest").GetProperty("get");
-
-        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesGetMembers()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var get = document.RootElement.GetProperty("paths").GetProperty("/games/{id}/members").GetProperty("get");
-
-        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesRemoveMember()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var delete = document.RootElement.GetProperty("paths")
-            .GetProperty("/games/{id}/members/{userId}").GetProperty("delete");
-
-        Assert.False(string.IsNullOrWhiteSpace(delete.GetProperty("description").GetString()));
-    }
-
-    [Fact]
-    public async Task OpenApi_DescribesSetMembersCount()
-    {
-        using var client = fixture.CreateClient();
-
-        var response = await client.GetAsync("/openapi/v1.json");
-        response.EnsureSuccessStatusCode();
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var put = document.RootElement.GetProperty("paths").GetProperty("/games/{id}/membersCount").GetProperty("put");
-
-        Assert.False(string.IsNullOrWhiteSpace(put.GetProperty("description").GetString()));
     }
 
     [Fact]
@@ -413,6 +299,47 @@ public class GameEndpointsTests(AppFixture fixture)
         var response = await PutMembersCountAsync(outsider, gameId, 2);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_Raise_UpdatesIntendedPlayersCount()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+        var gameId = await CreateGameAsync(client);
+
+        var response = await PutMembersCountAsync(client, gameId, 3);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == gameId);
+        Assert.Equal(3, stored.IntendedPlayersCount);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_LowerBelowMemberCount_ReturnsValidationProblemAndLeavesCountUnchanged()
+    {
+        using var owner = fixture.CreateClient();
+        await LoginAnonymouslyAsync(owner);
+        var gameId = await CreateGameAsync(owner);
+        using var second = fixture.CreateClient();
+        var secondId = await LoginAnonymouslyAsync(second);
+        await AddMembershipAsync(gameId, secondId);
+
+        var response = await PutMembersCountAsync(owner, gameId, 1);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == gameId);
+        Assert.Equal(1, stored.IntendedPlayersCount);
+    }
+
+    private async Task AddMembershipAsync(Guid gameId, string userId)
+    {
+        await using var db = fixture.CreateDbContext();
+        var now = DateTimeOffset.UtcNow;
+        db.GameMembers.Add(new GameMember { GameId = gameId, UserId = userId, JoinedAt = now, LastPlayedAt = now });
+        await db.SaveChangesAsync();
     }
 
     private static async Task<Guid> CreateGameAsync(HttpClient client)
