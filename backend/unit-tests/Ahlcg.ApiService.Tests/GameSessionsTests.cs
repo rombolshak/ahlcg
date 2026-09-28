@@ -335,6 +335,45 @@ public class GameSessionsTests
         Assert.Null(sessions.FindByInviteCode(session!.InviteCode!));
     }
 
+    [Fact]
+    public void RotateInviteCode_SeatsStillOpen_ReplacesTheCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        var priorCode = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        var session = sessions.RotateInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2);
+
+        Assert.NotNull(session!.InviteCode);
+        Assert.NotEqual(priorCode, session.InviteCode);
+        Assert.Null(sessions.FindByInviteCode(priorCode));
+    }
+
+    [Fact]
+    public void RotateInviteCode_SeatsNowFull_ClearsTheCode()
+    {
+        var sessions = CreateSessions();
+        var gameId = Guid.NewGuid();
+        sessions.Join(gameId, UserA, "conn-1", FixedStart);
+        var priorCode = sessions.SyncInviteCode(gameId, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        var session = sessions.RotateInviteCode(gameId, memberCount: 2, intendedPlayersCount: 2);
+
+        Assert.Null(session!.InviteCode);
+        Assert.Null(sessions.FindByInviteCode(priorCode));
+    }
+
+    [Fact]
+    public void RotateInviteCode_NoLiveSession_ReturnsNull()
+    {
+        var sessions = CreateSessions();
+
+        var session = sessions.RotateInviteCode(Guid.NewGuid(), memberCount: 0, intendedPlayersCount: 1);
+
+        Assert.Null(session);
+    }
+
     private static void RunConcurrently(params Action[] actions)
     {
         var barrier = new Barrier(actions.Length);

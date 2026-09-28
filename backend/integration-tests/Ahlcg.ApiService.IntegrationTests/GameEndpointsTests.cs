@@ -297,6 +297,142 @@ public class GameEndpointsTests(AppFixture fixture)
         Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
     }
 
+    [Fact]
+    public async Task OpenApi_DescribesGetMembers()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var get = document.RootElement.GetProperty("paths").GetProperty("/games/{id}/members").GetProperty("get");
+
+        Assert.False(string.IsNullOrWhiteSpace(get.GetProperty("description").GetString()));
+    }
+
+    [Fact]
+    public async Task OpenApi_DescribesRemoveMember()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var delete = document.RootElement.GetProperty("paths")
+            .GetProperty("/games/{id}/members/{userId}").GetProperty("delete");
+
+        Assert.False(string.IsNullOrWhiteSpace(delete.GetProperty("description").GetString()));
+    }
+
+    [Fact]
+    public async Task OpenApi_DescribesSetMembersCount()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/openapi/v1.json");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var put = document.RootElement.GetProperty("paths").GetProperty("/games/{id}/membersCount").GetProperty("put");
+
+        Assert.False(string.IsNullOrWhiteSpace(put.GetProperty("description").GetString()));
+    }
+
+    [Fact]
+    public async Task GetMembers_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync($"/games/{Guid.NewGuid()}/members");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetMembers_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        await LoginAnonymouslyAsync(owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await LoginAnonymouslyAsync(outsider);
+
+        var response = await outsider.GetAsync($"/games/{gameId}/members");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveMember_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.DeleteAsync($"/games/{Guid.NewGuid()}/members/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveMember_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        var ownerId = await LoginAnonymouslyAsync(owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await LoginAnonymouslyAsync(outsider);
+
+        var response = await outsider.DeleteAsync($"/games/{gameId}/members/{ownerId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await PutMembersCountAsync(client, Guid.NewGuid(), 2);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        await LoginAnonymouslyAsync(owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await LoginAnonymouslyAsync(outsider);
+
+        var response = await PutMembersCountAsync(outsider, gameId, 2);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    private static async Task<Guid> CreateGameAsync(HttpClient client)
+    {
+        var response = await PostGameAsync(client, $"members-{Guid.NewGuid()}", """{"a":1}""");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+        return dto.Id;
+    }
+
+    private static async Task<HttpResponseMessage> PutMembersCountAsync(HttpClient client, Guid gameId, int count)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/games/{gameId}/membersCount")
+        {
+            Content = JsonContent.Create(
+                new GameEndpoints.SetMembersCountRequest(count), options: JsonSerializerOptions.Web)
+        };
+        return await client.SendAsync(request);
+    }
+
     private static JsonElement ParseConfig(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<HttpResponseMessage> PostGameAsync(
