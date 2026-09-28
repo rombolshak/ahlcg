@@ -26,7 +26,7 @@ public class GameHubTests(AppFixture fixture)
 
         await using var connection = BuildConnection(cookies, $"gameId={gameId}");
         var announced = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        connection.On<string>("MemberConnected", id => announced.TrySetResult(id));
+        connection.On<string>(nameof(IGameClient.MemberConnected), id => announced.TrySetResult(id));
 
         await connection.StartAsync();
 
@@ -48,7 +48,7 @@ public class GameHubTests(AppFixture fixture)
 
         await using var connection = BuildConnection(outsiderCookies, $"gameId={gameId}");
         var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        connection.On<string>("Exit", reason => exited.TrySetResult(reason));
+        connection.On<string>(nameof(IGameClient.Exit), reason => exited.TrySetResult(reason));
 
         await connection.StartAsync();
 
@@ -97,6 +97,90 @@ public class GameHubTests(AppFixture fixture)
 
         var lastPlayedAt = await WaitForLastPlayedAtAfterAsync(gameId, userId, joinedAt);
         Assert.True(lastPlayedAt > joinedAt, $"expected {lastPlayedAt:O} to be later than {joinedAt:O}");
+    }
+
+    [Fact]
+    public async Task RemoveMember_ConnectedTarget_ExitsAndCannotReconnect()
+    {
+        var ownerCookies = new CookieContainer();
+        using var owner = fixture.CreateClient(ownerCookies);
+        await LoginAnonymouslyAsync(owner);
+        var gameId = await CreateGameAsync(owner);
+
+        var targetCookies = new CookieContainer();
+        using var target = fixture.CreateClient(targetCookies);
+        var targetId = await LoginAnonymouslyAsync(target);
+        await AddMembershipAsync(gameId, targetId);
+
+        await using var connection = BuildConnection(targetCookies, $"gameId={gameId}");
+        var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        connection.On<string>(nameof(IGameClient.Exit), reason => exited.TrySetResult(reason));
+        await connection.StartAsync();
+
+        var removeResponse = await owner.DeleteAsync($"/games/{gameId}/members/{targetId}");
+        removeResponse.EnsureSuccessStatusCode();
+
+        Assert.Equal("NotAMember", await WithTimeoutAsync(exited.Task));
+
+        await using var reconnection = BuildConnection(targetCookies, $"gameId={gameId}");
+        var exitedAgain = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        reconnection.On<string>(nameof(IGameClient.Exit), reason => exitedAgain.TrySetResult(reason));
+        await reconnection.StartAsync();
+
+        Assert.Equal("NotAMember", await WithTimeoutAsync(exitedAgain.Task));
+    }
+
+    [Fact]
+    public async Task GetMembers_ReflectsConnectionState()
+    {
+        var cookies = new CookieContainer();
+        using var client = fixture.CreateClient(cookies);
+        var userId = await LoginAnonymouslyAsync(client);
+        var gameId = await CreateGameAsync(client);
+
+        await using (var connection = BuildConnection(cookies, $"gameId={gameId}"))
+        {
+            await connection.StartAsync();
+
+            Assert.True(await WaitForOnlineStateAsync(client, gameId, userId, expected: true));
+
+            await connection.StopAsync();
+        }
+
+        Assert.False(await WaitForOnlineStateAsync(client, gameId, userId, expected: false));
+    }
+
+    private async Task AddMembershipAsync(Guid gameId, string userId)
+    {
+        await using var db = fixture.CreateDbContext();
+        var now = DateTimeOffset.UtcNow;
+        db.GameMembers.Add(new GameMember { GameId = gameId, UserId = userId, JoinedAt = now, LastPlayedAt = now });
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task<bool> WaitForOnlineStateAsync(HttpClient client, Guid gameId, string userId, bool expected)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(15);
+        var online = !expected;
+        while (DateTime.UtcNow < deadline)
+        {
+            online = await ReadOnlineStateAsync(client, gameId, userId);
+            if (online == expected) return online;
+            await Task.Delay(200);
+        }
+
+        return online;
+    }
+
+    private static async Task<bool> ReadOnlineStateAsync(HttpClient client, Guid gameId, string userId)
+    {
+        var response = await client.GetAsync($"/games/{gameId}/members");
+        response.EnsureSuccessStatusCode();
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var member = document.RootElement.EnumerateArray()
+            .Single(m => m.GetProperty("userId").GetString() == userId);
+        return member.GetProperty("isOnline").GetBoolean();
     }
 
     private HubConnection BuildConnection(CookieContainer cookies, string? query)

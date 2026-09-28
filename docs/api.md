@@ -28,6 +28,8 @@ Authenticated with the same session cookie as the endpoints; anonymous accounts 
 
 **Membership is the only gate.** A caller with no `GameMember` row for that game is sent `Exit(NotAMember)` and joins neither the session nor the group. A game that does not exist takes the same path, so the answer leaks nothing about whether it does.
 
+**`Exit(NotAMember)` is also sent mid-session.** `DELETE /games/{id}/members/{userId}` sends it to a removed member's live connections, dropping them from the group at the same time — membership can end while a connection is open, not only be refused at connect.
+
 **A turned-away caller is asked to leave, not cut off.** SignalR has already completed the handshake by the time `OnConnectedAsync` runs, so `start()` *succeeds* whatever the server decides — a client cannot read "start resolved" as "I am a member". Rather than force-closing, the hub sends `Exit` and leaves the connection open; **stopping it is the client's job.** A client that ignores `Exit` stays connected to nothing: it is in no group and no session, so no game traffic reaches it.
 
 That cooperative shape is what keeps automatic reconnect usable. A close cannot be told apart from a network drop, so a client that inferred rejection from one would either retry forever against a server that will never accept it, or guess from event ordering. `Exit` is unambiguous: reconnect on a drop, stop on `Exit`.

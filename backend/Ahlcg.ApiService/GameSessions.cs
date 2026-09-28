@@ -197,4 +197,15 @@ public sealed class GameSessions
         result = next;
         return true;
     }
+
+    public GameSession? RotateInviteCode(Guid gameId, int memberCount, int intendedPlayersCount)
+    {
+        while (true)
+        {
+            if (!_sessions.TryGetValue(gameId, out var observed)) return null;
+            if (TryClearInviteCode(gameId, observed, out _)) break;
+        }
+
+        return SyncInviteCode(gameId, memberCount, intendedPlayersCount);
+    }
 }
