@@ -387,7 +387,7 @@ public static class GameEndpoints
 
         var memberCount = members.Count;
         var updated = await db.Games
-            .Where(g => g.Id == id && g.Members.Count() <= request.Count)
+            .Where(g => g.Id == id && g.Members.Count <= request.Count)
             .ExecuteUpdateAsync(setters => setters.SetProperty(g => g.IntendedPlayersCount, request.Count));
         if (updated == 0)
             return TypedResults.ValidationProblem(new Dictionary<string, string[]>
