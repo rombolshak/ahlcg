@@ -41,7 +41,11 @@ public static class GameEndpoints
 
     [PublicAPI]
     public record GameDto(
-        Guid Id, DateTimeOffset CreatedAt, DateTimeOffset LastPlayedAt, DateTimeOffset? CompletedAt, JsonElement Configuration);
+        Guid Id,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset LastPlayedAt,
+        DateTimeOffset? CompletedAt,
+        JsonElement Configuration);
 
     [PublicAPI]
     public record MemberDto(string UserId, string? UserName, bool IsAnonymous, bool IsOnline);
@@ -99,7 +103,7 @@ public static class GameEndpoints
                 "normal state, not a missing resource.")
             .Produces(StatusCodes.Status401Unauthorized);
 
-        group.MapGet("{id}/members", GetMembers)
+        group.MapGet("{id:guid}/members", GetMembers)
             .RequireAuthorization()
             .WithDescription(
                 "Lists the game's members ordered by JoinedAt, each with userName and isAnonymous from AppUser " +
@@ -112,7 +116,7 @@ public static class GameEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
-        group.MapDelete("{id}/members/{userId}", RemoveMember)
+        group.MapDelete("{id:guid}/members/{userId}", RemoveMember)
             .RequireAuthorization()
             .WithDescription(
                 "Removes a member from the game — a hard delete, not a soft flag. Any member may remove any " +
@@ -129,7 +133,7 @@ public static class GameEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
 
-        group.MapPut("{id}/membersCount", SetMembersCount)
+        group.MapPut("{id:guid}/membersCount", SetMembersCount)
             .RequireAuthorization()
             .WithDescription(
                 "Sets Game.IntendedPlayersCount — a bare number (#198), not a seat or an investigator count. " +
@@ -288,13 +292,15 @@ public static class GameEndpoints
             return TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden);
 
         var session = sessions.Find(id);
-        IReadOnlyList<MemberDto> dtos = members
-            .Select(m => new MemberDto(
-                m.UserId,
-                m.User!.UserName,
-                m.User.IsAnonymous,
-                session?.Connections.ContainsKey(m.UserId) ?? false))
-            .ToList();
+        IReadOnlyList<MemberDto> dtos =
+        [
+            .. members
+                .Select(m => new MemberDto(
+                    m.UserId,
+                    m.User!.UserName,
+                    m.User.IsAnonymous,
+                    session?.Connections.ContainsKey(m.UserId) ?? false))
+        ];
 
         return TypedResults.Ok(dtos);
     }
@@ -312,54 +318,56 @@ public static class GameEndpoints
         var caller = await userManager.GetUserAsync(principal);
         if (caller is null) return TypedResults.Unauthorized();
 
-        var strategy = db.Database.CreateExecutionStrategy();
-        var (result, removed, remainingCount, intendedPlayersCount) = await strategy
-            .ExecuteAsync<(
-                Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult> Result,
-                bool Removed,
-                int RemainingCount,
-                int IntendedPlayersCount)>(async () =>
-            {
-                db.ChangeTracker.Clear();
-                await using var transaction =
-                    await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+        var (result, game) = await DeleteMembership(db, id, caller.Id, userId);
+        if (game is null) return result;
 
-                var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
-                if (game is null || game.Members.All(m => m.UserId != caller.Id))
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), false, 0, 0);
-
-                var target = game.Members.SingleOrDefault(m => m.UserId == userId);
-                if (target is null) return (TypedResults.NoContent(), false, 0, 0);
-
-                if (game.Members.Count == 1)
-                    return (TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                    {
-                        [nameof(userId)] = ["LastMember"]
-                    }), false, 0, 0);
-
-                game.Members.Remove(target);
-                game.IntendedPlayersCount -= 1;
-                await db.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return (TypedResults.NoContent(), true, game.Members.Count, game.IntendedPlayersCount);
-            });
-
-        if (removed)
-        {
-            var session = sessions.Find(id);
-            if (session is not null && session.Connections.TryGetValue(userId, out var connectionIds))
-            {
-                var gameGroup = id.ToString();
-                foreach (var connectionId in connectionIds)
-                    await hub.Groups.RemoveFromGroupAsync(connectionId, gameGroup);
-                await hub.Clients.Clients(connectionIds.ToList()).Exit(ExitReason.NotAMember);
-            }
-
-            sessions.RotateInviteCode(id, remainingCount, intendedPlayersCount);
-        }
+        await DisconnectMember(sessions, hub, id, userId);
+        sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
 
         return result;
+    }
+
+    private static Task<(Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult> Result,
+        Game? Updated)> DeleteMembership(ApplicationDbContext db, Guid id, string callerId, string userId) =>
+        ExecutionStrategyExtensions
+            .ExecuteAsync<(Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(
+                db.Database.CreateExecutionStrategy(), async () =>
+                {
+                    db.ChangeTracker.Clear();
+                    await using var transaction =
+                        await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+                    var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
+                    if (game is null || game.Members.All(m => m.UserId != callerId))
+                        return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), null);
+
+                    var target = game.Members.SingleOrDefault(m => m.UserId == userId);
+                    if (target is null) return (TypedResults.NoContent(), null);
+
+                    if (game.Members.Count == 1)
+                        return (TypedResults.ValidationProblem(new Dictionary<string, string[]>
+                        {
+                            [nameof(userId)] = ["LastMember"]
+                        }), null);
+
+                    game.Members.Remove(target);
+                    game.IntendedPlayersCount -= 1;
+                    await db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return (TypedResults.NoContent(), game);
+                });
+
+    private static async Task DisconnectMember(
+        GameSessions sessions, IHubContext<GameHub, IGameClient> hub, Guid id, string userId)
+    {
+        var session = sessions.Find(id);
+        if (session is null || !session.Connections.TryGetValue(userId, out var connectionIds)) return;
+
+        var gameGroup = id.ToString();
+        foreach (var connectionId in connectionIds)
+            await hub.Groups.RemoveFromGroupAsync(connectionId, gameGroup);
+        await hub.Clients.Clients([.. connectionIds]).Exit(ExitReason.NotAMember);
     }
 
     public static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>>
