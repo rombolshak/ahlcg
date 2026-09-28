@@ -61,17 +61,20 @@ Fixtures split by whether they touch a framework. The ten pure fixtures (`entiti
 
 ## Routing
 
-`app.routes.ts` — three lazy routes, no guards or resolvers:
+`app.routes.ts` — four lazy routes, no guards or resolvers:
 
 - `''` → `MainMenuComponent` (`pathMatch: 'full'`)
 - `'case-files'` → `CaseFilesComponent`
+- `'join/:code'` → `MainMenuComponent` again — the link opens the main menu's "Clearance code" dialog, prefilled, rather than a screen of its own
 - `'game/:id'` → `GameViewComponent` (`pathMatch: 'prefix'`)
 
 There is no wildcard route. `:id` reaches `GameViewComponent` as an `input.required<string>()` — that works because `provideRouter` is configured `withComponentInputBinding()`, without which the input would never be set and the component would throw. The id decides which game the SignalR connection binds to; the board itself still loads a fixture.
 
-`case-files` has no auth guard: the menu item that reaches it is disabled when signed out, and the
-screen's `rxResource` is keyed on the current user, so a signed-out visitor issues no request at all
-and lands on the empty state rather than an error.
+Neither `case-files` nor the main menu's "Clearance code" item has an auth guard, and neither menu entry is
+disabled when signed out: each issues its request anyway, gets a `401`, and `authInterceptor` prompts
+sign-in and replays it. `case-files`' `rxResource` is keyed on the current user, so a signed-out visit
+skips the request entirely and lands on the empty state rather than an error; the join dialog instead
+lets the `401` reach its own submission and surfaces through the same interceptor flow.
 
 ## Application config
 
