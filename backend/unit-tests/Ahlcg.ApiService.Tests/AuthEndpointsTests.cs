@@ -17,7 +17,9 @@ public class AuthEndpointsTests
         var result = await AuthEndpoints.LoginAnonymously(
             NotAuthenticatedPrincipal,
             userManager.Object,
-            signInManager.Object);
+            signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext());
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
@@ -33,7 +35,9 @@ public class AuthEndpointsTests
         var result = await AuthEndpoints.LoginAnonymously(
             AnonymousPrincipal1,
             userManager.Object,
-            signInManager.Object);
+            signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext());
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
@@ -52,10 +56,31 @@ public class AuthEndpointsTests
         var result = await AuthEndpoints.LoginAnonymously(
             NotAuthenticatedPrincipal,
             userManager.Object,
-            signInManager.Object);
+            signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext());
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()));
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
+    public async Task LoginAnonymously_LimiterExhausted_ReturnsTooManyRequestsAndCreatesNoUser()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.LoginAnonymously(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            ExhaustedLimiter(),
+            NewHttpContext());
+
+        var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
+        Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
+        userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
     }
 
@@ -75,6 +100,8 @@ public class AuthEndpointsTests
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
 
         Assert.IsType<Ok>(result.Result);
@@ -101,6 +128,8 @@ public class AuthEndpointsTests
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
 
         // A locked-out account is indistinguishable from a wrong password to the caller, which is
@@ -119,6 +148,8 @@ public class AuthEndpointsTests
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
 
         Assert.IsType<ForbidHttpResult>(result.Result);
@@ -135,6 +166,8 @@ public class AuthEndpointsTests
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
 
         Assert.IsType<ForbidHttpResult>(result.Result);
@@ -152,12 +185,71 @@ public class AuthEndpointsTests
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(
             It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false && u.LockoutEnabled), "P@ssw0rd"));
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_LoggedOutUnknownEmailLimiterExhausted_ReturnsTooManyRequestsAndCreatesNoUser()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            ExhaustedLimiter(),
+            NewHttpContext(),
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+
+        var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
+        Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
+        userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+    }
+
+    [Fact]
+    public async Task SignIn_KnownEmailLimiterExhausted_SignsInBecauseTheLimiterOnlyGuardsAccountCreation()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            ExhaustedLimiter(),
+            NewHttpContext(),
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+
+        Assert.IsType<Ok>(result.Result);
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+    }
+
+    [Fact]
+    public async Task SignIn_AnonymousUnknownEmailLimiterExhausted_UpgradesInPlaceBecauseUpgradingCreatesNoAccount()
+    {
+        var userManager = GetMockUserManager();
+        var signInManager = GetMockSignInManager();
+
+        var result = await AuthEndpoints.SignIn(
+            AnonymousPrincipal1,
+            userManager.Object,
+            signInManager.Object,
+            ExhaustedLimiter(),
+            NewHttpContext(),
+            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"));
+
+        Assert.IsType<Ok>(result.Result);
+        userManager.Verify(manager => manager.UpdateAsync(
+            It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false)));
     }
 
     [Fact]
@@ -170,6 +262,8 @@ public class AuthEndpointsTests
             NotAuthenticatedPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw"));
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
@@ -186,6 +280,8 @@ public class AuthEndpointsTests
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"));
 
         Assert.IsType<Ok>(result.Result);
@@ -213,6 +309,8 @@ public class AuthEndpointsTests
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw"));
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
@@ -231,6 +329,8 @@ public class AuthEndpointsTests
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("bad_mail", "user", "P@ssw0rd"));
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
@@ -249,6 +349,8 @@ public class AuthEndpointsTests
             AnonymousPrincipal1,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
 
         Assert.IsType<Ok>(result.Result);
@@ -268,6 +370,8 @@ public class AuthEndpointsTests
             PermanentPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
 
         // There is nothing to sign into and nothing to upgrade, so creating an account here would
@@ -291,6 +395,8 @@ public class AuthEndpointsTests
             PermanentPrincipal,
             userManager.Object,
             signInManager.Object,
+            PermissiveLimiter(),
+            NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
 
         // Only account *creation* is barred from a permanent session — switching to an account that
@@ -475,6 +581,14 @@ public class AuthEndpointsTests
             .ReturnsAsync(SignInResult.Failed);
         return mock;
     }
+
+    private static AccountCreationLimiter PermissiveLimiter() =>
+        new(new RateLimits.LimitOptions { PermitLimit = 1000, Window = TimeSpan.FromMinutes(5) });
+
+    private static AccountCreationLimiter ExhaustedLimiter() =>
+        new(new RateLimits.LimitOptions { PermitLimit = 0, Window = TimeSpan.FromMinutes(5) });
+
+    private static HttpContext NewHttpContext() => new DefaultHttpContext();
 
     private const string AnonymousUser1 = "4139F1EA-4901-4253-A391-021FAA001677";
     private const string AnonymousUser2 = "D0A6B608-AE28-4AAF-BC4B-D25D6E93187A";

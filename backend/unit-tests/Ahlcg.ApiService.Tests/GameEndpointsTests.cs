@@ -627,6 +627,150 @@ public class GameEndpointsTests
         Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
     }
 
+    [Fact]
+    public async Task JoinGame_ValidCode_CreatesMembershipAndGameAppearsInRecentGames()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        var result = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        Assert.Equal(game.Id, ok.Value!.Id);
+        Assert.True(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
+
+        var recent = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
+        var recentOk = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(recent.Result);
+        Assert.Contains(recentOk.Value!, g => g.Id == game.Id);
+    }
+
+    [Fact]
+    public async Task JoinGame_CalledTwice_CreatesOneRowAndBothResponsesNameTheSameGame()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 3);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3)!.InviteCode!;
+
+        var first = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+        var second = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        var firstOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(first.Result);
+        var secondOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(second.Result);
+        Assert.Equal(firstOk.Value!.Id, secondOk.Value!.Id);
+        Assert.Equal(1, await db.GameMembers.CountAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
+    }
+
+    [Fact]
+    public async Task JoinGame_LowercaseCode_Redeems()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        var result = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()));
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        Assert.Equal(game.Id, ok.Value!.Id);
+    }
+
+    [Fact]
+    public async Task JoinGame_FillsLastSeat_ClearsCodeInTheSameRequest()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        Assert.Null(sessions.Find(game.Id)!.InviteCode);
+        Assert.Null(sessions.FindByInviteCode(code));
+    }
+
+    [Fact]
+    public async Task JoinGame_SessionEnded_ReturnsNotFoundWithNoCleanupPass()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+        sessions.Leave(game.Id, OtherUser, "conn-1", FixedNow);
+
+        var result = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        var problem = Assert.IsType<ProblemHttpResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("K7Q")]
+    [InlineData("")]
+    [InlineData("UNKNOWN")]
+    public async Task JoinGame_UnknownOrMalformedCode_ReturnsSameResultAsAnyOtherUnredeemableCode(string code)
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+
+        var result = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        var problem = Assert.IsType<ProblemHttpResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+    }
+
+    [Fact]
+    public async Task JoinGame_GameAlreadyFull_ReturnsNotFound()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        var result = await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code));
+
+        var problem = Assert.IsType<ProblemHttpResult>(result.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+    }
+
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<Game> SeedGameAsync(

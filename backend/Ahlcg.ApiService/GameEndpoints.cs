@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,6 +41,9 @@ public static class GameEndpoints
     public record CreateGameRequest(JsonElement Configuration);
 
     [PublicAPI]
+    public record JoinGameRequest(string Code);
+
+    [PublicAPI]
     public record GameDto(
         Guid Id,
         DateTimeOffset CreatedAt,
@@ -69,6 +73,23 @@ public static class GameEndpoints
                 "different user creates a separate game. A unique index on (OwnerId, IdempotencyKey) enforces this, " +
                 "not a check-then-insert.")
             .Produces(StatusCodes.Status401Unauthorized);
+
+        group.MapPost("join", JoinGame)
+            .RequireAuthorization()
+            .RequireRateLimiting(RateLimits.Join)
+            .WithDescription(
+                "Redeems an invite code (#527) into a membership of the game whose session holds it. The code is " +
+                "uppercased before lookup and matched against live sessions only — one with no live session behind " +
+                "it, whether because it never existed, is malformed, or the session it belonged to has ended, reads " +
+                "as unknown. Idempotent: a caller who is already a member gets that game back unchanged rather than " +
+                "a duplicate row or an error, which is what lets the same code double as a resume link. Unknown, " +
+                "malformed, expired and full all return an identical 404 with no distinguishing detail, so the " +
+                "route cannot be used to enumerate codes. A join that fills the last seat clears the session's " +
+                "invite code in the same request — no reconnect or disconnect needed to notice. Throttled per " +
+                "account; exceeding it returns 429. Never reads or writes Configuration.")
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status429TooManyRequests);
 
         group.MapGet("recent", GetRecentGames)
             .RequireAuthorization()
@@ -201,6 +222,56 @@ public static class GameEndpoints
             game.CompletedAt,
             game.Configuration.RootElement.Clone()));
     }
+
+    public static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db,
+        GameSessions sessions,
+        TimeProvider timeProvider,
+        JoinGameRequest request)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null) return TypedResults.Unauthorized();
+
+        var gameId = sessions.FindByInviteCode(request.Code.ToUpperInvariant());
+        if (gameId is null) return TypedResults.Problem(statusCode: StatusCodes.Status404NotFound);
+
+        var (result, game) = await AddMembership(db, gameId.Value, user.Id, timeProvider);
+        if (game is not null) sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
+
+        return result;
+    }
+
+    private static Task<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result, Game? Updated)>
+        AddMembership(ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider) =>
+        ExecutionStrategyExtensions
+            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(
+                db.Database.CreateExecutionStrategy(), async () =>
+                {
+                    db.ChangeTracker.Clear();
+                    await using var transaction =
+                        await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+                    var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == gameId);
+                    if (game is null) return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+
+                    var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
+                    if (existing is not null) return (TypedResults.Ok(ToDto(existing)), game);
+
+                    // A concurrent join can have taken the last seat since the lookup above; still a
+                    // uniform 404, so the response never confirms the code was briefly valid.
+                    if (game.Members.Count >= game.IntendedPlayersCount)
+                        return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+
+                    var now = timeProvider.GetUtcNow();
+                    var member = new GameMember { UserId = userId, JoinedAt = now, LastPlayedAt = now };
+                    game.Members.Add(member);
+                    await db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return (TypedResults.Ok(ToDto(member)), game);
+                });
 
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
         ClaimsPrincipal principal,
