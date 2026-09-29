@@ -18,6 +18,8 @@ const meta: Meta<JoinGameComponent> = {
   component: JoinGameComponent,
   parameters: {
     layout: 'fullscreen',
+    // The spinner, caret pulse and drain bar never reach a stable end; pin them to their first frame.
+    chromatic: { pauseAnimationAtEnd: false },
   },
   render: () => ({
     template: `
