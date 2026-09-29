@@ -8,6 +8,7 @@
     "message": "The investigation could not be started. Try again in a moment."
   },
   "load_game": "Case files",
+  "join_game": "Clearance code",
   "decks": "Dossiers",
   "settings": "Settings"
 }
