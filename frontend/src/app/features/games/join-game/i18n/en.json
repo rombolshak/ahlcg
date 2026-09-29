@@ -4,6 +4,7 @@
   "format_hint": "Six characters. Letters and digits.",
   "submit": "Check code",
   "cancel": "Not now",
+  "granted": "Access granted",
   "errors": {
     "rejected": "Clearance refused, check the code.",
     "too_many_attempts": "Too many attempts. Wait a few minutes before the next.",

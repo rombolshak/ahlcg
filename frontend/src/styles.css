@@ -175,4 +175,13 @@
       --tw-gradient-to: color-mix(in oklab, var(--color-blue-500) 95%, transparent);
     }
   }
+
+  @keyframes drain {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
 }

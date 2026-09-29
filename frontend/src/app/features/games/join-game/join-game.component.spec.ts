@@ -4,7 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { vi } from 'vitest';
-import { JoinGameComponent } from './join-game.component';
+import { GRANTED_REDIRECT_DELAY, JoinGameComponent } from './join-game.component';
+
+const REDIRECT_DELAY = 50;
 
 describe('JoinGameComponent', () => {
   let component: JoinGameComponent;
@@ -13,6 +15,10 @@ describe('JoinGameComponent', () => {
 
   const codeInput = () => fixture.debugElement.query(By.css('[data-testId=join-game-code]')).nativeElement as HTMLInputElement;
   const submitButton = () => fixture.debugElement.query(By.css('[data-testId=join-game-submit]')).nativeElement as HTMLButtonElement;
+  const cancelButton = () => fixture.debugElement.query(By.css('[data-testId=join-game-cancel]')).nativeElement as HTMLButtonElement;
+  const slotCharacters = () =>
+    fixture.debugElement.queryAll(By.css('[data-testId=join-game-slot] span:first-child')).map(el => el.nativeElement as HTMLElement);
+  const statusLine = () => fixture.debugElement.query(By.css('[aria-live=polite]'));
 
   const typeCode = (code: string) => {
     const input = codeInput();
@@ -26,10 +32,20 @@ describe('JoinGameComponent', () => {
     fixture.detectChanges();
   };
 
+  const flushJoin = (body: { id: string } | null, options?: { status: number; statusText: string }) => {
+    const req = http.expectOne('/api/games/join');
+    if (options) {
+      req.flush(body, options);
+    } else {
+      req.flush(body);
+    }
+    return req;
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [JoinGameComponent, getTranslocoModule()],
-      providers: [provideZonelessChangeDetection(), provideHttpClientTesting()],
+      providers: [provideZonelessChangeDetection(), provideHttpClientTesting(), { provide: GRANTED_REDIRECT_DELAY, useValue: REDIRECT_DELAY }],
     }).compileComponents();
 
     http = TestBed.inject(HttpTestingController);
@@ -54,22 +70,80 @@ describe('JoinGameComponent', () => {
     expect(submitButton().disabled).toBe(false);
   });
 
-  it('should submit a valid code uppercased and emit the joined game id', async () => {
-    const emitted: (string | undefined)[] = [];
-    component.result.subscribe(id => {
-      emitted.push(id);
+  it('should show the status line in every state', () => {
+    expect(statusLine()).toBeTruthy();
+
+    typeCode('K7QO');
+    touchField();
+
+    expect(statusLine()).toBeTruthy();
+  });
+
+  describe('on success', () => {
+    it('should submit a valid code uppercased, show access granted and disable interaction until the delay elapses', async () => {
+      const emitted: (string | undefined)[] = [];
+      component.result.subscribe(id => {
+        emitted.push(id);
+      });
+
+      typeCode('abcdef');
+      submitButton().click();
+      await fixture.whenStable();
+
+      const req = http.expectOne('/api/games/join');
+      expect(req.request.body).toEqual({ code: 'ABCDEF' });
+      req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      const granted = fixture.debugElement.query(By.css('[data-testId=join-game-granted]')).nativeElement as HTMLElement;
+      expect(granted.textContent).toContain('Access granted');
+      expect(submitButton().disabled).toBe(true);
+      expect(cancelButton().disabled).toBe(true);
+      expect(codeInput().readOnly).toBe(true);
+      expect(emitted).toEqual([]);
+
+      await vi.waitFor(() => {
+        expect(emitted).toEqual(['3fa85f64-5717-4562-b3fc-2c963f66afa6']);
+      });
     });
 
-    typeCode('abcdef');
-    submitButton().click();
-    await fixture.whenStable();
+    it('should mark the code green once granted', async () => {
+      typeCode('ABCDEF');
+      submitButton().click();
+      await fixture.whenStable();
 
-    const req = http.expectOne('/api/games/join');
-    expect(req.request.body).toEqual({ code: 'ABCDEF' });
-    req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
-    await fixture.whenStable();
+      flushJoin({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' });
+      await fixture.whenStable();
+      fixture.detectChanges();
 
-    expect(emitted).toEqual(['3fa85f64-5717-4562-b3fc-2c963f66afa6']);
+      for (const char of slotCharacters()) {
+        expect(char.classList).toContain('text-success');
+      }
+    });
+
+    it('should ignore cancel and confirm from the input manager once granted', async () => {
+      const emitted: (string | undefined)[] = [];
+      component.result.subscribe(id => {
+        emitted.push(id);
+      });
+
+      typeCode('ABCDEF');
+      submitButton().click();
+      await fixture.whenStable();
+
+      flushJoin({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' });
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      void component.getInputHandlers().cancel?.();
+      void component.getInputHandlers().confirm?.();
+      http.expectNone('/api/games/join');
+
+      await vi.waitFor(() => {
+        expect(emitted).toEqual(['3fa85f64-5717-4562-b3fc-2c963f66afa6']);
+      });
+    });
   });
 
   it('should keep the dialog open and show the rejected message on a 404', async () => {
@@ -77,7 +151,7 @@ describe('JoinGameComponent', () => {
     submitButton().click();
     await fixture.whenStable();
 
-    http.expectOne('/api/games/join').flush(null, { status: 404, statusText: 'Not Found' });
+    flushJoin(null, { status: 404, statusText: 'Not Found' });
 
     const alert = await vi.waitFor(() => {
       fixture.detectChanges();
@@ -86,18 +160,51 @@ describe('JoinGameComponent', () => {
     expect(alert.textContent).toContain('Clearance refused');
   });
 
+  it('should mark the code red on a 404', async () => {
+    typeCode('ABCDEF');
+    submitButton().click();
+    await fixture.whenStable();
+
+    flushJoin(null, { status: 404, statusText: 'Not Found' });
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      return fixture.debugElement.query(By.css('[data-testId=join-game-error]')).nativeElement as HTMLElement;
+    });
+
+    for (const char of slotCharacters()) {
+      expect(char.classList).toContain('text-error');
+    }
+  });
+
   it('should show a distinct message on a 429', async () => {
     typeCode('ABCDEF');
     submitButton().click();
     await fixture.whenStable();
 
-    http.expectOne('/api/games/join').flush(null, { status: 429, statusText: 'Too Many Requests' });
+    flushJoin(null, { status: 429, statusText: 'Too Many Requests' });
 
     const alert = await vi.waitFor(() => {
       fixture.detectChanges();
       return fixture.debugElement.query(By.css('[data-testId=join-game-error]')).nativeElement as HTMLElement;
     });
     expect(alert.textContent).toContain('Too many attempts');
+  });
+
+  it('should leave the code neutral on a generic error', async () => {
+    typeCode('ABCDEF');
+    submitButton().click();
+    await fixture.whenStable();
+
+    flushJoin(null, { status: 500, statusText: 'Internal Server Error' });
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      return fixture.debugElement.query(By.css('[data-testId=join-game-error]')).nativeElement as HTMLElement;
+    });
+
+    for (const char of slotCharacters()) {
+      expect(char.classList).not.toContain('text-error');
+      expect(char.classList).not.toContain('text-success');
+    }
   });
 
   it('should stay open with no error and no result on a 401 (a dismissed sign-in prompt)', async () => {
@@ -110,7 +217,7 @@ describe('JoinGameComponent', () => {
     submitButton().click();
     await fixture.whenStable();
 
-    http.expectOne('/api/games/join').flush(null, { status: 401, statusText: 'Unauthorized' });
+    flushJoin(null, { status: 401, statusText: 'Unauthorized' });
     await fixture.whenStable();
     fixture.detectChanges();
 
@@ -144,7 +251,7 @@ describe('JoinGameComponent', () => {
       emitted.push(id);
     });
 
-    (fixture.debugElement.query(By.css('[data-testId=join-game-cancel]')).nativeElement as HTMLButtonElement).click();
+    cancelButton().click();
 
     expect(emitted).toEqual([undefined]);
   });
@@ -169,7 +276,7 @@ describe('JoinGameComponent', () => {
 
       const request = http.expectOne('/api/games/join');
       expect(request.request.body).toEqual({ code: 'ABCDEF' });
-      request.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
+      request.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' });
     });
   });
 
@@ -182,7 +289,7 @@ describe('JoinGameComponent', () => {
 
       const req = http.expectOne('/api/games/join');
       expect(req.request.body).toEqual({ code: 'ABCDEF' });
-      req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
+      req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6' });
     });
 
     it('should show the format hint and send no request for a malformed prefilled code', async () => {
@@ -199,5 +306,9 @@ describe('JoinGameComponent', () => {
   it('should reference the legend as the code input label', () => {
     const legend = fixture.debugElement.query(By.css('legend')).nativeElement as HTMLElement;
     expect(codeInput().getAttribute('aria-labelledby')).toBe(legend.id);
+  });
+
+  it('should cap the native input at 6 characters, matching the slot count', () => {
+    expect(codeInput().maxLength).toBe(6);
   });
 });

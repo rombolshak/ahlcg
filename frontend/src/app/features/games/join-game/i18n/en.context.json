@@ -5,6 +5,7 @@
   "format_hint": "Small red text under the code field when what was entered, or what arrived in a link, is not a well-formed code, so nothing was sent. A code is exactly six letters and digits. One line.",
   "submit": "Primary button that sends the code. One or two words.",
   "cancel": "Closes the dialog. Same wording as the credentials form's dismiss button.",
+  "granted": "Shown in green under the code for a moment after the code is accepted, just before the game opens by itself. One short line; the counterpart of errors.rejected.",
   "errors.rejected": "Shown when the code is refused. Deliberately the same for an unknown, expired or no-longer-valid code — do not add anything that hints which.",
   "errors.too_many_attempts": "Shown after too many codes in a short time (five in five minutes). Must read clearly different from errors.rejected.",
   "errors.generic": "Server or network failure, not the code's fault. Same wording as the credentials form's generic error."
