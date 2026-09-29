@@ -12,7 +12,7 @@ public class AppUser : IdentityUser
     public ICollection<GameMember> Memberships { get; } = [];
 }
 
-public static class AuthEndpoints
+public static partial class AuthEndpoints
 {
     [PublicAPI]
     public record RegisterRequest(
@@ -78,7 +78,8 @@ public static class AuthEndpoints
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
         AccountCreationLimiter limiter,
-        HttpContext httpContext)
+        HttpContext httpContext,
+        ILogger<AppUser> logger)
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         if (loggedInUser is not null)
@@ -86,7 +87,10 @@ public static class AuthEndpoints
                 new IdentityError { Description = "Already logged in" }));
 
         if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
+        {
+            LogAccountCreationThrottled(logger);
             return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
+        }
 
         var user = new AppUser
         {
@@ -96,7 +100,12 @@ public static class AuthEndpoints
 
         var result = await userManager.CreateAsync(user);
         if (!result.Succeeded)
+        {
+            LogAccountCreationFailed(logger, ErrorCodes(result));
             return TypedResults.BadRequest(result);
+        }
+
+        LogAnonymousAccountCreated(logger, user.Id);
         await signInManager.SignInAsync(user, true);
         return TypedResults.Ok();
     }
@@ -113,7 +122,8 @@ public static class AuthEndpoints
         SignInManager<AppUser> signInManager,
         AccountCreationLimiter limiter,
         HttpContext httpContext,
-        RegisterRequest request)
+        RegisterRequest request,
+        ILogger<AppUser> logger)
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         var userToLogin = await userManager.FindByEmailAsync(request.Email);
@@ -126,12 +136,15 @@ public static class AuthEndpoints
             // arrived with, and its data, reachable only by remembering to log out first. Whoever
             // wants a second account can log out and ask for it from a logged-out session.
             if (loggedInUser is { IsAnonymous: false })
+            {
+                LogSecondAccountRefused(logger, loggedInUser.Id);
                 return TypedResults.BadRequest(IdentityResult.Failed(
                     new IdentityError { Description = "Already signed in with a permanent account" }));
+            }
 
             return loggedInUser is { IsAnonymous: true }
-                ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser)
-                : await CreatePermanentUserAsync(userManager, signInManager, limiter, httpContext, request);
+                ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser, logger)
+                : await CreatePermanentUserAsync(userManager, signInManager, limiter, httpContext, request, logger);
         }
 
         // CheckPasswordSignInAsync rather than UserManager.CheckPasswordAsync: it records failed
@@ -139,13 +152,22 @@ public static class AuthEndpoints
         // endpoint and unlimited password guessing. It validates without establishing a session,
         // so the SignInAsync below is still needed.
         var checkResult = await signInManager.CheckPasswordSignInAsync(userToLogin, request.Password, true);
-        if (!checkResult.Succeeded) return TypedResults.Forbid();
+        if (!checkResult.Succeeded)
+        {
+            LogPasswordCheckFailed(logger, userToLogin.Id, checkResult.IsLockedOut);
+            return TypedResults.Forbid();
+        }
 
         // TODO transfer all data to the linked account
-        if (loggedInUser is { IsAnonymous: true }) await userManager.DeleteAsync(loggedInUser);
+        if (loggedInUser is { IsAnonymous: true })
+        {
+            await userManager.DeleteAsync(loggedInUser);
+            LogAnonymousAccountDiscarded(logger, loggedInUser.Id, userToLogin.Id);
+        }
 
         await signInManager.SignOutAsync();
         await signInManager.SignInAsync(userToLogin, true);
+        LogSignedIn(logger, userToLogin.Id);
         return TypedResults.Ok();
     }
 
@@ -162,10 +184,15 @@ public static class AuthEndpoints
     public static async Task Logout(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager)
+        SignInManager<AppUser> signInManager,
+        ILogger<AppUser> logger)
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user?.IsAnonymous ?? false) await userManager.DeleteAsync(user);
+        if (user?.IsAnonymous ?? false)
+        {
+            await userManager.DeleteAsync(user);
+            LogAnonymousAccountDeleted(logger, user.Id);
+        }
 
         await signInManager.SignOutAsync();
     }
@@ -175,10 +202,15 @@ public static class AuthEndpoints
     /// The session cookie already names this user, so no re-sign-in is needed.
     /// </summary>
     private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>>
-        UpgradeUserToPermanentAsync(UserManager<AppUser> userManager, RegisterRequest request, AppUser loggedInUser)
+        UpgradeUserToPermanentAsync(
+            UserManager<AppUser> userManager, RegisterRequest request, AppUser loggedInUser, ILogger logger)
     {
         var passwordResult = await userManager.AddPasswordAsync(loggedInUser, request.Password);
-        if (!passwordResult.Succeeded) return TypedResults.BadRequest(passwordResult);
+        if (!passwordResult.Succeeded)
+        {
+            LogUpgradeFailed(logger, loggedInUser.Id, ErrorCodes(passwordResult));
+            return TypedResults.BadRequest(passwordResult);
+        }
 
         loggedInUser.UserName = request.Username;
         loggedInUser.Email = request.Email;
@@ -190,7 +222,13 @@ public static class AuthEndpoints
         loggedInUser.LockoutEnabled = true;
 
         var updateResult = await userManager.UpdateAsync(loggedInUser);
-        if (!updateResult.Succeeded) return TypedResults.BadRequest(updateResult);
+        if (!updateResult.Succeeded)
+        {
+            LogUpgradeFailed(logger, loggedInUser.Id, ErrorCodes(updateResult));
+            return TypedResults.BadRequest(updateResult);
+        }
+
+        LogAccountUpgraded(logger, loggedInUser.Id);
         return TypedResults.Ok();
     }
 
@@ -200,10 +238,14 @@ public static class AuthEndpoints
             SignInManager<AppUser> signInManager,
             AccountCreationLimiter limiter,
             HttpContext httpContext,
-            RegisterRequest request)
+            RegisterRequest request,
+            ILogger logger)
     {
         if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
+        {
+            LogAccountCreationThrottled(logger);
             return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
+        }
 
         var newUser = new AppUser
         {
@@ -214,10 +256,51 @@ public static class AuthEndpoints
         };
 
         var createResult = await userManager.CreateAsync(newUser, request.Password);
-        if (!createResult.Succeeded) return TypedResults.BadRequest(createResult);
+        if (!createResult.Succeeded)
+        {
+            LogAccountCreationFailed(logger, ErrorCodes(createResult));
+            return TypedResults.BadRequest(createResult);
+        }
 
+        LogPermanentAccountCreated(logger, newUser.Id);
         await signInManager.SignOutAsync();
         await signInManager.SignInAsync(newUser, true);
         return TypedResults.Ok();
     }
+
+    private static IEnumerable<string> ErrorCodes(IdentityResult result) => result.Errors.Select(e => e.Code);
+
+    [LoggerMessage(LogLevel.Warning, "Account creation throttled for this client")]
+    private static partial void LogAccountCreationThrottled(ILogger logger);
+
+    [LoggerMessage(LogLevel.Warning, "Account creation failed: {ErrorCodes}")]
+    private static partial void LogAccountCreationFailed(ILogger logger, IEnumerable<string> errorCodes);
+
+    [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} created")]
+    private static partial void LogAnonymousAccountCreated(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Information, "Permanent account {UserId} created")]
+    private static partial void LogPermanentAccountCreated(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} asked for a second account while signed in permanently")]
+    private static partial void LogSecondAccountRefused(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Warning, "Password check failed for user {UserId} (locked out: {IsLockedOut})")]
+    private static partial void LogPasswordCheckFailed(ILogger logger, string userId, bool isLockedOut);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} signed in")]
+    private static partial void LogSignedIn(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} upgraded to permanent")]
+    private static partial void LogAccountUpgraded(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Warning, "Upgrade of anonymous account {UserId} failed: {ErrorCodes}")]
+    private static partial void LogUpgradeFailed(ILogger logger, string userId, IEnumerable<string> errorCodes);
+
+    [LoggerMessage(LogLevel.Information,
+        "Anonymous account {UserId} deleted on signing in to {SignedInUserId}; its data was not carried over")]
+    private static partial void LogAnonymousAccountDiscarded(ILogger logger, string userId, string signedInUserId);
+
+    [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} deleted on logout")]
+    private static partial void LogAnonymousAccountDeleted(ILogger logger, string userId);
 }

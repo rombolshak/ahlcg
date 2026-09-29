@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Ahlcg.ApiService.Tests;
@@ -19,7 +20,8 @@ public class AuthEndpointsTests
             userManager.Object,
             signInManager.Object,
             PermissiveLimiter(),
-            NewHttpContext());
+            NewHttpContext(),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
@@ -37,7 +39,8 @@ public class AuthEndpointsTests
             userManager.Object,
             signInManager.Object,
             PermissiveLimiter(),
-            NewHttpContext());
+            NewHttpContext(),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
@@ -58,7 +61,8 @@ public class AuthEndpointsTests
             userManager.Object,
             signInManager.Object,
             PermissiveLimiter(),
-            NewHttpContext());
+            NewHttpContext(),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()));
@@ -76,7 +80,8 @@ public class AuthEndpointsTests
             userManager.Object,
             signInManager.Object,
             ExhaustedLimiter(),
-            NewHttpContext());
+            NewHttpContext(),
+            NullLogger<AppUser>.Instance);
 
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
@@ -102,7 +107,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
@@ -130,7 +136,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         // A locked-out account is indistinguishable from a wrong password to the caller, which is
         // deliberate — it keeps the endpoint from confirming that an email is registered.
@@ -150,7 +157,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<ForbidHttpResult>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
@@ -168,7 +176,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<ForbidHttpResult>(result.Result);
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
@@ -187,7 +196,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(
@@ -207,7 +217,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             ExhaustedLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
@@ -227,7 +238,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             ExhaustedLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
@@ -245,7 +257,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             ExhaustedLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.UpdateAsync(
@@ -264,7 +277,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw"));
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
@@ -282,7 +296,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
@@ -311,7 +326,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw"));
+            new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw"));
@@ -331,7 +347,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("bad_mail", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("bad_mail", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
@@ -351,7 +368,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
@@ -372,7 +390,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         // There is nothing to sign into and nothing to upgrade, so creating an account here would
         // only leave the caller signed in as someone else, with the account they arrived with
@@ -397,7 +416,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"));
+            new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
+            NullLogger<AppUser>.Instance);
 
         // Only account *creation* is barred from a permanent session — switching to an account that
         // exists is still an ordinary sign-in, and still costs a password check.
@@ -468,7 +488,7 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(AnonymousPrincipal1, userManager.Object, signInManager.Object);
+        await AuthEndpoints.Logout(AnonymousPrincipal1, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()));
         signInManager.Verify(manager => manager.SignOutAsync());
@@ -480,7 +500,7 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(PermanentPrincipal, userManager.Object, signInManager.Object);
+        await AuthEndpoints.Logout(PermanentPrincipal, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignOutAsync());
@@ -492,7 +512,7 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object);
+        await AuthEndpoints.Logout(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignOutAsync());

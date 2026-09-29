@@ -29,6 +29,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddJoinPolicy(rateLimits.Join);
+    options.LogRejections();
 });
 
 builder.Services
