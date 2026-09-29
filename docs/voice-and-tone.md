@@ -44,6 +44,7 @@ The fiction already has a vocabulary. Reuse it. A second word for something alre
 | --- | --- | --- |
 | A game / play session | investigation, case file | session, save, slot, match |
 | Starting one | Begin an investigation, New investigation | Create game, New session |
+| The code that lets a player into another's game | a clearance code — grants access to an investigation already under way | invite code, join code, session code, access code, PIN, password |
 | The saved-games screen | Case files | My games, Saved games, History |
 | Decks | Dossiers | My decks, Collection |
 | An account | admission to the archives | profile, user account, a pact, a binding |

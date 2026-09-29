@@ -1,0 +1,69 @@
+<ng-container *ahTransloco="scope; let t">
+  <form #form [formRoot]="joinForm">
+    <fieldset class="fieldset">
+      <legend id="join-game-legend" class="fieldset-legend text-center">{{ t("legend") }}</legend>
+
+      <div class="relative mt-16 flex justify-center gap-5" [class.opacity-50]="joinForm().submitting()">
+        @for (char of codeChars(); track $index) {
+          <div class="flex h-16 w-11 flex-col items-center justify-between" data-testId="join-game-slot">
+            <span class="font-mono text-4xl" [class.text-error]="codeInError()" [class.text-success]="codeGranted()">{{ char }}</span>
+            <span
+              class="w-full"
+              [class.h-px]="!isCaretSlot($index, char)"
+              [class.h-0.5]="isCaretSlot($index, char)"
+              [class.bg-primary]="isCaretSlot($index, char)"
+              [class.animate-pulse]="isCaretSlot($index, char)"
+              [class.bg-error]="!isCaretSlot($index, char) && codeInError()"
+              [class.bg-success]="!isCaretSlot($index, char) && codeGranted() && char"
+              [class.bg-base-content]="!isCaretSlot($index, char) && !codeInError() && !codeGranted() && char"
+              [class.bg-base-content/35]="!isCaretSlot($index, char) && !codeInError() && !codeGranted() && !char"
+            ></span>
+          </div>
+        }
+
+        <input
+          type="text"
+          class="absolute inset-0 size-full text-transparent caret-transparent outline-none selection:bg-transparent"
+          aria-labelledby="join-game-legend"
+          autocomplete="off"
+          spellcheck="false"
+          autocapitalize="characters"
+          ahFocusTrap
+          data-testId="join-game-code"
+          [readOnly]="!!granted()"
+          [formField]="joinForm.code"
+          (focus)="focused.set(true)"
+          (blur)="focused.set(false)"
+        />
+      </div>
+
+      <div class="my-3 flex h-10 flex-col items-center justify-center text-center text-sm" aria-live="polite">
+        @if (granted()) {
+          <div class="flex flex-col items-center gap-1" data-testId="join-game-granted">
+            <span class="font-semibold text-success">{{ t("granted") }}</span>
+            <div class="h-0.5 w-24 overflow-hidden rounded-full bg-success/20">
+              <!-- eslint-disable-next-line @angular-eslint/template/no-inline-styles -->
+              <div class="h-full animate-(--join-game-drain) bg-success" [style.--join-game-drain]="`drain ${redirectDelay}ms linear forwards`"></div>
+            </div>
+          </div>
+        } @else if (formError(); as err) {
+          <span class="text-error" data-testId="join-game-error">{{ t(`errors.${err.kind}`) }}</span>
+        } @else if (showFormatHint()) {
+          <span class="text-error" data-testId="join-game-format-hint">{{ t("format_hint") }}</span>
+        }
+      </div>
+    </fieldset>
+
+    <div class="flex items-center justify-around gap-4">
+      <button type="submit" class="btn btn-primary" data-testId="join-game-submit" [disabled]="joinForm().invalid() || joinForm().submitting() || !!granted()">
+        @if (joinForm().submitting()) {
+          <span class="loading loading-sm loading-spinner"></span>
+        }
+        {{ t("submit") }}
+      </button>
+      <button type="button" class="btn btn-active" data-testId="join-game-cancel" [disabled]="joinForm().submitting() || !!granted()" (click)="dismiss()">
+        {{ t("cancel") }}
+      </button>
+    </div>
+  </form>
+</ng-container>

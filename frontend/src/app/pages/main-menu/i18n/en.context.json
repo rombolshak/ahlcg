@@ -7,6 +7,7 @@
   "new_game_error.title": "Title of the dialog shown when creating a game fails. Atmospheric — the world speaks, not the software. One line, does not wrap.",
   "new_game_error.message": "Body of that dialog. Plain and factual, saying what happened and what to do. One or two sentences.",
   "load_game": "Main menu button, opens the Case files screen. Should match case_files.title.",
+  "join_game": "Main menu button, opens the dialog where a clearance code is entered to join someone else's investigation. A bare noun like its neighbours; \"clearance\" means security access, not customs clearance. Three words at most.",
   "decks": "Main menu button. In-world word for decks; see the glossary.",
   "settings": "Main menu button, opens the settings dialog."
 }

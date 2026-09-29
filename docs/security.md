@@ -22,7 +22,7 @@ options.Cookie.SameSite = SameSiteMode.Lax;
 
 **Brute force** — `SignIn` verifies passwords with `SignInManager.CheckPasswordSignInAsync(..., lockoutOnFailure: true)`, so failed attempts count against Identity's lockout. No `IdentityOptions.Lockout` is configured, so the defaults stand: 5 attempts, 5-minute lockout, enabled for new users. `SignIn` also sets `LockoutEnabled` explicitly on the accounts it creates and on anonymous accounts it upgrades — the upgrade path needs it because `AllowedForNewUsers` only applies at `CreateAsync`, and that row already exists. A locked-out account returns `403`, the same as a wrong password, so the endpoint does not leak which emails are registered.
 
-This covers guessing an existing password. It does not cover the account *creation* path below, which is still unmetered.
+This covers guessing an existing password. Account *creation* is throttled separately, below.
 
 **Transport** — no `UseHttpsRedirection()`, no HSTS. Fine for localhost; not for production.
 
@@ -36,7 +36,9 @@ This covers guessing an existing password. It does not cover the account *creati
 
 **Known gap** — `SignIn` deletes the anonymous account when signing in to an existing email (`// TODO transfer all data to the linked account`). Data loss, not a security hole, but it is in the auth path. The other branch — unknown email while anonymous — upgrades the account in place and loses nothing.
 
-**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown and the caller is logged out, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization and neither has a CAPTCHA, email verification, or rate limit, so both are open to automated account creation.
+**Unauthenticated account creation** — `POST /auth/signIn` creates a permanent account when the email is unknown and the caller is logged out, and `POST /auth/loginAnonymously` creates one on demand. Neither requires authorization, and neither has a CAPTCHA or email verification. Both are rate-limited, though: `AccountCreationLimiter` (`RateLimits.cs`) caps account creation at 5 per IP per 5-minute fixed window — configurable via `RateLimits:AccountCreation` — added so a session-scoped invite code (below) could not be brute-forced through disposable accounts. Signing in to an existing account, and upgrading an anonymous one in place, never go through this limiter; only the branches that mint a new `AppUser` do. Like `GameSessions`, the limiter is an in-process singleton, so it shares the same single-replica ceiling ([backend.md](backend.md#signalr)) — a second instance would give each replica its own budget.
+
+**Join-code redemption** (`POST /games/join`, #527/#604) is rate-limited per account — 5 attempts per 5-minute window, via `RateLimits.JoinPolicy` — rather than per IP, because the account is what a guess is tested against many sessions with, and the IP limit above is what keeps accounts themselves scarce. This reverses an earlier decision (#456) that rate-limiting was unnecessary because a code's lifetime was minutes, bounded by an unassigned seat; a session-scoped code can now live as long as a sitting (hours), long enough for the original guarantee to no longer hold. An unknown, malformed, or expired-with-its-session code all return the same `404` with no distinguishing detail, so the endpoint cannot be used to enumerate live codes.
 
 ## Before deploying
 
@@ -47,13 +49,16 @@ Nothing in this repo deploys anything; there is no Dockerfile, pipeline, or envi
 - [ ] Connection string and any secrets sourced from the environment or a secret store, never from `appsettings.json`
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`, which already disables the developer exception page, OpenAPI, Scalar, and the health endpoints — confirm health checks are re-exposed on a private path if an orchestrator needs them
 - [ ] CORS policy with explicit origins and `AllowCredentials()` if the SPA is not same-origin; if cross-origin, `SameSite=None` becomes necessary and antiforgery tokens become mandatory
-- [ ] Rate limiting on `/auth/*`
+- [ ] Rate limiting on the rest of `/auth/*` — account creation and `POST /games/join` are covered (above); signing in to an existing account relies only on Identity's lockout
+- [ ] Forwarded headers (`UseForwardedHeaders` with `KnownProxies`/`KnownNetworks` set to the real proxy only) before any per-IP limit means anything — otherwise every client shares the proxy's address and one budget
+- [ ] A distributed backplane for `AccountCreationLimiter` and `RateLimits.JoinPolicy`, or their per-replica limits multiply with replica count — same gap as `GameSessions`
 - [ ] Verify no PII reaches logs or traces; redact `Authorization` and `Set-Cookie` in OTel instrumentation
 
 ## Key files
 
 - `backend/Ahlcg.ApiService/Program.cs` — Identity, cookie options, middleware order
 - `backend/Ahlcg.ApiService/AuthEndpoints.cs` — auth handlers and `AppUser`
+- `backend/Ahlcg.ApiService/RateLimits.cs` — the join and account-creation limiters
 - `backend/Ahlcg.ApiService/GameHub.cs` — hub authorization
 - `backend/Ahlcg.ServiceDefaults/Extensions.cs` — OTel, health checks
 - `frontend/src/app/app.config.ts` — Bugsnag key (public)

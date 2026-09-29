@@ -1,0 +1,13 @@
+{
+  "title": "Request access",
+  "legend": "To join an investigation already started, you need a clearance code from the active member of the investigation",
+  "format_hint": "Six characters. Letters and digits.",
+  "submit": "Check code",
+  "cancel": "Not now",
+  "granted": "Access granted",
+  "errors": {
+    "rejected": "Clearance refused, check the code.",
+    "too_many_attempts": "Too many attempts. Wait a few minutes before the next.",
+    "generic": "The archives are silent. Try again in a moment."
+  }
+}

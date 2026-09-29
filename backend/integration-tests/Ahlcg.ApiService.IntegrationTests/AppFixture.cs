@@ -1,9 +1,13 @@
+using System.Globalization;
 using System.Net;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Postgres;
 using Aspire.Hosting.Testing;
 using Microsoft.EntityFrameworkCore;
+
+// The apiservice launch profile binds fixed ports, so two AppHosts must never run at once.
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Ahlcg.ApiService.IntegrationTests;
 
@@ -12,7 +16,7 @@ namespace Ahlcg.ApiService.IntegrationTests;
 /// drives it over real HTTP. The webfrontend (no Node in CI) and pgAdmin (dev convenience only)
 /// resources are removed before the app starts.
 /// </summary>
-public sealed class AppFixture : IAsyncLifetime
+public abstract class AppFixtureBase : IAsyncLifetime
 {
     private DistributedApplication _app = null!;
     private Uri _apiBaseAddress = null!;
@@ -20,6 +24,8 @@ public sealed class AppFixture : IAsyncLifetime
     public string ConnectionString { get; private set; } = null!;
 
     public Uri ApiBaseAddress => _apiBaseAddress;
+
+    protected virtual int? AccountCreationPermitLimit => null;
 
     public async Task InitializeAsync()
     {
@@ -31,6 +37,13 @@ public sealed class AppFixture : IAsyncLifetime
                      .ToList())
         {
             builder.Resources.Remove(resource);
+        }
+
+        if (AccountCreationPermitLimit is { } permitLimit)
+        {
+            var apiService = builder.Resources.OfType<ProjectResource>().Single(r => r.Name == "apiservice");
+            builder.CreateResourceBuilder(apiService)
+                .WithEnvironment("RateLimits__AccountCreation__PermitLimit", permitLimit.ToString(CultureInfo.InvariantCulture));
         }
 
         _app = await builder.BuildAsync();
@@ -80,8 +93,21 @@ public sealed class AppFixture : IAsyncLifetime
     }
 }
 
+public sealed class AppFixture : AppFixtureBase
+{
+    protected override int? AccountCreationPermitLimit => 1000;
+}
+
 [CollectionDefinition(Name)]
 public sealed class AppCollection : ICollectionFixture<AppFixture>
 {
     public const string Name = "App";
+}
+
+public sealed class DefaultLimitsAppFixture : AppFixtureBase;
+
+[CollectionDefinition(Name)]
+public sealed class DefaultLimitsAppCollection : ICollectionFixture<DefaultLimitsAppFixture>
+{
+    public const string Name = "DefaultLimitsApp";
 }

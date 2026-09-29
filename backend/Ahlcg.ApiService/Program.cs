@@ -23,6 +23,14 @@ builder.Services.AddSingleton<GameSessions>();
 builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
 builder.Services.TryAddSingleton(TimeProvider.System);
 
+var rateLimits = builder.Configuration.GetSection("RateLimits").Get<RateLimits.Options>() ?? new RateLimits.Options();
+builder.Services.AddSingleton(new AccountCreationLimiter(rateLimits.AccountCreation));
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddJoinPolicy(rateLimits.Join);
+});
+
 builder.Services
     .AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -36,7 +44,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 var app = builder.Build();
-app.UseExceptionHandler().UseAuthentication().UseAuthorization();
+app.UseExceptionHandler().UseAuthentication().UseAuthorization().UseRateLimiter();
 
 app.MapDefaultEndpoints();
 app.MapHub<GameHub>("/game");

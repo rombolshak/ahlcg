@@ -1,5 +1,19 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, Signal, signal, viewChild } from '@angular/core';
+import {
+  Binding,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  inputBinding,
+  Signal,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { rxResource, takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
@@ -8,6 +22,7 @@ import { DialogComponent } from '@core/dialog/dialog.component';
 import { DialogService } from '@core/dialog/dialog.service';
 import { SIGN_IN_DIALOG_OPTIONS, SignInComponent } from '@features/auth/sign-in/sign-in.component';
 import { GamesService } from '@features/games/games.service';
+import { JOIN_GAME_DIALOG_OPTIONS, JoinGameComponent } from '@features/games/join-game/join-game.component';
 import { SettingsComponent } from '@features/settings/settings.component';
 import { TranslocoService } from '@jsverse/transloco';
 import { MenuItem } from '@pages/main-menu/menu-item';
@@ -36,6 +51,8 @@ export class MainMenuComponent {
   private readonly activeLang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
   private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
 
+  public readonly code = input('');
+
   private readonly latestGame = rxResource({
     params: () => this.currentUser(),
     stream: () => this.games.latest(),
@@ -50,6 +67,7 @@ export class MainMenuComponent {
       this.createContinueButton(isAuthenticated),
       this.createNewGameButton(),
       this.createLoadGameButton(),
+      this.createJoinGameButton(),
       this.createDecksButton(),
       this.createSettingsButton(),
     ];
@@ -59,6 +77,16 @@ export class MainMenuComponent {
     if (!this.creatingGame()) return items;
     return items.map(item => (item.busy === true ? item : { ...item, disabled: true }));
   });
+
+  constructor() {
+    effect(() => {
+      const code = this.code();
+      if (code)
+        untracked(() => {
+          this.joinGame(code);
+        });
+    });
+  }
 
   private createContinueButton(isAuthenticated: boolean): MenuItem {
     if (!isAuthenticated) {
@@ -172,6 +200,32 @@ export class MainMenuComponent {
         void this.router.navigate(['/case-files']);
       },
     };
+  }
+
+  private createJoinGameButton(): MenuItem {
+    return {
+      name: 'join_game',
+      process: () => {
+        this.joinGame();
+      },
+    };
+  }
+
+  private joinGame(code?: string): void {
+    const fromLink = code !== undefined;
+    const bindings: Binding[] = code ? [inputBinding('initialCode', () => code)] : [];
+
+    this.dialogService
+      .open(JoinGameComponent, { ...JOIN_GAME_DIALOG_OPTIONS, bindings })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(id => {
+        if (id !== undefined) {
+          void this.router.navigate(['/game', id], { replaceUrl: fromLink });
+          return;
+        }
+
+        if (fromLink) void this.router.navigate(['/'], { replaceUrl: true });
+      });
   }
 
   private createDecksButton() {

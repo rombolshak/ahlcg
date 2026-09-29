@@ -47,7 +47,9 @@ public static class AuthEndpoints
             .WithDescription(
                 "Creates an anonymous user without password. The account gets a GUID user name — an opaque " +
                 "identifier, not a name to display as-is — no email and no password. After logout this user cannot " +
-                "be logged in again. If the user is already logged in, this method cannot be called.");
+                "be logged in again. If the user is already logged in, this method cannot be called. " +
+                "Account creation is throttled per IP; exceeding it returns 429.")
+            .Produces(StatusCodes.Status429TooManyRequests);
 
         group.MapPost("signIn", SignIn)
             .WithDescription(
@@ -58,8 +60,11 @@ public static class AuthEndpoints
                 "caller is logged out, a new permanent account is created. A permanent session cannot create a second " +
                 "account: log out first. " +
                 "A 403 means the email is on record and the password was wrong, or the account is locked out — the two " +
-                "are deliberately indistinguishable, so the route never confirms that an email is registered.")
-            .Produces(StatusCodes.Status403Forbidden);
+                "are deliberately indistinguishable, so the route never confirms that an email is registered. " +
+                "Account creation (the last branch) is throttled per IP; exceeding it returns 429. Signing in to an " +
+                "existing account and upgrading an anonymous one are never throttled here.")
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status429TooManyRequests);
 
         group.MapPost("logout", Logout)
             .WithDescription(
@@ -68,15 +73,20 @@ public static class AuthEndpoints
         return group;
     }
 
-    public static async Task<Results<Ok, BadRequest<IdentityResult>>> LoginAnonymously(
+    public static async Task<Results<Ok, BadRequest<IdentityResult>, StatusCodeHttpResult>> LoginAnonymously(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager)
+        SignInManager<AppUser> signInManager,
+        AccountCreationLimiter limiter,
+        HttpContext httpContext)
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         if (loggedInUser is not null)
             return TypedResults.BadRequest(IdentityResult.Failed(
                 new IdentityError { Description = "Already logged in" }));
+
+        if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
+            return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
 
         var user = new AppUser
         {
@@ -97,10 +107,12 @@ public static class AuthEndpoints
     /// decided by state the caller does not have: whether the email is already on record.
     /// Splitting them once meant a register button could destroy an anonymous player's games.
     /// </summary>
-    public static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>>> SignIn(
+    public static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>> SignIn(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
+        AccountCreationLimiter limiter,
+        HttpContext httpContext,
         RegisterRequest request)
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
@@ -119,7 +131,7 @@ public static class AuthEndpoints
 
             return loggedInUser is { IsAnonymous: true }
                 ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser)
-                : await CreatePermanentUserAsync(userManager, signInManager, request);
+                : await CreatePermanentUserAsync(userManager, signInManager, limiter, httpContext, request);
         }
 
         // CheckPasswordSignInAsync rather than UserManager.CheckPasswordAsync: it records failed
@@ -162,7 +174,7 @@ public static class AuthEndpoints
     /// Keeps the anonymous account's id, so everything hanging off it by <c>OwnerId</c> survives.
     /// The session cookie already names this user, so no re-sign-in is needed.
     /// </summary>
-    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>>>
+    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>>
         UpgradeUserToPermanentAsync(UserManager<AppUser> userManager, RegisterRequest request, AppUser loggedInUser)
     {
         var passwordResult = await userManager.AddPasswordAsync(loggedInUser, request.Password);
@@ -182,12 +194,17 @@ public static class AuthEndpoints
         return TypedResults.Ok();
     }
 
-    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>>>
+    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>>
         CreatePermanentUserAsync(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
+            AccountCreationLimiter limiter,
+            HttpContext httpContext,
             RegisterRequest request)
     {
+        if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
+            return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
+
         var newUser = new AppUser
         {
             UserName = request.Username,

@@ -48,6 +48,32 @@ describe('GamesService', () => {
     expect(error).toBeTruthy();
   });
 
+  it('should POST the code and map the response to its id', () => {
+    let result: { id: string } | undefined;
+    service.join('abcdef').subscribe(game => {
+      result = game;
+    });
+
+    const req = http.expectOne('/api/games/join');
+    expect(req.request.body).toEqual({ code: 'abcdef' });
+    req.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
+
+    expect(result?.id).toBe('3fa85f64-5717-4562-b3fc-2c963f66afa6');
+  });
+
+  it('should throw when the join response id is not a uuid', () => {
+    let error: unknown;
+    service.join('abcdef').subscribe({
+      error: err => {
+        error = err;
+      },
+    });
+
+    http.expectOne('/api/games/join').flush({ id: 'not-a-uuid' });
+
+    expect(error).toBeTruthy();
+  });
+
   it('should GET /api/games/latest and map the body to an id and a lastPlayedAt date', () => {
     let result: { id: string; lastPlayedAt: Date } | undefined;
     service.latest().subscribe(game => {

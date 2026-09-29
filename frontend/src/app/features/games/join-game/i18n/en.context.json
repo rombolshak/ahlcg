@@ -1,0 +1,12 @@
+{
+  "_comment": "Per-string context pushed to Crowdin by `npm run i18n:context`. One line per key saying where the string appears and what constrains it — the facts a translator cannot get from the English alone. Written when the string is, by whoever ran /wording. Keys mirror en.json.",
+  "title": "Title of the small dialog where a player enters a clearance code to join an investigation already under way that they have no access to yet. One line; the heading is short on purpose because the legend explains.",
+  "legend": "Sits above the code field and is its only label — there is no separate field label. Two or three lines. \"Clearance\" means security access (Russian \"допуск\", German \"Freigabe\"), not customs clearance or a sale; use the same term as the main menu's join_game. The active member is whoever is already in the investigation.",
+  "format_hint": "Small red text under the code field when what was entered, or what arrived in a link, is not a well-formed code, so nothing was sent. A code is exactly six letters and digits. One line.",
+  "submit": "Primary button that sends the code. One or two words.",
+  "cancel": "Closes the dialog. Same wording as the credentials form's dismiss button.",
+  "granted": "Shown in green under the code for a moment after the code is accepted, just before the game opens by itself. One short line; the counterpart of errors.rejected.",
+  "errors.rejected": "Shown when the code is refused. Deliberately the same for an unknown, expired or no-longer-valid code — do not add anything that hints which.",
+  "errors.too_many_attempts": "Shown after too many codes in a short time (five in five minutes). Must read clearly different from errors.rejected.",
+  "errors.generic": "Server or network failure, not the code's fault. Same wording as the credentials form's generic error."
+}
