@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -83,8 +83,11 @@ public static partial class AuthEndpoints
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         if (loggedInUser is not null)
+        {
+            LogAnonymousLoginRefused(logger, loggedInUser.Id);
             return TypedResults.BadRequest(IdentityResult.Failed(
                 new IdentityError { Description = "Already logged in" }));
+        }
 
         if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
         {
@@ -188,13 +191,21 @@ public static partial class AuthEndpoints
         ILogger<AppUser> logger)
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user?.IsAnonymous ?? false)
+        if (user is null)
+        {
+            LogLogoutWithoutSession(logger);
+            await signInManager.SignOutAsync();
+            return;
+        }
+
+        if (user.IsAnonymous)
         {
             await userManager.DeleteAsync(user);
             LogAnonymousAccountDeleted(logger, user.Id);
         }
 
         await signInManager.SignOutAsync();
+        LogSignedOut(logger, user.Id);
     }
 
     /// <summary>
@@ -268,13 +279,22 @@ public static partial class AuthEndpoints
         return TypedResults.Ok();
     }
 
-    private static IEnumerable<string> ErrorCodes(IdentityResult result) => result.Errors.Select(e => e.Code);
+    private static string ErrorCodes(IdentityResult result) => string.Join(", ", result.Errors.Select(e => e.Code));
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} asked for an anonymous account while signed in")]
+    private static partial void LogAnonymousLoginRefused(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Debug, "Logout called without a signed-in user")]
+    private static partial void LogLogoutWithoutSession(ILogger logger);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} signed out")]
+    private static partial void LogSignedOut(ILogger logger, string userId);
 
     [LoggerMessage(LogLevel.Warning, "Account creation throttled for this client")]
     private static partial void LogAccountCreationThrottled(ILogger logger);
 
     [LoggerMessage(LogLevel.Warning, "Account creation failed: {ErrorCodes}")]
-    private static partial void LogAccountCreationFailed(ILogger logger, IEnumerable<string> errorCodes);
+    private static partial void LogAccountCreationFailed(ILogger logger, string errorCodes);
 
     [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} created")]
     private static partial void LogAnonymousAccountCreated(ILogger logger, string userId);
@@ -295,7 +315,7 @@ public static partial class AuthEndpoints
     private static partial void LogAccountUpgraded(ILogger logger, string userId);
 
     [LoggerMessage(LogLevel.Warning, "Upgrade of anonymous account {UserId} failed: {ErrorCodes}")]
-    private static partial void LogUpgradeFailed(ILogger logger, string userId, IEnumerable<string> errorCodes);
+    private static partial void LogUpgradeFailed(ILogger logger, string userId, string errorCodes);
 
     [LoggerMessage(LogLevel.Information,
         "Anonymous account {UserId} deleted on signing in to {SignedInUserId}; its data was not carried over")]

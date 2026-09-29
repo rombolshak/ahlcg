@@ -79,8 +79,8 @@ public partial class GameHub(
         }
 
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
-        LogConnected(logger, gameId, userId, connectionId);
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
+        LogConnected(logger, gameId, userId, connectionId);
         sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
 
         if (change.MemberPresenceChanged)
