@@ -57,7 +57,7 @@ frontend/
 └── sonar-project.properties
 ```
 
-Fixtures split by whether they touch a framework. The ten pure fixtures (`entities/`, `test-actions.ts`, `test-game-map.ts`, `test-game-state.ts`, `test-meta.ts`) import only `@domain/*` and live under `app/domain/testing/`, reached through the `@domain/*` alias like the rest of the layer. `transloco.testing.ts` (imports `@jsverse/transloco`) and `serve-card-assets.ts` (imports `@angular/common/http`) would violate `domain/`'s framework-free rule, so they stay at `src/testing/` behind `@testing/*`. `src/testing/` itself lives in `src/` (not a test-only folder) because Storybook imports `transloco.testing`, and `GameViewComponent` imports `test-game-state` at runtime — a fixture in production code, deliberately visible as a `game-view-fixture-import` warning until #497 Live game state replaces it.
+Fixtures split by whether they touch a framework. The ten pure fixtures (`entities/`, `test-actions.ts`, `test-game-map.ts`, `test-game-state.ts`, `test-meta.ts`) import only `@domain/*` and live under `app/domain/testing/`, reached through the `@domain/*` alias like the rest of the layer. `transloco.testing.ts` (imports `@jsverse/transloco`) and `serve-card-assets.ts` (imports `@angular/common/http`) would violate `domain/`'s framework-free rule, so they stay at `src/testing/` behind `@testing/*`. `src/testing/` itself lives in `src/` (not a test-only folder) because Storybook imports `story-translations`, and `GameViewComponent` imports `test-game-state` at runtime — a fixture in production code, deliberately visible as a `game-view-fixture-import` warning until #497 Live game state replaces it.
 
 ## Routing
 
@@ -132,4 +132,6 @@ Tailwind CSS 4 via `@tailwindcss/postcss`, plus daisyUI 5. `src/styles.css` impo
 
 ## Storybook
 
-Storybook 10 with `@storybook/angular`, `experimentalZoneless: true`, config in `.storybook/`. `preview.ts` provides `getTranslocoModule()` (from `@testing/transloco.testing`) and `provideHttpClient()` globally, so stories render translated text without extra setup. Stories sit next to their component as `{name}.stories.ts` and are excluded from Sonar coverage. Chromatic runs them for visual regression in CI.
+Storybook 10 with `@storybook/angular`, `experimentalZoneless: true`, config in `.storybook/`. `preview.ts` provides `getStoryTranslocoModule()` (from `@testing/story-translations`) and `provideHttpClient()` globally, so stories render translated text without extra setup.
+
+The preview must not import any scope's `en.json`: Chromatic TurboSnap retakes every story when anything `preview.ts` reaches changes. Instead, a Storybook-only Vite plugin in `main.ts` makes each `i18n/scope.ts` register its own `en.json`, so a string change retakes only the stories rendering that scope. The card, trait and campaign fixture strings stay in the preview; they rarely change. Stories sit next to their component as `{name}.stories.ts` and are excluded from Sonar coverage. Chromatic runs them for visual regression in CI.
