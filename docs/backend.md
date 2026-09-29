@@ -119,6 +119,25 @@ Game sessions carry their own meter, `GameSessions.MeterName`, registered in `Pr
 
 Errors use `AddProblemDetails()`, with one exception: `AuthEndpoints` returns `BadRequest<IdentityResult>` rather than ProblemDetails on validation failures.
 
+## Logging
+
+**Every decision the server makes gets a log line.** A branch that refuses, a branch that changes state, and a branch that answers "nothing to do" each log, and each one says *which* branch it was. This matters most where the response is deliberately vague — `POST /games/join` returns one identical `404` for an unknown code, a missing game and a full one, and `signIn` one `403` for a wrong password or a lockout — because the server log is then the only place the difference exists. New code that adds a branch without a log line is incomplete.
+
+What is already logged, so do not log it again: unhandled exceptions (the exception handler logs them at `Error`), exceptions out of the hub's `OnConnectedAsync`/`OnDisconnectedAsync`, EF commands, and every request and hub invocation as a trace span.
+
+**How.** Use source-generated `[LoggerMessage]` methods, never `logger.LogInformation(...)`. Declare them `private static partial` at the bottom of the class whose code calls them, making the class `partial` — there is no shared `Log` class. The method name is the event name, so name it after the outcome: `LogJoinRefusedGameFull`, not `LogJoin`.
+
+- **Getting a logger.** Endpoint handlers take `ILogger<T>` as their **last** parameter. The endpoint classes are `static` and cannot be a type argument, so `T` is the entity the file owns — `ILogger<Game>` in `GameEndpoints`, `ILogger<AppUser>` in `AuthEndpoints`. A static helper or the hub's static `Connect`/`Disconnect` takes a plain `ILogger` from its caller; a class with a constructor injects `ILogger<ItsOwnType>`.
+- **Levels.** `Information` for outcomes, refusals the client caused included (a full game, a seat count too low). `Warning` for anything security-relevant or that should not happen: a non-member reaching a game, a failed password, throttling, a live session whose game row is gone. `Debug` for idempotent no-ops (a repeated `Idempotency-Key`, joining a game you already belong to). `Error` is for exceptions, which the framework already covers.
+- **Properties, not prose.** Everything variable is a named placeholder — `{GameId}`, `{UserId}` — so it can be filtered on in the Aspire dashboard. Keep the names consistent across files.
+- **Log after the commit, never inside a retry.** The rule the metrics follow applies here too: a line inside a CAS loop or an execution-strategy lambda must come after the step that can retry, or one outcome logs once per attempt.
+
+**What never goes into a log:** an email, a user name, an IP address, a password, a cookie, or an invite code — a logged code can be redeemed by anyone who reads the logs. Ids are fine. For Identity failures, log the `IdentityError.Code`, never its `Description`, which can echo the input back.
+
+**Tests.** A log line is not normally asserted on. The exception is a branch whose log is its only observable difference — the join refusals, a hub connection turned away. There, pass a `FakeLogger<T>` (`Microsoft.Extensions.Diagnostics.Testing`) and assert `LatestRecord.Id.Name` equals the method name. Everywhere else, pass `NullLogger<T>.Instance`.
+
+In Development, `appsettings.Development.json` lowers the `Ahlcg` category to `Debug`; production keeps `Information`.
+
 ## Configuration
 
 `appsettings.json` / `appsettings.Development.json`, overridden by environment variables. Aspire supplies the `ahlcg` connection string and the OTLP endpoint at run time.

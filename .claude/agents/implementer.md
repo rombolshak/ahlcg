@@ -34,7 +34,7 @@ Read, in this order:
    | Any code at all | `docs/comments.md` — comments are the exception here, not the habit |
    | Components, services, routes, translations, styles | `docs/frontend.md` |
    | The game state store, patches, animations | `docs/state-store.md` |
-   | Backend endpoints, entities, migrations | `docs/backend.md` |
+   | Any backend code — endpoints, entities, migrations, the hub, logging | `docs/backend.md` |
    | Anything with a test — which is everything | `docs/testing.md` |
    | An unfamiliar card-game term | `docs/glossary.md` |
 

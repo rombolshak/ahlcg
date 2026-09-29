@@ -52,7 +52,7 @@ Nothing in this repo deploys anything; there is no Dockerfile, pipeline, or envi
 - [ ] Rate limiting on the rest of `/auth/*` — account creation and `POST /games/join` are covered (above); signing in to an existing account relies only on Identity's lockout
 - [ ] Forwarded headers (`UseForwardedHeaders` with `KnownProxies`/`KnownNetworks` set to the real proxy only) before any per-IP limit means anything — otherwise every client shares the proxy's address and one budget
 - [ ] A distributed backplane for `AccountCreationLimiter` and `RateLimits.JoinPolicy`, or their per-replica limits multiply with replica count — same gap as `GameSessions`
-- [ ] Verify no PII reaches logs or traces; redact `Authorization` and `Set-Cookie` in OTel instrumentation
+- [ ] Verify no PII reaches framework logs or traces (application log lines carry ids only — [backend.md](backend.md#logging)); redact `Authorization` and `Set-Cookie` in OTel instrumentation
 
 ## Key files
 
