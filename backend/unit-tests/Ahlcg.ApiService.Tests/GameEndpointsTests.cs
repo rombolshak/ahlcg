@@ -737,7 +737,8 @@ public class GameEndpointsTests
     [InlineData("K7Q")]
     [InlineData("")]
     [InlineData("UNKNOWN")]
-    public async Task JoinGame_UnknownOrMalformedCode_ReturnsSameResultAsAnyOtherUnredeemableCode(string code)
+    [InlineData(null)]
+    public async Task JoinGame_UnknownOrMalformedCode_ReturnsSameResultAsAnyOtherUnredeemableCode(string? code)
     {
         var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
@@ -745,7 +746,7 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code!));
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);

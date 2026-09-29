@@ -27,14 +27,8 @@ import { toJoinError } from './join-game.errors';
 
 export const JOIN_GAME_DIALOG_OPTIONS = { size: 's' } as const satisfies DialogOptions;
 
-/** #527's alphabet, case-insensitive: a player reading a code aloud should not have to match its case. */
 const CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/i;
 
-/**
- * The code-entry dialog, opened by `MainMenuComponent` from the "Join game" item and, prefilled,
- * from the `/join/:code` link — both share this one surface, so every state (submitting, rejected,
- * malformed, throttled) exists once. Signal Form, following `CredentialsFormComponent`.
- */
 @Component({
   selector: 'ah-join-game',
   imports: [ScopedTranslocoDirective, FormField, FormRoot, FocusTrapDirective],
@@ -54,10 +48,8 @@ export class JoinGameComponent implements DialogContentWithResult<string | undef
 
   protected readonly scope = I18N_SCOPE;
 
-  /** Set through `DialogOptions.bindings` by the `/join/:code` link; empty for a menu-opened dialog. */
   public readonly initialCode = input('');
 
-  /** The joined game's id, or `undefined` on dismissal. */
   public readonly result = output<string | undefined>();
 
   private readonly titleText = translateSignal('title', {}, I18N_SCOPE);
@@ -98,7 +90,6 @@ export class JoinGameComponent implements DialogContentWithResult<string | undef
 
     if (!CODE_PATTERN.test(code)) return;
 
-    // Needs an explicit injector: ngOnInit is not itself an injection context.
     afterNextRender(
       () => {
         this.formElement().nativeElement.requestSubmit();
@@ -107,7 +98,6 @@ export class JoinGameComponent implements DialogContentWithResult<string | undef
     );
   }
 
-  /** `confirm` submits through the same path a button click does, the keyboard's only route in. */
   public getInputHandlers: () => InputLayer = () => ({
     cancel: () => {
       this.dismiss();

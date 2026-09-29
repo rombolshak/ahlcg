@@ -167,9 +167,9 @@ describe('JoinGameComponent', () => {
       void component.getInputHandlers().confirm?.();
       await fixture.whenStable();
 
-      http
-        .expectOne('/api/games/join')
-        .flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
+      const request = http.expectOne('/api/games/join');
+      expect(request.request.body).toEqual({ code: 'ABCDEF' });
+      request.flush({ id: '3fa85f64-5717-4562-b3fc-2c963f66afa6', createdAt: '2026-01-01', lastPlayedAt: '2026-01-01', configuration: {} });
     });
   });
 

@@ -4,13 +4,7 @@ using Ahlcg.ApiService;
 
 namespace Ahlcg.ApiService.IntegrationTests;
 
-/// <summary>
-/// Runs against <see cref="DefaultLimitsAppFixture"/>, the one AppHost in this suite that carries no
-/// rate-limit override, so the production defaults (5 per account, 5 per IP, both per 5 minutes) are
-/// actually the ones being exercised. Both limits share this one test method because the per-IP
-/// account-creation window is shared across every request this collection's fixture ever sees —
-/// splitting them into separate tests would mean one silently spends the other's budget.
-/// </summary>
+// One test on purpose: both limits draw on the same per-IP account-creation window.
 [Collection(DefaultLimitsAppCollection.Name)]
 public class RateLimitTests(DefaultLimitsAppFixture fixture)
 {

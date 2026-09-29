@@ -51,7 +51,6 @@ export class MainMenuComponent {
   private readonly activeLang = toSignal(this.transloco.langChanges$, { initialValue: this.transloco.getActiveLang() });
   private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
 
-  /** Bound from the `/join/:code` route; empty when reached from `''` instead. */
   public readonly code = input('');
 
   private readonly latestGame = rxResource({
@@ -79,8 +78,6 @@ export class MainMenuComponent {
     return items.map(item => (item.busy === true ? item : { ...item, disabled: true }));
   });
 
-  /** `/join/:code` reuses this component across codes (same route, only the param changes), so
-   * opening reacts to `code()` rather than running once in `ngOnInit`. */
   constructor() {
     effect(() => {
       const code = this.code();
@@ -205,8 +202,6 @@ export class MainMenuComponent {
     };
   }
 
-  /** Enabled while signed out, like `load_game`: there is no membership to create for a signed-out
-   * caller, but the dialog's own submission 401s and `authInterceptor` prompts and replays it. */
   private createJoinGameButton(): MenuItem {
     return {
       name: 'join_game',
@@ -216,8 +211,6 @@ export class MainMenuComponent {
     };
   }
 
-  /** Shared by the menu item and the link. `fromLink` (a code was given) decides whether success
-   * replaces `/join/:code` in history and whether a cancel is sent back to `/`. */
   private joinGame(code?: string): void {
     const fromLink = code !== undefined;
     const bindings: Binding[] = code ? [inputBinding('initialCode', () => code)] : [];

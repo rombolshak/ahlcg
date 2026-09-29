@@ -6,9 +6,6 @@ import { NEVER, Observable, throwError } from 'rxjs';
 import { userEvent, waitFor, within } from 'storybook/test';
 import { JOIN_GAME_DIALOG_OPTIONS, JoinGameComponent } from './join-game.component';
 
-// `AuthService`/`Router` are not involved: the dialog only ever calls `GamesService.join` and emits
-// a result — navigating on it is the host's job (`MainMenuComponent`), the same split
-// `sign-in.stories.ts` and `account.stories.ts` document for their own dialogs.
 const withJoin = (join: (code: string) => Observable<CreatedGame> = () => NEVER) => ({
   imports: [DialogComponent],
   providers: [{ provide: GamesService, useValue: { join } }],
@@ -17,12 +14,8 @@ const withJoin = (join: (code: string) => Observable<CreatedGame> = () => NEVER)
 const meta: Meta<JoinGameComponent> = {
   component: JoinGameComponent,
   parameters: {
-    // The dialog is `position: fixed` and covers the canvas, so story padding would only mislead.
     layout: 'fullscreen',
   },
-  // Projected into a real dialog, opened through the `isOpen` input rather than `showModal()` — the
-  // same width the two real entry points pass. `DialogService` is not involved: it appends its own
-  // host to `document.body`, outside the canvas the play functions and Chromatic look at.
   render: () => ({
     template: `
       <ah-dialog [isOpen]="true" size="${JOIN_GAME_DIALOG_OPTIONS.size}">

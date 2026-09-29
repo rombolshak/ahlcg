@@ -76,7 +76,7 @@ public static class GameEndpoints
 
         group.MapPost("join", JoinGame)
             .RequireAuthorization()
-            .RequireRateLimiting(RateLimits.Join)
+            .RequireRateLimiting(RateLimits.JoinPolicy)
             .WithDescription(
                 "Redeems an invite code (#527) into a membership of the game whose session holds it. The code is " +
                 "uppercased before lookup and matched against live sessions only — one with no live session behind " +
@@ -234,7 +234,9 @@ public static class GameEndpoints
         var user = await userManager.GetUserAsync(principal);
         if (user is null) return TypedResults.Unauthorized();
 
-        var gameId = sessions.FindByInviteCode(request.Code.ToUpperInvariant());
+        var gameId = string.IsNullOrEmpty(request.Code)
+            ? null
+            : sessions.FindByInviteCode(request.Code.ToUpperInvariant());
         if (gameId is null) return TypedResults.Problem(statusCode: StatusCodes.Status404NotFound);
 
         var (result, game) = await AddMembership(db, gameId.Value, user.Id, timeProvider);
@@ -259,8 +261,6 @@ public static class GameEndpoints
                     var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
                     if (existing is not null) return (TypedResults.Ok(ToDto(existing)), game);
 
-                    // A concurrent join can have taken the last seat since the lookup above; still a
-                    // uniform 404, so the response never confirms the code was briefly valid.
                     if (game.Members.Count >= game.IntendedPlayersCount)
                         return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
 
