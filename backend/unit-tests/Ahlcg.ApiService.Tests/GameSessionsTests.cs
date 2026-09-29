@@ -1,6 +1,7 @@
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Ahlcg.ApiService.Tests;
 
@@ -403,7 +404,7 @@ public class GameSessionsTests
             .AddMetrics()
             .BuildServiceProvider()
             .GetRequiredService<IMeterFactory>();
-        return (new GameSessions(meterFactory, generateInviteCode), meterFactory);
+        return (new GameSessions(meterFactory, NullLogger<GameSessions>.Instance, generateInviteCode), meterFactory);
     }
 
     private const string InviteCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

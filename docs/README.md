@@ -17,7 +17,7 @@ The backend implements **authentication and game records** — creating a game, 
 | Write or change any string a user reads | [voice-and-tone.md](voice-and-tone.md) — then run `/wording`; copy is not written in passing |
 | Translate the UI into another language | [translating.md](translating.md) — the brief for a human translator; agents write English only |
 | Touch the game state store, patches, or animations | [state-store.md](state-store.md) |
-| Add/modify a backend endpoint, entity, or migration | [backend.md](backend.md) |
+| Add/modify a backend endpoint, entity, or migration; log anything on the backend | [backend.md](backend.md) — [Logging](backend.md#logging) for the latter |
 | Call an endpoint | `/openapi/v1.json` (or `/scalar/v1`) — then [api.md](api.md) for the SignalR hub and what the spec omits |
 | Write or debug a test, or decide which tier a new test belongs in | [testing.md](testing.md) |
 | Run things, ports, CI, git hooks | [workflow.md](workflow.md) |

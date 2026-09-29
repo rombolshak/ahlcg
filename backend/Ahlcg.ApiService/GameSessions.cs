@@ -15,7 +15,7 @@ public sealed record GameSession(
 
 public readonly record struct SessionChange(GameSession? Session, bool MemberPresenceChanged);
 
-public sealed class GameSessions
+public sealed partial class GameSessions
 {
     public const string MeterName = "Ahlcg.ApiService.GameSessions";
 
@@ -26,9 +26,12 @@ public sealed class GameSessions
     private readonly Histogram<double> _durationHistogram;
     private readonly Func<string> _generateInviteCode;
     private readonly Lock _inviteCodeLock = new();
+    private readonly ILogger<GameSessions> _logger;
 
-    public GameSessions(IMeterFactory meterFactory, Func<string>? generateInviteCode = null)
+    public GameSessions(
+        IMeterFactory meterFactory, ILogger<GameSessions> logger, Func<string>? generateInviteCode = null)
     {
+        _logger = logger;
         var meter = meterFactory.Create(MeterName);
         _playersHistogram = meter.CreateHistogram<int>("ahlcg.game_sessions.players", unit: "{player}");
         _durationHistogram = meter.CreateHistogram<double>("ahlcg.game_sessions.duration", unit: "s");
@@ -69,7 +72,10 @@ public sealed class GameSessions
                 var session = new GameSession(startedAt, connections, PeakMemberCount: 1);
 
                 if (_sessions.TryAdd(gameId, session))
+                {
+                    LogSessionStarted(gameId);
                     return new SessionChange(session, true);
+                }
             }
         }
     }
@@ -120,8 +126,10 @@ public sealed class GameSessions
         change = default;
         if (!_sessions.TryRemove(KeyValuePair.Create(gameId, observed))) return false;
 
+        var duration = now - observed.StartedAt;
         _playersHistogram.Record(observed.PeakMemberCount);
-        _durationHistogram.Record((now - observed.StartedAt).TotalSeconds);
+        _durationHistogram.Record(duration.TotalSeconds);
+        LogSessionEnded(gameId, observed.PeakMemberCount, duration);
         change = new SessionChange(null, memberLeft);
         return true;
     }
@@ -180,6 +188,7 @@ public sealed class GameSessions
                 return false;
             }
 
+            LogInviteCodeOpened(gameId);
             result = next;
             return true;
         }
@@ -194,6 +203,7 @@ public sealed class GameSessions
             return false;
         }
 
+        LogInviteCodeClosed(gameId);
         result = next;
         return true;
     }
@@ -208,4 +218,17 @@ public sealed class GameSessions
 
         return SyncInviteCode(gameId, memberCount, intendedPlayersCount);
     }
+
+    [LoggerMessage(LogLevel.Information, "Session for game {GameId} started")]
+    private partial void LogSessionStarted(Guid gameId);
+
+    [LoggerMessage(LogLevel.Information,
+        "Session for game {GameId} ended after {Duration} with at most {PeakMemberCount} members online")]
+    private partial void LogSessionEnded(Guid gameId, int peakMemberCount, TimeSpan duration);
+
+    [LoggerMessage(LogLevel.Debug, "Invite code opened for game {GameId}")]
+    private partial void LogInviteCodeOpened(Guid gameId);
+
+    [LoggerMessage(LogLevel.Debug, "Invite code closed for game {GameId}")]
+    private partial void LogInviteCodeClosed(Guid gameId);
 }

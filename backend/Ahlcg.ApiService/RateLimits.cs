@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Ahlcg.ApiService;
 
-public static class RateLimits
+public static partial class RateLimits
 {
     public const string JoinPolicy = "Join";
 
@@ -30,6 +30,20 @@ public static class RateLimits
                 Window = limits.Window
             });
         });
+
+    public static void LogRejections(this RateLimiterOptions options) =>
+        options.OnRejected = (context, _) =>
+        {
+            var httpContext = context.HttpContext;
+            var logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                .CreateLogger(typeof(RateLimits));
+            var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            LogRequestRejected(logger, httpContext.Request.Path, userId);
+            return ValueTask.CompletedTask;
+        };
+
+    [LoggerMessage(LogLevel.Warning, "Rate limit rejected {Path} for user {UserId}")]
+    private static partial void LogRequestRejected(ILogger logger, string path, string? userId);
 
     public static string ClientIp(HttpContext httpContext) =>
         httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";

@@ -54,7 +54,7 @@ Read whichever apply to the diff:
 | Components, services, routes, translations, styles | `docs/frontend.md` |
 | Any new or changed string a user reads | `docs/voice-and-tone.md` — and flag any `en.json` value the user did not choose through `/wording` |
 | The game state store, patches, animations | `docs/state-store.md` |
-| Backend endpoints, entities, migrations | `docs/backend.md` |
+| Any backend code — endpoints, entities, migrations, the hub, logging | `docs/backend.md` |
 | Any `*.spec.ts` or `*Tests.cs` | `docs/testing.md` |
 
 Work through each doc's rules against the changed files, and cite `file:line` for every violation. A rule you did not read is a rule you cannot report on — if you skipped a doc, say which and why rather than implying full coverage.

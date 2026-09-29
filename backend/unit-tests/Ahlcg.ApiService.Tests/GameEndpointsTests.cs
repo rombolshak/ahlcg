@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 
 namespace Ahlcg.ApiService.Tests;
@@ -26,7 +28,8 @@ public class GameEndpointsTests
             db,
             FixedTimeProvider,
             "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
         Assert.NotNull(ok.Value);
@@ -50,7 +53,8 @@ public class GameEndpointsTests
             db,
             FixedTimeProvider,
             "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
         var stored = Assert.Single(db.Games);
@@ -74,7 +78,8 @@ public class GameEndpointsTests
             db,
             FixedTimeProvider,
             "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")));
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            NullLogger<Game>.Instance);
 
         var stored = Assert.Single(db.Games);
         Assert.Equal(1, stored.IntendedPlayersCount);
@@ -92,7 +97,8 @@ public class GameEndpointsTests
             db,
             FixedTimeProvider,
             "idempotency-key",
-            new GameEndpoints.CreateGameRequest(default));
+            new GameEndpoints.CreateGameRequest(default),
+            NullLogger<Game>.Instance);
 
         Assert.IsType<ValidationProblem>(result.Result);
         Assert.Empty(db.Games);
@@ -373,7 +379,7 @@ public class GameEndpointsTests
         var game = await SeedGameAsync(db, OtherUser, FixedNow);
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
-        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id);
+        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id, NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
@@ -390,7 +396,7 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
         sessions.Join(game.Id, LoggedInUser, "conn-1", FixedNow);
 
-        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id);
+        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id, NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.MemberDto>>>(result.Result);
         var online = ok.Value!.ToDictionary(m => m.UserId, m => m.IsOnline);
@@ -407,7 +413,7 @@ public class GameEndpointsTests
         var game = await SeedGameAsync(db, LoggedInUser, FixedNow);
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
 
-        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id);
+        var result = await GameEndpoints.GetMembers(LoggedInPrincipal, userManager.Object, db, sessions, game.Id, NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.MemberDto>>>(result.Result);
         Assert.All(ok.Value!, m => Assert.False(m.IsOnline));
@@ -425,7 +431,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         Assert.IsType<NoContent>(result.Result);
         Assert.False(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == OtherUser));
@@ -444,7 +451,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
@@ -462,7 +470,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         Assert.IsType<NoContent>(result.Result);
         Assert.False(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == OtherUser));
@@ -479,7 +488,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         Assert.IsType<NoContent>(result.Result);
         Assert.True(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
@@ -497,7 +507,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, LoggedInUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, LoggedInUser,
+            NullLogger<Game>.Instance);
 
         Assert.IsType<NoContent>(result.Result);
         Assert.False(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
@@ -514,7 +525,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
 
         var result = await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, LoggedInUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, LoggedInUser,
+            NullLogger<Game>.Instance);
 
         Assert.IsType<ValidationProblem>(result.Result);
         Assert.True(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
@@ -532,7 +544,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
         await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
         var result = await GameEndpoints.GetRecentGames(OtherPrincipal, userManager.Object, db);
 
         var ok = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(result.Result);
@@ -557,7 +570,8 @@ public class GameEndpointsTests
         sessions.Join(game.Id, OtherUser, "target-conn", FixedNow);
 
         await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         groups.Verify(
             g => g.RemoveFromGroupAsync("target-conn", game.Id.ToString(), It.IsAny<CancellationToken>()),
@@ -582,7 +596,8 @@ public class GameEndpointsTests
         var priorCode = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
 
         await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         Assert.Null(sessions.Find(game.Id)!.InviteCode);
         Assert.Null(sessions.FindByInviteCode(priorCode));
@@ -603,7 +618,8 @@ public class GameEndpointsTests
         var priorCode = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3)!.InviteCode!;
 
         await GameEndpoints.RemoveMember(
-            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser);
+            LoggedInPrincipal, userManager.Object, db, sessions, hub.Object, game.Id, OtherUser,
+            NullLogger<Game>.Instance);
 
         var newCode = sessions.Find(game.Id)!.InviteCode;
         Assert.NotNull(newCode);
@@ -621,7 +637,8 @@ public class GameEndpointsTests
         await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
 
         var result = await GameEndpoints.SetMembersCount(
-            LoggedInPrincipal, userManager.Object, db, sessions, game.Id, new GameEndpoints.SetMembersCountRequest(2));
+            LoggedInPrincipal, userManager.Object, db, sessions, game.Id, new GameEndpoints.SetMembersCountRequest(2),
+            NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
@@ -640,7 +657,8 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
         Assert.Equal(game.Id, ok.Value!.Id);
@@ -664,10 +682,12 @@ public class GameEndpointsTests
 
         var first = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
         var second = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
 
         var firstOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(first.Result);
         var secondOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(second.Result);
@@ -688,7 +708,8 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()));
+            new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()),
+            NullLogger<Game>.Instance);
 
         var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
         Assert.Equal(game.Id, ok.Value!.Id);
@@ -707,7 +728,8 @@ public class GameEndpointsTests
 
         await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
 
         Assert.Null(sessions.Find(game.Id)!.InviteCode);
         Assert.Null(sessions.FindByInviteCode(code));
@@ -727,7 +749,8 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
@@ -746,7 +769,8 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code!));
+            new GameEndpoints.JoinGameRequest(code!),
+            NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
@@ -766,10 +790,47 @@ public class GameEndpointsTests
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code));
+            new GameEndpoints.JoinGameRequest(code),
+            NullLogger<Game>.Instance);
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+    }
+
+    [Fact]
+    public async Task JoinGame_UnknownCode_LogsThatNoSessionMatched()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var logger = new FakeLogger<Game>();
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, CreateSessions(), FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest("UNKNOWN"),
+            logger);
+
+        Assert.Equal("LogJoinRefusedUnknownCode", logger.LatestRecord.Id.Name);
+    }
+
+    [Fact]
+    public async Task JoinGame_GameAlreadyFull_LogsThatSeatsAreTaken()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+        var logger = new FakeLogger<Game>();
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal, userManager.Object, db, sessions, FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code),
+            logger);
+
+        Assert.Equal("LogJoinRefusedGameFull", logger.LatestRecord.Id.Name);
     }
 
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
@@ -825,7 +886,7 @@ public class GameEndpointsTests
     {
         var meterFactory = new ServiceCollection().AddMetrics().BuildServiceProvider()
             .GetRequiredService<IMeterFactory>();
-        return new GameSessions(meterFactory, generateInviteCode);
+        return new GameSessions(meterFactory, NullLogger<GameSessions>.Instance, generateInviteCode);
     }
 
     private static (
