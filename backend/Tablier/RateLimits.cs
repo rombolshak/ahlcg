@@ -2,7 +2,7 @@ using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Ahlcg.ApiService;
+namespace Tablier;
 
 public static partial class RateLimits
 {

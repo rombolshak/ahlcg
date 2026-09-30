@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 
-namespace Ahlcg.ApiService;
+namespace Tablier;
 
 public sealed record GameSession(
     DateTimeOffset StartedAt,
@@ -17,7 +17,7 @@ public readonly record struct SessionChange(GameSession? Session, bool MemberPre
 
 public sealed partial class GameSessions
 {
-    public const string MeterName = "Ahlcg.ApiService.GameSessions";
+    public const string MeterName = "Tablier.GameSessions";
 
     private const string InviteCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 

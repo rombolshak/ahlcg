@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Tablier.Data;
 
-namespace Ahlcg.ApiService.Tests;
+namespace Tablier.Tests;
 
 public class AuthEndpointsTests
 {

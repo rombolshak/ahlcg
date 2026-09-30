@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Ahlcg.ApiService.Tests;
+namespace Tablier.Tests;
 
 public class GameSessionsTests
 {

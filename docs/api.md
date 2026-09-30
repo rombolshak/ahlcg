@@ -1,6 +1,6 @@
 # API Reference
 
-**The OpenAPI document is the reference, not this file.** Routes, request and response shapes, status codes and per-endpoint semantics live in `/openapi/v1.json` (browsable at `/scalar/v1`, both Development only), generated from `backend/Ahlcg.ApiService/AuthEndpoints.cs` and `GameEndpoints.cs`. An endpoint is documented by its `.WithDescription()` and `.Produces()` calls; if something about a route is missing or wrong, fix it there, not here.
+**The OpenAPI document is the reference, not this file.** Routes, request and response shapes, status codes and per-endpoint semantics live in `/openapi/v1.json` (browsable at `/scalar/v1`, both Development only), generated from `backend/Tablier/AuthEndpoints.cs` and `GameEndpoints.cs`. An endpoint is documented by its `.WithDescription()` and `.Produces()` calls; if something about a route is missing or wrong, fix it there, not here.
 
 This file holds only what the spec cannot carry.
 
@@ -47,7 +47,7 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 
 **A hub method that answers the caller returns its answer; it does not push one.** `Ping()` is `Task<DateTime>`, so the client gets it as the result of `invoke('Ping')`. Pushing the answer through `IGameClient` instead would look equivalent and is not: a push carries no correlation id, so a client with two calls in flight cannot tell which reply belongs to which, and every caller has to register and tear down a handler. Keep request/response on the return value and reserve `IGameClient` for messages the server sends unprompted.
 
-**`ExitReason` crosses the wire as a string** (`"NotAMember"`), not a number. That is not SignalR's default — `AddSignalR()` in `Program.cs` registers a `JsonStringEnumConverter` on the hub's payload serializer to get it. Drop that converter and every enum silently becomes an integer, which no client reading `"NotAMember"` will match.
+**`ExitReason` crosses the wire as a string** (`"NotAMember"`), not a number. That is not SignalR's default — `AddSignalR()` in `AddTablier()` registers a `JsonStringEnumConverter` on the hub's payload serializer to get it. Drop that converter and every enum silently becomes an integer, which no client reading `"NotAMember"` will match.
 
 One group per game, named by the game id. Both broadcasts go to the whole group, so a member receives their own `MemberConnected` too.
 

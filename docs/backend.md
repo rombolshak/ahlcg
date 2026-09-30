@@ -8,16 +8,19 @@
 
 | Project | Role |
 | --- | --- |
-| `Ahlcg.ApiService` | The API — endpoints, entities, the `DbContext`, migrations, the SignalR hub |
+| `Tablier` | The game-agnostic engine — endpoints, the SignalR hub, sessions, rate limits; `AddTablier()` / `MapTablier()` |
+| `Tablier.Data` | The `DbContext`, entities, and migrations |
+| `Tablier.Contract` | Empty; `Tablier` references it, and it references nothing |
+| `Ahlcg.ApiService` | The composition root — `Program.cs` only |
 | `Ahlcg.AppHost` | .NET Aspire orchestration for local dev |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
 | `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience |
-| `unit-tests/Ahlcg.ApiService.Tests` | xUnit + Moq, handler-level, no database |
+| `unit-tests/Tablier.Tests` | xUnit + Moq, handler-level, no database |
 | `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres — see [testing.md](testing.md) |
 
 ## Startup
 
-`Program.cs` is short — read it rather than any summary. What is worth knowing before you do:
+`Ahlcg.ApiService/Program.cs` composes; the registrations and route mapping are in `Tablier/TablierExtensions.cs`. Both are short — read them rather than any summary. What is worth knowing before you do:
 
 - The connection string name is `ahlcg`, supplied by Aspire.
 - OpenAPI, Scalar, and the developer exception page are **Development-only**. A missing endpoint in a deployed environment is usually this, not a bug.
@@ -25,7 +28,7 @@
 
 ## Endpoints
 
-One route group per feature: a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `Program.cs`. `AuthEndpoints.cs` and `GameEndpoints.cs` are the pattern to copy.
+One route group per feature: a static class with a `Map*Endpoints(this RouteGroupBuilder)` extension and static handler methods, registered from `MapTablier()`. `AuthEndpoints.cs` and `GameEndpoints.cs` are the pattern to copy.
 
 - Handlers return `Results<TOk, TError…>` (typed results), not `IResult`. That is what makes them directly unit-testable — the tests call the handler with mocks and assert on `result.Result`. Keep new handlers testable the same way.
 - Dependencies arrive as handler parameters, resolved by the framework — no constructor injection, since the handlers are static.
@@ -39,7 +42,7 @@ Identity is ASP.NET Core Identity with cookie auth. How one route serves sign-in
 
 ## Entities and the DbContext
 
-**An entity is declared in the endpoint file that owns it**, next to its routes — `AppUser` in `AuthEndpoints.cs`, the game entities in `GameEndpoints.cs`. There is no `Models/` or `Entities/` folder, and adding one is not the fix for a file getting long.
+**Entities live in `Tablier.Data`**, not next to their routes: `Tablier.Data` cannot reference `Tablier`, and the `DbContext` has to see them. One file per aggregate — `AppUser.cs`, and `Game.cs` holding `Game` and `GameMember`.
 
 `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus a `DbSet` per entity, and every relationship, key, index, and column mapping is configured in its single `OnModelCreating` override rather than by attributes on the entity. `base.OnModelCreating(builder)` must stay first — Identity's own model configuration lives there.
 
@@ -63,7 +66,7 @@ Three rules govern it. Everything else is in the code.
 
 ## Persistence and migrations
 
-EF Core 10 with Npgsql, code-first. Migrations live in `Ahlcg.ApiService/Migrations/`; add one with `dotnet ef migrations add {Name}` from `backend/Ahlcg.ApiService`. Naming follows `{Entity}_{Change}`.
+EF Core 10 with Npgsql, code-first. Migrations live in `Tablier.Data/Migrations/`; add one with `dotnet ef migrations add {Name} --project Tablier.Data --startup-project Ahlcg.ApiService` from `backend/`. Naming follows `{Entity}_{Change}`.
 
 **Never hand-edit the model snapshot or a designer file.** They are the record of what EF believes the model is, and editing them makes the next migration wrong. Never hand-edit generated *schema* operations either — if one is wrong, fix the model and regenerate.
 
@@ -79,7 +82,7 @@ Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside 
 
 **A caller the hub turns away is asked to leave rather than cut off.** `Connect` sends `Exit(NotAMember)` and returns instead of throwing, so the connection stays open and stopping it is the client's decision. The reason is on the client side: a close is indistinguishable from a network drop, so a client that inferred rejection from one could not also use automatic reconnect. Keep any future "you may not be here" answer on that path — throw only for a malformed request, which is a client bug rather than an answer.
 
-**A session is live-connection state and is deliberately not persisted.** `GameSessions` is a singleton `ConcurrentDictionary` and there is no entity, `DbSet`, or migration for it. Persisting it inverts on restart: `OnDisconnectedAsync` does not fire when the process dies, so a deploy would leave rows claiming members are online with nothing to reap them. An empty registry after a restart is the correct answer, not lost state. The cost is a **single-replica ceiling** — a second instance would need a backplane, which `Program.cs` does not configure and `AppHost.cs` does not ask for.
+**A session is live-connection state and is deliberately not persisted.** `GameSessions` is a singleton `ConcurrentDictionary` and there is no entity, `DbSet`, or migration for it. Persisting it inverts on restart: `OnDisconnectedAsync` does not fire when the process dies, so a deploy would leave rows claiming members are online with nothing to reap them. An empty registry after a restart is the correct answer, not lost state. The cost is a **single-replica ceiling** — a second instance would need a backplane, which `AddTablier()` does not configure and `AppHost.cs` does not ask for.
 
 **The registry keys connections by user**, `userId -> connection ids`, not as a flat set of connection ids. Every consumer asks a user-shaped question — is this member online, who is at the table — and it is what lets a member with two tabs open produce one connect and one disconnect broadcast instead of four.
 
@@ -108,9 +111,9 @@ Connect and disconnect live in static methods taking their dependencies as param
 
 Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefaults()`:
 
-- OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `Program.cs`.
+- OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `AddTablier()`.
 
-Game sessions carry their own meter, `GameSessions.MeterName`, registered in `Program.cs` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
+Game sessions carry their own meter, `GameSessions.MeterName`, registered in `AddTablier()` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
 
 - **The active-session count is an `ObservableGauge`, not an `UpDownCounter`.** The registry can simply be asked how many it holds, so a callback cannot drift; a counter needs a matching decrement at every exit path and is permanently wrong the first time one is missed.
 - **The per-session histograms are recorded after the CAS succeeds, never inside the retry loop.** A contended swap retries, and a `Record()` inside the loop is counted once per attempt. They also record the session's *peak* member count, not its final one — the final one is always zero, that being why the session ended.
@@ -127,7 +130,7 @@ What is already logged, so do not log it again: unhandled exceptions (the except
 
 **How.** Use source-generated `[LoggerMessage]` methods, never `logger.LogInformation(...)`. Declare them `private static partial` at the bottom of the class whose code calls them, making the class `partial` — there is no shared `Log` class. The method name is the event name, so name it after the outcome: `LogJoinRefusedGameFull`, not `LogJoin`.
 
-- **Getting a logger.** Endpoint handlers take `ILogger<T>` as their **last** parameter. The endpoint classes are `static` and cannot be a type argument, so `T` is the entity the file owns — `ILogger<Game>` in `GameEndpoints`, `ILogger<AppUser>` in `AuthEndpoints`. A static helper or the hub's static `Connect`/`Disconnect` takes a plain `ILogger` from its caller; a class with a constructor injects `ILogger<ItsOwnType>`.
+- **Getting a logger.** Endpoint handlers take `ILogger<T>` as their **last** parameter. The endpoint classes are `static` and cannot be a type argument, so `T` is the entity the file's routes serve — `ILogger<Game>` in `GameEndpoints`, `ILogger<AppUser>` in `AuthEndpoints`. A static helper or the hub's static `Connect`/`Disconnect` takes a plain `ILogger` from its caller; a class with a constructor injects `ILogger<ItsOwnType>`.
 - **Levels.** `Information` for outcomes, refusals the client caused included (a full game, a seat count too low). `Warning` for anything security-relevant or that should not happen: a non-member reaching a game, a failed password, throttling, a live session whose game row is gone. `Debug` for idempotent no-ops (a repeated `Idempotency-Key`, joining a game you already belong to). `Error` is for exceptions, which the framework already covers.
 - **Properties, not prose.** Everything variable is a named placeholder — `{GameId}`, `{UserId}` — so it can be filtered on in the Aspire dashboard. Keep the names consistent across files.
 - **Log after the commit, never inside a retry.** The rule the metrics follow applies here too: a line inside a CAS loop or an execution-strategy lambda must come after the step that can retry, or one outcome logs once per attempt.
@@ -136,7 +139,7 @@ What is already logged, so do not log it again: unhandled exceptions (the except
 
 **Tests.** A log line is not normally asserted on. The exception is a branch whose log is its only observable difference — the join refusals, a hub connection turned away. There, pass a `FakeLogger<T>` (`Microsoft.Extensions.Diagnostics.Testing`) and assert `LatestRecord.Id.Name` equals the method name. Everywhere else, pass `NullLogger<T>.Instance`.
 
-In Development, `appsettings.Development.json` lowers the `Ahlcg` category to `Debug`; production keeps `Information`.
+In Development, `appsettings.Development.json` lowers the `Ahlcg` and `Tablier` categories to `Debug`; production keeps `Information`.
 
 ## Configuration
 

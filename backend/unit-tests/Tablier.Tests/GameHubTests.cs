@@ -7,8 +7,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using Tablier.Data;
 
-namespace Ahlcg.ApiService.Tests;
+namespace Tablier.Tests;
 
 public class GameHubTests
 {

@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Tablier.Data;
 
-namespace Ahlcg.ApiService;
+namespace Tablier;
 
 public readonly record struct GameConnection(Guid GameId, string UserId, string ConnectionId);
 

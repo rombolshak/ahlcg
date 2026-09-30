@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Ahlcg.ApiService\Ahlcg.ApiService.csproj" />
+        <ProjectReference Include="..\Tablier.Data\Tablier.Data.csproj" />
         <ProjectReference Include="..\Ahlcg.ServiceDefaults\Ahlcg.ServiceDefaults.csproj" />
     </ItemGroup>
 
