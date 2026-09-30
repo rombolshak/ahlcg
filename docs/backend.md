@@ -10,7 +10,7 @@
 | --- | --- |
 | `Tablier` | The game-agnostic engine — endpoints, the SignalR hub, sessions, rate limits; `AddTablier()` / `MapTablier()` |
 | `Tablier.Data` | The `DbContext`, entities, and migrations |
-| `Tablier.Contract` | Empty; `Tablier` references it, and it references nothing |
+| `Tablier.Contract` | The rules interface `IGameStateProcessor<TConfiguration, TState, TView>` and `StepResult`; `Tablier` references it, and it references nothing |
 | `Ahlcg.ApiService` | The composition root — `Program.cs` only |
 | `Ahlcg.AppHost` | .NET Aspire orchestration for local dev |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
