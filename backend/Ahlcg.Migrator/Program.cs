@@ -1,8 +1,8 @@
-﻿using Ahlcg.ApiService;
-using Ahlcg.Migrator;
+﻿using Ahlcg.Migrator;
 using Ahlcg.ServiceDefaults;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Tablier.Data;
 
 var builder = Host.CreateApplicationBuilder(args);
 

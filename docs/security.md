@@ -4,7 +4,7 @@
 
 Everything below is what the code actually does today.
 
-**Sessions** — ASP.NET Identity with cookie authentication. `Program.cs`:
+**Sessions** — ASP.NET Identity with cookie authentication. `AddTablier()`:
 
 ```csharp
 options.ExpireTimeSpan = TimeSpan.FromDays(90);
@@ -56,9 +56,9 @@ Nothing in this repo deploys anything; there is no Dockerfile, pipeline, or envi
 
 ## Key files
 
-- `backend/Ahlcg.ApiService/Program.cs` — Identity, cookie options, middleware order
-- `backend/Ahlcg.ApiService/AuthEndpoints.cs` — auth handlers and `AppUser`
-- `backend/Ahlcg.ApiService/RateLimits.cs` — the join and account-creation limiters
-- `backend/Ahlcg.ApiService/GameHub.cs` — hub authorization
+- `backend/Tablier/TablierExtensions.cs` — Identity, cookie options, middleware order
+- `backend/Tablier/AuthEndpoints.cs` — auth handlers
+- `backend/Tablier/RateLimits.cs` — the join and account-creation limiters
+- `backend/Tablier/GameHub.cs` — hub authorization
 - `backend/Ahlcg.ServiceDefaults/Extensions.cs` — OTel, health checks
 - `frontend/src/app/app.config.ts` — Bugsnag key (public)

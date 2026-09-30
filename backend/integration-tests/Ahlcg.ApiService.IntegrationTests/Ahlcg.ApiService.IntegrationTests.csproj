@@ -23,7 +23,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Ahlcg.AppHost\Ahlcg.AppHost.csproj" />
-        <ProjectReference Include="..\..\Ahlcg.ApiService\Ahlcg.ApiService.csproj" />
+        <ProjectReference Include="..\..\Tablier\Tablier.csproj" />
     </ItemGroup>
 
 </Project>

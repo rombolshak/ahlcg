@@ -111,7 +111,7 @@ not a failure, until #541's closing issue flips both rules to `error`.
 | Test | `dotnet test` |
 | Single test class | `dotnet test --filter "FullyQualifiedName~AuthEndpointsTests"` |
 | Coverage | `dotnet-coverage collect --settings coverage.runsettings --output coverage.cobertura.xml --output-format cobertura -- dotnet test` (needs `dotnet tool install -g dotnet-coverage`) |
-| Add migration (from `Ahlcg.ApiService`) | `dotnet ef migrations add {Name}` |
+| Add migration | `dotnet ef migrations add {Name} --project Tablier.Data --startup-project Ahlcg.ApiService` |
 
 `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set on every project — a warning fails the build.
 

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Ahlcg.ApiService.Migrations
+namespace Tablier.Data.Migrations
 {
     /// <inheritdoc />
     public partial class GameMember_Add : Migration

@@ -27,6 +27,9 @@
               <Include>
                 <ModulePath>.*[\\/]Ahlcg\.ApiService\.dll$</ModulePath>
                 <ModulePath>.*[\\/]Ahlcg\.ServiceDefaults\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Tablier\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Tablier\.Data\.dll$</ModulePath>
+                <ModulePath>.*[\\/]Tablier\.Contract\.dll$</ModulePath>
               </Include>
             </ModulePaths>
             <CollectFromChildProcesses>True</CollectFromChildProcesses>

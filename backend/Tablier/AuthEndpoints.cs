@@ -3,14 +3,9 @@ using System.Security.Claims;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Tablier.Data;
 
-namespace Ahlcg.ApiService;
-
-public class AppUser : IdentityUser
-{
-    public bool IsAnonymous { get; set; }
-    public ICollection<GameMember> Memberships { get; } = [];
-}
+namespace Tablier;
 
 public static partial class AuthEndpoints
 {

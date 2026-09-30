@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Ahlcg.ApiService.Migrations
+namespace Tablier.Data.Migrations
 {
     /// <inheritdoc />
     public partial class User_AddIsAnonymous : Migration

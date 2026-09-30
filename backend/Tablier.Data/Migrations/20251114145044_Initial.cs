@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Ahlcg.ApiService.Migrations
+namespace Tablier.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

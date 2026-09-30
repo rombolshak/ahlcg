@@ -5,6 +5,7 @@ using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Postgres;
 using Aspire.Hosting.Testing;
 using Microsoft.EntityFrameworkCore;
+using Tablier.Data;
 
 // The apiservice launch profile binds fixed ports, so two AppHosts must never run at once.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]

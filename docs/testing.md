@@ -145,7 +145,7 @@ ESLint runs `strictTypeChecked` on specs too, and `eslint-plugin-jasmine` is sti
 
 ## Backend
 
-xUnit + Moq, in `backend/unit-tests/Ahlcg.ApiService.Tests/`. Coverage via `dotnet-coverage`, aggregated by `reportgenerator`.
+xUnit + Moq, in `backend/unit-tests/Tablier.Tests/`. Coverage via `dotnet-coverage`, aggregated by `reportgenerator`.
 
 **Coverage must be collected with `dotnet-coverage`, not coverlet.** The integration tests drive the API in a process DCP spawns; coverlet (`--collect:"XPlat Code Coverage"`) only instruments the test host, so it scored `Ahlcg.ApiService` at ~1.65% and showed `Program.cs` and every `Map*` method as untested. `dotnet-coverage` instruments the whole process tree. Scope and two silent-failure traps are documented in `backend/coverage.runsettings`.
 
