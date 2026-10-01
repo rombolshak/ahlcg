@@ -10,7 +10,7 @@
 | --- | --- |
 | `Tablier` | The game-agnostic engine — endpoints, the SignalR hub, sessions, rate limits; `AddTablier()` / `MapTablier()` |
 | `Tablier.Data` | The `DbContext`, entities, and migrations |
-| `Tablier.Contract` | Empty; `Tablier` references it, and it references nothing |
+| `Tablier.Contract` | The rules interfaces — `IGameConfigurator`, `IGameStateProcessor`, `IGameViewProjector` — plus `StepResult` and `GameRandom`; `Tablier` references it, and it references nothing |
 | `Ahlcg.ApiService` | The composition root — `Program.cs` only |
 | `Ahlcg.AppHost` | .NET Aspire orchestration for local dev |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
@@ -63,6 +63,12 @@ Three rules govern it. Everything else is in the code.
 **"Last played" is a per-user question.** Two members of the same game have different answers, so the value that orders anybody's list lives on the membership row; the game-level one is a fact about the game and is not a substitute for it.
 
 **Idempotent creation.** `POST /games` requires a client-supplied `Idempotency-Key`. Repeating a key for the same owner returns the game created the first time — enforced by a database unique index rather than a check-then-insert, which would race. The handler saves optimistically, and on `DbUpdateException` re-reads by owner and key, rethrowing if nothing is found, since that means the failure was something else.
+
+## Rules modules
+
+A rules module implements the three `Tablier.Contract` interfaces and is pure: no logging, DI or I/O. `Ahlcg.Rules.Fixture` is the only one so far.
+
+**Randomness lives in the state.** The engine supplies one seed, to `InitializeGame`; the module turns it into a `GameRandom`, keeps it in its state, and every draw stores the advanced generator back. Never use `System.Random`, `Guid`, the clock, or any other entropy. Because the generator is state, a whole campaign draws from one sequence, snapshots persist it, a rewind restores it so a re-done step cannot re-roll, and precomputing every offered action is safe since each starts from the same generator.
 
 ## Persistence and migrations
 

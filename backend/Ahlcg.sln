@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tablier.Data", "Tablier.Dat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tablier", "Tablier\Tablier.csproj", "{5A1B7C10-2D3E-4F40-8A51-6B7C8D9E0F13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.Rules.Fixture", "Ahlcg.Rules.Fixture\Ahlcg.Rules.Fixture.csproj", "{7C2D4E60-8B1A-4C93-9E05-3F6A1D8B2C74}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{EF1B2283-59D3-4513-9247-C3A997A7FDB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ahlcg.ApiService.IntegrationTests", "integration-tests\Ahlcg.ApiService.IntegrationTests\Ahlcg.ApiService.IntegrationTests.csproj", "{3E6A7296-C982-464F-AD93-BDD1632AB6EF}"
@@ -63,6 +65,10 @@ Global
 		{5A1B7C10-2D3E-4F40-8A51-6B7C8D9E0F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A1B7C10-2D3E-4F40-8A51-6B7C8D9E0F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A1B7C10-2D3E-4F40-8A51-6B7C8D9E0F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C2D4E60-8B1A-4C93-9E05-3F6A1D8B2C74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C2D4E60-8B1A-4C93-9E05-3F6A1D8B2C74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C2D4E60-8B1A-4C93-9E05-3F6A1D8B2C74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C2D4E60-8B1A-4C93-9E05-3F6A1D8B2C74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{00C31CFF-924B-4626-A46B-54CB17F530D5} = {EF1B2283-59D3-4513-9247-C3A997A7FDB2}
