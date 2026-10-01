@@ -8,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder
     .AddServiceDefaults()
     .AddTablier("ahlcg");
-builder.Services.AddSingleton<IGameStateProcessor<FixtureConfiguration, FixtureState, FixtureView>, FixtureStateProcessor>();
+builder.Services
+    .AddSingleton<IGameConfigurator<FixtureConfiguration, FixtureState>, FixtureConfigurator>()
+    .AddSingleton<IGameStateProcessor<FixtureState>, FixtureStateProcessor>()
+    .AddSingleton<IGameViewProjector<FixtureState, FixtureView>, FixtureViewProjector>();
 
 var app = builder.Build();
 app.UseExceptionHandler();

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Tablier.Contract;
 
 namespace Ahlcg.Rules.Fixture;
 
@@ -7,4 +8,5 @@ public sealed record FixtureState(
     int? Revealed,
     bool RevealPending,
     ImmutableDictionary<string, int> Secrets,
-    ImmutableList<FixtureJournalEntry> Journal);
+    ImmutableList<FixtureJournalEntry> Journal,
+    GameRandom Random);

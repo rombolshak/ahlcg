@@ -1,24 +1,15 @@
-using System.Collections.Immutable;
 using Tablier.Contract;
 
 namespace Ahlcg.Rules.Fixture;
 
-public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureConfiguration, FixtureState, FixtureView>
+public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
 {
-    public FixtureState Initialize(FixtureConfiguration configuration, IReadOnlyList<string> members) =>
-        new(
-            0,
-            null,
-            false,
-            members.ToImmutableDictionary(member => member, _ => 0),
-            []);
-
     public IReadOnlyDictionary<string, IReadOnlySet<string>> GetMembersActions(FixtureState state) =>
         state.RevealPending
             ? new Dictionary<string, IReadOnlySet<string>>()
             : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
 
-    public StepResult<FixtureState> Execute(FixtureState state, string member, string action, int seed)
+    public StepResult<FixtureState> Execute(FixtureState state, string member, string action)
     {
         if (!GetMembersActions(state).TryGetValue(member, out var offered) || !offered.Contains(action))
         {
@@ -37,14 +28,14 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureConfigura
         return new StepResult<FixtureState>(next, null, false);
     }
 
-    public StepResult<FixtureState> Advance(FixtureState state, int seed)
+    public StepResult<FixtureState> Advance(FixtureState state)
     {
         if (!state.RevealPending)
         {
             throw new InvalidOperationException("Nothing is pending; members still hold actions.");
         }
 
-        var value = new Random(seed).Next(1, 7);
+        var (value, random) = state.Random.Next(1, 7);
         var entry = new FixtureJournalEntry(
             "fixture.revealed",
             new Dictionary<string, object?> { ["value"] = value });
@@ -54,26 +45,9 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureConfigura
             Revealed = value,
             RevealPending = false,
             Journal = state.Journal.Add(entry),
+            Random = random,
         };
 
         return new StepResult<FixtureState>(next, "reveal", true);
     }
-
-    public FixtureView GetMemberView(FixtureState state, string member) =>
-        new(
-            state.Shared,
-            state.Revealed,
-            state.Secrets[member],
-            state.Secrets
-                .Where(secret => secret.Key != member)
-                .ToDictionary(secret => secret.Key, secret => SignOf(secret.Value)),
-            state.Journal);
-
-    private static SecretSign SignOf(int value) =>
-        Math.Sign(value) switch
-        {
-            < 0 => SecretSign.Negative,
-            0 => SecretSign.Zero,
-            _ => SecretSign.Positive,
-        };
 }
