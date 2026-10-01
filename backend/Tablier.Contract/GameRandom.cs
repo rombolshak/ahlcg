@@ -10,6 +10,10 @@ public readonly record struct GameRandom(ulong S0, ulong S1, ulong S2, ulong S3)
     public (int Value, GameRandom Random) Next(int minInclusive, int maxExclusive)
     {
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(minInclusive, maxExclusive);
+        if ((S0 | S1 | S2 | S3) == 0)
+        {
+            throw new InvalidOperationException("An all-zero GameRandom never advances; create one with FromSeed.");
+        }
 
         var range = (ulong)((long)maxExclusive - minInclusive);
         var threshold = (0UL - range) % range;

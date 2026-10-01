@@ -86,6 +86,13 @@ public class GameRandomTests
         Assert.Throws<ArgumentOutOfRangeException>(() => random.Next(minInclusive, maxExclusive));
     }
 
+    [Fact]
+    public void Next_AllZeroState_Throws()
+    {
+        Assert.Throws<InvalidOperationException>(() => default(GameRandom).Next(1, 7));
+        Assert.Throws<InvalidOperationException>(() => new GameRandom(0, 0, 0, 0).Next(1, 7));
+    }
+
     private static List<int> Draw(GameRandom random, int count, int minInclusive = 0, int maxExclusive = 1000)
     {
         var draws = new List<int>(count);
