@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Tablier.Data;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<AppUser>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<AppUser>(options)
 {
     public DbSet<Game> Games => Set<Game>();
     public DbSet<GameMember> GameMembers => Set<GameMember>();
@@ -21,15 +20,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             HasJsonbConversion(game.Property(g => g.Configuration));
             game.Property(g => g.IntendedPlayersCount).HasDefaultValue(1);
             game.HasIndex(g => new { g.OwnerId, g.IdempotencyKey }).IsUnique();
-            game.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId)
-                .OnDelete(DeleteBehavior.Cascade);
+            game.HasOne(g => g.Owner).WithMany().HasForeignKey(g => g.OwnerId).OnDelete(DeleteBehavior.Cascade);
         });
         builder.Entity<GameMember>(member =>
         {
             member.HasKey(m => new { m.GameId, m.UserId });
-            member.HasOne(m => m.Game).WithMany(g => g.Members).HasForeignKey(m => m.GameId)
+            member
+                .HasOne(m => m.Game)
+                .WithMany(g => g.Members)
+                .HasForeignKey(m => m.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
-            member.HasOne(m => m.User).WithMany(u => u.Memberships).HasForeignKey(m => m.UserId)
+            member
+                .HasOne(m => m.User)
+                .WithMany(u => u.Memberships)
+                .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         builder.Entity<GameStep>(step =>
@@ -48,8 +52,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     private static void HasJsonbConversion(PropertyBuilder<JsonDocument> property) =>
         property
-            .HasConversion(
-                document => document.RootElement.GetRawText(),
-                json => JsonDocument.Parse(json, default))
+            .HasConversion(document => document.RootElement.GetRawText(), json => JsonDocument.Parse(json, default))
             .HasColumnType("jsonb");
 }

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,23 +6,22 @@ using Tablier.Data;
 
 namespace Ahlcg.Migrator;
 
-public class Worker(
-    IServiceProvider serviceProvider,
-    IHostApplicationLifetime hostApplicationLifetime) : BackgroundService
+public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime hostApplicationLifetime)
+    : BackgroundService
 {
     public const string ActivitySourceName = "Migrations";
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var activity = ActivitySource.StartActivity("Migrating database", ActivityKind.Client);
 
         try
         {
-            using var scope = serviceProvider.CreateScope();
+            await using var scope = serviceProvider.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            await RunMigrationAsync(dbContext, cancellationToken);
+            await RunMigrationAsync(dbContext, stoppingToken);
         }
         catch (Exception ex)
         {

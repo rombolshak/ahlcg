@@ -5,33 +5,24 @@ using Tablier.Data;
 
 namespace Tablier;
 
+#pragma warning disable MA0048
 public readonly record struct GameConnection(Guid GameId, string UserId, string ConnectionId);
-
-public enum ExitReason
-{
-    NotAMember
-}
-
-public interface IGameClient
-{
-    Task MemberConnected(string userId);
-
-    Task MemberDisconnected(string userId);
-
-    Task Exit(ExitReason reason);
-}
+#pragma warning restore MA0048
 
 [Authorize]
 public partial class GameHub(
-    GameSessions sessions, ApplicationDbContext db, TimeProvider timeProvider, ILogger<GameHub> logger)
-    : Hub<IGameClient>
+    GameSessions sessions,
+    ApplicationDbContext db,
+    TimeProvider timeProvider,
+    ILogger<GameHub> logger
+) : Hub<IGameClient>
 {
     public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
 
     public override async Task OnConnectedAsync()
     {
-        var gameId = ParseGameId(Context.GetHttpContext())
-            ?? throw new HubException("A gameId query parameter is required.");
+        var gameId =
+            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
         var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
@@ -41,12 +32,13 @@ public partial class GameHub(
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var gameId = ParseGameId(Context.GetHttpContext())
-            ?? throw new HubException("A gameId query parameter is required.");
+        var gameId =
+            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
         var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
-        if (exception is not null) LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
+        if (exception is not null)
+            LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
         await Disconnect(sessions, db, timeProvider, Clients, connection, logger);
         await base.OnDisconnectedAsync(exception);
     }
@@ -64,12 +56,13 @@ public partial class GameHub(
         IHubCallerClients<IGameClient> clients,
         IGroupManager groups,
         GameConnection connection,
-        ILogger logger)
+        ILogger logger
+    )
     {
         var (gameId, userId, connectionId) = connection;
 
-        var game = await db.Games
-            .Where(g => g.Id == gameId && g.Members.Any(m => m.UserId == userId))
+        var game = await db
+            .Games.Where(g => g.Id == gameId && g.Members.Any(m => m.UserId == userId))
             .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count })
             .SingleOrDefaultAsync();
         if (game is null)
@@ -94,7 +87,8 @@ public partial class GameHub(
         TimeProvider timeProvider,
         IHubCallerClients<IGameClient> clients,
         GameConnection connection,
-        ILogger logger)
+        ILogger logger
+    )
     {
         var (gameId, userId, connectionId) = connection;
 
@@ -113,8 +107,10 @@ public partial class GameHub(
             await clients.Group(gameId.ToString()).MemberDisconnected(userId);
     }
 
-    [LoggerMessage(LogLevel.Warning,
-        "User {UserId} is not a member of game {GameId}; asked connection {ConnectionId} to exit")]
+    [LoggerMessage(
+        LogLevel.Warning,
+        "User {UserId} is not a member of game {GameId}; asked connection {ConnectionId} to exit"
+    )]
     private static partial void LogNotAMember(ILogger logger, Guid gameId, string userId, string connectionId);
 
     [LoggerMessage(LogLevel.Information, "User {UserId} connected to game {GameId} on {ConnectionId}")]
@@ -125,5 +121,10 @@ public partial class GameHub(
 
     [LoggerMessage(LogLevel.Information, "Connection {ConnectionId} of user {UserId} to game {GameId} was lost")]
     private static partial void LogConnectionLost(
-        ILogger logger, Guid gameId, string userId, string connectionId, Exception exception);
+        ILogger logger,
+        Guid gameId,
+        string userId,
+        string connectionId,
+        Exception exception
+    );
 }

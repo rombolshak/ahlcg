@@ -9,10 +9,11 @@ public sealed class FixtureViewProjector : IGameViewProjector<FixtureState, Fixt
             state.Shared,
             state.Revealed,
             state.Secrets[member],
-            state.Secrets
-                .Where(secret => secret.Key != member)
+            state
+                .Secrets.Where(secret => secret.Key != member)
                 .ToDictionary(secret => secret.Key, secret => SignOf(secret.Value)),
-            state.Journal);
+            state.Journal
+        );
 
     private static SecretSign SignOf(int value) =>
         Math.Sign(value) switch

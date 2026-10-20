@@ -155,18 +155,32 @@ public class GameHubTests(AppFixture fixture)
     {
         await using var db = fixture.CreateDbContext();
         var now = DateTimeOffset.UtcNow;
-        db.GameMembers.Add(new GameMember { GameId = gameId, UserId = userId, JoinedAt = now, LastPlayedAt = now });
+        db.GameMembers.Add(
+            new GameMember
+            {
+                GameId = gameId,
+                UserId = userId,
+                JoinedAt = now,
+                LastPlayedAt = now,
+            }
+        );
         await db.SaveChangesAsync();
     }
 
-    private static async Task<bool> WaitForOnlineStateAsync(HttpClient client, Guid gameId, string userId, bool expected)
+    private static async Task<bool> WaitForOnlineStateAsync(
+        HttpClient client,
+        Guid gameId,
+        string userId,
+        bool expected
+    )
     {
         var deadline = DateTime.UtcNow.AddSeconds(15);
         var online = !expected;
         while (DateTime.UtcNow < deadline)
         {
             online = await ReadOnlineStateAsync(client, gameId, userId);
-            if (online == expected) return online;
+            if (online == expected)
+                return online;
             await Task.Delay(200);
         }
 
@@ -179,8 +193,7 @@ public class GameHubTests(AppFixture fixture)
         response.EnsureSuccessStatusCode();
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var member = document.RootElement.EnumerateArray()
-            .Single(m => m.GetProperty("userId").GetString() == userId);
+        var member = document.RootElement.EnumerateArray().Single(m => m.GetProperty("userId").GetString() == userId);
         return member.GetProperty("isOnline").GetBoolean();
     }
 
@@ -188,18 +201,21 @@ public class GameHubTests(AppFixture fixture)
     {
         var url = new Uri(fixture.ApiBaseAddress, query is null ? "game" : $"game?{query}");
         return new HubConnectionBuilder()
-            .WithUrl(url, options =>
-            {
-                options.Cookies = cookies;
-                options.HttpMessageHandlerFactory = _ => new HttpClientHandler
+            .WithUrl(
+                url,
+                options =>
                 {
-                    CookieContainer = cookies,
-                    ServerCertificateCustomValidationCallback =
-                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                };
-                options.WebSocketConfiguration = socket =>
-                    socket.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-            })
+                    options.Cookies = cookies;
+                    options.HttpMessageHandlerFactory = _ => new HttpClientHandler
+                    {
+                        CookieContainer = cookies,
+                        ServerCertificateCustomValidationCallback =
+                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                    };
+                    options.WebSocketConfiguration = socket =>
+                        socket.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+                }
+            )
             .Build();
     }
 
@@ -209,7 +225,8 @@ public class GameHubTests(AppFixture fixture)
         {
             Content = JsonContent.Create(
                 new GameEndpoints.CreateGameRequest(JsonDocument.Parse("""{"hub":true}""").RootElement.Clone()),
-                options: JsonSerializerOptions.Web)
+                options: JsonSerializerOptions.Web
+            ),
         };
         request.Headers.Add("Idempotency-Key", $"hub-{Guid.NewGuid()}");
 
@@ -224,21 +241,23 @@ public class GameHubTests(AppFixture fixture)
     private async Task<DateTimeOffset> ReadLastPlayedAtAsync(Guid gameId, string userId)
     {
         await using var db = fixture.CreateDbContext();
-        var member = await db.GameMembers
-            .AsNoTracking()
-            .SingleAsync(m => m.GameId == gameId && m.UserId == userId);
+        var member = await db.GameMembers.AsNoTracking().SingleAsync(m => m.GameId == gameId && m.UserId == userId);
         return member.LastPlayedAt;
     }
 
     private async Task<DateTimeOffset> WaitForLastPlayedAtAfterAsync(
-        Guid gameId, string userId, DateTimeOffset previous)
+        Guid gameId,
+        string userId,
+        DateTimeOffset previous
+    )
     {
         var deadline = DateTime.UtcNow.AddSeconds(15);
         var lastPlayedAt = previous;
         while (DateTime.UtcNow < deadline)
         {
             lastPlayedAt = await ReadLastPlayedAtAsync(gameId, userId);
-            if (lastPlayedAt > previous) return lastPlayedAt;
+            if (lastPlayedAt > previous)
+                return lastPlayedAt;
             await Task.Delay(200);
         }
 
@@ -280,7 +299,7 @@ public class GameHubTests(AppFixture fixture)
         await using var before = fixture.CreateDbContext();
         var beforeIds = await before.Users.Select(u => u.Id).ToListAsync();
 
-        var response = await client.PostAsync("/auth/loginAnonymously", null);
+        var response = await client.PostAsync("/auth/loginAnonymously", content: null);
         response.EnsureSuccessStatusCode();
 
         await using var after = fixture.CreateDbContext();

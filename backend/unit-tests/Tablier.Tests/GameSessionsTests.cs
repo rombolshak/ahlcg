@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -59,7 +60,8 @@ public class GameSessionsTests
 
             RunConcurrently(
                 () => sessions.Join(gameId, UserA, "conn-a", FixedStart),
-                () => sessions.Join(gameId, UserB, "conn-b", FixedStart));
+                () => sessions.Join(gameId, UserB, "conn-b", FixedStart)
+            );
 
             Assert.Equal(1, sessions.Count);
             var session = sessions.Find(gameId);
@@ -79,7 +81,8 @@ public class GameSessionsTests
 
             RunConcurrently(
                 () => sessions.Leave(gameId, UserA, "conn-a", FixedStart.AddMinutes(1)),
-                () => sessions.Join(gameId, UserB, "conn-b", FixedStart));
+                () => sessions.Join(gameId, UserB, "conn-b", FixedStart)
+            );
 
             var session = sessions.Find(gameId);
             Assert.NotNull(session);
@@ -184,13 +187,17 @@ public class GameSessionsTests
             sessions.Join(gameId, UserB, "conn-b", FixedStart);
         }
 
-        RunConcurrently(gameIds
-            .SelectMany(gameId => new Action[]
-            {
-                () => sessions.Leave(gameId, UserA, "conn-a", FixedStart.AddMinutes(1)),
-                () => sessions.Leave(gameId, UserB, "conn-b", FixedStart.AddMinutes(1))
-            })
-            .ToArray());
+        RunConcurrently(
+            gameIds
+                .SelectMany(gameId =>
+                    new Action[]
+                    {
+                        () => sessions.Leave(gameId, UserA, "conn-a", FixedStart.AddMinutes(1)),
+                        () => sessions.Leave(gameId, UserB, "conn-b", FixedStart.AddMinutes(1)),
+                    }
+                )
+                .ToArray()
+        );
 
         Assert.Equal(gameIds.Length, duration.GetMeasurementSnapshot().Count);
     }
@@ -308,7 +315,7 @@ public class GameSessionsTests
             var sessions = CreateSessions(() =>
             {
                 var call = Interlocked.Increment(ref callCount);
-                return call <= 2 ? "SAME00" : $"CODE{call}";
+                return call <= 2 ? "SAME00" : string.Create(CultureInfo.InvariantCulture, $"CODE{call}");
             });
             var gameA = Guid.NewGuid();
             var gameB = Guid.NewGuid();
@@ -317,7 +324,8 @@ public class GameSessionsTests
 
             RunConcurrently(
                 () => sessions.SyncInviteCode(gameA, memberCount: 1, intendedPlayersCount: 2),
-                () => sessions.SyncInviteCode(gameB, memberCount: 1, intendedPlayersCount: 2));
+                () => sessions.SyncInviteCode(gameB, memberCount: 1, intendedPlayersCount: 2)
+            );
 
             Assert.NotEqual(sessions.Find(gameA)!.InviteCode, sessions.Find(gameB)!.InviteCode);
         }
@@ -386,19 +394,21 @@ public class GameSessionsTests
             }))
             .ToArray();
 
-        foreach (var thread in threads) thread.Start();
-        foreach (var thread in threads) thread.Join();
+        foreach (var thread in threads)
+            thread.Start();
+        foreach (var thread in threads)
+            thread.Join();
     }
 
     private static MetricCollector<T> CreateCollector<T>(IMeterFactory meterFactory, string instrumentName)
-        where T : struct =>
-        new(meterFactory, GameSessions.MeterName, instrumentName, TimeProvider.System);
+        where T : struct => new(meterFactory, GameSessions.MeterName, instrumentName, TimeProvider.System);
 
     private static GameSessions CreateSessions(Func<string>? generateInviteCode = null) =>
         CreateInstrumentedSessions(generateInviteCode).Sessions;
 
     private static (GameSessions Sessions, IMeterFactory MeterFactory) CreateInstrumentedSessions(
-        Func<string>? generateInviteCode = null)
+        Func<string>? generateInviteCode = null
+    )
     {
         var meterFactory = new ServiceCollection()
             .AddMetrics()

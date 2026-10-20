@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Json.Patch;
@@ -9,9 +10,11 @@ using Tablier.Data;
 
 namespace Tablier;
 
+#pragma warning disable MA0048
 public sealed record StoredState<TState>(int Version, TState State);
 
 public readonly record struct PlayerChoice(string Member, string Action);
+#pragma warning restore MA0048
 
 public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
     where TState : ISchemaVersioned
@@ -41,7 +44,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         StoredState<TState> previous,
         StepResult<TState> step,
         PlayerChoice? choice,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         RequireEmptyChangeTracker();
         var head = await FindHead(gameId, ct);
@@ -59,17 +63,19 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
         var version = previous.Version + 1;
         var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(step.State));
-        db.GameSteps.Add(new GameStep
-        {
-            GameId = gameId,
-            Version = version,
-            Actor = choice?.Member,
-            Action = choice?.Action,
-            Patch = JsonSerializer.SerializeToDocument(patch),
-            Checkpoint = step.Checkpoint,
-            IsIrreversible = step.IsIrreversible,
-            IsBaseline = step.IsBaseline,
-        });
+        db.GameSteps.Add(
+            new GameStep
+            {
+                GameId = gameId,
+                Version = version,
+                Actor = choice?.Member,
+                Action = choice?.Action,
+                Patch = JsonSerializer.SerializeToDocument(patch),
+                Checkpoint = step.Checkpoint,
+                IsIrreversible = step.IsIrreversible,
+                IsBaseline = step.IsBaseline,
+            }
+        );
         var writesSnapshot = step.Checkpoint is not null || step.IsBaseline;
         if (writesSnapshot)
         {
@@ -93,21 +99,29 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)
     {
-        var history = await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
-            var snapshot = await db.GameSnapshots.AsNoTracking()
-                .Where(s => s.GameId == gameId)
-                .OrderByDescending(s => s.Version)
-                .FirstOrDefaultAsync(ct);
-            if (snapshot is null) return null;
+        var history = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync(
+                    IsolationLevel.RepeatableRead,
+                    ct
+                );
+                var snapshot = await db
+                    .GameSnapshots.AsNoTracking()
+                    .Where(s => s.GameId == gameId)
+                    .OrderByDescending(s => s.Version)
+                    .FirstOrDefaultAsync(ct);
+                if (snapshot is null)
+                    return null;
 
-            var steps = await db.GameSteps.AsNoTracking()
-                .Where(s => s.GameId == gameId && s.Version > snapshot.Version)
-                .OrderBy(s => s.Version)
-                .ToListAsync(ct);
-            return new LoadedHistory(snapshot, steps);
-        });
+                var steps = await db
+                    .GameSteps.AsNoTracking()
+                    .Where(s => s.GameId == gameId && s.Version > snapshot.Version)
+                    .OrderBy(s => s.Version)
+                    .ToListAsync(ct);
+                return new LoadedHistory(snapshot, steps);
+            });
 
         if (history is null)
         {
@@ -127,7 +141,11 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             if (!result.IsSuccess)
             {
                 throw new InvalidOperationException(
-                    $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}");
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}"
+                    )
+                );
             }
 
             node = result.Result;
@@ -138,8 +156,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     public async Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct)
     {
-        var barrier = await db.GameSteps
-            .Where(s => s.GameId == gameId && s.Version > version && (s.IsIrreversible || s.IsBaseline))
+        var barrier = await db
+            .GameSteps.Where(s => s.GameId == gameId && s.Version > version && (s.IsIrreversible || s.IsBaseline))
             .MinAsync(s => (int?)s.Version, ct);
         if (barrier is not null)
         {
@@ -147,7 +165,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             return null;
         }
 
-        var snapshot = await db.GameSnapshots.AsNoTracking()
+        var snapshot = await db
+            .GameSnapshots.AsNoTracking()
             .SingleOrDefaultAsync(s => s.GameId == gameId && s.Version == version, ct);
         if (snapshot is null)
         {
@@ -163,7 +182,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         if (db.ChangeTracker.Entries().Any())
         {
             throw new InvalidOperationException(
-                "The history store needs a DbContext that tracks nothing: it clears the tracker after every write.");
+                "The history store needs a DbContext that tracks nothing: it clears the tracker after every write."
+            );
         }
     }
 
@@ -191,13 +211,14 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         await db.GameSteps.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct)
         ?? await db.GameSnapshots.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
 
-    private static GameSnapshot CreateSnapshot(Guid gameId, int version, TState state) => new()
-    {
-        GameId = gameId,
-        Version = version,
-        State = JsonSerializer.SerializeToDocument(state),
-        SchemaVersion = state.SchemaVersion,
-    };
+    private static GameSnapshot CreateSnapshot(Guid gameId, int version, TState state) =>
+        new()
+        {
+            GameId = gameId,
+            Version = version,
+            State = JsonSerializer.SerializeToDocument(state),
+            SchemaVersion = state.SchemaVersion,
+        };
 
     private static JsonNode SerializeToJson(TState state) =>
         JsonSerializer.SerializeToNode(state) ?? throw new InvalidOperationException("A state cannot be null.");
@@ -225,19 +246,25 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     [LoggerMessage(LogLevel.Warning, "Append refused for game {GameId}: it has not begun (previous version {Version})")]
     private static partial void LogAppendRefusedNotBegun(ILogger logger, Guid gameId, int version);
 
-    [LoggerMessage(LogLevel.Warning,
-        "Append refused for game {GameId}: previous version {Version} is not the head {Head}")]
+    [LoggerMessage(
+        LogLevel.Warning,
+        "Append refused for game {GameId}: previous version {Version} is not the head {Head}"
+    )]
     private static partial void LogAppendRefusedStale(ILogger logger, Guid gameId, int version, int head);
 
-    [LoggerMessage(LogLevel.Warning,
-        "Append refused for game {GameId}: a concurrent append took the step after previous version {Version}")]
+    [LoggerMessage(
+        LogLevel.Warning,
+        "Append refused for game {GameId}: a concurrent append took the step after previous version {Version}"
+    )]
     private static partial void LogAppendRefusedConcurrent(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: it has not begun")]
     private static partial void LogLoadRefusedNotBegun(ILogger logger, Guid gameId);
 
-    [LoggerMessage(LogLevel.Warning,
-        "Load refused for game {GameId}: version {Version} is behind the irreversible or baseline step {Barrier}")]
+    [LoggerMessage(
+        LogLevel.Warning,
+        "Load refused for game {GameId}: version {Version} is behind the irreversible or baseline step {Barrier}"
+    )]
     private static partial void LogLoadAtRefusedBehindBarrier(ILogger logger, Guid gameId, int version, int barrier);
 
     [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: no snapshot at version {Version}")]

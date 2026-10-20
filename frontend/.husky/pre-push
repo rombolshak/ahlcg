@@ -17,7 +17,7 @@ if git diff --name-only --quiet $ref HEAD -- backend/; then
 else
   echo "Changes detected in backend folder. Running backend-specific tasks..."
   cd backend
-  dotnet build
+  dotnet build -p:CSharpier_Check=true
   dotnet test
   cd ..
 fi

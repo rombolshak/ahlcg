@@ -13,11 +13,3 @@ public class GameStep
     public bool IsIrreversible { get; set; }
     public bool IsBaseline { get; set; }
 }
-
-public class GameSnapshot
-{
-    public Guid GameId { get; set; }
-    public int Version { get; set; }
-    public required JsonDocument State { get; set; }
-    public int SchemaVersion { get; set; }
-}

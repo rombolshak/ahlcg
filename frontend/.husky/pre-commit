@@ -4,4 +4,14 @@ else
   echo "Changes detected in frontend folder. Running frontend-specific tasks..."
   cd frontend
   npx lint-staged
+  cd ..
+fi
+
+if git diff --cached --quiet -- backend; then
+  echo "No changes in backend folder. Skipping backend-specific tasks."
+else
+  echo "Changes detected in backend folder. Formatting staged backend files..."
+  dotnet tool restore > /dev/null
+  git diff --cached --name-only --diff-filter=ACMR -z -- 'backend/*.cs' 'backend/*.csproj' 'backend/*.props' \
+    | xargs -0 -r sh -c 'dotnet csharpier format "$@" && git add -- "$@"' _
 fi

@@ -1,0 +1,63 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0161.severity = warning
+
+csharp_style_var_for_built_in_types = true
+csharp_style_var_when_type_is_apparent = true
+csharp_style_var_elsewhere = true
+dotnet_diagnostic.IDE0007.severity = warning
+
+dotnet_style_qualification_for_field = false
+dotnet_style_qualification_for_property = false
+dotnet_style_qualification_for_method = false
+dotnet_style_qualification_for_event = false
+dotnet_diagnostic.IDE0003.severity = warning
+
+csharp_style_expression_bodied_methods = when_on_single_line
+csharp_style_expression_bodied_operators = when_on_single_line
+csharp_style_expression_bodied_local_functions = when_on_single_line
+dotnet_diagnostic.IDE0022.severity = warning
+dotnet_diagnostic.IDE0023.severity = warning
+dotnet_diagnostic.IDE0024.severity = warning
+dotnet_diagnostic.IDE0061.severity = warning
+
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.CA1822.severity = warning
+
+dotnet_diagnostic.MA0003.severity = warning
+dotnet_diagnostic.MA0020.severity = warning
+dotnet_diagnostic.MA0042.severity = warning
+dotnet_diagnostic.MA0073.severity = warning
+dotnet_diagnostic.MA0076.severity = warning
+
+# No SynchronizationContext in ASP.NET Core; string equality and string-keyed collections default to ordinal.
+dotnet_diagnostic.MA0002.severity = none
+dotnet_diagnostic.MA0004.severity = none
+dotnet_diagnostic.MA0006.severity = none
+dotnet_diagnostic.MA0008.severity = none
+dotnet_diagnostic.MA0026.severity = none
+# Deprecated by Meziantou in favour of CA1822.
+dotnet_diagnostic.MA0038.severity = none
+
+[{unit-tests,integration-tests}/**.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1859.severity = none
+# The tests talk to a local AppHost over its development certificate.
+dotnet_diagnostic.CA5359.severity = none
+dotnet_diagnostic.MA0039.severity = none
+
+[**/Migrations/**.cs]
+generated_code = true

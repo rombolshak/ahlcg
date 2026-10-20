@@ -112,8 +112,13 @@ not a failure, until #541's closing issue flips both rules to `error`.
 | Single test class | `dotnet test --filter "FullyQualifiedName~AuthEndpointsTests"` |
 | Coverage | `dotnet-coverage collect --settings coverage.runsettings --output coverage.cobertura.xml --output-format cobertura -- dotnet test` (needs `dotnet tool install -g dotnet-coverage`) |
 | Add migration | `dotnet ef migrations add {Name} --project Tablier.Data --startup-project Ahlcg.ApiService` |
+| Format check / fix | `dotnet csharpier check .` / `dotnet csharpier format .` (after `dotnet tool restore`) |
 
-`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set on every project — a warning fails the build.
+`Directory.Build.props` sets `TreatWarningsAsErrors` for every project, so a warning fails the build. That includes the code-style rules in `backend/.editorconfig` (`EnforceCodeStyleInBuild`), the `Recommended` CA set and Meziantou.Analyzer. Rules that are switched off are listed in `.editorconfig` with the reason; change that file rather than suppressing a rule inline.
+
+Layout is CSharpier's, through `CSharpier.MSBuild`. A local build reformats the files in place. When `CI=true`, which GitHub Actions sets, it only checks and fails on unformatted code. Migrations are excluded through `.csharpierignore`. Rider's own formatter disagrees with CSharpier, so install the CSharpier plugin and use it for reformat-on-save.
+
+**A `///` comment on an endpoint handler becomes OpenAPI text.** `GenerateDocumentationFile` is on, which the unused-usings check (`IDE0005`) needs. The OpenAPI XML-comment generator then reads any `<summary>` in `Tablier` and writes it into the operation's summary. Rationale goes in `//`, and API prose goes in `.WithDescription()`.
 
 ### End-to-end (`cd e2e`)
 
@@ -142,7 +147,9 @@ Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scrip
 | `*` | `cspell` |
 | `**/*.ts` | `tsc-files --noEmit` |
 
-**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build && dotnet test` if `backend/` changed. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
+If anything under `backend/` is staged, it also runs `dotnet csharpier format` on the staged `.cs`, `.csproj` and `.props` files and re-stages them. A partially staged file is re-staged whole.
+
+**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build -p:CSharpier_Check=true && dotnet test` if `backend/` changed. The check flag matters: without it the build would reformat files that are already committed and still pass. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
 
 Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly that; it is a personal escape hatch, not a workflow.)
 

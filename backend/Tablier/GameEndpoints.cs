@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
@@ -26,7 +25,8 @@ public static partial class GameEndpoints
         DateTimeOffset CreatedAt,
         DateTimeOffset LastPlayedAt,
         DateTimeOffset? CompletedAt,
-        JsonElement Configuration);
+        JsonElement Configuration
+    );
 
     [PublicAPI]
     public record MemberDto(string UserId, string? UserName, bool IsAnonymous, bool IsOnline);
@@ -37,113 +37,160 @@ public static partial class GameEndpoints
     public static RouteGroupBuilder MapGameEndpoints(this RouteGroupBuilder group)
     {
         group.WithDescription("Game creation and lifecycle.");
+        MapCreateGame(group);
+        MapJoinGame(group);
+        MapGetRecentGames(group);
+        MapGetArchivedGames(group);
+        MapGetLatestGame(group);
+        MapGetMembers(group);
+        MapRemoveMember(group);
+        MapSetMembersCount(group);
+        return group;
+    }
 
-        group.MapPost("", CreateGame)
+    private static void MapCreateGame(RouteGroupBuilder group)
+    {
+        group
+            .MapPost("", CreateGame)
             .RequireAuthorization()
             .WithDescription(
-                "Creates a new game owned by the calling user. " +
-                "The configuration payload is opaque: it is stored in a jsonb column and handed back unchanged, and " +
-                "only its presence is checked — omitting it is the one thing that yields a 400. " +
-                "createdAt and lastPlayedAt are equal on creation. " +
-                "Requires an Idempotency-Key header; repeating the same key for the same user " +
-                "returns the game created the first time instead of creating a new one, while the same key from a " +
-                "different user creates a separate game. A unique index on (OwnerId, IdempotencyKey) enforces this, " +
-                "not a check-then-insert.")
+                "Creates a new game owned by the calling user. "
+                    + "The configuration payload is opaque: it is stored in a jsonb column and handed back unchanged, and "
+                    + "only its presence is checked — omitting it is the one thing that yields a 400. "
+                    + "createdAt and lastPlayedAt are equal on creation. "
+                    + "Requires an Idempotency-Key header; repeating the same key for the same user "
+                    + "returns the game created the first time instead of creating a new one, while the same key from a "
+                    + "different user creates a separate game. A unique index on (OwnerId, IdempotencyKey) enforces this, "
+                    + "not a check-then-insert."
+            )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-        group.MapPost("join", JoinGame)
+    private static void MapJoinGame(RouteGroupBuilder group)
+    {
+        group
+            .MapPost("join", JoinGame)
             .RequireAuthorization()
             .RequireRateLimiting(RateLimits.JoinPolicy)
             .WithDescription(
-                "Redeems an invite code (#527) into a membership of the game whose session holds it. The code is " +
-                "uppercased before lookup and matched against live sessions only — one with no live session behind " +
-                "it, whether because it never existed, is malformed, or the session it belonged to has ended, reads " +
-                "as unknown. Idempotent: a caller who is already a member gets that game back unchanged rather than " +
-                "a duplicate row or an error, which is what lets the same code double as a resume link. Unknown, " +
-                "malformed, expired and full all return an identical 404 with no distinguishing detail, so the " +
-                "route cannot be used to enumerate codes. A join that fills the last seat clears the session's " +
-                "invite code in the same request — no reconnect or disconnect needed to notice. Throttled per " +
-                "account; exceeding it returns 429. Never reads or writes Configuration.")
+                "Redeems an invite code (#527) into a membership of the game whose session holds it. The code is "
+                    + "uppercased before lookup and matched against live sessions only — one with no live session behind "
+                    + "it, whether because it never existed, is malformed, or the session it belonged to has ended, reads "
+                    + "as unknown. Idempotent: a caller who is already a member gets that game back unchanged rather than "
+                    + "a duplicate row or an error, which is what lets the same code double as a resume link. Unknown, "
+                    + "malformed, expired and full all return an identical 404 with no distinguishing detail, so the "
+                    + "route cannot be used to enumerate codes. A join that fills the last seat clears the session's "
+                    + "invite code in the same request — no reconnect or disconnect needed to notice. Throttled per "
+                    + "account; exceeding it returns 429. Never reads or writes Configuration."
+            )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status429TooManyRequests);
+    }
 
-        group.MapGet("recent", GetRecentGames)
+    private static void MapGetRecentGames(RouteGroupBuilder group)
+    {
+        group
+            .MapGet("recent", GetRecentGames)
             .RequireAuthorization()
             .WithDescription(
-                "Lists the games the calling user is a member of: every game still in progress, most recently " +
-                "played first, followed by the 2 most recently completed. " +
-                "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member " +
-                "of is absent, and a game the caller joined but did not create is present. " +
-                "lastPlayedAt is the caller's own last play, not the game's, so two members of one game can see " +
-                "different values for it; the active games are ordered by that lastPlayedAt, while the completed " +
-                "games are ordered by Game.CompletedAt instead and always sort after every active game. " +
-                "Each configuration payload is opaque and returned exactly as stored.")
+                "Lists the games the calling user is a member of: every game still in progress, most recently "
+                    + "played first, followed by the 2 most recently completed. "
+                    + "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member "
+                    + "of is absent, and a game the caller joined but did not create is present. "
+                    + "lastPlayedAt is the caller's own last play, not the game's, so two members of one game can see "
+                    + "different values for it; the active games are ordered by that lastPlayedAt, while the completed "
+                    + "games are ordered by Game.CompletedAt instead and always sort after every active game. "
+                    + "Each configuration payload is opaque and returned exactly as stored."
+            )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-        group.MapGet("archive", GetArchivedGames)
+    private static void MapGetArchivedGames(RouteGroupBuilder group)
+    {
+        group
+            .MapGet("archive", GetArchivedGames)
             .RequireAuthorization()
             .WithDescription(
-                "Lists every completed game the calling user is a member of, ordered by Game.CompletedAt " +
-                "descending — most recently completed first. " +
-                "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member " +
-                "of is absent, and a game the caller joined but did not create is present. " +
-                "Each configuration payload is opaque and returned exactly as stored.")
+                "Lists every completed game the calling user is a member of, ordered by Game.CompletedAt "
+                    + "descending — most recently completed first. "
+                    + "Membership is a GameMember row, never Game.OwnerId: a game the caller created but is not a member "
+                    + "of is absent, and a game the caller joined but did not create is present. "
+                    + "Each configuration payload is opaque and returned exactly as stored."
+            )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-        group.MapGet("latest", GetLatestGame)
+    private static void MapGetLatestGame(RouteGroupBuilder group)
+    {
+        group
+            .MapGet("latest", GetLatestGame)
             .RequireAuthorization()
             .WithDescription(
-                "Returns the most recently played game that is not completed, for callers that need one game and " +
-                "nothing else. Membership is a GameMember row, never Game.OwnerId, and lastPlayedAt is the " +
-                "caller's own last play, not the game's. completedAt is null for a game that is not completed. " +
-                "A caller who is a member of no active game gets 204, not 404: having nothing to resume is a " +
-                "normal state, not a missing resource.")
+                "Returns the most recently played game that is not completed, for callers that need one game and "
+                    + "nothing else. Membership is a GameMember row, never Game.OwnerId, and lastPlayedAt is the "
+                    + "caller's own last play, not the game's. completedAt is null for a game that is not completed. "
+                    + "A caller who is a member of no active game gets 204, not 404: having nothing to resume is a "
+                    + "normal state, not a missing resource."
+            )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
-        group.MapGet("{id:guid}/members", GetMembers)
+    private static void MapGetMembers(RouteGroupBuilder group)
+    {
+        group
+            .MapGet("{id:guid}/members", GetMembers)
             .RequireAuthorization()
             .WithDescription(
-                "Lists the game's members ordered by JoinedAt, each with userName and isAnonymous from AppUser " +
-                "(no email: members must not see each other's) and its online state. isOnline is derived from " +
-                "the in-memory session registry: true when the member has a live connection in this game's " +
-                "session, false otherwise — including every member of a game with no session. Membership is the " +
-                "entire authorization check, never Game.OwnerId: any member may call this for any game they " +
-                "belong to, and a caller with no row for the game gets 403, including for a game that does not " +
-                "exist.")
+                "Lists the game's members ordered by JoinedAt, each with userName and isAnonymous from AppUser "
+                    + "(no email: members must not see each other's) and its online state. isOnline is derived from "
+                    + "the in-memory session registry: true when the member has a live connection in this game's "
+                    + "session, false otherwise — including every member of a game with no session. Membership is the "
+                    + "entire authorization check, never Game.OwnerId: any member may call this for any game they "
+                    + "belong to, and a caller with no row for the game gets 403, including for a game that does not "
+                    + "exist."
+            )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
+    }
 
-        group.MapDelete("{id:guid}/members/{userId}", RemoveMember)
+    private static void MapRemoveMember(RouteGroupBuilder group)
+    {
+        group
+            .MapDelete("{id:guid}/members/{userId}", RemoveMember)
             .RequireAuthorization()
             .WithDescription(
-                "Removes a member from the game — a hard delete, not a soft flag. Any member may remove any " +
-                "other member, the game's creator included: Game.OwnerId confers no special standing. A caller " +
-                "with no row for the game gets 403. A target that is not a member is a no-op that still returns " +
-                "204: removal is idempotent. Removing the game's only remaining member is rejected with a " +
-                "validation problem (userId: LastMember) rather than leaving the game with nobody in it. The " +
-                "read, the guard and the write run in one serializable transaction so a concurrent removal " +
-                "cannot both pass the last-member check. Otherwise the row is deleted and IntendedPlayersCount " +
-                "is decremented to match, and the session's invite code is rotated: cleared unconditionally, " +
-                "then reissued only if seats remain open, so a member still holding the old code cannot use it " +
-                "to walk back in. A removed member connected at the time is dropped from the game's SignalR " +
-                "group and sent Exit(NotAMember).")
+                "Removes a member from the game — a hard delete, not a soft flag. Any member may remove any "
+                    + "other member, the game's creator included: Game.OwnerId confers no special standing. A caller "
+                    + "with no row for the game gets 403. A target that is not a member is a no-op that still returns "
+                    + "204: removal is idempotent. Removing the game's only remaining member is rejected with a "
+                    + "validation problem (userId: LastMember) rather than leaving the game with nobody in it. The "
+                    + "read, the guard and the write run in one serializable transaction so a concurrent removal "
+                    + "cannot both pass the last-member check. Otherwise the row is deleted and IntendedPlayersCount "
+                    + "is decremented to match, and the session's invite code is rotated: cleared unconditionally, "
+                    + "then reissued only if seats remain open, so a member still holding the old code cannot use it "
+                    + "to walk back in. A removed member connected at the time is dropped from the game's SignalR "
+                    + "group and sent Exit(NotAMember)."
+            )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
+    }
 
-        group.MapPut("{id:guid}/membersCount", SetMembersCount)
+    private static void MapSetMembersCount(RouteGroupBuilder group)
+    {
+        group
+            .MapPut("{id:guid}/membersCount", SetMembersCount)
             .RequireAuthorization()
             .WithDescription(
-                "Sets Game.IntendedPlayersCount — a bare number (#198), not a seat or an investigator count. " +
-                "Any member may call this, and a caller with no row for the game gets 403. Count below the " +
-                "current member count is rejected with a validation problem (Count: BelowMemberCount) instead " +
-                "of being clamped. Otherwise the session's invite code is synced: raising the count above the " +
-                "member count issues one if none exists yet, and lowering it to match the member count clears " +
-                "one if it does.")
+                "Sets Game.IntendedPlayersCount — a bare number (#198), not a seat or an investigator count. "
+                    + "Any member may call this, and a caller with no row for the game gets 403. Count below the "
+                    + "current member count is rejected with a validation problem (Count: BelowMemberCount) instead "
+                    + "of being clamped. Otherwise the session's invite code is synced: raising the count above the "
+                    + "member count issues one if none exists yet, and lowering it to match the member count clears "
+                    + "one if it does."
+            )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
-
-        return group;
     }
 
     public static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(
@@ -153,16 +200,20 @@ public static partial class GameEndpoints
         TimeProvider timeProvider,
         [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
         CreateGameRequest request,
-        ILogger<Game> logger)
+        ILogger<Game> logger
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
         if (request.Configuration.ValueKind == JsonValueKind.Undefined)
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                [nameof(CreateGameRequest.Configuration)] = ["Configuration is required."]
-            });
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    [nameof(CreateGameRequest.Configuration)] = ["Configuration is required."],
+                }
+            );
 
         var now = timeProvider.GetUtcNow();
         var game = new Game
@@ -171,9 +222,14 @@ public static partial class GameEndpoints
             IdempotencyKey = idempotencyKey,
             Configuration = JsonDocument.Parse(request.Configuration.GetRawText()),
             CreatedAt = now,
-            LastPlayedAt = now
+            LastPlayedAt = now,
         };
-        var member = new GameMember { UserId = user.Id, JoinedAt = now, LastPlayedAt = now };
+        var member = new GameMember
+        {
+            UserId = user.Id,
+            JoinedAt = now,
+            LastPlayedAt = now,
+        };
         game.Members.Add(member);
 
         db.Games.Add(game);
@@ -187,20 +243,25 @@ public static partial class GameEndpoints
             db.Entry(member).State = EntityState.Detached;
             db.Entry(game).State = EntityState.Detached;
 
-            var existing =
-                await db.Games.FirstOrDefaultAsync(g => g.OwnerId == user.Id && g.IdempotencyKey == idempotencyKey);
-            if (existing is null) throw;
+            var existing = await db.Games.FirstOrDefaultAsync(g =>
+                g.OwnerId == user.Id && g.IdempotencyKey == idempotencyKey
+            );
+            if (existing is null)
+                throw;
 
             game = existing;
             LogGameCreationReplayed(logger, game.Id, user.Id);
         }
 
-        return TypedResults.Ok(new GameDto(
-            game.Id,
-            game.CreatedAt,
-            game.LastPlayedAt,
-            game.CompletedAt,
-            game.Configuration.RootElement.Clone()));
+        return TypedResults.Ok(
+            new GameDto(
+                game.Id,
+                game.CreatedAt,
+                game.LastPlayedAt,
+                game.CompletedAt,
+                game.Configuration.RootElement.Clone()
+            )
+        );
     }
 
     public static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
@@ -210,10 +271,12 @@ public static partial class GameEndpoints
         GameSessions sessions,
         TimeProvider timeProvider,
         JoinGameRequest request,
-        ILogger<Game> logger)
+        ILogger<Game> logger
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
         var gameId = string.IsNullOrEmpty(request.Code)
             ? null
@@ -225,69 +288,81 @@ public static partial class GameEndpoints
         }
 
         var (result, game) = await AddMembership(db, gameId.Value, user.Id, timeProvider, logger);
-        if (game is not null) sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
+        if (game is not null)
+            sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
 
         return result;
     }
 
-    private static Task<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result, Game? Updated)>
-        AddMembership(
-            ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider, ILogger logger) =>
-        ExecutionStrategyExtensions
-            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(
-                db.Database.CreateExecutionStrategy(), async () =>
+    private static Task<(
+        Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result,
+        Game? Updated
+    )> AddMembership(ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider, ILogger logger) =>
+        ExecutionStrategyExtensions.ExecuteAsync<(
+            Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>,
+            Game?
+        )>(
+            db.Database.CreateExecutionStrategy(),
+            async () =>
+            {
+                db.ChangeTracker.Clear();
+                await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+                var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == gameId);
+                if (game is null)
                 {
-                    db.ChangeTracker.Clear();
-                    await using var transaction =
-                        await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                    LogJoinRefusedGameMissing(logger, gameId, userId);
+                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+                }
 
-                    var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == gameId);
-                    if (game is null)
-                    {
-                        LogJoinRefusedGameMissing(logger, gameId, userId);
-                        return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
-                    }
+                var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
+                if (existing is not null)
+                {
+                    LogJoinedAlreadyMember(logger, gameId, userId);
+                    return (TypedResults.Ok(ToDto(existing)), game);
+                }
 
-                    var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
-                    if (existing is not null)
-                    {
-                        LogJoinedAlreadyMember(logger, gameId, userId);
-                        return (TypedResults.Ok(ToDto(existing)), game);
-                    }
+                if (game.Members.Count >= game.IntendedPlayersCount)
+                {
+                    LogJoinRefusedGameFull(logger, gameId, userId, game.IntendedPlayersCount);
+                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+                }
 
-                    if (game.Members.Count >= game.IntendedPlayersCount)
-                    {
-                        LogJoinRefusedGameFull(logger, gameId, userId, game.IntendedPlayersCount);
-                        return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
-                    }
+                var now = timeProvider.GetUtcNow();
+                var member = new GameMember
+                {
+                    UserId = userId,
+                    JoinedAt = now,
+                    LastPlayedAt = now,
+                };
+                game.Members.Add(member);
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                LogMemberJoined(logger, gameId, userId);
 
-                    var now = timeProvider.GetUtcNow();
-                    var member = new GameMember { UserId = userId, JoinedAt = now, LastPlayedAt = now };
-                    game.Members.Add(member);
-                    await db.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                    LogMemberJoined(logger, gameId, userId);
-
-                    return (TypedResults.Ok(ToDto(member)), game);
-                });
+                return (TypedResults.Ok(ToDto(member)), game);
+            }
+        );
 
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        ApplicationDbContext db)
+        ApplicationDbContext db
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
-        var active = await db.GameMembers
-            .AsNoTracking()
+        var active = await db
+            .GameMembers.AsNoTracking()
             .Where(m => m.UserId == user.Id && m.Game!.CompletedAt == null)
             .Include(m => m.Game)
             .OrderByDescending(m => m.LastPlayedAt)
             .ToListAsync();
 
-        var completed = await db.GameMembers
-            .AsNoTracking()
+        var completed = await db
+            .GameMembers.AsNoTracking()
             .Where(m => m.UserId == user.Id && m.Game!.CompletedAt != null)
             .Include(m => m.Game)
             .OrderByDescending(m => m.Game!.CompletedAt)
@@ -302,13 +377,15 @@ public static partial class GameEndpoints
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetArchivedGames(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        ApplicationDbContext db)
+        ApplicationDbContext db
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
-        var memberships = await db.GameMembers
-            .AsNoTracking()
+        var memberships = await db
+            .GameMembers.AsNoTracking()
             .Where(m => m.UserId == user.Id && m.Game!.CompletedAt != null)
             .Include(m => m.Game)
             .OrderByDescending(m => m.Game!.CompletedAt)
@@ -322,43 +399,49 @@ public static partial class GameEndpoints
     public static async Task<Results<Ok<GameDto>, NoContent, UnauthorizedHttpResult>> GetLatestGame(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        ApplicationDbContext db)
+        ApplicationDbContext db
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
-        var membership = await db.GameMembers
-            .AsNoTracking()
+        var membership = await db
+            .GameMembers.AsNoTracking()
             .Where(m => m.UserId == user.Id && m.Game!.CompletedAt == null)
             .Include(m => m.Game)
             .OrderByDescending(m => m.LastPlayedAt)
             .FirstOrDefaultAsync();
 
-        if (membership is null) return TypedResults.NoContent();
+        if (membership is null)
+            return TypedResults.NoContent();
 
         return TypedResults.Ok(ToDto(membership));
     }
 
-    public static async Task<Results<Ok<IReadOnlyList<MemberDto>>, ProblemHttpResult, UnauthorizedHttpResult>>
-        GetMembers(
-            ClaimsPrincipal principal,
-            UserManager<AppUser> userManager,
-            ApplicationDbContext db,
-            GameSessions sessions,
-            Guid id,
-            ILogger<Game> logger)
+    public static async Task<
+        Results<Ok<IReadOnlyList<MemberDto>>, ProblemHttpResult, UnauthorizedHttpResult>
+    > GetMembers(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db,
+        GameSessions sessions,
+        Guid id,
+        ILogger<Game> logger
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
-        var members = await db.GameMembers
-            .AsNoTracking()
+        var members = await db
+            .GameMembers.AsNoTracking()
             .Where(m => m.GameId == id)
             .Include(m => m.User)
             .OrderBy(m => m.JoinedAt)
             .ToListAsync();
 
-        if (members.All(m => m.UserId != user.Id))
+        if (members.TrueForAll(m => m.UserId != user.Id))
         {
             LogNotAMember(logger, id, user.Id);
             return TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden);
@@ -367,33 +450,37 @@ public static partial class GameEndpoints
         var session = sessions.Find(id);
         IReadOnlyList<MemberDto> dtos =
         [
-            .. members
-                .Select(m => new MemberDto(
-                    m.UserId,
-                    m.User!.UserName,
-                    m.User.IsAnonymous,
-                    session?.Connections.ContainsKey(m.UserId) ?? false))
+            .. members.Select(m => new MemberDto(
+                m.UserId,
+                m.User!.UserName,
+                m.User.IsAnonymous,
+                session?.Connections.ContainsKey(m.UserId) ?? false
+            )),
         ];
 
         return TypedResults.Ok(dtos);
     }
 
-    public static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>>
-        RemoveMember(
-            ClaimsPrincipal principal,
-            UserManager<AppUser> userManager,
-            ApplicationDbContext db,
-            GameSessions sessions,
-            IHubContext<GameHub, IGameClient> hub,
-            Guid id,
-            string userId,
-            ILogger<Game> logger)
+    public static async Task<
+        Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
+    > RemoveMember(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db,
+        GameSessions sessions,
+        IHubContext<GameHub, IGameClient> hub,
+        Guid id,
+        string userId,
+        ILogger<Game> logger
+    )
     {
         var caller = await userManager.GetUserAsync(principal);
-        if (caller is null) return TypedResults.Unauthorized();
+        if (caller is null)
+            return TypedResults.Unauthorized();
 
         var (result, game) = await DeleteMembership(db, id, caller.Id, userId, logger);
-        if (game is null) return result;
+        if (game is null)
+            return result;
 
         await DisconnectMember(sessions, hub, id, userId);
         sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
@@ -401,54 +488,65 @@ public static partial class GameEndpoints
         return result;
     }
 
-    private static Task<(Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult> Result,
-        Game? Updated)> DeleteMembership(
-            ApplicationDbContext db, Guid id, string callerId, string userId, ILogger logger) =>
-        ExecutionStrategyExtensions
-            .ExecuteAsync<(Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(
-                db.Database.CreateExecutionStrategy(), async () =>
+    private static Task<(
+        Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult> Result,
+        Game? Updated
+    )> DeleteMembership(ApplicationDbContext db, Guid id, string callerId, string userId, ILogger logger) =>
+        ExecutionStrategyExtensions.ExecuteAsync<(
+            Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>,
+            Game?
+        )>(
+            db.Database.CreateExecutionStrategy(),
+            async () =>
+            {
+                db.ChangeTracker.Clear();
+                await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+                var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
+                if (game is null || game.Members.All(m => m.UserId != callerId))
                 {
-                    db.ChangeTracker.Clear();
-                    await using var transaction =
-                        await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                    LogNotAMember(logger, id, callerId);
+                    return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), null);
+                }
 
-                    var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
-                    if (game is null || game.Members.All(m => m.UserId != callerId))
-                    {
-                        LogNotAMember(logger, id, callerId);
-                        return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), null);
-                    }
+                var target = game.Members.SingleOrDefault(m => m.UserId == userId);
+                if (target is null)
+                {
+                    LogRemovalTargetNotAMember(logger, id, userId);
+                    return (TypedResults.NoContent(), null);
+                }
 
-                    var target = game.Members.SingleOrDefault(m => m.UserId == userId);
-                    if (target is null)
-                    {
-                        LogRemovalTargetNotAMember(logger, id, userId);
-                        return (TypedResults.NoContent(), null);
-                    }
+                if (game.Members.Count == 1)
+                {
+                    LogRemovalRefusedLastMember(logger, id, userId);
+                    return (
+                        TypedResults.ValidationProblem(
+                            new Dictionary<string, string[]> { [nameof(userId)] = ["LastMember"] }
+                        ),
+                        null
+                    );
+                }
 
-                    if (game.Members.Count == 1)
-                    {
-                        LogRemovalRefusedLastMember(logger, id, userId);
-                        return (TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                        {
-                            [nameof(userId)] = ["LastMember"]
-                        }), null);
-                    }
+                game.Members.Remove(target);
+                game.IntendedPlayersCount -= 1;
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
+                LogMemberRemoved(logger, id, userId, callerId);
 
-                    game.Members.Remove(target);
-                    game.IntendedPlayersCount -= 1;
-                    await db.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                    LogMemberRemoved(logger, id, userId, callerId);
-
-                    return (TypedResults.NoContent(), game);
-                });
+                return (TypedResults.NoContent(), game);
+            }
+        );
 
     private static async Task DisconnectMember(
-        GameSessions sessions, IHubContext<GameHub, IGameClient> hub, Guid id, string userId)
+        GameSessions sessions,
+        IHubContext<GameHub, IGameClient> hub,
+        Guid id,
+        string userId
+    )
     {
         var session = sessions.Find(id);
-        if (session is null || !session.Connections.TryGetValue(userId, out var connectionIds)) return;
+        if (session is null || !session.Connections.TryGetValue(userId, out var connectionIds))
+            return;
 
         var gameGroup = id.ToString();
         foreach (var connectionId in connectionIds)
@@ -456,18 +554,21 @@ public static partial class GameEndpoints
         await hub.Clients.Clients([.. connectionIds]).Exit(ExitReason.NotAMember);
     }
 
-    public static async Task<Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>>
-        SetMembersCount(
-            ClaimsPrincipal principal,
-            UserManager<AppUser> userManager,
-            ApplicationDbContext db,
-            GameSessions sessions,
-            Guid id,
-            SetMembersCountRequest request,
-            ILogger<Game> logger)
+    public static async Task<
+        Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
+    > SetMembersCount(
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        ApplicationDbContext db,
+        GameSessions sessions,
+        Guid id,
+        SetMembersCountRequest request,
+        ILogger<Game> logger
+    )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null) return TypedResults.Unauthorized();
+        if (user is null)
+            return TypedResults.Unauthorized();
 
         var members = await db.GameMembers.Where(m => m.GameId == id).Select(m => m.UserId).ToListAsync();
         if (!members.Contains(user.Id))
@@ -477,16 +578,15 @@ public static partial class GameEndpoints
         }
 
         var memberCount = members.Count;
-        var updated = await db.Games
-            .Where(g => g.Id == id && g.Members.Count <= request.Count)
+        var updated = await db
+            .Games.Where(g => g.Id == id && g.Members.Count <= request.Count)
             .ExecuteUpdateAsync(setters => setters.SetProperty(g => g.IntendedPlayersCount, request.Count));
         if (updated == 0)
         {
             LogMembersCountBelowMembers(logger, id, request.Count, memberCount);
-            return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            {
-                [nameof(SetMembersCountRequest.Count)] = ["BelowMemberCount"]
-            });
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]> { [nameof(SetMembersCountRequest.Count)] = ["BelowMemberCount"] }
+            );
         }
 
         LogMembersCountChanged(logger, id, request.Count, user.Id);
@@ -496,12 +596,14 @@ public static partial class GameEndpoints
         return TypedResults.NoContent();
     }
 
-    private static GameDto ToDto(GameMember membership) => new(
-        membership.Game!.Id,
-        membership.Game.CreatedAt,
-        membership.LastPlayedAt,
-        membership.Game.CompletedAt,
-        membership.Game.Configuration.RootElement.Clone());
+    private static GameDto ToDto(GameMember membership) =>
+        new(
+            membership.Game!.Id,
+            membership.Game.CreatedAt,
+            membership.LastPlayedAt,
+            membership.Game.CompletedAt,
+            membership.Game.Configuration.RootElement.Clone()
+        );
 
     [LoggerMessage(LogLevel.Information, "User {UserId} created game {GameId}")]
     private static partial void LogGameCreated(ILogger logger, Guid gameId, string userId);
@@ -512,14 +614,22 @@ public static partial class GameEndpoints
     [LoggerMessage(LogLevel.Information, "User {UserId} could not join: invite code matches no live session")]
     private static partial void LogJoinRefusedUnknownCode(ILogger logger, string userId);
 
-    [LoggerMessage(LogLevel.Warning,
-        "User {UserId} could not join game {GameId}: the session is live but the game is gone")]
+    [LoggerMessage(
+        LogLevel.Warning,
+        "User {UserId} could not join game {GameId}: the session is live but the game is gone"
+    )]
     private static partial void LogJoinRefusedGameMissing(ILogger logger, Guid gameId, string userId);
 
-    [LoggerMessage(LogLevel.Information,
-        "User {UserId} could not join game {GameId}: all {IntendedPlayersCount} seats are taken")]
+    [LoggerMessage(
+        LogLevel.Information,
+        "User {UserId} could not join game {GameId}: all {IntendedPlayersCount} seats are taken"
+    )]
     private static partial void LogJoinRefusedGameFull(
-        ILogger logger, Guid gameId, string userId, int intendedPlayersCount);
+        ILogger logger,
+        Guid gameId,
+        string userId,
+        int intendedPlayersCount
+    );
 
     [LoggerMessage(LogLevel.Debug, "User {UserId} redeemed a code for game {GameId} they already belong to")]
     private static partial void LogJoinedAlreadyMember(ILogger logger, Guid gameId, string userId);
@@ -533,19 +643,28 @@ public static partial class GameEndpoints
     [LoggerMessage(LogLevel.Debug, "User {UserId} is already not a member of game {GameId}; nothing to remove")]
     private static partial void LogRemovalTargetNotAMember(ILogger logger, Guid gameId, string userId);
 
-    [LoggerMessage(LogLevel.Information,
-        "User {UserId} was not removed from game {GameId}: they are its last member")]
+    [LoggerMessage(LogLevel.Information, "User {UserId} was not removed from game {GameId}: they are its last member")]
     private static partial void LogRemovalRefusedLastMember(ILogger logger, Guid gameId, string userId);
 
     [LoggerMessage(LogLevel.Information, "User {UserId} was removed from game {GameId} by {RemovedBy}")]
     private static partial void LogMemberRemoved(ILogger logger, Guid gameId, string userId, string removedBy);
 
-    [LoggerMessage(LogLevel.Information,
-        "Game {GameId} kept its seat count: {RequestedCount} is below its {MemberCount} members")]
+    [LoggerMessage(
+        LogLevel.Information,
+        "Game {GameId} kept its seat count: {RequestedCount} is below its {MemberCount} members"
+    )]
     private static partial void LogMembersCountBelowMembers(
-        ILogger logger, Guid gameId, int requestedCount, int memberCount);
+        ILogger logger,
+        Guid gameId,
+        int requestedCount,
+        int memberCount
+    );
 
     [LoggerMessage(LogLevel.Information, "User {UserId} set game {GameId} to {IntendedPlayersCount} seats")]
     private static partial void LogMembersCountChanged(
-        ILogger logger, Guid gameId, int intendedPlayersCount, string userId);
+        ILogger logger,
+        Guid gameId,
+        int intendedPlayersCount,
+        string userId
+    );
 }

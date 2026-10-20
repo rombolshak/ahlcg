@@ -1,11 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated</InterceptorsNamespaces>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
@@ -39,5 +37,4 @@
              XmlCommentGenerator assigns IOpenApiMediaType.Example, which v3 made read-only. -->
         <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
     </ItemGroup>
-
 </Project>

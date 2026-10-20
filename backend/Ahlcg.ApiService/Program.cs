@@ -5,11 +5,9 @@ using Tablier;
 using Tablier.Contract;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults().AddTablier("ahlcg");
 builder
-    .AddServiceDefaults()
-    .AddTablier("ahlcg");
-builder.Services
-    .AddSingleton<IGameConfigurator<FixtureConfiguration, FixtureState>, FixtureConfigurator>()
+    .Services.AddSingleton<IGameConfigurator<FixtureConfiguration, FixtureState>, FixtureConfigurator>()
     .AddSingleton<IGameStateProcessor<FixtureState>, FixtureStateProcessor>()
     .AddSingleton<IGameViewProjector<FixtureState, FixtureView>, FixtureViewProjector>();
 
@@ -26,4 +24,4 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.Run();
+await app.RunAsync();

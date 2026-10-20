@@ -8,9 +8,10 @@ public sealed class FixtureConfigurator : IGameConfigurator<FixtureConfiguration
     public FixtureState InitializeGame(FixtureConfiguration configuration, IReadOnlyList<string> members, ulong seed) =>
         new(
             0,
-            null,
-            false,
+            Revealed: null,
+            RevealPending: false,
             members.ToImmutableDictionary(member => member, _ => 0),
             [],
-            GameRandom.FromSeed(seed));
+            GameRandom.FromSeed(seed)
+        );
 }
