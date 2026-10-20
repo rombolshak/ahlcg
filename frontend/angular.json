@@ -88,8 +88,7 @@
           "options": {
             "coverage": true,
             "coverageReporters": ["html", "lcov"],
-            "tsConfig": "tsconfig.spec.json",
-            "setupFiles": ["src/test-setup.ts"]
+            "tsConfig": "tsconfig.spec.json"
           }
         },
         "lint": {

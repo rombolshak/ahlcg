@@ -26,4 +26,11 @@ export class LocationComponent {
   protected readonly location = computed(() => this.store.getLocation(this.locationId()));
 
   protected readonly investigators = computed(() => this.investigatorsIds().map(id => this.store.getInvestigator(id)));
+
+  protected avatarBasis(engagedEnemies: number): string {
+    if (engagedEnemies === 0) return 'basis-24/100';
+    if (engagedEnemies <= 2) return 'basis-49/100';
+    if (engagedEnemies <= 4) return 'basis-74/100';
+    return 'basis-100/100';
+  }
 }
