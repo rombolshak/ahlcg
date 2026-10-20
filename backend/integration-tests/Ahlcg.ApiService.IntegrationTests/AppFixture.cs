@@ -32,10 +32,13 @@ public abstract class AppFixtureBase : IAsyncLifetime
     {
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Ahlcg_AppHost>();
 
-        foreach (var resource in builder.Resources
-                     .Where(r => r.Name.StartsWith("webfrontend", StringComparison.Ordinal)
-                                 || r is PgAdminContainerResource)
-                     .ToList())
+        foreach (
+            var resource in builder
+                .Resources.Where(r =>
+                    r.Name.StartsWith("webfrontend", StringComparison.Ordinal) || r is PgAdminContainerResource
+                )
+                .ToList()
+        )
         {
             builder.Resources.Remove(resource);
         }
@@ -43,8 +46,12 @@ public abstract class AppFixtureBase : IAsyncLifetime
         if (AccountCreationPermitLimit is { } permitLimit)
         {
             var apiService = builder.Resources.OfType<ProjectResource>().Single(r => r.Name == "apiservice");
-            builder.CreateResourceBuilder(apiService)
-                .WithEnvironment("RateLimits__AccountCreation__PermitLimit", permitLimit.ToString(CultureInfo.InvariantCulture));
+            builder
+                .CreateResourceBuilder(apiService)
+                .WithEnvironment(
+                    "RateLimits__AccountCreation__PermitLimit",
+                    permitLimit.ToString(CultureInfo.InvariantCulture)
+                );
         }
 
         _app = await builder.BuildAsync();
@@ -52,8 +59,9 @@ public abstract class AppFixtureBase : IAsyncLifetime
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("apiservice");
 
         _apiBaseAddress = _app.GetEndpoint("apiservice", "https");
-        ConnectionString = await _app.GetConnectionStringAsync("ahlcg")
-                            ?? throw new InvalidOperationException("No connection string for 'ahlcg'.");
+        ConnectionString =
+            await _app.GetConnectionStringAsync("ahlcg")
+            ?? throw new InvalidOperationException("No connection string for 'ahlcg'.");
     }
 
     public async Task DisposeAsync()
@@ -78,8 +86,7 @@ public abstract class AppFixtureBase : IAsyncLifetime
         {
             UseCookies = true,
             CookieContainer = cookies,
-            ServerCertificateCustomValidationCallback =
-                HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
         };
         return new HttpClient(handler) { BaseAddress = _apiBaseAddress };
     }
@@ -87,9 +94,7 @@ public abstract class AppFixtureBase : IAsyncLifetime
     /// <summary>A fresh, untracked context against the real Postgres the app is running against.</summary>
     public ApplicationDbContext CreateDbContext()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(ConnectionString)
-            .Options;
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(ConnectionString).Options;
         return new ApplicationDbContext(options);
     }
 }

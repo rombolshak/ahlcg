@@ -22,7 +22,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
@@ -41,7 +42,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
@@ -63,7 +65,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             PermissiveLimiter(),
             NewHttpContext(),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()));
@@ -82,7 +85,8 @@ public class AuthEndpointsTests
             signInManager.Object,
             ExhaustedLimiter(),
             NewHttpContext(),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
@@ -109,7 +113,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
@@ -117,7 +122,8 @@ public class AuthEndpointsTests
 
         // lockoutOnFailure: true — without it a wrong password costs an attacker nothing
         signInManager.Verify(manager =>
-            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true));
+            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true)
+        );
         userManager.Verify(manager => manager.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
     }
@@ -138,7 +144,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         // A locked-out account is indistinguishable from a wrong password to the caller, which is
         // deliberate — it keeps the endpoint from confirming that an email is registered.
@@ -159,7 +166,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<ForbidHttpResult>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
@@ -178,7 +186,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<ForbidHttpResult>(result.Result);
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
@@ -198,11 +207,16 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
-        userManager.Verify(manager => manager.CreateAsync(
-            It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false && u.LockoutEnabled), "P@ssw0rd"));
+        userManager.Verify(manager =>
+            manager.CreateAsync(
+                It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false && u.LockoutEnabled),
+                "P@ssw0rd"
+            )
+        );
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), true));
     }
 
@@ -219,7 +233,8 @@ public class AuthEndpointsTests
             ExhaustedLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
@@ -240,7 +255,8 @@ public class AuthEndpointsTests
             ExhaustedLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
@@ -259,11 +275,13 @@ public class AuthEndpointsTests
             ExhaustedLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
-        userManager.Verify(manager => manager.UpdateAsync(
-            It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false)));
+        userManager.Verify(manager =>
+            manager.UpdateAsync(It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false))
+        );
     }
 
     [Fact]
@@ -279,7 +297,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
@@ -298,15 +317,19 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
 
         // Lockout matters only once the account has a password to guess, so the upgrade is where it
         // gets switched on — AllowedForNewUsers does not reach a row that already exists.
-        userManager.Verify(manager => manager.UpdateAsync(
-            It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false && u.LockoutEnabled)));
+        userManager.Verify(manager =>
+            manager.UpdateAsync(
+                It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false && u.LockoutEnabled)
+            )
+        );
 
         // The account keeps its id, so anything hanging off OwnerId survives — and the existing
         // session cookie already names it, so no re-sign-in.
@@ -328,7 +351,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("email@contoso.co", "user", "P@ssw"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw"));
@@ -349,7 +373,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("bad_mail", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
@@ -370,7 +395,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
@@ -392,7 +418,8 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("new@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         // There is nothing to sign into and nothing to upgrade, so creating an account here would
         // only leave the caller signed in as someone else, with the account they arrived with
@@ -418,13 +445,15 @@ public class AuthEndpointsTests
             PermissiveLimiter(),
             NewHttpContext(),
             new AuthEndpoints.RegisterRequest("test@test.com", "user", "P@ssw0rd"),
-            NullLogger<AppUser>.Instance);
+            NullLogger<AppUser>.Instance
+        );
 
         // Only account *creation* is barred from a permanent session — switching to an account that
         // exists is still an ordinary sign-in, and still costs a password check.
         Assert.IsType<Ok>(result.Result);
         signInManager.Verify(manager =>
-            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true));
+            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true)
+        );
         signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
     }
@@ -434,9 +463,7 @@ public class AuthEndpointsTests
     {
         var userManager = GetMockUserManager();
 
-        var result = await AuthEndpoints.GetCurrentUser(
-            new ClaimsPrincipal(new ClaimsIdentity()),
-            userManager.Object);
+        var result = await AuthEndpoints.GetCurrentUser(new ClaimsPrincipal(new ClaimsIdentity()), userManager.Object);
 
         Assert.IsType<UnauthorizedHttpResult>(result.Result);
     }
@@ -448,7 +475,8 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())])),
-            userManager.Object);
+            userManager.Object
+        );
 
         Assert.IsType<UnauthorizedHttpResult>(result.Result);
     }
@@ -460,7 +488,8 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser1)])),
-            userManager.Object);
+            userManager.Object
+        );
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
         var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
@@ -475,7 +504,8 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, PermanentUser)])),
-            userManager.Object);
+            userManager.Object
+        );
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
         var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
@@ -489,7 +519,12 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(AnonymousPrincipal1, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
+        await AuthEndpoints.Logout(
+            AnonymousPrincipal1,
+            userManager.Object,
+            signInManager.Object,
+            NullLogger<AppUser>.Instance
+        );
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()));
         signInManager.Verify(manager => manager.SignOutAsync());
@@ -501,7 +536,12 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(PermanentPrincipal, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
+        await AuthEndpoints.Logout(
+            PermanentPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            NullLogger<AppUser>.Instance
+        );
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignOutAsync());
@@ -513,7 +553,12 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
 
-        await AuthEndpoints.Logout(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object, NullLogger<AppUser>.Instance);
+        await AuthEndpoints.Logout(
+            NotAuthenticatedPrincipal,
+            userManager.Object,
+            signInManager.Object,
+            NullLogger<AppUser>.Instance
+        );
 
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignOutAsync());
@@ -531,50 +576,58 @@ public class AuthEndpointsTests
             null,
             null,
             null,
-            null);
+            null
+        );
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         var permanentUser = new AppUser
         {
-            Id = PermanentUser, UserName = "test user", Email = "test@test.com", IsAnonymous = false
+            Id = PermanentUser,
+            UserName = "test user",
+            Email = "test@test.com",
+            IsAnonymous = false,
         };
 
-        mock
-            .Setup(m => m.GetUserAsync(
-                It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser1))))
+        mock.Setup(m =>
+                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser1)))
+            )
             .ReturnsAsync(
-                new AppUser { Id = AnonymousUser1, UserName = Guid.NewGuid().ToString(), IsAnonymous = true });
-        mock
-            .Setup(m => m.GetUserAsync(
-                It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser2))))
+                new AppUser
+                {
+                    Id = AnonymousUser1,
+                    UserName = Guid.NewGuid().ToString(),
+                    IsAnonymous = true,
+                }
+            );
+        mock.Setup(m =>
+                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser2)))
+            )
             .ReturnsAsync(
-                new AppUser { Id = AnonymousUser2, UserName = Guid.NewGuid().ToString(), IsAnonymous = true });
-        mock
-            .Setup(m => m.GetUserAsync(
-                It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, PermanentUser))))
-            .ReturnsAsync(
-                permanentUser);
+                new AppUser
+                {
+                    Id = AnonymousUser2,
+                    UserName = Guid.NewGuid().ToString(),
+                    IsAnonymous = true,
+                }
+            );
+        mock.Setup(m =>
+                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, PermanentUser)))
+            )
+            .ReturnsAsync(permanentUser);
         mock.Setup(m => m.FindByEmailAsync("test@test.com")).ReturnsAsync(permanentUser);
 
         mock.Setup(m => m.CreateAsync(It.IsAny<AppUser>())).ReturnsAsync(IdentityResult.Success);
-        mock
-            .Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
+        mock.Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
             .ReturnsAsync(IdentityResult.Success);
-        mock
-            .Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length < 6)))
+        mock.Setup(m => m.CreateAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length < 6)))
             .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "password_short" }));
-        mock
-            .Setup(m => m.AddPasswordAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
+        mock.Setup(m => m.AddPasswordAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length >= 6)))
             .ReturnsAsync(IdentityResult.Success);
-        mock
-            .Setup(m => m.AddPasswordAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length < 6)))
+        mock.Setup(m => m.AddPasswordAsync(It.IsAny<AppUser>(), It.Is<string>(s => s.Length < 6)))
             .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "password_short" }));
-        mock
-            .Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email == "bad_mail")))
+        mock.Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email == "bad_mail")))
             .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "email_invalid" }));
-        mock
-            .Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email != "bad_mail")))
-            .ReturnsAsync(IdentityResult.Success);
+        mock.Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email != "bad_mail"))).ReturnsAsync(IdentityResult.Success);
         return mock;
     }
 
@@ -588,17 +641,16 @@ public class AuthEndpointsTests
             null,
             null,
             null,
-            null);
+            null
+        );
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         // The password check goes through SignInManager, not UserManager, so that failures count
         // towards lockout. `lockoutOnFailure` is matched explicitly: passing false here would still
         // authenticate correctly and silently drop the rate limiting.
-        mock
-            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), "P@ssw0rd", true))
+        mock.Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), "P@ssw0rd", true))
             .ReturnsAsync(SignInResult.Success);
-        mock
-            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.Is<string>(s => s != "P@ssw0rd"), true))
+        mock.Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.Is<string>(s => s != "P@ssw0rd"), true))
             .ReturnsAsync(SignInResult.Failed);
         return mock;
     }
@@ -617,12 +669,15 @@ public class AuthEndpointsTests
 
     private static readonly ClaimsPrincipal NotAuthenticatedPrincipal = new(new ClaimsIdentity());
 
-    private static readonly ClaimsPrincipal AnonymousPrincipal1 =
-        new(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser1)]));
+    private static readonly ClaimsPrincipal AnonymousPrincipal1 = new(
+        new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser1)])
+    );
 
-    private static readonly ClaimsPrincipal AnonymousPrincipal2 =
-        new(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser2)]));
+    private static readonly ClaimsPrincipal AnonymousPrincipal2 = new(
+        new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser2)])
+    );
 
-    private static readonly ClaimsPrincipal PermanentPrincipal =
-        new(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, PermanentUser)]));
+    private static readonly ClaimsPrincipal PermanentPrincipal = new(
+        new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, PermanentUser)])
+    );
 }

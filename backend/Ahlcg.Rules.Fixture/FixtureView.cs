@@ -12,4 +12,5 @@ public sealed record FixtureView(
     int? Revealed,
     int OwnSecret,
     IReadOnlyDictionary<string, SecretSign> Others,
-    IReadOnlyList<FixtureJournalEntry> Journal);
+    IReadOnlyList<FixtureJournalEntry> Journal
+);

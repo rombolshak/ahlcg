@@ -21,21 +21,24 @@ public static partial class RateLimits
     }
 
     public static void AddJoinPolicy(this RateLimiterOptions options, LimitOptions limits) =>
-        options.AddPolicy(JoinPolicy, httpContext =>
-        {
-            var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? httpContext.Connection.Id;
-            return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
+        options.AddPolicy(
+            JoinPolicy,
+            httpContext =>
             {
-                PermitLimit = limits.PermitLimit,
-                Window = limits.Window
-            });
-        });
+                var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? httpContext.Connection.Id;
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    userId,
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = limits.PermitLimit, Window = limits.Window }
+                );
+            }
+        );
 
     public static void LogRejections(this RateLimiterOptions options) =>
         options.OnRejected = (context, _) =>
         {
             var httpContext = context.HttpContext;
-            var logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+            var logger = httpContext
+                .RequestServices.GetRequiredService<ILoggerFactory>()
                 .CreateLogger(typeof(RateLimits));
             var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             LogRequestRejected(logger, httpContext.Request.Path, userId);
@@ -51,12 +54,12 @@ public static partial class RateLimits
 
 public sealed class AccountCreationLimiter(RateLimits.LimitOptions limits)
 {
-    private readonly PartitionedRateLimiter<string> _limiter = PartitionedRateLimiter.Create<string, string>(
-        ip => RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = limits.PermitLimit,
-            Window = limits.Window
-        }));
+    private readonly PartitionedRateLimiter<string> _limiter = PartitionedRateLimiter.Create<string, string>(ip =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            ip,
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = limits.PermitLimit, Window = limits.Window }
+        )
+    );
 
     public bool TryAcquire(string ip) => limits.PermitLimit > 0 && _limiter.AttemptAcquire(ip).IsAcquired;
 }

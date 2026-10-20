@@ -19,7 +19,8 @@ public static class Extensions
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
 
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
         builder.AddDefaultHealthChecks();
@@ -44,16 +45,14 @@ public static class Extensions
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
         // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
-        if (!app.Environment.IsDevelopment()) return app;
+        if (!app.Environment.IsDevelopment())
+            return app;
 
         // All health checks must pass for app to be considered ready to accept traffic after starting
         app.MapHealthChecks(HealthEndpointPath);
 
         // Only health checks tagged with the "live" tag must pass for app to be considered alive
-        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-        {
-            Predicate = r => r.Tags.Contains("live")
-        });
+        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions { Predicate = r => r.Tags.Contains("live") });
 
         return app;
     }
@@ -67,14 +66,15 @@ public static class Extensions
             logging.IncludeScopes = true;
         });
 
-        builder.Services.AddOpenTelemetry()
+        builder
+            .Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
-                metrics.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation())
+                metrics.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation().AddRuntimeInstrumentation()
+            )
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing
+                    .AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
@@ -113,7 +113,8 @@ public static class Extensions
     private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
-        builder.Services.AddHealthChecks()
+        builder
+            .Services.AddHealthChecks()
             // Add a default liveness check to ensure app is responsive
             .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 

@@ -13,12 +13,10 @@ public static class TablierExtensions
     {
         builder.AddNpgsqlDbContext<ApplicationDbContext>(connectionName);
 
-        builder.Services
-            .AddProblemDetails()
-            .AddOpenApi()
-            .AddValidation();
+        builder.Services.AddProblemDetails().AddOpenApi().AddValidation();
 
-        builder.Services.AddSignalR()
+        builder
+            .Services.AddSignalR()
             .AddHubInstrumentation()
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
@@ -26,7 +24,8 @@ public static class TablierExtensions
         builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 
-        var rateLimits = builder.Configuration.GetSection("RateLimits").Get<RateLimits.Options>() ?? new RateLimits.Options();
+        var rateLimits =
+            builder.Configuration.GetSection("RateLimits").Get<RateLimits.Options>() ?? new RateLimits.Options();
         builder.Services.AddSingleton(new AccountCreationLimiter(rateLimits.AccountCreation));
         builder.Services.AddRateLimiter(options =>
         {
@@ -35,9 +34,7 @@ public static class TablierExtensions
             options.LogRejections();
         });
 
-        builder.Services
-            .AddIdentityApiEndpoints<AppUser>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        builder.Services.AddIdentityApiEndpoints<AppUser>().AddEntityFrameworkStores<ApplicationDbContext>();
         builder.Services.ConfigureApplicationCookie(options =>
         {
             options.ExpireTimeSpan = TimeSpan.FromDays(90);

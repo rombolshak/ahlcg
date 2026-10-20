@@ -13,58 +13,69 @@ public static partial class AuthEndpoints
     public record RegisterRequest(
         [Required] [EmailAddress] string Email,
         [Required] string Username,
-        [Required] string Password);
+        [Required] string Password
+    );
 
     [PublicAPI]
     public record UserDto(string? Email, string? UserName, bool IsAnonymous);
-    
+
     public static RouteGroupBuilder MapAuthEndpoints(this RouteGroupBuilder group)
     {
-        group.WithDescription("Authentication flow: \n" +
-                              "1) either create an anonymous account via /loginAnonymously and play with it as long " +
-                              "as needed on a single device, or sign in directly via /signIn, \n" +
-                              "2) call /signIn again when ready to turn an anonymous account into a permanent one — " +
-                              "it upgrades the account in place, keeping its data. \n" +
-                              "Every route here signs the caller in or out with the persistent " +
-                              "AspNetCore.Identity.Application cookie. A 400 from this group carries an IdentityResult " +
-                              "body ({ succeeded, errors: [{ code, description }] }), not RFC 7807 ProblemDetails.");
+        group.WithDescription(
+            "Authentication flow: \n"
+                + "1) either create an anonymous account via /loginAnonymously and play with it as long "
+                + "as needed on a single device, or sign in directly via /signIn, \n"
+                + "2) call /signIn again when ready to turn an anonymous account into a permanent one — "
+                + "it upgrades the account in place, keeping its data. \n"
+                + "Every route here signs the caller in or out with the persistent "
+                + "AspNetCore.Identity.Application cookie. A 400 from this group carries an IdentityResult "
+                + "body ({ succeeded, errors: [{ code, description }] }), not RFC 7807 ProblemDetails."
+        );
 
-        group.MapGet("info", GetCurrentUser)
+        group
+            .MapGet("info", GetCurrentUser)
             .RequireAuthorization()
             .WithDescription(
-                "Returns information of the logged in user. Email is null for an anonymous account, and userName is " +
-                "set for every account — a raw GUID for anonymous ones, an opaque identifier rather than a name to " +
-                "render; a client displays it by deriving something from it, not by printing it. The account id is " +
-                "never returned.")
+                "Returns information of the logged in user. Email is null for an anonymous account, and userName is "
+                    + "set for every account — a raw GUID for anonymous ones, an opaque identifier rather than a name to "
+                    + "render; a client displays it by deriving something from it, not by printing it. The account id is "
+                    + "never returned."
+            )
             .Produces(StatusCodes.Status401Unauthorized);
 
-        group.MapPost("loginAnonymously", LoginAnonymously)
+        group
+            .MapPost("loginAnonymously", LoginAnonymously)
             .WithDescription(
-                "Creates an anonymous user without password. The account gets a GUID user name — an opaque " +
-                "identifier, not a name to display as-is — no email and no password. After logout this user cannot " +
-                "be logged in again. If the user is already logged in, this method cannot be called. " +
-                "Account creation is throttled per IP; exceeding it returns 429.")
+                "Creates an anonymous user without password. The account gets a GUID user name — an opaque "
+                    + "identifier, not a name to display as-is — no email and no password. After logout this user cannot "
+                    + "be logged in again. If the user is already logged in, this method cannot be called. "
+                    + "Account creation is throttled per IP; exceeding it returns 429."
+            )
             .Produces(StatusCodes.Status429TooManyRequests);
 
-        group.MapPost("signIn", SignIn)
+        group
+            .MapPost("signIn", SignIn)
             .WithDescription(
-                "Signs in with an email and password, from a logged-out, anonymous or permanent session. " +
-                "If the email is already on record, the password is checked against that account and it is signed in. " +
-                "If it is not, and the caller holds an anonymous account, that account is upgraded in place — " +
-                "it keeps its id and therefore its data, and its existing cookie stays valid. If it is not and the " +
-                "caller is logged out, a new permanent account is created. A permanent session cannot create a second " +
-                "account: log out first. " +
-                "A 403 means the email is on record and the password was wrong, or the account is locked out — the two " +
-                "are deliberately indistinguishable, so the route never confirms that an email is registered. " +
-                "Account creation (the last branch) is throttled per IP; exceeding it returns 429. Signing in to an " +
-                "existing account and upgrading an anonymous one are never throttled here.")
+                "Signs in with an email and password, from a logged-out, anonymous or permanent session. "
+                    + "If the email is already on record, the password is checked against that account and it is signed in. "
+                    + "If it is not, and the caller holds an anonymous account, that account is upgraded in place — "
+                    + "it keeps its id and therefore its data, and its existing cookie stays valid. If it is not and the "
+                    + "caller is logged out, a new permanent account is created. A permanent session cannot create a second "
+                    + "account: log out first. "
+                    + "A 403 means the email is on record and the password was wrong, or the account is locked out — the two "
+                    + "are deliberately indistinguishable, so the route never confirms that an email is registered. "
+                    + "Account creation (the last branch) is throttled per IP; exceeding it returns 429. Signing in to an "
+                    + "existing account and upgrading an anonymous one are never throttled here."
+            )
             .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status429TooManyRequests);
 
-        group.MapPost("logout", Logout)
+        group
+            .MapPost("logout", Logout)
             .WithDescription(
-                "Log out current user. If user is anonymous, it will be deleted with all associated data. " +
-                "Authorization is not required, so calling it while logged out is a no-op rather than a 401.");
+                "Log out current user. If user is anonymous, it will be deleted with all associated data. "
+                    + "Authorization is not required, so calling it while logged out is a no-op rather than a 401."
+            );
         return group;
     }
 
@@ -74,14 +85,16 @@ public static partial class AuthEndpoints
         SignInManager<AppUser> signInManager,
         AccountCreationLimiter limiter,
         HttpContext httpContext,
-        ILogger<AppUser> logger)
+        ILogger<AppUser> logger
+    )
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         if (loggedInUser is not null)
         {
             LogAnonymousLoginRefused(logger, loggedInUser.Id);
-            return TypedResults.BadRequest(IdentityResult.Failed(
-                new IdentityError { Description = "Already logged in" }));
+            return TypedResults.BadRequest(
+                IdentityResult.Failed(new IdentityError { Description = "Already logged in" })
+            );
         }
 
         if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
@@ -90,11 +103,7 @@ public static partial class AuthEndpoints
             return TypedResults.StatusCode(StatusCodes.Status429TooManyRequests);
         }
 
-        var user = new AppUser
-        {
-            UserName = Guid.NewGuid().ToString(),
-            IsAnonymous = true
-        };
+        var user = new AppUser { UserName = Guid.NewGuid().ToString(), IsAnonymous = true };
 
         var result = await userManager.CreateAsync(user);
         if (!result.Succeeded)
@@ -121,7 +130,8 @@ public static partial class AuthEndpoints
         AccountCreationLimiter limiter,
         HttpContext httpContext,
         RegisterRequest request,
-        ILogger<AppUser> logger)
+        ILogger<AppUser> logger
+    )
     {
         var loggedInUser = await userManager.GetUserAsync(principal);
         var userToLogin = await userManager.FindByEmailAsync(request.Email);
@@ -136,8 +146,11 @@ public static partial class AuthEndpoints
             if (loggedInUser is { IsAnonymous: false })
             {
                 LogSecondAccountRefused(logger, loggedInUser.Id);
-                return TypedResults.BadRequest(IdentityResult.Failed(
-                    new IdentityError { Description = "Already signed in with a permanent account" }));
+                return TypedResults.BadRequest(
+                    IdentityResult.Failed(
+                        new IdentityError { Description = "Already signed in with a permanent account" }
+                    )
+                );
             }
 
             return loggedInUser is { IsAnonymous: true }
@@ -171,7 +184,8 @@ public static partial class AuthEndpoints
 
     public static async Task<Results<Ok<UserDto>, UnauthorizedHttpResult>> GetCurrentUser(
         ClaimsPrincipal principal,
-        UserManager<AppUser> userManager)
+        UserManager<AppUser> userManager
+    )
     {
         var user = await userManager.GetUserAsync(principal);
         return user is not null
@@ -183,7 +197,8 @@ public static partial class AuthEndpoints
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
-        ILogger<AppUser> logger)
+        ILogger<AppUser> logger
+    )
     {
         var user = await userManager.GetUserAsync(principal);
         if (user is null)
@@ -207,9 +222,14 @@ public static partial class AuthEndpoints
     /// Keeps the anonymous account's id, so everything hanging off it by <c>OwnerId</c> survives.
     /// The session cookie already names this user, so no re-sign-in is needed.
     /// </summary>
-    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>>
-        UpgradeUserToPermanentAsync(
-            UserManager<AppUser> userManager, RegisterRequest request, AppUser loggedInUser, ILogger logger)
+    private static async Task<
+        Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>
+    > UpgradeUserToPermanentAsync(
+        UserManager<AppUser> userManager,
+        RegisterRequest request,
+        AppUser loggedInUser,
+        ILogger logger
+    )
     {
         var passwordResult = await userManager.AddPasswordAsync(loggedInUser, request.Password);
         if (!passwordResult.Succeeded)
@@ -238,14 +258,16 @@ public static partial class AuthEndpoints
         return TypedResults.Ok();
     }
 
-    private static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>>
-        CreatePermanentUserAsync(
-            UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager,
-            AccountCreationLimiter limiter,
-            HttpContext httpContext,
-            RegisterRequest request,
-            ILogger logger)
+    private static async Task<
+        Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>
+    > CreatePermanentUserAsync(
+        UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager,
+        AccountCreationLimiter limiter,
+        HttpContext httpContext,
+        RegisterRequest request,
+        ILogger logger
+    )
     {
         if (!limiter.TryAcquire(RateLimits.ClientIp(httpContext)))
         {
@@ -258,7 +280,7 @@ public static partial class AuthEndpoints
             UserName = request.Username,
             Email = request.Email,
             IsAnonymous = false,
-            LockoutEnabled = true
+            LockoutEnabled = true,
         };
 
         var createResult = await userManager.CreateAsync(newUser, request.Password);
@@ -312,8 +334,10 @@ public static partial class AuthEndpoints
     [LoggerMessage(LogLevel.Warning, "Upgrade of anonymous account {UserId} failed: {ErrorCodes}")]
     private static partial void LogUpgradeFailed(ILogger logger, string userId, string errorCodes);
 
-    [LoggerMessage(LogLevel.Information,
-        "Anonymous account {UserId} deleted on signing in to {SignedInUserId}; its data was not carried over")]
+    [LoggerMessage(
+        LogLevel.Information,
+        "Anonymous account {UserId} deleted on signing in to {SignedInUserId}; its data was not carried over"
+    )]
     private static partial void LogAnonymousAccountDiscarded(ILogger logger, string userId, string signedInUserId);
 
     [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} deleted on logout")]

@@ -11,7 +11,8 @@ public sealed record GameSession(
     // reference-based. A structural comparer here would silently break TryUpdate/TryRemove.
     ImmutableDictionary<string, ImmutableHashSet<string>> Connections,
     int PeakMemberCount,
-    string? InviteCode = null);
+    string? InviteCode = null
+);
 
 public readonly record struct SessionChange(GameSession? Session, bool MemberPresenceChanged);
 
@@ -29,7 +30,10 @@ public sealed partial class GameSessions
     private readonly ILogger<GameSessions> _logger;
 
     public GameSessions(
-        IMeterFactory meterFactory, ILogger<GameSessions> logger, Func<string>? generateInviteCode = null)
+        IMeterFactory meterFactory,
+        ILogger<GameSessions> logger,
+        Func<string>? generateInviteCode = null
+    )
     {
         _logger = logger;
         var meter = meterFactory.Create(MeterName);
@@ -59,7 +63,7 @@ public sealed partial class GameSessions
                 var next = observed with
                 {
                     Connections = connections,
-                    PeakMemberCount = Math.Max(observed.PeakMemberCount, connections.Count)
+                    PeakMemberCount = Math.Max(observed.PeakMemberCount, connections.Count),
                 };
 
                 if (_sessions.TryUpdate(gameId, next, observed))
@@ -67,8 +71,10 @@ public sealed partial class GameSessions
             }
             else
             {
-                var connections = ImmutableDictionary<string, ImmutableHashSet<string>>.Empty
-                    .Add(userId, ImmutableHashSet.Create(connectionId));
+                var connections = ImmutableDictionary<string, ImmutableHashSet<string>>.Empty.Add(
+                    userId,
+                    ImmutableHashSet.Create(connectionId)
+                );
                 var session = new GameSession(startedAt, connections, PeakMemberCount: 1);
 
                 if (_sessions.TryAdd(gameId, session))
@@ -84,12 +90,12 @@ public sealed partial class GameSessions
     {
         while (true)
         {
-            if (TryLeave(gameId, userId, connectionId, now, out var change)) return change;
+            if (TryLeave(gameId, userId, connectionId, now, out var change))
+                return change;
         }
     }
 
-    private bool TryLeave(
-        Guid gameId, string userId, string connectionId, DateTimeOffset now, out SessionChange change)
+    private bool TryLeave(Guid gameId, string userId, string connectionId, DateTimeOffset now, out SessionChange change)
     {
         change = default;
 
@@ -111,20 +117,28 @@ public sealed partial class GameSessions
             ? observed.Connections.Remove(userId)
             : observed.Connections.SetItem(userId, remaining);
 
-        if (connections.Count == 0) return TryEndSession(gameId, observed, now, memberLeft, out change);
+        if (connections.Count == 0)
+            return TryEndSession(gameId, observed, now, memberLeft, out change);
 
         var next = observed with { Connections = connections };
-        if (!_sessions.TryUpdate(gameId, next, observed)) return false;
+        if (!_sessions.TryUpdate(gameId, next, observed))
+            return false;
 
         change = new SessionChange(next, memberLeft);
         return true;
     }
 
     private bool TryEndSession(
-        Guid gameId, GameSession observed, DateTimeOffset now, bool memberLeft, out SessionChange change)
+        Guid gameId,
+        GameSession observed,
+        DateTimeOffset now,
+        bool memberLeft,
+        out SessionChange change
+    )
     {
         change = default;
-        if (!_sessions.TryRemove(KeyValuePair.Create(gameId, observed))) return false;
+        if (!_sessions.TryRemove(KeyValuePair.Create(gameId, observed)))
+            return false;
 
         var duration = now - observed.StartedAt;
         _playersHistogram.Record(observed.PeakMemberCount);
@@ -138,7 +152,8 @@ public sealed partial class GameSessions
     {
         foreach (var (gameId, session) in _sessions)
         {
-            if (session.InviteCode == code) return gameId;
+            if (session.InviteCode == code)
+                return gameId;
         }
 
         return null;
@@ -148,16 +163,17 @@ public sealed partial class GameSessions
     {
         while (true)
         {
-            if (TrySyncInviteCode(gameId, memberCount, intendedPlayersCount, out var result)) return result;
+            if (TrySyncInviteCode(gameId, memberCount, intendedPlayersCount, out var result))
+                return result;
         }
     }
 
-    private bool TrySyncInviteCode(
-        Guid gameId, int memberCount, int intendedPlayersCount, out GameSession? result)
+    private bool TrySyncInviteCode(Guid gameId, int memberCount, int intendedPlayersCount, out GameSession? result)
     {
         result = null;
 
-        if (!_sessions.TryGetValue(gameId, out var observed)) return true;
+        if (!_sessions.TryGetValue(gameId, out var observed))
+            return true;
 
         var wantsCode = memberCount < intendedPlayersCount;
         if (wantsCode == (observed.InviteCode is not null))
@@ -212,8 +228,10 @@ public sealed partial class GameSessions
     {
         while (true)
         {
-            if (!_sessions.TryGetValue(gameId, out var observed)) return null;
-            if (TryClearInviteCode(gameId, observed, out _)) break;
+            if (!_sessions.TryGetValue(gameId, out var observed))
+                return null;
+            if (TryClearInviteCode(gameId, observed, out _))
+                break;
         }
 
         return SyncInviteCode(gameId, memberCount, intendedPlayersCount);
@@ -222,8 +240,10 @@ public sealed partial class GameSessions
     [LoggerMessage(LogLevel.Information, "Session for game {GameId} started")]
     private partial void LogSessionStarted(Guid gameId);
 
-    [LoggerMessage(LogLevel.Information,
-        "Session for game {GameId} ended after {Duration} with at most {PeakMemberCount} members online")]
+    [LoggerMessage(
+        LogLevel.Information,
+        "Session for game {GameId} ended after {Duration} with at most {PeakMemberCount} members online"
+    )]
     private partial void LogSessionEnded(Guid gameId, int peakMemberCount, TimeSpan duration);
 
     [LoggerMessage(LogLevel.Debug, "Invite code opened for game {GameId}")]

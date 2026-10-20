@@ -6,9 +6,8 @@ using Tablier.Data;
 
 namespace Ahlcg.Migrator;
 
-public class Worker(
-    IServiceProvider serviceProvider,
-    IHostApplicationLifetime hostApplicationLifetime) : BackgroundService
+public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime hostApplicationLifetime)
+    : BackgroundService
 {
     public const string ActivitySourceName = "Migrations";
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);

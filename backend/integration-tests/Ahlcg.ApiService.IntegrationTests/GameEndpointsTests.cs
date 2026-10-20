@@ -35,7 +35,8 @@ public class GameEndpointsTests(AppFixture fixture)
         {
             Content = JsonContent.Create(
                 new GameEndpoints.CreateGameRequest(ParseConfig("""{"foo":"bar"}""")),
-                options: JsonSerializerOptions.Web)
+                options: JsonSerializerOptions.Web
+            ),
         };
         var response = await client.SendAsync(request);
 
@@ -339,7 +340,15 @@ public class GameEndpointsTests(AppFixture fixture)
     {
         await using var db = fixture.CreateDbContext();
         var now = DateTimeOffset.UtcNow;
-        db.GameMembers.Add(new GameMember { GameId = gameId, UserId = userId, JoinedAt = now, LastPlayedAt = now });
+        db.GameMembers.Add(
+            new GameMember
+            {
+                GameId = gameId,
+                UserId = userId,
+                JoinedAt = now,
+                LastPlayedAt = now,
+            }
+        );
         await db.SaveChangesAsync();
     }
 
@@ -356,7 +365,9 @@ public class GameEndpointsTests(AppFixture fixture)
         using var request = new HttpRequestMessage(HttpMethod.Put, $"/games/{gameId}/membersCount")
         {
             Content = JsonContent.Create(
-                new GameEndpoints.SetMembersCountRequest(count), options: JsonSerializerOptions.Web)
+                new GameEndpoints.SetMembersCountRequest(count),
+                options: JsonSerializerOptions.Web
+            ),
         };
         return await client.SendAsync(request);
     }
@@ -364,13 +375,17 @@ public class GameEndpointsTests(AppFixture fixture)
     private static JsonElement ParseConfig(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static async Task<HttpResponseMessage> PostGameAsync(
-        HttpClient client, string idempotencyKey, string configurationJson)
+        HttpClient client,
+        string idempotencyKey,
+        string configurationJson
+    )
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
         {
             Content = JsonContent.Create(
                 new GameEndpoints.CreateGameRequest(ParseConfig(configurationJson)),
-                options: JsonSerializerOptions.Web)
+                options: JsonSerializerOptions.Web
+            ),
         };
         request.Headers.Add("Idempotency-Key", idempotencyKey);
         return await client.SendAsync(request);
@@ -389,7 +404,8 @@ public class GameEndpointsTests(AppFixture fixture)
         response.EnsureSuccessStatusCode();
 
         var games = await response.Content.ReadFromJsonAsync<IReadOnlyList<GameEndpoints.GameDto>>(
-            JsonSerializerOptions.Web);
+            JsonSerializerOptions.Web
+        );
         Assert.NotNull(games);
         return games;
     }

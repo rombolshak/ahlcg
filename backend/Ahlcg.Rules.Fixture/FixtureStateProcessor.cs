@@ -20,8 +20,14 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
         {
             FixtureActions.SharedIncrement => state with { Shared = state.Shared + 1 },
             FixtureActions.SharedDecrement => state with { Shared = state.Shared - 1 },
-            FixtureActions.SecretIncrement => state with { Secrets = state.Secrets.SetItem(member, state.Secrets[member] + 1) },
-            FixtureActions.SecretDecrement => state with { Secrets = state.Secrets.SetItem(member, state.Secrets[member] - 1) },
+            FixtureActions.SecretIncrement => state with
+            {
+                Secrets = state.Secrets.SetItem(member, state.Secrets[member] + 1),
+            },
+            FixtureActions.SecretDecrement => state with
+            {
+                Secrets = state.Secrets.SetItem(member, state.Secrets[member] - 1),
+            },
             _ => state with { RevealPending = true },
         };
 
@@ -36,9 +42,7 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
         }
 
         var (value, random) = state.Random.Next(1, 7);
-        var entry = new FixtureJournalEntry(
-            "fixture.revealed",
-            new Dictionary<string, object?> { ["value"] = value });
+        var entry = new FixtureJournalEntry("fixture.revealed", new Dictionary<string, object?> { ["value"] = value });
 
         var next = state with
         {

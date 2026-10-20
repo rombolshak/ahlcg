@@ -9,7 +9,8 @@ public sealed record FixtureState(
     bool RevealPending,
     ImmutableDictionary<string, int> Secrets,
     ImmutableList<FixtureJournalEntry> Journal,
-    GameRandom Random) : ISchemaVersioned
+    GameRandom Random
+) : ISchemaVersioned
 {
     public int SchemaVersion => 1;
 }
