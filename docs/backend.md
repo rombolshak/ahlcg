@@ -10,13 +10,13 @@
 | --- | --- |
 | `Tablier` | The game-agnostic engine — endpoints, the SignalR hub, sessions, rate limits; `AddTablier()` / `MapTablier()` |
 | `Tablier.Data` | The `DbContext`, entities, and migrations |
-| `Tablier.Contract` | The rules interfaces — `IGameConfigurator`, `IGameStateProcessor`, `IGameViewProjector` — plus `StepResult` and `GameRandom`; `Tablier` references it, and it references nothing |
+| `Tablier.Contract` | The rules interfaces — `IGameConfigurator`, `IGameStateProcessor`, `IGameViewProjector` — plus `StepResult`, `ISchemaVersioned` and `GameRandom`; `Tablier` references it, and it references nothing |
 | `Ahlcg.ApiService` | The composition root — `Program.cs` only |
 | `Ahlcg.AppHost` | .NET Aspire orchestration for local dev |
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
 | `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience |
 | `unit-tests/Tablier.Tests` | xUnit + Moq, handler-level, no database |
-| `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres — see [testing.md](testing.md) |
+| `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres, and exercises code that needs real Postgres but has no route yet (`GameHistory<TState>`) — see [testing.md](testing.md) |
 
 ## Startup
 
@@ -42,7 +42,7 @@ Identity is ASP.NET Core Identity with cookie auth. How one route serves sign-in
 
 ## Entities and the DbContext
 
-**Entities live in `Tablier.Data`**, not next to their routes: `Tablier.Data` cannot reference `Tablier`, and the `DbContext` has to see them. One file per aggregate — `AppUser.cs`, and `Game.cs` holding `Game` and `GameMember`.
+**Entities live in `Tablier.Data`**, not next to their routes: `Tablier.Data` cannot reference `Tablier`, and the `DbContext` has to see them. One file per aggregate — `AppUser.cs`, and `Game.cs` holding `Game` and `GameMember`, and `GameHistory.cs` holding `GameStep` and `GameSnapshot`.
 
 `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus a `DbSet` per entity, and every relationship, key, index, and column mapping is configured in its single `OnModelCreating` override rather than by attributes on the entity. `base.OnModelCreating(builder)` must stay first — Identity's own model configuration lives there.
 
@@ -63,6 +63,17 @@ Three rules govern it. Everything else is in the code.
 **"Last played" is a per-user question.** Two members of the same game have different answers, so the value that orders anybody's list lives on the membership row; the game-level one is a fact about the game and is not a substitute for it.
 
 **Idempotent creation.** `POST /games` requires a client-supplied `Idempotency-Key`. Repeating a key for the same owner returns the game created the first time — enforced by a database unique index rather than a check-then-insert, which would race. The handler saves optimistically, and on `DbUpdateException` re-reads by owner and key, rethrowing if nothing is found, since that means the failure was something else.
+
+## Game history
+
+`GameHistory<TState>` stores a game as results, never as events to replay: an RFC 6902 patch per step, plus snapshots. Loading never runs rules, so a rules change cannot alter a past game. `Tablier.Data` knows neither `TState` nor the patch library; the store serialises the state itself.
+
+- **The store issues versions.** `Begin`, `Append` and `LoadCurrent` return a `StoredState<TState>`; the caller hands the last one back as `previous` and never computes a version. A stale `previous` is refused, so a caller still holding a state from before a rewind cannot append.
+- **The schema version travels in the state** (`TState : ISchemaVersioned`), and is copied to a column on each snapshot so stale snapshots can be found by query. A `TState` is always the current schema: old JSON is upcast before it is deserialised, never after.
+- **Retention is driven by the flags on `StepResult`.** A checkpoint writes a snapshot. A baseline writes one and deletes every step and snapshot below it. An irreversible step deletes the snapshots between the latest baseline and itself, and keeps every step, so loading falls back to the baseline snapshot and replays patches. The store does not know what a scenario is.
+- **A refusal is a `null` or `false`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version comes back as a refusal. An unknown game id, a patch that will not apply, and a `DbContext` with pending changes throw.
+- **Every write needs a `DbContext` with no pending changes.** `SaveChanges` would flush the caller's unsaved edits inside the store's transaction, so `Begin`, `Append` and `Truncate` throw up front instead. Save first.
+- **Writes mix bulk `ExecuteDeleteAsync` with inserts**, so each runs in an explicit transaction inside the execution strategy. That is why the tests are at the integration tier, against real Postgres.
 
 ## Rules modules
 
