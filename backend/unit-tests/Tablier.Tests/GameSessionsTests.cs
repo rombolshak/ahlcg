@@ -1,4 +1,5 @@
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -314,7 +315,7 @@ public class GameSessionsTests
             var sessions = CreateSessions(() =>
             {
                 var call = Interlocked.Increment(ref callCount);
-                return call <= 2 ? "SAME00" : $"CODE{call}";
+                return call <= 2 ? "SAME00" : string.Create(CultureInfo.InvariantCulture, $"CODE{call}");
             });
             var gameA = Guid.NewGuid();
             var gameB = Guid.NewGuid();

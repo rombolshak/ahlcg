@@ -113,7 +113,7 @@ public static partial class AuthEndpoints
         }
 
         LogAnonymousAccountCreated(logger, user.Id);
-        await signInManager.SignInAsync(user, true);
+        await signInManager.SignInAsync(user, isPersistent: true);
         return TypedResults.Ok();
     }
 
@@ -160,7 +160,11 @@ public static partial class AuthEndpoints
         // attempts and honours the lockout window, which is the only thing standing between this
         // endpoint and unlimited password guessing. It validates without establishing a session,
         // so the SignInAsync below is still needed.
-        var checkResult = await signInManager.CheckPasswordSignInAsync(userToLogin, request.Password, true);
+        var checkResult = await signInManager.CheckPasswordSignInAsync(
+            userToLogin,
+            request.Password,
+            lockoutOnFailure: true
+        );
         if (!checkResult.Succeeded)
         {
             LogPasswordCheckFailed(logger, userToLogin.Id, checkResult.IsLockedOut);
@@ -175,7 +179,7 @@ public static partial class AuthEndpoints
         }
 
         await signInManager.SignOutAsync();
-        await signInManager.SignInAsync(userToLogin, true);
+        await signInManager.SignInAsync(userToLogin, isPersistent: true);
         LogSignedIn(logger, userToLogin.Id);
         return TypedResults.Ok();
     }
@@ -288,7 +292,7 @@ public static partial class AuthEndpoints
 
         LogPermanentAccountCreated(logger, newUser.Id);
         await signInManager.SignOutAsync();
-        await signInManager.SignInAsync(newUser, true);
+        await signInManager.SignInAsync(newUser, isPersistent: true);
         return TypedResults.Ok();
     }
 

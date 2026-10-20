@@ -26,8 +26,8 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<Ok>(result.Result);
-        userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(p => p.IsAnonymous == true), true));
+        userManager.Verify(manager => manager.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous)));
+        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(p => p.IsAnonymous), isPersistent: true));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()));
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class AuthEndpointsTests
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     // `SignIn` covers three intents that differ only by state the caller cannot see — whether the
@@ -122,10 +122,16 @@ public class AuthEndpointsTests
 
         // lockoutOnFailure: true — without it a wrong password costs an attacker nothing
         signInManager.Verify(manager =>
-            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true)
+            manager.CheckPasswordSignInAsync(
+                It.Is<AppUser>(u => u.Email == "test@test.com"),
+                "P@ssw0rd",
+                lockoutOnFailure: true
+            )
         );
         userManager.Verify(manager => manager.CheckPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+        signInManager.Verify(manager =>
+            manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), isPersistent: true)
+        );
     }
 
     [Fact]
@@ -134,7 +140,7 @@ public class AuthEndpointsTests
         var userManager = GetMockUserManager();
         var signInManager = GetMockSignInManager();
         signInManager
-            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), true))
+            .Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), lockoutOnFailure: true))
             .ReturnsAsync(SignInResult.LockedOut);
 
         var result = await AuthEndpoints.SignIn(
@@ -150,7 +156,7 @@ public class AuthEndpointsTests
         // A locked-out account is indistinguishable from a wrong password to the caller, which is
         // deliberate — it keeps the endpoint from confirming that an email is registered.
         Assert.IsType<ForbidHttpResult>(result.Result);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -170,7 +176,7 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<ForbidHttpResult>(result.Result);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -191,7 +197,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<ForbidHttpResult>(result.Result);
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -213,11 +219,13 @@ public class AuthEndpointsTests
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager =>
             manager.CreateAsync(
-                It.Is<AppUser>(u => u.Email == "new@test.com" && u.IsAnonymous == false && u.LockoutEnabled),
+                It.Is<AppUser>(u => u.Email == "new@test.com" && !u.IsAnonymous && u.LockoutEnabled),
                 "P@ssw0rd"
             )
         );
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), true));
+        signInManager.Verify(manager =>
+            manager.SignInAsync(It.Is<AppUser>(u => u.Email == "new@test.com"), isPersistent: true)
+        );
     }
 
     [Fact]
@@ -239,7 +247,7 @@ public class AuthEndpointsTests
         var statusResult = Assert.IsType<StatusCodeHttpResult>(result.Result);
         Assert.Equal(StatusCodes.Status429TooManyRequests, statusResult.StatusCode);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -259,7 +267,9 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<Ok>(result.Result);
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+        signInManager.Verify(manager =>
+            manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), isPersistent: true)
+        );
     }
 
     [Fact]
@@ -280,7 +290,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<Ok>(result.Result);
         userManager.Verify(manager =>
-            manager.UpdateAsync(It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false))
+            manager.UpdateAsync(It.Is<AppUser>(u => u.Email == "email@contoso.co" && !u.IsAnonymous))
         );
     }
 
@@ -301,7 +311,7 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -327,7 +337,7 @@ public class AuthEndpointsTests
         // gets switched on — AllowedForNewUsers does not reach a row that already exists.
         userManager.Verify(manager =>
             manager.UpdateAsync(
-                It.Is<AppUser>(u => u.Email == "email@contoso.co" && u.IsAnonymous == false && u.LockoutEnabled)
+                It.Is<AppUser>(u => u.Email == "email@contoso.co" && !u.IsAnonymous && u.LockoutEnabled)
             )
         );
 
@@ -335,7 +345,7 @@ public class AuthEndpointsTests
         // session cookie already names it, so no re-sign-in.
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -357,7 +367,7 @@ public class AuthEndpointsTests
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw"));
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -379,7 +389,7 @@ public class AuthEndpointsTests
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()));
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -402,7 +412,9 @@ public class AuthEndpointsTests
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.DeleteAsync(It.Is<AppUser>(u => u.Id == AnonymousUser1)));
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+        signInManager.Verify(manager =>
+            manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), isPersistent: true)
+        );
     }
 
     [Fact]
@@ -429,7 +441,7 @@ public class AuthEndpointsTests
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
-        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), true), Times.Never);
+        signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
     }
 
     [Fact]
@@ -452,9 +464,15 @@ public class AuthEndpointsTests
         // exists is still an ordinary sign-in, and still costs a password check.
         Assert.IsType<Ok>(result.Result);
         signInManager.Verify(manager =>
-            manager.CheckPasswordSignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), "P@ssw0rd", true)
+            manager.CheckPasswordSignInAsync(
+                It.Is<AppUser>(u => u.Email == "test@test.com"),
+                "P@ssw0rd",
+                lockoutOnFailure: true
+            )
         );
-        signInManager.Verify(manager => manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), true));
+        signInManager.Verify(manager =>
+            manager.SignInAsync(It.Is<AppUser>(u => u.Email == "test@test.com"), isPersistent: true)
+        );
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
     }
 
@@ -647,9 +665,15 @@ public class AuthEndpointsTests
         // The password check goes through SignInManager, not UserManager, so that failures count
         // towards lockout. `lockoutOnFailure` is matched explicitly: passing false here would still
         // authenticate correctly and silently drop the rate limiting.
-        mock.Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), "P@ssw0rd", true))
+        mock.Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), "P@ssw0rd", lockoutOnFailure: true))
             .ReturnsAsync(SignInResult.Success);
-        mock.Setup(m => m.CheckPasswordSignInAsync(It.IsAny<AppUser>(), It.Is<string>(s => s != "P@ssw0rd"), true))
+        mock.Setup(m =>
+                m.CheckPasswordSignInAsync(
+                    It.IsAny<AppUser>(),
+                    It.Is<string>(s => s != "P@ssw0rd"),
+                    lockoutOnFailure: true
+                )
+            )
             .ReturnsAsync(SignInResult.Failed);
         return mock;
     }

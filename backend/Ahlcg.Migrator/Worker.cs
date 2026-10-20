@@ -18,7 +18,7 @@ public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime h
 
         try
         {
-            using var scope = serviceProvider.CreateScope();
+            await using var scope = serviceProvider.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             await RunMigrationAsync(dbContext, stoppingToken);

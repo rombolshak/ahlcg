@@ -33,6 +33,14 @@ dotnet_diagnostic.IDE0024.severity = warning
 dotnet_diagnostic.IDE0061.severity = warning
 
 dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.CA1822.severity = warning
+
+dotnet_diagnostic.MA0003.severity = warning
+dotnet_diagnostic.MA0020.severity = warning
+dotnet_diagnostic.MA0042.severity = warning
+dotnet_diagnostic.MA0073.severity = warning
+dotnet_diagnostic.MA0076.severity = warning
 
 # No SynchronizationContext in ASP.NET Core; string equality and string-keyed collections default to ordinal.
 dotnet_diagnostic.MA0002.severity = none
@@ -40,6 +48,8 @@ dotnet_diagnostic.MA0004.severity = none
 dotnet_diagnostic.MA0006.severity = none
 dotnet_diagnostic.MA0008.severity = none
 dotnet_diagnostic.MA0026.severity = none
+# Deprecated by Meziantou in favour of CA1822.
+dotnet_diagnostic.MA0038.severity = none
 
 [{unit-tests,integration-tests}/**.cs]
 dotnet_diagnostic.CA1707.severity = none

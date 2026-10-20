@@ -72,8 +72,8 @@ public sealed partial class GameSessions
 
                 if (_sessions.TryAdd(gameId, session))
                 {
-                    LogSessionStarted(gameId);
-                    return new SessionChange(session, true);
+                    LogSessionStarted(_logger, gameId);
+                    return new SessionChange(session, MemberPresenceChanged: true);
                 }
             }
         }
@@ -94,13 +94,13 @@ public sealed partial class GameSessions
 
         if (!_sessions.TryGetValue(gameId, out var observed))
         {
-            change = new SessionChange(null, false);
+            change = new SessionChange(Session: null, MemberPresenceChanged: false);
             return true;
         }
 
         if (!observed.Connections.TryGetValue(userId, out var memberConnections))
         {
-            change = new SessionChange(observed, false);
+            change = new SessionChange(observed, MemberPresenceChanged: false);
             return true;
         }
 
@@ -136,8 +136,8 @@ public sealed partial class GameSessions
         var duration = now - observed.StartedAt;
         _playersHistogram.Record(observed.PeakMemberCount);
         _durationHistogram.Record(duration.TotalSeconds);
-        LogSessionEnded(gameId, observed.PeakMemberCount, duration);
-        change = new SessionChange(null, memberLeft);
+        LogSessionEnded(_logger, gameId, observed.PeakMemberCount, duration);
+        change = new SessionChange(Session: null, memberLeft);
         return true;
     }
 
@@ -197,7 +197,7 @@ public sealed partial class GameSessions
                 return false;
             }
 
-            LogInviteCodeOpened(gameId);
+            LogInviteCodeOpened(_logger, gameId);
             result = next;
             return true;
         }
@@ -212,7 +212,7 @@ public sealed partial class GameSessions
             return false;
         }
 
-        LogInviteCodeClosed(gameId);
+        LogInviteCodeClosed(_logger, gameId);
         result = next;
         return true;
     }
@@ -231,17 +231,17 @@ public sealed partial class GameSessions
     }
 
     [LoggerMessage(LogLevel.Information, "Session for game {GameId} started")]
-    private partial void LogSessionStarted(Guid gameId);
+    private static partial void LogSessionStarted(ILogger logger, Guid gameId);
 
     [LoggerMessage(
         LogLevel.Information,
         "Session for game {GameId} ended after {Duration} with at most {PeakMemberCount} members online"
     )]
-    private partial void LogSessionEnded(Guid gameId, int peakMemberCount, TimeSpan duration);
+    private static partial void LogSessionEnded(ILogger logger, Guid gameId, int peakMemberCount, TimeSpan duration);
 
     [LoggerMessage(LogLevel.Debug, "Invite code opened for game {GameId}")]
-    private partial void LogInviteCodeOpened(Guid gameId);
+    private static partial void LogInviteCodeOpened(ILogger logger, Guid gameId);
 
     [LoggerMessage(LogLevel.Debug, "Invite code closed for game {GameId}")]
-    private partial void LogInviteCodeClosed(Guid gameId);
+    private static partial void LogInviteCodeClosed(ILogger logger, Guid gameId);
 }

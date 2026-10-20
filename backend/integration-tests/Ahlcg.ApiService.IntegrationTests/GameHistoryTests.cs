@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,8 @@ public class GameHistoryTests(AppFixture fixture)
         public int SchemaVersion => 1;
     }
 
-    private static TestState State(int n) => new(n, $"state {n}", n % 2 == 0);
+    private static TestState State(int n) =>
+        new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"), n % 2 == 0);
 
     private static StepResult<TestState> Step(
         int n,
@@ -162,8 +164,8 @@ public class GameHistoryTests(AppFixture fixture)
     {
         var run = await BeginRunAsync();
 
-        var first = await run.History.Append(run.GameId, run.Current, Step(1), null, CancellationToken.None);
-        var second = await run.History.Append(run.GameId, first!, Step(2), null, CancellationToken.None);
+        var first = await run.History.Append(run.GameId, run.Current, Step(1), choice: null, CancellationToken.None);
+        var second = await run.History.Append(run.GameId, first!, Step(2), choice: null, CancellationToken.None);
 
         Assert.Equal(new StoredState<TestState>(1, State(1)), first);
         Assert.Equal(new StoredState<TestState>(2, State(2)), second);
@@ -176,7 +178,7 @@ public class GameHistoryTests(AppFixture fixture)
         var stale = run.Current;
         await run.AppendPlainAsync(1, 2);
 
-        var refused = await run.History.Append(run.GameId, stale, Step(9), null, CancellationToken.None);
+        var refused = await run.History.Append(run.GameId, stale, Step(9), choice: null, CancellationToken.None);
 
         Assert.Null(refused);
         Assert.Equal([1, 2], await run.StepVersionsAsync());
@@ -196,7 +198,7 @@ public class GameHistoryTests(AppFixture fixture)
             gameId,
             new StoredState<TestState>(0, State(0)),
             Step(1),
-            null,
+            choice: null,
             CancellationToken.None
         );
 
@@ -389,7 +391,9 @@ public class GameHistoryTests(AppFixture fixture)
         var results = await Task.WhenAll(
             Enumerable
                 .Range(1, 8)
-                .Select(n => NewHistory().Append(run.GameId, run.Current, Step(n), null, CancellationToken.None))
+                .Select(n =>
+                    NewHistory().Append(run.GameId, run.Current, Step(n), choice: null, CancellationToken.None)
+                )
         );
 
         Assert.Single(results, r => r is not null);
@@ -446,7 +450,7 @@ public class GameHistoryTests(AppFixture fixture)
         var game = await TrackModifiedGameAsync(db, gameId);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            history.Append(gameId, begun!, Step(1), null, CancellationToken.None)
+            history.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None)
         );
 
         Assert.Equal(EntityState.Modified, db.Entry(game).State);
@@ -465,7 +469,7 @@ public class GameHistoryTests(AppFixture fixture)
         var game = await db.Games.SingleAsync(g => g.Id == gameId);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            history.Append(gameId, begun!, Step(1), null, CancellationToken.None)
+            history.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None)
         );
 
         Assert.Equal(EntityState.Unchanged, db.Entry(game).State);
@@ -479,7 +483,7 @@ public class GameHistoryTests(AppFixture fixture)
         var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
         var begun = await history.Begin(gameId, State(0), CancellationToken.None);
 
-        await history.Append(gameId, begun!, Step(1, checkpoint: "a"), null, CancellationToken.None);
+        await history.Append(gameId, begun!, Step(1, checkpoint: "a"), choice: null, CancellationToken.None);
 
         Assert.Empty(db.ChangeTracker.Entries());
     }
@@ -510,7 +514,7 @@ public class GameHistoryTests(AppFixture fixture)
         var stale = run.Current;
         await run.AppendPlainAsync(1, 1);
 
-        await run.History.Append(run.GameId, stale, Step(2), null, CancellationToken.None);
+        await run.History.Append(run.GameId, stale, Step(2), choice: null, CancellationToken.None);
 
         Assert.Equal("LogAppendRefusedStale", logger.LatestRecord.Id.Name);
     }

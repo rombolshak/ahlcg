@@ -12,7 +12,7 @@ public class RateLimitTests(DefaultLimitsAppFixture fixture)
     public async Task PostGamesJoin_And_LoginAnonymously_AreThrottledIndependently()
     {
         using var accountA = fixture.CreateClient();
-        var loginA = await accountA.PostAsync("/auth/loginAnonymously", null);
+        var loginA = await accountA.PostAsync("/auth/loginAnonymously", content: null);
         loginA.EnsureSuccessStatusCode();
 
         for (var attempt = 0; attempt < 5; attempt++)
@@ -27,12 +27,12 @@ public class RateLimitTests(DefaultLimitsAppFixture fixture)
         for (var account = 0; account < 4; account++)
         {
             using var client = fixture.CreateClient();
-            var response = await client.PostAsync("/auth/loginAnonymously", null);
+            var response = await client.PostAsync("/auth/loginAnonymously", content: null);
             response.EnsureSuccessStatusCode();
         }
 
         using var sixthAccount = fixture.CreateClient();
-        var throttledCreation = await sixthAccount.PostAsync("/auth/loginAnonymously", null);
+        var throttledCreation = await sixthAccount.PostAsync("/auth/loginAnonymously", content: null);
         Assert.Equal(HttpStatusCode.TooManyRequests, throttledCreation.StatusCode);
     }
 

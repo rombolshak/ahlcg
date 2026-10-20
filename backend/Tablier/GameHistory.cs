@@ -1,4 +1,5 @@
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Json.Patch;
@@ -140,7 +141,10 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             if (!result.IsSuccess)
             {
                 throw new InvalidOperationException(
-                    $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}"
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}"
+                    )
                 );
             }
 

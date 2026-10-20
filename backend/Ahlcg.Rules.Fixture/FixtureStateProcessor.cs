@@ -5,9 +5,7 @@ namespace Ahlcg.Rules.Fixture;
 public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
 {
     public IReadOnlyDictionary<string, IReadOnlySet<string>> GetMembersActions(FixtureState state) =>
-        state.RevealPending
-            ? new Dictionary<string, IReadOnlySet<string>>()
-            : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
+        state.RevealPending ? [] : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
 
     public StepResult<FixtureState> Execute(FixtureState state, string member, string action)
     {

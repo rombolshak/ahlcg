@@ -14,4 +14,5 @@ builder.Services.AddOpenTelemetry().WithTracing(tracing => tracing.AddSource(Wor
 builder.AddNpgsqlDbContext<ApplicationDbContext>("ahlcg");
 
 var host = builder.Build();
-host.Run();
+
+await host.RunAsync();

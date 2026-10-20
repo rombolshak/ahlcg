@@ -441,7 +441,7 @@ public static partial class GameEndpoints
             .OrderBy(m => m.JoinedAt)
             .ToListAsync();
 
-        if (members.All(m => m.UserId != user.Id))
+        if (members.TrueForAll(m => m.UserId != user.Id))
         {
             LogNotAMember(logger, id, user.Id);
             return TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden);

@@ -421,7 +421,7 @@ public class GameEndpointsTests(AppFixture fixture)
         await using var before = fixture.CreateDbContext();
         var beforeIds = await before.Users.Select(u => u.Id).ToListAsync();
 
-        var response = await client.PostAsync("/auth/loginAnonymously", null);
+        var response = await client.PostAsync("/auth/loginAnonymously", content: null);
         response.EnsureSuccessStatusCode();
 
         await using var after = fixture.CreateDbContext();
