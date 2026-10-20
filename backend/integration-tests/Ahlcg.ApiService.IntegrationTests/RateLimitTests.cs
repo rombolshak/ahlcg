@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using Tablier;
-using Tablier.Data;
 
 namespace Ahlcg.ApiService.IntegrationTests;
 

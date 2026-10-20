@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using OpenTelemetry.Metrics;
 using Tablier.Data;
 
 namespace Tablier;

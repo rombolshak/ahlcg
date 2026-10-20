@@ -42,7 +42,7 @@ Identity is ASP.NET Core Identity with cookie auth. How one route serves sign-in
 
 ## Entities and the DbContext
 
-**Entities live in `Tablier.Data`**, not next to their routes: `Tablier.Data` cannot reference `Tablier`, and the `DbContext` has to see them. One file per aggregate — `AppUser.cs`, and `Game.cs` holding `Game` and `GameMember`, and `GameHistory.cs` holding `GameStep` and `GameSnapshot`.
+**Entities live in `Tablier.Data`**, not next to their routes: `Tablier.Data` cannot reference `Tablier`, and the `DbContext` has to see them. One type per file, as everywhere on the backend: Meziantou's `MA0048` fails the build otherwise. A short record or enum that belongs to one type may share that type's file under `#pragma warning disable MA0048`; an entity always gets its own file.
 
 `ApplicationDbContext` is `IdentityDbContext<AppUser>` plus a `DbSet` per entity, and every relationship, key, index, and column mapping is configured in its single `OnModelCreating` override rather than by attributes on the entity. `base.OnModelCreating(builder)` must stay first — Identity's own model configuration lives there.
 

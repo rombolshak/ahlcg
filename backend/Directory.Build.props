@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <AnalysisMode>Recommended</AnalysisMode>
+        <!-- IDE0005 (unused usings) only reports at build when the doc file is generated. -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <CSharpier_Check Condition="'$(CI)' == 'true'">true</CSharpier_Check>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CSharpier.MSBuild" Version="1.3.0" PrivateAssets="all" />
+        <PackageReference Include="Meziantou.Analyzer" Version="3.0.315" PrivateAssets="all" />
+    </ItemGroup>
+</Project>

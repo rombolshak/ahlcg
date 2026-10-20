@@ -5,21 +5,9 @@ using Tablier.Data;
 
 namespace Tablier;
 
+#pragma warning disable MA0048
 public readonly record struct GameConnection(Guid GameId, string UserId, string ConnectionId);
-
-public enum ExitReason
-{
-    NotAMember,
-}
-
-public interface IGameClient
-{
-    Task MemberConnected(string userId);
-
-    Task MemberDisconnected(string userId);
-
-    Task Exit(ExitReason reason);
-}
+#pragma warning restore MA0048
 
 [Authorize]
 public partial class GameHub(

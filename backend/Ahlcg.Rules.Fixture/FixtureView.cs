@@ -1,11 +1,13 @@
 namespace Ahlcg.Rules.Fixture;
 
+#pragma warning disable MA0048
 public enum SecretSign
 {
     Negative,
     Zero,
     Positive,
 }
+#pragma warning restore MA0048
 
 public sealed record FixtureView(
     int Shared,

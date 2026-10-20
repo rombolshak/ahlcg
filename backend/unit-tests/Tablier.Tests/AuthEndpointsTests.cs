@@ -588,32 +588,27 @@ public class AuthEndpointsTests
             IsAnonymous = false,
         };
 
-        mock.Setup(m =>
-                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser1)))
-            )
-            .ReturnsAsync(
-                new AppUser
-                {
-                    Id = AnonymousUser1,
-                    UserName = Guid.NewGuid().ToString(),
-                    IsAnonymous = true,
-                }
-            );
-        mock.Setup(m =>
-                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, AnonymousUser2)))
-            )
-            .ReturnsAsync(
-                new AppUser
-                {
-                    Id = AnonymousUser2,
-                    UserName = Guid.NewGuid().ToString(),
-                    IsAnonymous = true,
-                }
-            );
-        mock.Setup(m =>
-                m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, PermanentUser)))
-            )
-            .ReturnsAsync(permanentUser);
+        SetupGetUser(
+            mock,
+            AnonymousUser1,
+            new AppUser
+            {
+                Id = AnonymousUser1,
+                UserName = Guid.NewGuid().ToString(),
+                IsAnonymous = true,
+            }
+        );
+        SetupGetUser(
+            mock,
+            AnonymousUser2,
+            new AppUser
+            {
+                Id = AnonymousUser2,
+                UserName = Guid.NewGuid().ToString(),
+                IsAnonymous = true,
+            }
+        );
+        SetupGetUser(mock, PermanentUser, permanentUser);
         mock.Setup(m => m.FindByEmailAsync("test@test.com")).ReturnsAsync(permanentUser);
 
         mock.Setup(m => m.CreateAsync(It.IsAny<AppUser>())).ReturnsAsync(IdentityResult.Success);
@@ -630,6 +625,10 @@ public class AuthEndpointsTests
         mock.Setup(m => m.UpdateAsync(It.Is<AppUser>(u => u.Email != "bad_mail"))).ReturnsAsync(IdentityResult.Success);
         return mock;
     }
+
+    private static void SetupGetUser(Mock<UserManager<AppUser>> mock, string userId, AppUser user) =>
+        mock.Setup(m => m.GetUserAsync(It.Is<ClaimsPrincipal>(p => p.HasClaim(ClaimTypes.NameIdentifier, userId))))
+            .ReturnsAsync(user);
 
     private static Mock<SignInManager<AppUser>> GetMockSignInManager()
     {

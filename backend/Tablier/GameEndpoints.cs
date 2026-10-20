@@ -5,7 +5,6 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
@@ -38,7 +37,19 @@ public static partial class GameEndpoints
     public static RouteGroupBuilder MapGameEndpoints(this RouteGroupBuilder group)
     {
         group.WithDescription("Game creation and lifecycle.");
+        MapCreateGame(group);
+        MapJoinGame(group);
+        MapGetRecentGames(group);
+        MapGetArchivedGames(group);
+        MapGetLatestGame(group);
+        MapGetMembers(group);
+        MapRemoveMember(group);
+        MapSetMembersCount(group);
+        return group;
+    }
 
+    private static void MapCreateGame(RouteGroupBuilder group)
+    {
         group
             .MapPost("", CreateGame)
             .RequireAuthorization()
@@ -53,7 +64,10 @@ public static partial class GameEndpoints
                     + "not a check-then-insert."
             )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
+    private static void MapJoinGame(RouteGroupBuilder group)
+    {
         group
             .MapPost("join", JoinGame)
             .RequireAuthorization()
@@ -72,7 +86,10 @@ public static partial class GameEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status429TooManyRequests);
+    }
 
+    private static void MapGetRecentGames(RouteGroupBuilder group)
+    {
         group
             .MapGet("recent", GetRecentGames)
             .RequireAuthorization()
@@ -87,7 +104,10 @@ public static partial class GameEndpoints
                     + "Each configuration payload is opaque and returned exactly as stored."
             )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
+    private static void MapGetArchivedGames(RouteGroupBuilder group)
+    {
         group
             .MapGet("archive", GetArchivedGames)
             .RequireAuthorization()
@@ -99,7 +119,10 @@ public static partial class GameEndpoints
                     + "Each configuration payload is opaque and returned exactly as stored."
             )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
+    private static void MapGetLatestGame(RouteGroupBuilder group)
+    {
         group
             .MapGet("latest", GetLatestGame)
             .RequireAuthorization()
@@ -111,7 +134,10 @@ public static partial class GameEndpoints
                     + "normal state, not a missing resource."
             )
             .Produces(StatusCodes.Status401Unauthorized);
+    }
 
+    private static void MapGetMembers(RouteGroupBuilder group)
+    {
         group
             .MapGet("{id:guid}/members", GetMembers)
             .RequireAuthorization()
@@ -126,7 +152,10 @@ public static partial class GameEndpoints
             )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
+    }
 
+    private static void MapRemoveMember(RouteGroupBuilder group)
+    {
         group
             .MapDelete("{id:guid}/members/{userId}", RemoveMember)
             .RequireAuthorization()
@@ -145,7 +174,10 @@ public static partial class GameEndpoints
             )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
+    }
 
+    private static void MapSetMembersCount(RouteGroupBuilder group)
+    {
         group
             .MapPut("{id:guid}/membersCount", SetMembersCount)
             .RequireAuthorization()
@@ -159,8 +191,6 @@ public static partial class GameEndpoints
             )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status403Forbidden);
-
-        return group;
     }
 
     public static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(

@@ -117,12 +117,10 @@ public static partial class AuthEndpoints
         return TypedResults.Ok();
     }
 
-    /// <summary>
-    /// Signs in, registers, and upgrades an anonymous account — one endpoint, because from the
-    /// caller's side they are the same intent ("make me this person") and the branch taken is
-    /// decided by state the caller does not have: whether the email is already on record.
-    /// Splitting them once meant a register button could destroy an anonymous player's games.
-    /// </summary>
+    // Signs in, registers, and upgrades an anonymous account — one endpoint, because from the
+    // caller's side they are the same intent ("make me this person") and the branch taken is
+    // decided by state the caller does not have: whether the email is already on record.
+    // Splitting them once meant a register button could destroy an anonymous player's games.
     public static async Task<Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>> SignIn(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
@@ -218,10 +216,8 @@ public static partial class AuthEndpoints
         LogSignedOut(logger, user.Id);
     }
 
-    /// <summary>
-    /// Keeps the anonymous account's id, so everything hanging off it by <c>OwnerId</c> survives.
-    /// The session cookie already names this user, so no re-sign-in is needed.
-    /// </summary>
+    // Keeps the anonymous account's id, so everything hanging off it by OwnerId survives.
+    // The session cookie already names this user, so no re-sign-in is needed.
     private static async Task<
         Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>
     > UpgradeUserToPermanentAsync(

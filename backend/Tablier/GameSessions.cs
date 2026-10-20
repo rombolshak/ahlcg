@@ -5,16 +5,9 @@ using System.Security.Cryptography;
 
 namespace Tablier;
 
-public sealed record GameSession(
-    DateTimeOffset StartedAt,
-    // ImmutableDictionary does not override Equals; GameSessions' CAS loop relies on this staying
-    // reference-based. A structural comparer here would silently break TryUpdate/TryRemove.
-    ImmutableDictionary<string, ImmutableHashSet<string>> Connections,
-    int PeakMemberCount,
-    string? InviteCode = null
-);
-
+#pragma warning disable MA0048
 public readonly record struct SessionChange(GameSession? Session, bool MemberPresenceChanged);
+#pragma warning restore MA0048
 
 public sealed partial class GameSessions
 {

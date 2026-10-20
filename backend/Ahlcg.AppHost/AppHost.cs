@@ -1,3 +1,4 @@
+#pragma warning disable MA0048
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);

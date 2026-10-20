@@ -9,9 +9,11 @@ using Tablier.Data;
 
 namespace Tablier;
 
+#pragma warning disable MA0048
 public sealed record StoredState<TState>(int Version, TState State);
 
 public readonly record struct PlayerChoice(string Member, string Action);
+#pragma warning restore MA0048
 
 public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
     where TState : ISchemaVersioned

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +12,7 @@ public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime h
     public const string ActivitySourceName = "Migrations";
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var activity = ActivitySource.StartActivity("Migrating database", ActivityKind.Client);
 
@@ -21,7 +21,7 @@ public class Worker(IServiceProvider serviceProvider, IHostApplicationLifetime h
             using var scope = serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            await RunMigrationAsync(dbContext, cancellationToken);
+            await RunMigrationAsync(dbContext, stoppingToken);
         }
         catch (Exception ex)
         {
