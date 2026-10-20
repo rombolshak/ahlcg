@@ -41,9 +41,8 @@ Vitest through the `@angular/build:unit-test` builder, running in **happy-dom** 
 
 Configuration:
 
-- `angular.json` → `test` target: `coverage: true`, `tsConfig: tsconfig.spec.json`, `setupFiles: ["src/test-setup.ts"]`. Build options (assets, styles) are inherited from the build target.
+- `angular.json` → `test` target: `coverage: true`, `tsConfig: tsconfig.spec.json`. Build options (assets, styles) are inherited from the build target.
 - `tsconfig.spec.json` sets `"types": ["vitest/globals"]`, so `describe`/`it`/`expect`/`vi` need no imports.
-- `src/test-setup.ts` polyfills `localStorage` (happy-dom has none). Add any other missing global here, not per-spec.
 
 Commands:
 
@@ -135,7 +134,6 @@ Test names read as sentences: `it('should fire event after animation')`.
 | Symptom | Cause |
 | --- | --- |
 | `ECONNREFUSED` to `/assets/...` | happy-dom has no web server; mock the request (see `serveCardAssets`) |
-| `localStorage is undefined` | `setupFiles` not applied, or a new global is needed in `test-setup.ts` |
 | "Unsafe call of an error typed value" on `vi` | Add an explicit `import { vi } from 'vitest';` to that spec |
 | Input assignment does not compile | Use `componentRef.setInput` |
 | Emission never resolves | `output()` is not an Observable |

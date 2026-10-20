@@ -49,7 +49,6 @@ frontend/
 │   │       └── settings/             account/, setting-item/, user-preferences.service.ts
 │   ├── testing/                      transloco.testing.ts, serve-card-assets.ts (see below)
 │   ├── styles.css                    Tailwind + daisyUI theme (design tokens)
-│   ├── test-setup.ts                 localStorage polyfill for happy-dom
 │   └── main.ts / index.html
 ├── public/assets/                    cards/, images/, fonts/, i18n/
 ├── .storybook/
