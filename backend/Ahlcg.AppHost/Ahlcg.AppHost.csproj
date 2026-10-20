@@ -15,8 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.Javascript" Version="13.5.4" />
-        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.4" />
+        <PackageReference Include="Aspire.Hosting.Javascript" Version="13.6.1" />
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.6.1" />
         <!-- GHSA-qhrr-8q5h-9q3h: Aspire.Hosting 13.6.1 still pulls 2.5.302 through StreamJsonRpc -->
         <PackageReference Include="MessagePack" Version="2.5.303" />
     </ItemGroup>
