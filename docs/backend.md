@@ -70,10 +70,10 @@ Three rules govern it. Everything else is in the code.
 
 - **The store issues versions.** `Begin`, `Append` and `LoadCurrent` return a `StoredState<TState>`; the caller hands the last one back as `previous` and never computes a version. A stale `previous` is refused, so a caller still holding a state from before a rewind cannot append.
 - **The schema version travels in the state** (`TState : ISchemaVersioned`), and is copied to a column on each snapshot so stale snapshots can be found by query. A `TState` is always the current schema: old JSON is upcast before it is deserialised, never after.
-- **Retention is driven by the flags on `StepResult`.** A checkpoint writes a snapshot. A baseline writes one and deletes every step and snapshot below it. An irreversible step deletes the snapshots between the latest baseline and itself, and keeps every step, so loading falls back to the baseline snapshot and replays patches. The store does not know what a scenario is.
-- **A refusal is a `null` or `false`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version comes back as a refusal. An unknown game id, a patch that will not apply, and a `DbContext` with pending changes throw.
-- **Every write needs a `DbContext` with no pending changes.** `SaveChanges` would flush the caller's unsaved edits inside the store's transaction, so `Begin`, `Append` and `Truncate` throw up front instead. Save first.
-- **Writes mix bulk `ExecuteDeleteAsync` with inserts**, so each runs in an explicit transaction inside the execution strategy. That is why the tests are at the integration tier, against real Postgres.
+- **History is append-only.** A rewind appends the restored state as an irreversible checkpoint; nothing is ever truncated.
+- **Retention limits are queries, not deletions.** A checkpoint or baseline writes a snapshot. `LoadAt` refuses any version behind a later irreversible or baseline step, so a snapshot rewind can no longer reach is unreachable whether or not its row still exists. The store does not know what a scenario is.
+- **A refusal is a `null`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version hits the primary key and comes back as a refusal. An unknown game id, a patch that will not apply, and a `DbContext` that tracks anything throw.
+- **Every write needs a `DbContext` that tracks nothing**, and clears the tracker after its one `SaveChanges`. Otherwise it would flush the caller's unsaved edits, or detach their entities. Save and clear first.
 
 ## Rules modules
 
