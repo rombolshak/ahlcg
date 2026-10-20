@@ -22,6 +22,7 @@ public static class TablierExtensions
             .AddHubInstrumentation()
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
+        builder.Services.AddScoped(typeof(GameHistory<>));
         builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 

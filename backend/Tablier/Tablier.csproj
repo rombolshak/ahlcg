@@ -33,6 +33,7 @@
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.5.4" />
         <PackageReference Include="AspNetCore.SignalR.OpenTelemetry" Version="1.8.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
+        <PackageReference Include="JsonPatch.Net" Version="5.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
         <!-- Held on 2.x: Microsoft.AspNetCore.OpenApi 10.0.x targets OpenAPI.NET v2, and its
              XmlCommentGenerator assigns IOpenApiMediaType.Example, which v3 made read-only. -->
