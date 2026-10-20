@@ -25,7 +25,7 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
             _ => state with { RevealPending = true },
         };
 
-        return new StepResult<FixtureState>(next, null, false);
+        return new StepResult<FixtureState>(next);
     }
 
     public StepResult<FixtureState> Advance(FixtureState state)
