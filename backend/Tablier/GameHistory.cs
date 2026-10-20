@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Json.Patch;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Tablier.Contract;
 using Tablier.Data;
 
@@ -19,22 +18,15 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     public async Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct)
     {
         RequireNoPendingChanges();
-        bool begun;
-        try
+        var begun = await InTransaction(async () =>
         {
-            begun = await InTransaction(async () =>
-            {
-                if (await Head(gameId, ct) is not null) return false;
+            await LockGame(gameId, ct);
+            if (await Head(gameId, ct) is not null) return false;
 
-                db.GameSnapshots.Add(NewSnapshot(gameId, 0, initial));
-                await db.SaveChangesAsync(ct);
-                return true;
-            }, ct);
-        }
-        catch (DbUpdateException e) when (IsUniqueViolation(e))
-        {
-            begun = false;
-        }
+            db.GameSnapshots.Add(NewSnapshot(gameId, 0, initial));
+            await db.SaveChangesAsync(ct);
+            return true;
+        }, ct);
 
         if (!begun)
         {
@@ -56,58 +48,50 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         RequireNoPendingChanges();
         var patch = ToNode(previous.State).CreatePatch(ToNode(step.State));
 
-        AppendOutcome outcome;
-        try
+        var outcome = await InTransaction(async () =>
         {
-            outcome = await InTransaction(async () =>
+            await LockGame(gameId, ct);
+            if (await Head(gameId, ct) is not { } head) return new AppendOutcome(AppendStatus.NotBegun, 0, default);
+            if (head != previous.Version) return new AppendOutcome(AppendStatus.Stale, head, default);
+
+            var version = head + 1;
+            db.GameSteps.Add(new GameStep
             {
-                if (await Head(gameId, ct) is not { } head) return new AppendOutcome(AppendStatus.NotBegun, 0, default);
-                if (head != previous.Version) return new AppendOutcome(AppendStatus.Stale, head, default);
+                GameId = gameId,
+                Version = version,
+                Actor = choice?.Member,
+                Action = choice?.Action,
+                Patch = JsonSerializer.SerializeToDocument(patch),
+                Checkpoint = step.Checkpoint,
+                Irreversible = step.Irreversible,
+                Baseline = step.Baseline,
+            });
+            if (step.Checkpoint is not null || step.Baseline)
+            {
+                db.GameSnapshots.Add(NewSnapshot(gameId, version, step.State));
+            }
 
-                var version = head + 1;
-                db.GameSteps.Add(new GameStep
-                {
-                    GameId = gameId,
-                    Version = version,
-                    Actor = choice?.Member,
-                    Action = choice?.Action,
-                    Patch = JsonSerializer.SerializeToDocument(patch),
-                    Checkpoint = step.Checkpoint,
-                    Irreversible = step.Irreversible,
-                    Baseline = step.Baseline,
-                });
-                if (step.Checkpoint is not null || step.Baseline)
-                {
-                    db.GameSnapshots.Add(NewSnapshot(gameId, version, step.State));
-                }
+            await db.SaveChangesAsync(ct);
 
-                await db.SaveChangesAsync(ct);
+            var deleted = default(Deleted);
+            if (step.Baseline)
+            {
+                deleted = new Deleted(
+                    await db.GameSteps.Where(s => s.GameId == gameId && s.Version < version).ExecuteDeleteAsync(ct),
+                    await db.GameSnapshots.Where(s => s.GameId == gameId && s.Version < version).ExecuteDeleteAsync(ct));
+            }
+            else if (step.Irreversible)
+            {
+                var floor = await db.GameSnapshots.Where(s => s.GameId == gameId).MinAsync(s => s.Version, ct);
+                deleted = new Deleted(
+                    0,
+                    await db.GameSnapshots
+                        .Where(s => s.GameId == gameId && s.Version > floor && s.Version < version)
+                        .ExecuteDeleteAsync(ct));
+            }
 
-                var deleted = default(Deleted);
-                if (step.Baseline)
-                {
-                    deleted = new Deleted(
-                        await db.GameSteps.Where(s => s.GameId == gameId && s.Version < version).ExecuteDeleteAsync(ct),
-                        await db.GameSnapshots.Where(s => s.GameId == gameId && s.Version < version).ExecuteDeleteAsync(ct));
-                }
-                else if (step.Irreversible)
-                {
-                    var floor = await db.GameSnapshots.Where(s => s.GameId == gameId).MinAsync(s => s.Version, ct);
-                    deleted = new Deleted(
-                        0,
-                        await db.GameSnapshots
-                            .Where(s => s.GameId == gameId && s.Version > floor && s.Version < version)
-                            .ExecuteDeleteAsync(ct));
-                }
-
-                return new AppendOutcome(AppendStatus.Appended, head, deleted);
-            }, ct);
-        }
-        catch (DbUpdateException e) when (IsUniqueViolation(e))
-        {
-            LogAppendRefusedConcurrent(logger, gameId, previous.Version);
-            return null;
-        }
+            return new AppendOutcome(AppendStatus.Appended, head, deleted);
+        }, ct);
 
         switch (outcome.Status)
         {
@@ -192,6 +176,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         RequireNoPendingChanges();
         var outcome = await InTransaction(async () =>
         {
+            await LockGame(gameId, ct);
             if (await db.GameSnapshots.Where(s => s.GameId == gameId).MinAsync(s => (int?)s.Version, ct) is not { } floor)
             {
                 return new TruncateOutcome(TruncateStatus.NotBegun, 0, default);
@@ -260,8 +245,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         foreach (var entry in added) entry.State = EntityState.Detached;
     }
 
-    private static bool IsUniqueViolation(DbUpdateException e) =>
-        e.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
+    private Task LockGame(Guid gameId, CancellationToken ct) =>
+        db.Database.ExecuteSqlInterpolatedAsync($"""SELECT 1 FROM "Games" WHERE "Id" = {gameId} FOR UPDATE""", ct);
 
     private async Task<int?> Head(Guid gameId, CancellationToken ct) =>
         await db.GameSteps.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct)
@@ -321,10 +306,6 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     [LoggerMessage(LogLevel.Warning,
         "Append refused for game {GameId}: previous version {Version} is not the head {Head}")]
     private static partial void LogAppendRefusedStale(ILogger logger, Guid gameId, int version, int head);
-
-    [LoggerMessage(LogLevel.Warning,
-        "Append refused for game {GameId}: a concurrent append took the step after previous version {Version}")]
-    private static partial void LogAppendRefusedConcurrent(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: it has not begun")]
     private static partial void LogLoadRefusedNotBegun(ILogger logger, Guid gameId);

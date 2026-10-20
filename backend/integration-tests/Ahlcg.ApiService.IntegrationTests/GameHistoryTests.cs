@@ -430,6 +430,20 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
+    public async Task Append_ConcurrentlyWithTruncateBelowHead_LeavesTruncatedHistory()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 3);
+
+        await Task.WhenAll(
+            NewHistory().Append(run.GameId, run.Current, Step(4), null, CancellationToken.None),
+            NewHistory().Truncate(run.GameId, 1, CancellationToken.None));
+
+        Assert.Equal([1], await run.StepVersionsAsync());
+        Assert.Equal(new StoredState<TestState>(1, State(1)), await run.LoadCurrentAsync());
+    }
+
+    [Fact]
     public async Task Begin_ConcurrentlyOnSameGame_AcceptsExactlyOne()
     {
         var gameId = await SeedGameAsync();
