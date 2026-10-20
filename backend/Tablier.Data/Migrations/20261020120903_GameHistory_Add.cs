@@ -41,8 +41,8 @@ namespace Tablier.Data.Migrations
                     Action = table.Column<string>(type: "text", nullable: true),
                     Patch = table.Column<string>(type: "jsonb", nullable: false),
                     Checkpoint = table.Column<string>(type: "text", nullable: true),
-                    Irreversible = table.Column<bool>(type: "boolean", nullable: false),
-                    Baseline = table.Column<bool>(type: "boolean", nullable: false)
+                    IsIrreversible = table.Column<bool>(type: "boolean", nullable: false),
+                    IsBaseline = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

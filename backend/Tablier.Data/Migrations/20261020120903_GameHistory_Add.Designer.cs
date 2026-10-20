@@ -12,7 +12,7 @@ using Tablier.Data;
 namespace Tablier.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261006105616_GameHistory_Add")]
+    [Migration("20261020120903_GameHistory_Add")]
     partial class GameHistory_Add
     {
         /// <inheritdoc />
@@ -319,13 +319,13 @@ namespace Tablier.Data.Migrations
                     b.Property<string>("Actor")
                         .HasColumnType("text");
 
-                    b.Property<bool>("Baseline")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Checkpoint")
                         .HasColumnType("text");
 
-                    b.Property<bool>("Irreversible")
+                    b.Property<bool>("IsBaseline")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsIrreversible")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Patch")

@@ -316,13 +316,13 @@ namespace Tablier.Data.Migrations
                     b.Property<string>("Actor")
                         .HasColumnType("text");
 
-                    b.Property<bool>("Baseline")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Checkpoint")
                         .HasColumnType("text");
 
-                    b.Property<bool>("Irreversible")
+                    b.Property<bool>("IsBaseline")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsIrreversible")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Patch")

@@ -46,7 +46,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         });
     }
 
-    private static PropertyBuilder<JsonDocument> HasJsonbConversion(PropertyBuilder<JsonDocument> property) =>
+    private static void HasJsonbConversion(PropertyBuilder<JsonDocument> property) =>
         property
             .HasConversion(
                 document => document.RootElement.GetRawText(),

@@ -10,8 +10,8 @@ public class GameStep
     public string? Action { get; set; }
     public required JsonDocument Patch { get; set; }
     public string? Checkpoint { get; set; }
-    public bool Irreversible { get; set; }
-    public bool Baseline { get; set; }
+    public bool IsIrreversible { get; set; }
+    public bool IsBaseline { get; set; }
 }
 
 public class GameSnapshot
