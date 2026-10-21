@@ -9,7 +9,8 @@ builder.AddServiceDefaults().AddTablier("ahlcg", "cache");
 builder
     .Services.AddSingleton<IGameConfigurator<FixtureConfiguration, FixtureState>, FixtureConfigurator>()
     .AddSingleton<IGameStateProcessor<FixtureState>, FixtureStateProcessor>()
-    .AddSingleton<IGameViewProjector<FixtureState, FixtureView>, FixtureViewProjector>();
+    .AddSingleton<IGameViewProjector<FixtureState, FixtureView>, FixtureViewProjector>()
+    .AddGameEngine<FixtureConfiguration, FixtureState, FixtureView>();
 
 var app = builder.Build();
 app.UseExceptionHandler();

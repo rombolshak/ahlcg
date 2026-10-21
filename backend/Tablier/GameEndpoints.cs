@@ -55,8 +55,9 @@ public static partial class GameEndpoints
             .RequireAuthorization()
             .WithDescription(
                 "Creates a new game owned by the calling user. "
-                    + "The configuration payload is opaque: it is stored in a jsonb column and handed back unchanged, and "
-                    + "only its presence is checked — omitting it is the one thing that yields a 400. "
+                    + "The configuration payload is stored in a jsonb column and handed back unchanged. The engine never "
+                    + "inspects it, but the game's rules module reads it: omitting it, or sending one the rules cannot "
+                    + "read, yields a 400 and nothing is saved. Creation also begins the game's history at version 0. "
                     + "createdAt and lastPlayedAt are equal on creation. "
                     + "Requires an Idempotency-Key header; repeating the same key for the same user "
                     + "returns the game created the first time instead of creating a new one, while the same key from a "
@@ -200,7 +201,9 @@ public static partial class GameEndpoints
         TimeProvider timeProvider,
         [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
         CreateGameRequest request,
-        ILogger<Game> logger
+        IGameEngine engine,
+        ILogger<Game> logger,
+        CancellationToken ct = default
     )
     {
         var user = await userManager.GetUserAsync(principal);
@@ -212,6 +215,14 @@ public static partial class GameEndpoints
                 new Dictionary<string, string[]>
                 {
                     [nameof(CreateGameRequest.Configuration)] = ["Configuration is required."],
+                }
+            );
+
+        if (!engine.IsReadableConfiguration(request.Configuration))
+            return TypedResults.ValidationProblem(
+                new Dictionary<string, string[]>
+                {
+                    [nameof(CreateGameRequest.Configuration)] = ["Configuration is not readable."],
                 }
             );
 
@@ -232,26 +243,10 @@ public static partial class GameEndpoints
         };
         game.Members.Add(member);
 
-        db.Games.Add(game);
-        try
-        {
-            await db.SaveChangesAsync();
-            LogGameCreated(logger, game.Id, user.Id);
-        }
-        catch (DbUpdateException)
-        {
-            db.Entry(member).State = EntityState.Detached;
-            db.Entry(game).State = EntityState.Detached;
+        game = await SaveOrFindReplayed(db, game, member, logger, ct);
 
-            var existing = await db.Games.FirstOrDefaultAsync(g =>
-                g.OwnerId == user.Id && g.IdempotencyKey == idempotencyKey
-            );
-            if (existing is null)
-                throw;
-
-            game = existing;
-            LogGameCreationReplayed(logger, game.Id, user.Id);
-        }
+        db.ChangeTracker.Clear();
+        await engine.Begin(game.Id, game.Configuration.RootElement, user.Id, ct);
 
         return TypedResults.Ok(
             new GameDto(
@@ -262,6 +257,38 @@ public static partial class GameEndpoints
                 game.Configuration.RootElement.Clone()
             )
         );
+    }
+
+    private static async Task<Game> SaveOrFindReplayed(
+        ApplicationDbContext db,
+        Game game,
+        GameMember member,
+        ILogger logger,
+        CancellationToken ct
+    )
+    {
+        db.Games.Add(game);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+            LogGameCreated(logger, game.Id, game.OwnerId);
+            return game;
+        }
+        catch (DbUpdateException)
+        {
+            db.Entry(member).State = EntityState.Detached;
+            db.Entry(game).State = EntityState.Detached;
+
+            var existing = await db.Games.FirstOrDefaultAsync(
+                g => g.OwnerId == game.OwnerId && g.IdempotencyKey == game.IdempotencyKey,
+                ct
+            );
+            if (existing is null)
+                throw;
+
+            LogGameCreationReplayed(logger, existing.Id, game.OwnerId);
+            return existing;
+        }
     }
 
     public static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(

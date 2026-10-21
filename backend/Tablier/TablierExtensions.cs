@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Tablier.Contract;
 using Tablier.Data;
 
 namespace Tablier;
@@ -52,6 +53,9 @@ public static class TablierExtensions
 
         return builder;
     }
+
+    public static IServiceCollection AddGameEngine<TConfiguration, TState, TView>(this IServiceCollection services)
+        where TState : ISchemaVersioned => services.AddScoped<IGameEngine, GameEngine<TConfiguration, TState, TView>>();
 
     public static WebApplication MapTablier(this WebApplication app)
     {
