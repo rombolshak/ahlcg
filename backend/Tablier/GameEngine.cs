@@ -12,12 +12,15 @@ namespace Tablier;
 public sealed partial class GameEngine<TConfiguration, TState, TView>(
     GameRules<TConfiguration, TState, TView> rules,
     IGameHistory<TState> history,
+    IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
 ) : IGameEngine
 #pragma warning restore S2436
     where TState : ISchemaVersioned
 {
+    private const int MaxAttempts = 3;
+
     private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
     public bool IsConfigurationValid(JsonElement configuration) => TryRead(configuration) is not null;
@@ -59,6 +62,84 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
         LogStateServed(logger, gameId, member, stored.Version, actions.Count);
         return new MemberState(stored.Version, view, actions);
+    }
+
+    public async Task<bool> Execute(Guid gameId, string member, string action, CancellationToken ct)
+    {
+        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        {
+            var stored = await history.LoadCurrent(gameId, ct);
+            if (stored is not null && !IsOffered(stored.State, member, action))
+            {
+                await history.Invalidate(gameId, ct);
+                stored = await history.LoadCurrent(gameId, ct);
+            }
+
+            if (stored is null)
+                return false;
+
+            if (!IsOffered(stored.State, member, action))
+            {
+                LogActionRejectedNotOffered(logger, gameId, member, action);
+                return false;
+            }
+
+            var result = rules.Processor.Execute(stored.State, member, action);
+            var committed = await history.Append(gameId, stored, result, new PlayerChoice(member, action), ct);
+            if (committed is null)
+            {
+                LogAppendConflict(logger, gameId, stored.Version, attempt);
+                continue;
+            }
+
+            LogStepCommitted(logger, gameId, member, committed.Version);
+            await SendStateChanged(gameId, stored, committed);
+            await AdvanceNonPlayerSteps(gameId, committed, ct);
+            return true;
+        }
+
+        LogActionAbandoned(logger, gameId, member, MaxAttempts);
+        return false;
+    }
+
+    private bool IsOffered(TState state, string member, string action) =>
+        rules.Processor.GetMembersActions(state).TryGetValue(member, out var offered) && offered.Contains(action);
+
+    private bool HoldsActions(TState state) =>
+        rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
+
+    private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct)
+    {
+        var current = committed;
+        while (!HoldsActions(current.State))
+        {
+            var next = await history.Append(gameId, current, rules.Processor.Advance(current.State), choice: null, ct);
+            if (next is null)
+            {
+                LogAdvanceConflict(logger, gameId, current.Version);
+                return;
+            }
+
+            LogAdvanced(logger, gameId, next.Version);
+            await SendStateChanged(gameId, current, next);
+            current = next;
+        }
+    }
+
+    private async Task SendStateChanged(Guid gameId, StoredState<TState> previous, StoredState<TState> next)
+    {
+        var previousMembers = rules.Processor.GetMembers(previous.State);
+        foreach (var member in rules.Processor.GetMembers(next.State))
+        {
+            var before = previousMembers.Contains(member) ? ProjectView(previous.State, member) : new JsonObject();
+            var after = ProjectView(next.State, member);
+            var change = new StateChange(
+                next.Version,
+                before.CreatePatch(after),
+                ComputeActionPatches(next.State, member, after)
+            );
+            await hub.Clients.Group(GameHub.GetMemberGroupName(gameId, member)).StateChanged(change);
+        }
     }
 
     private Dictionary<string, JsonPatch> ComputeActionPatches(TState state, string member, JsonNode view)
@@ -110,4 +191,25 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         int version,
         int actionCount
     );
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} action {Action} was rejected in game {GameId}: not offered")]
+    private static partial void LogActionRejectedNotOffered(ILogger logger, Guid gameId, string userId, string action);
+
+    [LoggerMessage(
+        LogLevel.Debug,
+        "Append after version {Version} of game {GameId} conflicted on attempt {Attempt}; retrying"
+    )]
+    private static partial void LogAppendConflict(ILogger logger, Guid gameId, int version, int attempt);
+
+    [LoggerMessage(LogLevel.Warning, "User {UserId} action in game {GameId} was abandoned after {Attempts} attempts")]
+    private static partial void LogActionAbandoned(ILogger logger, Guid gameId, string userId, int attempts);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} committed version {Version} of game {GameId}")]
+    private static partial void LogStepCommitted(ILogger logger, Guid gameId, string userId, int version);
+
+    [LoggerMessage(LogLevel.Information, "Game {GameId} advanced to version {Version}")]
+    private static partial void LogAdvanced(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} advance after version {Version} was refused; another writer won")]
+    private static partial void LogAdvanceConflict(ILogger logger, Guid gameId, int version);
 }

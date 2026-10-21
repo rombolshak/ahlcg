@@ -192,6 +192,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         return new StoredState<TState>(version, Deserialize(snapshot.State));
     }
 
+    public Task Invalidate(Guid gameId, CancellationToken ct) => Task.CompletedTask;
+
     private async Task<bool> TrySave(CancellationToken ct)
     {
         try

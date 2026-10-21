@@ -30,6 +30,13 @@ public partial class GameHub(
         return engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
     }
 
+    public Task<bool> Execute(string action)
+    {
+        var (gameId, userId) = GetCaller();
+
+        return engine.Execute(gameId, userId, action, Context.ConnectionAborted);
+    }
+
     public static string GetMemberGroupName(Guid gameId, string userId) => $"{gameId}:{userId}";
 
     public override async Task OnConnectedAsync()

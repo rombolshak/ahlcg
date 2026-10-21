@@ -56,6 +56,8 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
         public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
             inner.LoadAt(gameId, version, ct);
+
+        public Task Invalidate(Guid gameId, CancellationToken ct) => inner.Invalidate(gameId, ct);
     }
 
     private Run NewRun(Guid gameId)
