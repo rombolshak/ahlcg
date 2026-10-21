@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Tablier;
-using Tablier.Data;
 
 namespace Ahlcg.ApiService.IntegrationTests;
 
@@ -110,7 +109,7 @@ public class GameHubTests(AppFixture fixture)
         var targetCookies = new CookieContainer();
         using var target = fixture.CreateClient(targetCookies);
         var targetId = await HubTestSupport.LoginAnonymouslyAsync(fixture, target);
-        await AddMembershipAsync(gameId, targetId);
+        await HubTestSupport.AddMembershipAsync(fixture, gameId, targetId);
 
         await using var connection = HubTestSupport.BuildConnection(fixture, targetCookies, $"gameId={gameId}");
         var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -148,22 +147,6 @@ public class GameHubTests(AppFixture fixture)
         }
 
         Assert.False(await WaitForOnlineStateAsync(client, gameId, userId, expected: false));
-    }
-
-    private async Task AddMembershipAsync(Guid gameId, string userId)
-    {
-        await using var db = fixture.CreateDbContext();
-        var now = DateTimeOffset.UtcNow;
-        db.GameMembers.Add(
-            new GameMember
-            {
-                GameId = gameId,
-                UserId = userId,
-                JoinedAt = now,
-                LastPlayedAt = now,
-            }
-        );
-        await db.SaveChangesAsync();
     }
 
     private static async Task<bool> WaitForOnlineStateAsync(

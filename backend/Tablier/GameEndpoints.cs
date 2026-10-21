@@ -82,7 +82,9 @@ public static partial class GameEndpoints
                     + "malformed, expired and full all return an identical 404 with no distinguishing detail, so the "
                     + "route cannot be used to enumerate codes. A join that fills the last seat clears the session's "
                     + "invite code in the same request — no reconnect or disconnect needed to notice. Throttled per "
-                    + "account; exceeding it returns 429. Never reads or writes Configuration."
+                    + "account; exceeding it returns 429. A join that adds a membership also commits a step adding the member to "
+                    + "the game's state, and connected members receive a StateChanged for it. Never reads or writes "
+                    + "Configuration."
             )
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status404NotFound)
@@ -170,7 +172,8 @@ public static partial class GameEndpoints
                     + "cannot both pass the last-member check. Otherwise the row is deleted and IntendedPlayersCount "
                     + "is decremented to match, and the session's invite code is rotated: cleared unconditionally, "
                     + "then reissued only if seats remain open, so a member still holding the old code cannot use it "
-                    + "to walk back in. A removed member connected at the time is dropped from the game's SignalR "
+                    + "to walk back in. A removal that deletes a row also commits a step removing the member from the "
+                    + "game's state, and the remaining connected members receive a StateChanged for it. A removed member connected at the time is dropped from the game's SignalR "
                     + "group and sent Exit(NotAMember)."
             )
             .Produces(StatusCodes.Status401Unauthorized)
@@ -300,7 +303,9 @@ public static partial class GameEndpoints
         GameSessions sessions,
         TimeProvider timeProvider,
         JoinGameRequest request,
-        ILogger<Game> logger
+        IGameEngine engine,
+        ILogger<Game> logger,
+        CancellationToken ct = default
     )
     {
         var user = await userManager.GetUserAsync(principal);
@@ -316,20 +321,27 @@ public static partial class GameEndpoints
             return TypedResults.Problem(statusCode: StatusCodes.Status404NotFound);
         }
 
-        var (result, game) = await AddMembership(db, gameId.Value, user.Id, timeProvider, logger);
+        var (result, game, added) = await AddMembership(db, gameId.Value, user.Id, timeProvider, logger);
         if (game is not null)
             sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
+
+        if (added)
+        {
+            db.ChangeTracker.Clear();
+            await engine.SyncMembers(gameId.Value, ct);
+        }
 
         return result;
     }
 
     private static Task<(
         Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result,
-        Game? Updated
+        Game? Updated,
+        bool Added
     )> AddMembership(ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider, ILogger logger) =>
         db
             .Database.CreateExecutionStrategy()
-            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(async () =>
+            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?, bool)>(async () =>
             {
                 db.ChangeTracker.Clear();
                 await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -338,20 +350,20 @@ public static partial class GameEndpoints
                 if (game is null)
                 {
                     LogJoinRefusedGameMissing(logger, gameId, userId);
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null, false);
                 }
 
                 var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
                 if (existing is not null)
                 {
                     LogJoinedAlreadyMember(logger, gameId, userId);
-                    return (TypedResults.Ok(ToDto(existing)), game);
+                    return (TypedResults.Ok(ToDto(existing)), game, false);
                 }
 
                 if (game.Members.Count >= game.IntendedPlayersCount)
                 {
                     LogJoinRefusedGameFull(logger, gameId, userId, game.IntendedPlayersCount);
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null);
+                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null, false);
                 }
 
                 var now = timeProvider.GetUtcNow();
@@ -366,7 +378,7 @@ public static partial class GameEndpoints
                 await transaction.CommitAsync();
                 LogMemberJoined(logger, gameId, userId);
 
-                return (TypedResults.Ok(ToDto(member)), game);
+                return (TypedResults.Ok(ToDto(member)), game, true);
             });
 
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
@@ -496,7 +508,9 @@ public static partial class GameEndpoints
         IHubContext<GameHub, IGameClient> hub,
         Guid id,
         string userId,
-        ILogger<Game> logger
+        IGameEngine engine,
+        ILogger<Game> logger,
+        CancellationToken ct = default
     )
     {
         var caller = await userManager.GetUserAsync(principal);
@@ -507,8 +521,13 @@ public static partial class GameEndpoints
         if (game is null)
             return result;
 
+        var remaining = game.Members.Count;
+        var seats = game.IntendedPlayersCount;
+        db.ChangeTracker.Clear();
+        await engine.SyncMembers(id, ct);
+
         await DisconnectMember(sessions, hub, id, userId);
-        sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
+        sessions.RotateInviteCode(id, remaining, seats);
 
         return result;
     }

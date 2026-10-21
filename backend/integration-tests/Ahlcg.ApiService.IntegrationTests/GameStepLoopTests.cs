@@ -184,7 +184,7 @@ public class GameStepLoopTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Sync_AfterExecute_ReportsTheLatestCommittedVersion()
+    public async Task GetState_AfterExecute_ReportsTheLatestCommittedVersion()
     {
         await using var game = await StartGameAsync();
         await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "reveal");
@@ -197,43 +197,171 @@ public class GameStepLoopTests(AppFixture fixture)
         Assert.Equal(latest, sync.GetProperty("version").GetInt32());
     }
 
+    [Fact]
+    public async Task GetState_MemberRowInsertedAfterCreation_ShowsTheirCounterAndTellsTheOwner()
+    {
+        await using var owner = await StartGameAsync();
+        var ownerSync = await owner.GetStateAsync();
+        await using var newcomer = await AddUnsyncedMemberAsync(owner);
+
+        var sync = await newcomer.GetStateAsync();
+
+        Assert.Equal(0, sync.GetProperty("view").GetProperty("ownSecret").GetInt32());
+        var actions = sync.GetProperty("actions").EnumerateObject().Select(a => a.Name);
+        Assert.Equal(OfferedActions.Order(StringComparer.Ordinal), actions.Order(StringComparer.Ordinal));
+        var change = await owner.NextChangeAsync();
+        Assert.Equal(1, change.GetProperty("version").GetInt32());
+        var others = ApplyView(ownerSync, change)["others"]!.AsObject();
+        Assert.Equal("Zero", others[newcomer.UserId]!.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task Execute_SharedAction_ReachesBothMembersAtTheSameVersion()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        var ownerSync = await owner.GetStateAsync();
+        var memberSync = await member.GetStateAsync();
+
+        var executed = await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc");
+
+        Assert.True(executed);
+        var ownerChange = await owner.NextChangeAsync();
+        var memberChange = await member.NextChangeAsync();
+        Assert.Equal(2, ownerChange.GetProperty("version").GetInt32());
+        Assert.Equal(2, memberChange.GetProperty("version").GetInt32());
+        Assert.Equal(1, ApplyView(ownerSync, ownerChange)["shared"]!.GetValue<int>());
+        Assert.Equal(1, ApplyView(memberSync, memberChange)["shared"]!.GetValue<int>());
+    }
+
+    [Fact]
+    public async Task Execute_SecretAction_NeverShowsTheValueToTheOtherMember()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        var before = await member.GetStateAsync();
+
+        await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "secret:inc");
+        await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "secret:inc");
+
+        var changes = new[] { await member.NextChangeAsync(), await member.NextChangeAsync() };
+        var after = await member.GetStateAsync();
+        foreach (var held in new[] { before, after })
+        {
+            AssertOthersHoldOnlySigns(held.GetProperty("view"));
+            foreach (var patch in held.GetProperty("actions").EnumerateObject())
+                AssertPatchHoldsOnlySigns(patch.Value, owner.UserId);
+        }
+
+        foreach (var change in changes)
+        {
+            AssertPatchHoldsOnlySigns(change.GetProperty("view"), owner.UserId);
+            foreach (var patch in change.GetProperty("actions").EnumerateObject())
+                AssertPatchHoldsOnlySigns(patch.Value, owner.UserId);
+        }
+
+        var view = after.GetProperty("view");
+        Assert.Equal(0, view.GetProperty("ownSecret").GetInt32());
+        Assert.Equal("Positive", view.GetProperty("others").GetProperty(owner.UserId).GetString());
+    }
+
+    [Fact]
+    public async Task RemoveMember_WhileConnected_ShrinksTheRemainingViewAndLocksOutTheRemoved()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        var ownerSync = await owner.GetStateAsync();
+        using var client = fixture.CreateClient(owner.Cookies);
+
+        var response = await client.DeleteAsync($"/games/{owner.GameId}/members/{member.UserId}");
+
+        response.EnsureSuccessStatusCode();
+        var change = await owner.NextChangeAsync();
+        Assert.Equal(2, change.GetProperty("version").GetInt32());
+        var others = ApplyView(ownerSync, change)["others"]!.AsObject();
+        Assert.False(others.ContainsKey(member.UserId));
+        Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(member.Exited));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc"));
+    }
+
     private async Task<GameRun> StartGameAsync()
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
-        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
         var gameId = await HubTestSupport.CreateGameAsync(client);
-        return await GameRun.ConnectAsync(fixture, cookies, gameId);
+        return await GameRun.ConnectAsync(fixture, cookies, gameId, userId);
+    }
+
+    private async Task<GameRun> AddUnsyncedMemberAsync(GameRun owner)
+    {
+        var cookies = new CookieContainer();
+        using var client = fixture.CreateClient(cookies);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        await HubTestSupport.AddMembershipAsync(fixture, owner.GameId, userId);
+        return await GameRun.ConnectAsync(fixture, cookies, owner.GameId, userId);
+    }
+
+    private async Task<(GameRun Owner, GameRun Member)> StartSharedGameAsync()
+    {
+        var owner = await StartGameAsync();
+        var member = await AddUnsyncedMemberAsync(owner);
+        await member.GetStateAsync();
+        await owner.NextChangeAsync();
+        await member.NextChangeAsync();
+        return (owner, member);
     }
 
     private sealed class GameRun : IAsyncDisposable
     {
         private readonly AppFixture _fixture;
-        private readonly CookieContainer _cookies;
         private readonly Channel<JsonElement> _changes = Channel.CreateUnbounded<JsonElement>();
+        private readonly TaskCompletionSource<string> _exited = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        private GameRun(AppFixture fixture, CookieContainer cookies, Guid gameId, HubConnection connection)
+        private GameRun(
+            AppFixture fixture,
+            CookieContainer cookies,
+            Guid gameId,
+            string userId,
+            HubConnection connection
+        )
         {
             _fixture = fixture;
-            _cookies = cookies;
+            Cookies = cookies;
             GameId = gameId;
+            UserId = userId;
             Connection = connection;
             connection.On<JsonElement>(nameof(IGameClient.StateChanged), change => _changes.Writer.TryWrite(change));
+            connection.On<string>(nameof(IGameClient.Exit), reason => _exited.TrySetResult(reason));
         }
+
+        public CookieContainer Cookies { get; }
 
         public Guid GameId { get; }
 
+        public string UserId { get; }
+
         public HubConnection Connection { get; }
 
-        public static async Task<GameRun> ConnectAsync(AppFixture fixture, CookieContainer cookies, Guid gameId)
+        public Task<string> Exited => _exited.Task;
+
+        public static async Task<GameRun> ConnectAsync(
+            AppFixture fixture,
+            CookieContainer cookies,
+            Guid gameId,
+            string userId
+        )
         {
             var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
-            var run = new GameRun(fixture, cookies, gameId, connection);
+            var run = new GameRun(fixture, cookies, gameId, userId, connection);
             await connection.StartAsync();
             return run;
         }
 
-        public Task<GameRun> ConnectAgainAsync() => ConnectAsync(_fixture, _cookies, GameId);
+        public Task<GameRun> ConnectAgainAsync() => ConnectAsync(_fixture, Cookies, GameId, UserId);
 
         public async Task<JsonElement> GetStateAsync()
         {
@@ -252,6 +380,25 @@ public class GameStepLoopTests(AppFixture fixture)
         }
 
         public ValueTask DisposeAsync() => Connection.DisposeAsync();
+    }
+
+    private static void AssertOthersHoldOnlySigns(JsonElement view)
+    {
+        foreach (var other in view.GetProperty("others").EnumerateObject())
+            Assert.Equal(JsonValueKind.String, other.Value.ValueKind);
+    }
+
+    private static void AssertPatchHoldsOnlySigns(JsonElement patch, string ownerId)
+    {
+        foreach (var operation in patch.EnumerateArray())
+        {
+            var path = operation.GetProperty("path").GetString()!;
+            if (!path.Contains(ownerId, StringComparison.Ordinal))
+                continue;
+
+            if (operation.TryGetProperty("value", out var value))
+                Assert.Equal(JsonValueKind.String, value.ValueKind);
+        }
     }
 
     private static JsonNode ApplyView(JsonElement sync, params JsonElement[] changes)

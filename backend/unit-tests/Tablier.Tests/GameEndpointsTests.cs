@@ -555,6 +555,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -582,6 +583,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -608,6 +610,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -633,6 +636,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -659,6 +663,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             LoggedInUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -684,6 +689,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             LoggedInUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -710,6 +716,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
         var result = await GameEndpoints.GetRecentGames(OtherPrincipal, userManager.Object, db);
@@ -743,6 +750,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -787,6 +795,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -816,6 +825,7 @@ public class GameEndpointsTests
             hub.Object,
             game.Id,
             OtherUser,
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -866,6 +876,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -896,6 +907,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
         var second = await GameEndpoints.JoinGame(
@@ -905,6 +917,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -932,6 +945,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -957,6 +971,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -983,6 +998,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -1008,6 +1024,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code!),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -1034,6 +1051,7 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -1055,6 +1073,7 @@ public class GameEndpointsTests
             CreateSessions(),
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest("UNKNOWN"),
+            CreateEngine().Object,
             logger
         );
 
@@ -1081,10 +1100,192 @@ public class GameEndpointsTests
             sessions,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
+            CreateEngine().Object,
             logger
         );
 
         Assert.Equal("LogJoinRefusedGameFull", logger.LatestRecord.Id.Name);
+    }
+
+    [Fact]
+    public async Task JoinGame_NewMembership_SyncsMembersOnce()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            sessions,
+            FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code),
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(game.Id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task JoinGame_AlreadyMember_DoesNotSyncMembers()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 3);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3)!.InviteCode!;
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            sessions,
+            FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code),
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task JoinGame_GameAlreadyFull_DoesNotSyncMembers()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var sessions = CreateSessions();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
+        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
+        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+
+        await GameEndpoints.JoinGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            sessions,
+            FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest(code),
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveMember_RowDeleted_SyncsMembersOnce()
+    {
+        var userManager = GetMockUserManager(LoggedInUser, OtherUser);
+        await using var db = CreateInMemoryDb();
+        var (hub, _, _) = CreateMockHub();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+
+        await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            CreateSessions(),
+            hub.Object,
+            game.Id,
+            OtherUser,
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(game.Id, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RemoveMember_TargetNotAMember_DoesNotSyncMembers()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var (hub, _, _) = CreateMockHub();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            CreateSessions(),
+            hub.Object,
+            game.Id,
+            OtherUser,
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveMember_CallerNotAMember_DoesNotSyncMembers()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var (hub, _, _) = CreateMockHub();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+
+        await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            CreateSessions(),
+            hub.Object,
+            game.Id,
+            OtherUser,
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RemoveMember_LastMember_DoesNotSyncMembers()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var (hub, _, _) = CreateMockHub();
+        var engine = CreateEngine();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+
+        await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            CreateSessions(),
+            hub.Object,
+            game.Id,
+            LoggedInUser,
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private static Mock<IGameEngine> CreateEngine(bool readable = true)
