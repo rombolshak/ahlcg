@@ -14,10 +14,22 @@ public partial class GameHub(
     GameSessions sessions,
     ApplicationDbContext db,
     TimeProvider timeProvider,
+    IGameEngine engine,
     ILogger<GameHub> logger
 ) : Hub<IGameClient>
 {
     public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
+
+    public Task<MemberSync?> Sync()
+    {
+        var gameId =
+            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
+        var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
+
+        return engine.Sync(gameId, userId, Context.ConnectionAborted);
+    }
+
+    public static string MemberGroup(Guid gameId, string userId) => $"{gameId}:{userId}";
 
     public override async Task OnConnectedAsync()
     {
@@ -74,6 +86,7 @@ public partial class GameHub(
 
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
+        await groups.AddToGroupAsync(connectionId, MemberGroup(gameId, userId));
         LogConnected(logger, gameId, userId, connectionId);
         sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
 
