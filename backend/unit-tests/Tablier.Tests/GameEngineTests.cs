@@ -1,6 +1,8 @@
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -158,6 +160,10 @@ public class GameEngineTests
             .Options;
         var db = new ApplicationDbContext(options);
 
+        var metrics = new GameEngineMetrics(
+            new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+        );
+
         var rules = new TestRules();
         var engine = new GameEngine<TestConfiguration, TestState, TestView>(
             new GameRules<TestConfiguration, TestState, TestView>(rules, rules, rules),
@@ -165,6 +171,8 @@ public class GameEngineTests
             db,
             hub.Object,
             Options.Create(new JsonHubProtocolOptions()),
+            metrics,
+            TimeProvider.System,
             NullLogger<GameEngine<TestConfiguration, TestState, TestView>>.Instance
         );
         return new Run(engine, history, client, db);

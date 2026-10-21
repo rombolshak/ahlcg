@@ -28,7 +28,10 @@ public static class TablierExtensions
         builder.Services.AddSingleton<GameSessions>();
         builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "store", typeof(GameHistory<>));
         builder.Services.AddScoped(typeof(IGameHistory<>), typeof(CachedGameHistory<>));
-        builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
+        builder.Services.AddSingleton<GameEngineMetrics>();
+        builder
+            .Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName, GameEngineMetrics.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 
         var rateLimits =

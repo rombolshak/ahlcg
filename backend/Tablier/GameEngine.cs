@@ -17,6 +17,8 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     ApplicationDbContext db,
     IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
+    GameEngineMetrics metrics,
+    TimeProvider time,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
 ) : IGameEngine
 #pragma warning restore S2436
@@ -69,11 +71,13 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             if (committed is null)
             {
                 conflicts++;
+                metrics.AppendRefused();
                 LogAppendConflict(logger, gameId, stored.Version, conflicts);
                 continue;
             }
 
             conflicts = 0;
+            metrics.StepCommitted(StepKind.Membership);
             if (change.Value.Joined)
                 LogMemberAddedBySync(logger, gameId, change.Value.Member, committed.Version);
             else
@@ -112,6 +116,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
     public async Task<bool> Execute(Guid gameId, string member, string action, CancellationToken ct)
     {
+        var started = time.GetTimestamp();
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             var stored = await history.LoadCurrent(gameId, ct);
@@ -120,6 +125,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
             if (!IsOffered(stored.State, member, action))
             {
+                metrics.ActionRejected(RejectionReason.NotOffered);
                 LogActionRejectedNotOffered(logger, gameId, member, action);
                 return false;
             }
@@ -128,16 +134,20 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             var committed = await history.Append(gameId, stored, result, new PlayerChoice(member, action), ct);
             if (committed is null)
             {
+                metrics.AppendRefused();
                 LogAppendConflict(logger, gameId, stored.Version, attempt);
                 continue;
             }
 
+            metrics.StepCommitted(StepKind.Choice);
             LogStepCommitted(logger, gameId, member, committed.Version);
             await SendStateChanged(gameId, stored, committed);
             await AdvanceNonPlayerSteps(gameId, committed, ct);
+            metrics.ExecuteCompleted(time.GetElapsedTime(started));
             return true;
         }
 
+        metrics.ActionRejected(RejectionReason.RetriesExhausted);
         LogActionAbandoned(logger, gameId, member, MaxAttempts);
         return false;
     }
@@ -173,10 +183,12 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             var next = await history.Append(gameId, current, rules.Processor.Advance(current.State), choice: null, ct);
             if (next is null)
             {
+                metrics.AppendRefused();
                 LogAdvanceConflict(logger, gameId, current.Version);
                 return;
             }
 
+            metrics.StepCommitted(StepKind.Advance);
             LogAdvanced(logger, gameId, next.Version);
             await SendStateChanged(gameId, current, next);
             current = next;
