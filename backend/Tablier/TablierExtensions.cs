@@ -7,10 +7,16 @@ namespace Tablier;
 
 public static class TablierExtensions
 {
-    public static TBuilder AddTablier<TBuilder>(this TBuilder builder, string connectionName)
+    public static TBuilder AddTablier<TBuilder>(
+        this TBuilder builder,
+        string connectionName,
+        string cacheConnectionName
+    )
         where TBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<ApplicationDbContext>(connectionName);
+        builder.AddRedisDistributedCache(cacheConnectionName);
+        builder.Services.AddHybridCache();
 
         builder.Services.AddProblemDetails().AddOpenApi().AddValidation();
 
@@ -20,6 +26,7 @@ public static class TablierExtensions
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
         builder.Services.AddScoped(typeof(GameHistory<>));
+        builder.Services.AddScoped(typeof(IGameHistory<>), typeof(CachedGameHistory<>));
         builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 

@@ -17,6 +17,7 @@ public readonly record struct PlayerChoice(string Member, string Action);
 #pragma warning restore MA0048
 
 public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
+    : IGameHistory<TState>
     where TState : ISchemaVersioned
 {
     public async Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct)
@@ -42,7 +43,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     public async Task<StoredState<TState>?> Append(
         Guid gameId,
         StoredState<TState> previous,
-        StepResult<TState> step,
+        StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct
     )
@@ -62,7 +63,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         }
 
         var version = previous.Version + 1;
-        var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(step.State));
+        var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(result.State));
         db.GameSteps.Add(
             new GameStep
             {
@@ -71,15 +72,15 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
                 Actor = choice?.Member,
                 Action = choice?.Action,
                 Patch = JsonSerializer.SerializeToDocument(patch),
-                Checkpoint = step.Checkpoint,
-                IsIrreversible = step.IsIrreversible,
-                IsBaseline = step.IsBaseline,
+                Checkpoint = result.Checkpoint,
+                IsIrreversible = result.IsIrreversible,
+                IsBaseline = result.IsBaseline,
             }
         );
-        var writesSnapshot = step.Checkpoint is not null || step.IsBaseline;
+        var writesSnapshot = result.Checkpoint is not null || result.IsBaseline;
         if (writesSnapshot)
         {
-            db.GameSnapshots.Add(CreateSnapshot(gameId, version, step.State));
+            db.GameSnapshots.Add(CreateSnapshot(gameId, version, result.State));
         }
 
         if (!await TrySave(ct))
@@ -94,7 +95,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             LogSnapshotWritten(logger, gameId, version);
         }
 
-        return new StoredState<TState>(version, step.State);
+        return new StoredState<TState>(version, result.State);
     }
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)

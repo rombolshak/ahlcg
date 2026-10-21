@@ -29,10 +29,12 @@
 
     <ItemGroup>
         <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.6.0" />
+        <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="13.6.0" />
         <PackageReference Include="AspNetCore.SignalR.OpenTelemetry" Version="1.8.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
         <PackageReference Include="JsonPatch.Net" Version="5.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+        <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="10.11.0" />
         <!-- Held on 2.x: Microsoft.AspNetCore.OpenApi 10.0.x targets OpenAPI.NET v2, and its
              XmlCommentGenerator assigns IOpenApiMediaType.Example, which v3 made read-only. -->
         <PackageReference Include="Microsoft.OpenApi" Version="2.12.2" />
