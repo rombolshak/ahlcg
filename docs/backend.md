@@ -56,7 +56,7 @@ Conventions that are not obvious from the code:
 
 Three rules govern it. Everything else is in the code.
 
-**A stored game's configuration payload is opaque.** The backend checks that it is present and never parses, validates, or reads it (#198). This is the engine rule: the backend models no card-game concepts. An integer on an entity is allowed to exist, but it must name no card-game concept — not a seat, not an investigator, not a scenario.
+**A stored game's configuration payload is opaque to the engine.** `Tablier` never inspects it; only the rules module's `IGameConfigurator` reads it, when a game is created, and a configuration the rules cannot read is a `400` and nothing is saved (#198). This is the engine rule: the backend models no card-game concepts. An integer on an entity is allowed to exist, but it must name no card-game concept — not a seat, not an investigator, not a scenario.
 
 **Membership is the access check, never ownership.** A user may resume a game if and only if a `GameMember` row exists for them. `Game.OwnerId` is provenance — it records who created the game and grants nothing — so no authorization may read it. Creating a game writes the creator's membership row in the same `SaveChangesAsync`, so the two cannot come apart, and the idempotency retry path detaches both entities so a repeated key cannot leave a duplicate.
 
@@ -74,12 +74,25 @@ Three rules govern it. Everything else is in the code.
 - **Retention limits are queries, not deletions.** A checkpoint or baseline writes a snapshot. `LoadAt` refuses any version behind a later irreversible or baseline step, so a snapshot rewind can no longer reach is unreachable whether or not its row still exists. The store does not know what a scenario is.
 - **A refusal is a `null`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version hits the primary key and comes back as a refusal. An unknown game id, a patch that will not apply, and a `DbContext` that tracks anything throw.
 - **Every write needs a `DbContext` that tracks nothing**, and clears the tracker after its one `SaveChanges`. Otherwise it would flush the caller's unsaved edits, or detach their entities. Save and clear first.
+- **Callers use `IGameHistory<TState>`, which is a cache in front of the store.** `CachedGameHistory` wraps `GameHistory` with HybridCache, Valkey as its distributed tier. `LoadCurrent` looks the key up and fills it only from a non-null load, because HybridCache would otherwise cache a "no history" answer past a later `Begin`. A refused `Append` evicts the key. `LoadAt` is never cached.
+- **The cache can be stale; the store cannot.** A write set after a newer one, or another replica's local tier, can serve an old head. A stale *offered* action heals itself through the refused append and eviction; a stale *not offered* one does not, which is why the engine calls `Invalidate` and reloads once before rejecting.
 
 ## Rules modules
 
 A rules module implements the three `Tablier.Contract` interfaces and is pure: no logging, DI or I/O. `Ahlcg.Rules.Fixture` is the only one so far.
 
 **Randomness lives in the state.** The engine supplies one seed, to `InitializeGame`; the module turns it into a `GameRandom`, keeps it in its state, and every draw stores the advanced generator back. Never use `System.Random`, `Guid`, the clock, or any other entropy. Because the generator is state, a whole campaign draws from one sequence, snapshots persist it, a rewind restores it so a re-done step cannot re-roll, and precomputing every offered action is safe since each starts from the same generator.
+
+## The step loop
+
+`GameEngine<TConfiguration, TState, TView>` is the one place that knows the rules' types. Hub and endpoints depend on the non-generic `IGameEngine`, so they stay non-generic and their tests mock it; `AddGameEngine<,,>()` in `Program.cs` picks the types.
+
+- **The engine is scoped and shares the caller's `DbContext`.** `GameHistory` refuses a tracking context, so every endpoint clears the change tracker after its own save and before calling the engine.
+- **Nothing precomputed is stored.** The rules are deterministic because randomness is in the state, so re-running `Execute` gives exactly the state whose patch was offered. Patches are never produced by the rules: the engine diffs the member's view before against after.
+- **Serialisation is optimistic only.** There is no per-game lock and no state on `GameSession`; `Append`'s version check decides, and a refusal reloads and retries. That is what leaves room for more than one replica, and it is why events can arrive out of order.
+- **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances any pending non-player step. Join, removal and `Sync` all call it, so a crash between a membership commit and its step repairs itself; a row inserted directly reaches the state on that member's next `Sync`.
+- **Events go to per-member groups, never `Clients.User`**, which would cross games. A member no longer in the state receives nothing.
+- **A step is committed before it is sent.** A connection lost or a send failing in between leaves a committed step with unsent events; clients recover from the version gap.
 
 ## Persistence and migrations
 
@@ -129,6 +142,8 @@ Connect and disconnect live in static methods taking their dependencies as param
 Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefaults()`:
 
 - OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `AddTablier()`.
+
+The step loop has a second meter, `GameEngineMetrics.MeterName` (steps by kind, rejected actions, refused appends, step duration, history loads by cache or store). Its instruments sit in a singleton because the engine and the cache decorator are scoped, and each value is recorded after the outcome it describes, never inside a retry.
 
 Game sessions carry their own meter, `GameSessions.MeterName`, registered in `AddTablier()` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
 

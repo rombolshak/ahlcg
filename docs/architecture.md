@@ -8,8 +8,8 @@
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
 | Game records: create, list recent and completed, fetch the latest (`/games`) | Implemented, backend + frontend. The main menu creates and continues games; Case files lists them. Nothing sets a game completed yet |
-| Game API / persistence of game *state* within a game | **Does not exist** |
-| SignalR | Server hub with in-memory game sessions, one group per game, and connect/disconnect broadcasts; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
+| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `Sync` and `Execute` on the hub, a `StateChanged` per committed version. No Arkham rules; no frontend consumer |
+| SignalR | Server hub with in-memory game sessions, one group per game and one per member, connect/disconnect broadcasts, and the step loop above; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
 `GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server.
@@ -23,7 +23,7 @@ frontend/  Angular 22 SPA          →  /api/*  →  backend/Ahlcg.ApiService  �
 
 Local orchestration (`backend/Ahlcg.AppHost`, .NET Aspire), in dependency order:
 
-1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`
+1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`, and `cache` (Valkey), the distributed tier of the game-history cache
 2. `migrator` — applies EF migrations, then exits (`WaitForCompletion`)
 3. `apiservice` — the API, health-checked on `/health`
 4. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`
