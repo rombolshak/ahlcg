@@ -4,6 +4,8 @@
 
 [comments.md](comments.md) applies here as it does to the frontend: a comment is an exception, and XML-doc is for non-obvious public contracts only.
 
+**Method names start with a verb** — `GetCurrentKey`, `GetMemberGroupName`, `FindNextMembershipChange`, not `CurrentKey`, `MemberGroup`, `NextMembershipChange`. A noun reads as a property and hides that work is done. `[LoggerMessage]` methods are `Log…`, and predicates are `Is…`/`Has…`/`Holds…`.
+
 ## Projects
 
 | Project | Role |
@@ -72,10 +74,9 @@ Three rules govern it. Everything else is in the code.
 - **The schema version travels in the state** (`TState : ISchemaVersioned`), and is copied to a column on each snapshot so stale snapshots can be found by query. A `TState` is always the current schema: old JSON is upcast before it is deserialised, never after.
 - **History is append-only.** A rewind appends the restored state as an irreversible checkpoint; nothing is ever truncated.
 - **Retention limits are queries, not deletions.** A checkpoint or baseline writes a snapshot. `LoadAt` refuses any version behind a later irreversible or baseline step, so a snapshot rewind can no longer reach is unreachable whether or not its row still exists. The store does not know what a scenario is.
-- **A refusal is a `null`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version hits the primary key and comes back as a refusal. An unknown game id, a patch that will not apply, and a `DbContext` that tracks anything throw.
-- **Every write needs a `DbContext` that tracks nothing**, and clears the tracker after its one `SaveChanges`. Otherwise it would flush the caller's unsaved edits, or detach their entities. Save and clear first.
-- **Callers use `IGameHistory<TState>`, which is a cache in front of the store.** `CachedGameHistory` wraps `GameHistory` with HybridCache, Valkey as its distributed tier. `LoadCurrent` looks the key up and fills it only from a non-null load, because HybridCache would otherwise cache a "no history" answer past a later `Begin`. A refused `Append` evicts the key. `LoadAt` is never cached.
-- **The cache can be stale; the store cannot.** A write set after a newer one, or another replica's local tier, can serve an old head. A stale *offered* action heals itself through the refused append and eviction; a stale *not offered* one does not, which is why the engine calls `Invalidate` and reloads once before rejecting.
+- **A refusal is a `null`, and is logged; a throw is a bug.** A collision between concurrent writers on the same version hits the primary key and comes back as a refusal. An unknown game id and a patch that will not apply throw.
+- **Each write clears the tracker first, inside an execution strategy**, the same shape as the endpoints' transactional writes, and clears it again after its `SaveChanges` so a refused insert is not retried by the next save. Callers save their own changes before calling the engine; anything still tracked is detached.
+- **Callers use `IGameHistory<TState>`, which is a cache in front of the store.** `CachedGameHistory` wraps the keyed `"store"` `GameHistory` with Valkey only — no in-process tier, so every replica reads the same entry. Every write to the entry goes through one Lua script that sets it only if its version is newer than the cached one, so a late write from a slower writer can never regress the head. `LoadCurrent` fills a miss from a non-null load; a refused `Append` evicts the key; `LoadAt` is never cached. The engine does not know the cache exists.
 
 ## Rules modules
 
@@ -90,7 +91,7 @@ A rules module implements the three `Tablier.Contract` interfaces and is pure: n
 - **The engine is scoped and shares the caller's `DbContext`.** `GameHistory` refuses a tracking context, so every endpoint clears the change tracker after its own save and before calling the engine.
 - **Nothing precomputed is stored.** The rules are deterministic because randomness is in the state, so re-running `Execute` gives exactly the state whose patch was offered. Patches are never produced by the rules: the engine diffs the member's view before against after.
 - **Serialisation is optimistic only.** There is no per-game lock and no state on `GameSession`; `Append`'s version check decides, and a refusal reloads and retries. That is what leaves room for more than one replica, and it is why events can arrive out of order.
-- **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances any pending non-player step. Join, removal and `Sync` all call it, so a crash between a membership commit and its step repairs itself; a row inserted directly reaches the state on that member's next `Sync`.
+- **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances any pending non-player step. Join, removal and `GetState` all call it, so a crash between a membership commit and its step repairs itself; a row inserted directly reaches the state on that member's next `GetState`.
 - **Events go to per-member groups, never `Clients.User`**, which would cross games. A member no longer in the state receives nothing.
 - **A step is committed before it is sent.** A connection lost or a send failing in between leaves a committed step with unsent events; clients recover from the version gap.
 
@@ -143,7 +144,7 @@ Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefau
 
 - OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `AddTablier()`.
 
-The step loop has a second meter, `GameEngineMetrics.MeterName` (steps by kind, rejected actions, refused appends, step duration, history loads by cache or store). Its instruments sit in a singleton because the engine and the cache decorator are scoped, and each value is recorded after the outcome it describes, never inside a retry.
+The step loop has a second meter, `TablierMetrics.MeterName`, recorded only by decorators — `MeteredGameEngine`, `MeteredGameHistory` and one per rules interface — so the engine and the store carry no metric calls. Each seam is one duration histogram tagged by `method` (and `outcome` where the call can refuse); a histogram exports its count, so call rates come from it rather than from separate counters. The cache adds a hit/miss counter. The instruments sit in a singleton because the decorators are scoped.
 
 Game sessions carry their own meter, `GameSessions.MeterName`, registered in `AddTablier()` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
 

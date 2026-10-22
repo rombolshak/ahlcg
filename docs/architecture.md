@@ -8,7 +8,7 @@
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
 | Game records: create, list recent and completed, fetch the latest (`/games`) | Implemented, backend + frontend. The main menu creates and continues games; Case files lists them. Nothing sets a game completed yet |
-| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `Sync` and `Execute` on the hub, a `StateChanged` per committed version. No Arkham rules; no frontend consumer |
+| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `GetState` and `Execute` on the hub, a `StateChanged` per committed version. No Arkham rules; no frontend consumer |
 | SignalR | Server hub with in-memory game sessions, one group per game and one per member, connect/disconnect broadcasts, and the step loop above; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
@@ -23,10 +23,11 @@ frontend/  Angular 22 SPA          →  /api/*  →  backend/Ahlcg.ApiService  �
 
 Local orchestration (`backend/Ahlcg.AppHost`, .NET Aspire), in dependency order:
 
-1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`, and `cache` (Valkey), the distributed tier of the game-history cache
-2. `migrator` — applies EF migrations, then exits (`WaitForCompletion`)
-3. `apiservice` — the API, health-checked on `/health`
-4. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`
+1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`
+2. `cache` (Valkey container) — the game-history cache
+3. `migrator` — applies EF migrations, then exits (`WaitForCompletion`)
+4. `apiservice` — the API, health-checked on `/health`
+5. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`
 
 Aspire injects `services__apiservice__http__0` into the frontend process. `frontend/proxy.conf.js` reads that variable as the proxy target and rewrites `/api/*` → `*` on the API. **This is the only wiring between frontend and backend.** Running `npm start` without Aspire leaves the target undefined, so `/api` calls fail — the game view still works (fixture-driven), auth does not.
 
