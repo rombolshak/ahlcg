@@ -4,14 +4,16 @@ using Tablier.Contract;
 
 namespace Tablier;
 
+#pragma warning disable S2436
 public sealed partial class GameEngine<TConfiguration, TState, TView>(
     IGameConfigurator<TConfiguration, TState> configurator,
     IGameHistory<TState> history,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
 ) : IGameEngine
+#pragma warning restore S2436
     where TState : ISchemaVersioned
 {
-    public bool IsReadableConfiguration(JsonElement configuration) => TryRead(configuration) is not null;
+    public bool IsConfigurationValid(JsonElement configuration) => TryRead(configuration) is not null;
 
     public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct)
     {

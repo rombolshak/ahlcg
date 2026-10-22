@@ -194,7 +194,10 @@ public static partial class GameEndpoints
             .Produces(StatusCodes.Status403Forbidden);
     }
 
+    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
+#pragma warning disable S107
     public static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(
+#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
@@ -218,7 +221,7 @@ public static partial class GameEndpoints
                 }
             );
 
-        if (!engine.IsReadableConfiguration(request.Configuration))
+        if (!engine.IsConfigurationValid(request.Configuration))
             return TypedResults.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
@@ -245,7 +248,6 @@ public static partial class GameEndpoints
 
         game = await SaveOrFindReplayed(db, game, member, logger, ct);
 
-        db.ChangeTracker.Clear();
         await engine.Begin(game.Id, game.Configuration.RootElement, user.Id, ct);
 
         return TypedResults.Ok(

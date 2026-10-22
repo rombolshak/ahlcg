@@ -4,7 +4,7 @@ namespace Tablier;
 
 public interface IGameEngine
 {
-    bool IsReadableConfiguration(JsonElement configuration);
+    bool IsConfigurationValid(JsonElement configuration);
 
     Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct);
 }

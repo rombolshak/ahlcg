@@ -1081,7 +1081,7 @@ public class GameEndpointsTests
     private static Mock<IGameEngine> CreateEngine(bool readable = true)
     {
         var engine = new Mock<IGameEngine>();
-        engine.Setup(e => e.IsReadableConfiguration(It.IsAny<JsonElement>())).Returns(readable);
+        engine.Setup(e => e.IsConfigurationValid(It.IsAny<JsonElement>())).Returns(readable);
         return engine;
     }
 
