@@ -53,7 +53,7 @@
     "@angular/platform-browser-dynamic": "~22.2.3",
     "@angular/router": "~22.2.3",
     "@bugsnag/browser-performance": "^3.4.1",
-    "@bugsnag/js": "^8.10.0",
+    "@bugsnag/js": "^9.1.0",
     "@bugsnag/plugin-angular": "^8.10.0",
     "@jsverse/transloco": "^8.4.0",
     "@microsoft/signalr": "^10.0.11",
