@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Ahlcg.AppHost\Ahlcg.AppHost.csproj" />
+        <ProjectReference Include="..\..\Ahlcg.Rules.Fixture\Ahlcg.Rules.Fixture.csproj" />
         <ProjectReference Include="..\..\Tablier\Tablier.csproj" />
     </ItemGroup>
 </Project>

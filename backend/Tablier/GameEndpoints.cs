@@ -498,9 +498,12 @@ public static partial class GameEndpoints
         return TypedResults.Ok(dtos);
     }
 
+    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
+#pragma warning disable S107
     public static async Task<
         Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
     > RemoveMember(
+#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
@@ -521,13 +524,10 @@ public static partial class GameEndpoints
         if (game is null)
             return result;
 
-        var remaining = game.Members.Count;
-        var seats = game.IntendedPlayersCount;
-        db.ChangeTracker.Clear();
         await engine.SyncMembers(id, ct);
 
         await DisconnectMember(sessions, hub, id, userId);
-        sessions.RotateInviteCode(id, remaining, seats);
+        sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
 
         return result;
     }

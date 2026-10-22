@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Channels;
+using Ahlcg.Rules.Fixture;
 using Json.Patch;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
@@ -212,7 +213,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var change = await owner.NextChangeAsync();
         Assert.Equal(1, change.GetProperty("version").GetInt32());
         var others = ApplyView(ownerSync, change)["others"]!.AsObject();
-        Assert.Equal("Zero", others[newcomer.UserId]!.GetValue<string>());
+        Assert.Equal(nameof(SecretSign.Zero), others[newcomer.UserId]!.GetValue<string>());
     }
 
     [Fact]
@@ -257,14 +258,14 @@ public class GameStepLoopTests(AppFixture fixture)
 
         foreach (var change in changes)
         {
-            AssertPatchHoldsOnlySigns(change.GetProperty("view"), owner.UserId);
+            AssertPatchHoldsOnlySigns(change.GetProperty("viewPatch"), owner.UserId);
             foreach (var patch in change.GetProperty("actions").EnumerateObject())
                 AssertPatchHoldsOnlySigns(patch.Value, owner.UserId);
         }
 
         var view = after.GetProperty("view");
         Assert.Equal(0, view.GetProperty("ownSecret").GetInt32());
-        Assert.Equal("Positive", view.GetProperty("others").GetProperty(owner.UserId).GetString());
+        Assert.Equal(nameof(SecretSign.Positive), view.GetProperty("others").GetProperty(owner.UserId).GetString());
     }
 
     [Fact]
