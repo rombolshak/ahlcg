@@ -69,12 +69,6 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             var stored = await history.LoadCurrent(gameId, ct);
-            if (stored is not null && !IsOffered(stored.State, member, action))
-            {
-                await history.Invalidate(gameId, ct);
-                stored = await history.LoadCurrent(gameId, ct);
-            }
-
             if (stored is null)
                 return false;
 

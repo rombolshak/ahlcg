@@ -80,9 +80,6 @@ public sealed partial class CachedGameHistory<TState>(
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         inner.LoadAt(gameId, version, ct);
 
-    public Task Invalidate(Guid gameId, CancellationToken ct) =>
-        redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
-
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)

@@ -18,6 +18,4 @@ public interface IGameHistory<TState>
     Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct);
 
     Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct);
-
-    Task Invalidate(Guid gameId, CancellationToken ct);
 }

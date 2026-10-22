@@ -46,31 +46,16 @@ public class GameEngineTests
     }
 
     [Fact]
-    public async Task Execute_StaleStateDoesNotOfferAction_InvalidatesAndExecutesOnTheFreshRead()
+    public async Task Execute_StateDoesNotOfferAction_ReturnsFalseWithoutAppending()
     {
         // given
-        var run = CreateRun(loads: [Closed, Open], appends: [true]);
-
-        // when
-        var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
-
-        // then
-        Assert.True(executed);
-        run.History.Verify(h => h.Invalidate(GameId, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Execute_FreshStateDoesNotOfferActionEither_ReturnsFalseWithoutAppending()
-    {
-        // given
-        var run = CreateRun(loads: [Closed, Closed], appends: []);
+        var run = CreateRun(loads: [Closed], appends: []);
 
         // when
         var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
 
         // then
         Assert.False(executed);
-        run.History.Verify(h => h.Invalidate(GameId, It.IsAny<CancellationToken>()), Times.Once);
         run.History.Verify(
             h =>
                 h.Append(

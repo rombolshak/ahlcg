@@ -11,7 +11,7 @@ public enum ExitReason
 
 public sealed record MemberState(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
 
-public sealed record StateChange(int Version, JsonPatch View, IReadOnlyDictionary<string, JsonPatch> Actions);
+public sealed record StateChange(int Version, JsonPatch ViewPatch, IReadOnlyDictionary<string, JsonPatch> Actions);
 #pragma warning restore MA0048
 
 public interface IGameClient

@@ -259,7 +259,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var view = JsonNode.Parse(sync.GetProperty("view").GetRawText())!;
         foreach (var change in changes)
         {
-            var result = change.GetProperty("view").Deserialize<JsonPatch>()!.Apply(view);
+            var result = change.GetProperty("viewPatch").Deserialize<JsonPatch>()!.Apply(view);
             Assert.True(result.IsSuccess, result.Error);
             view = result.Result!;
         }
