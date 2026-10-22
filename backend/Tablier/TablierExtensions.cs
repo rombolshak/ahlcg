@@ -15,8 +15,8 @@ public static class TablierExtensions
         where TBuilder : IHostApplicationBuilder
     {
         builder.AddNpgsqlDbContext<ApplicationDbContext>(connectionName);
-        builder.AddRedisDistributedCache(cacheConnectionName);
-        builder.Services.AddHybridCache();
+        builder.AddRedisClient(cacheConnectionName);
+        builder.Services.AddOptions<GameHistoryCacheOptions>().BindConfiguration(GameHistoryCacheOptions.SectionName);
 
         builder.Services.AddProblemDetails().AddOpenApi().AddValidation();
 
@@ -25,7 +25,7 @@ public static class TablierExtensions
             .AddHubInstrumentation()
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
-        builder.Services.AddScoped(typeof(GameHistory<>));
+        builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "store", typeof(GameHistory<>));
         builder.Services.AddScoped(typeof(IGameHistory<>), typeof(CachedGameHistory<>));
         builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
