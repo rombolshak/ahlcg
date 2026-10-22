@@ -10,6 +10,7 @@ public sealed partial class CachedGameHistory<TState>(
     [FromKeyedServices("store")] IGameHistory<TState> inner,
     IConnectionMultiplexer redis,
     IOptions<GameHistoryCacheOptions> options,
+    TablierMetrics metrics,
     ILogger<CachedGameHistory<TState>> logger
 ) : IGameHistory<TState>
     where TState : ISchemaVersioned
@@ -67,9 +68,13 @@ public sealed partial class CachedGameHistory<TState>(
         {
             var state = JsonSerializer.Deserialize<TState>((string)fields[1]!);
             if (state is not null)
+            {
+                metrics.RecordCacheLookup(hit: true);
                 return new StoredState<TState>((int)fields[0], state);
+            }
         }
 
+        metrics.RecordCacheLookup(hit: false);
         var loaded = await inner.LoadCurrent(gameId, ct);
         if (loaded is not null)
             await WriteGuarded(gameId, loaded);
