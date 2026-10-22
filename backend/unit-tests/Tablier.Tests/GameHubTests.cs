@@ -111,7 +111,12 @@ public class GameHubTests
 
         groups.Verify(g => g.AddToGroupAsync("conn-1", gameId.ToString(), It.IsAny<CancellationToken>()), Times.Once);
         groups.Verify(
-            g => g.AddToGroupAsync("conn-1", GameHub.MemberGroup(gameId, MemberUser), It.IsAny<CancellationToken>()),
+            g =>
+                g.AddToGroupAsync(
+                    "conn-1",
+                    GameHub.GetMemberGroupName(gameId, MemberUser),
+                    It.IsAny<CancellationToken>()
+                ),
             Times.Once
         );
         groupClient.Verify(c => c.MemberConnected(MemberUser), Times.Once);

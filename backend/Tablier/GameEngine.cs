@@ -10,9 +10,7 @@ namespace Tablier;
 
 #pragma warning disable S2436
 public sealed partial class GameEngine<TConfiguration, TState, TView>(
-    IGameConfigurator<TConfiguration, TState> configurator,
-    IGameStateProcessor<TState> processor,
-    IGameViewProjector<TState, TView> projector,
+    GameRules<TConfiguration, TState, TView> rules,
     IGameHistory<TState> history,
     IOptions<JsonHubProtocolOptions> hubOptions,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
@@ -31,7 +29,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             ?? throw new ArgumentException("Configuration is not readable.", nameof(configuration));
 
         var seed = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong)));
-        var initial = configurator.InitializeGame(read, [owner], seed);
+        var initial = rules.Configurator.InitializeGame(read, [owner], seed);
 
         var begun = await history.Begin(gameId, initial, ct);
         if (begun is null)
@@ -40,36 +38,41 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             LogHistoryBegun(logger, gameId);
     }
 
-    public async Task<MemberSync?> Sync(Guid gameId, string member, CancellationToken ct)
+    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct)
     {
         var stored = await history.LoadCurrent(gameId, ct);
         if (stored is null)
         {
-            LogSyncFoundNoHistory(logger, gameId);
+            LogStateRefusedNoHistory(logger, gameId);
             return null;
         }
 
         var state = stored.State;
-        if (!processor.GetMembers(state).Contains(member))
+        if (!rules.Processor.GetMembers(state).Contains(member))
         {
-            LogSyncRefusedNotInState(logger, gameId, member);
+            LogStateRefusedNotAMember(logger, gameId, member);
             return null;
         }
 
         var view = ProjectView(state, member);
-        var offered = processor.GetMembersActions(state).GetValueOrDefault(member) ?? new HashSet<string>();
-        var actions = offered.ToDictionary(
+        var actions = ComputeActionPatches(state, member, view);
+
+        LogStateServed(logger, gameId, member, stored.Version, actions.Count);
+        return new MemberState(stored.Version, view, actions);
+    }
+
+    private Dictionary<string, JsonPatch> ComputeActionPatches(TState state, string member, JsonNode view)
+    {
+        var offered = rules.Processor.GetMembersActions(state).GetValueOrDefault(member) ?? new HashSet<string>();
+        return offered.ToDictionary(
             action => action,
-            action => view.CreatePatch(ProjectView(processor.Execute(state, member, action).State, member)),
+            action => view.CreatePatch(ProjectView(rules.Processor.Execute(state, member, action).State, member)),
             StringComparer.Ordinal
         );
-
-        LogSynced(logger, gameId, member, stored.Version, actions.Count);
-        return new MemberSync(stored.Version, view, actions);
     }
 
     private JsonNode ProjectView(TState state, string member) =>
-        JsonSerializer.SerializeToNode(projector.GetMemberView(state, member), _wireOptions)
+        JsonSerializer.SerializeToNode(rules.Projector.GetMemberView(state, member), _wireOptions)
         ?? throw new InvalidOperationException("A view cannot be null.");
 
     private static TConfiguration? TryRead(JsonElement configuration)
@@ -91,14 +94,20 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     private static partial void LogBeginRefusedHistoryExists(ILogger logger, Guid gameId);
 
     [LoggerMessage(LogLevel.Warning, "Game {GameId} has no history")]
-    private static partial void LogSyncFoundNoHistory(ILogger logger, Guid gameId);
+    private static partial void LogStateRefusedNoHistory(ILogger logger, Guid gameId);
 
-    [LoggerMessage(LogLevel.Information, "User {UserId} was not synced: they are not in the state of game {GameId}")]
-    private static partial void LogSyncRefusedNotInState(ILogger logger, Guid gameId, string userId);
+    [LoggerMessage(LogLevel.Information, "State of game {GameId} was not served to user {UserId}: they are not in it")]
+    private static partial void LogStateRefusedNotAMember(ILogger logger, Guid gameId, string userId);
 
     [LoggerMessage(
         LogLevel.Debug,
-        "User {UserId} synced to version {Version} of game {GameId} with {ActionCount} actions"
+        "Version {Version} of game {GameId} was served to user {UserId} with {ActionCount} actions"
     )]
-    private static partial void LogSynced(ILogger logger, Guid gameId, string userId, int version, int actionCount);
+    private static partial void LogStateServed(
+        ILogger logger,
+        Guid gameId,
+        string userId,
+        int version,
+        int actionCount
+    );
 }

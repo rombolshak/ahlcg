@@ -754,7 +754,7 @@ public class GameEndpointsTests
             g =>
                 g.RemoveFromGroupAsync(
                     "target-conn",
-                    GameHub.MemberGroup(game.Id, OtherUser),
+                    GameHub.GetMemberGroupName(game.Id, OtherUser),
                     It.IsAny<CancellationToken>()
                 ),
             Times.Once

@@ -20,7 +20,7 @@ public class GameStepLoopTests(AppFixture fixture)
     ];
 
     [Fact]
-    public async Task Sync_Member_ReturnsVersionViewAndEveryAction()
+    public async Task GetState_Member_ReturnsVersionViewAndEveryAction()
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
@@ -29,7 +29,7 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         await connection.StartAsync();
 
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.Sync));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
 
         Assert.NotNull(sync);
         Assert.Equal(0, sync.Value.GetProperty("version").GetInt32());
@@ -42,7 +42,7 @@ public class GameStepLoopTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Sync_ActionPatches_TurnTheViewIntoTheViewAfterTheAction()
+    public async Task GetState_ActionPatches_TurnTheViewIntoTheViewAfterTheAction()
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
@@ -50,7 +50,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var gameId = await HubTestSupport.CreateGameAsync(client);
         await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         await connection.StartAsync();
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.Sync));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
         Assert.NotNull(sync);
 
         var shared = Apply(sync.Value, "shared:inc");
@@ -65,7 +65,7 @@ public class GameStepLoopTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Sync_NonMember_ReturnsNull()
+    public async Task GetState_NonMember_ReturnsNull()
     {
         var ownerCookies = new CookieContainer();
         using var owner = fixture.CreateClient(ownerCookies);
@@ -80,7 +80,7 @@ public class GameStepLoopTests(AppFixture fixture)
         await connection.StartAsync();
         await HubTestSupport.WithTimeoutAsync(exited.Task);
 
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.Sync));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
 
         Assert.Null(sync);
         Assert.Equal(HubConnectionState.Connected, connection.State);

@@ -8,5 +8,5 @@ public interface IGameEngine
 
     Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct);
 
-    Task<MemberSync?> Sync(Guid gameId, string member, CancellationToken ct);
+    Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct);
 }

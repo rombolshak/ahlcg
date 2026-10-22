@@ -55,7 +55,10 @@ public static class TablierExtensions
     }
 
     public static IServiceCollection AddGameEngine<TConfiguration, TState, TView>(this IServiceCollection services)
-        where TState : ISchemaVersioned => services.AddScoped<IGameEngine, GameEngine<TConfiguration, TState, TView>>();
+        where TState : ISchemaVersioned =>
+        services
+            .AddScoped<GameRules<TConfiguration, TState, TView>>()
+            .AddScoped<IGameEngine, GameEngine<TConfiguration, TState, TView>>();
 
     public static WebApplication MapTablier(this WebApplication app)
     {

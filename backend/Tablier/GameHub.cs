@@ -18,24 +18,23 @@ public partial class GameHub(
     ILogger<GameHub> logger
 ) : Hub<IGameClient>
 {
+    private const string MissingGameIdMessage = "A gameId query parameter is required.";
+    private const string MissingUserIdMessage = "The connection has no user id.";
+
     public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
 
-    public Task<MemberSync?> Sync()
+    public Task<MemberState?> GetState()
     {
-        var gameId =
-            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
-        var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
+        var (gameId, userId) = GetCaller();
 
-        return engine.Sync(gameId, userId, Context.ConnectionAborted);
+        return engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
     }
 
-    public static string MemberGroup(Guid gameId, string userId) => $"{gameId}:{userId}";
+    public static string GetMemberGroupName(Guid gameId, string userId) => $"{gameId}:{userId}";
 
     public override async Task OnConnectedAsync()
     {
-        var gameId =
-            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
-        var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
+        var (gameId, userId) = GetCaller();
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
         await Connect(sessions, db, timeProvider, Clients, Groups, connection, logger);
@@ -44,15 +43,20 @@ public partial class GameHub(
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var gameId =
-            ParseGameId(Context.GetHttpContext()) ?? throw new HubException("A gameId query parameter is required.");
-        var userId = Context.UserIdentifier ?? throw new HubException("The connection has no user id.");
+        var (gameId, userId) = GetCaller();
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
         if (exception is not null)
             LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
         await Disconnect(sessions, db, timeProvider, Clients, connection, logger);
         await base.OnDisconnectedAsync(exception);
+    }
+
+    private (Guid GameId, string UserId) GetCaller()
+    {
+        var gameId = ParseGameId(Context.GetHttpContext()) ?? throw new HubException(MissingGameIdMessage);
+        var userId = Context.UserIdentifier ?? throw new HubException(MissingUserIdMessage);
+        return (gameId, userId);
     }
 
     public static Guid? ParseGameId(HttpContext? httpContext)
@@ -86,7 +90,7 @@ public partial class GameHub(
 
         var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
-        await groups.AddToGroupAsync(connectionId, MemberGroup(gameId, userId));
+        await groups.AddToGroupAsync(connectionId, GetMemberGroupName(gameId, userId));
         LogConnected(logger, gameId, userId, connectionId);
         sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
 

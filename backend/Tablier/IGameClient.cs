@@ -9,7 +9,7 @@ public enum ExitReason
     NotAMember,
 }
 
-public sealed record MemberSync(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
+public sealed record MemberState(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
 #pragma warning restore MA0048
 
 public interface IGameClient
