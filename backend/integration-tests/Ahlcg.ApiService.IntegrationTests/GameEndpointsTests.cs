@@ -126,6 +126,52 @@ public class GameEndpointsTests(AppFixture fixture)
     }
 
     [Fact]
+    public async Task PostGames_Authenticated_BeginsHistoryAtVersionZero()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+
+        var response = await PostGameAsync(client, $"history-{Guid.NewGuid()}", "{}");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        await using var db = fixture.CreateDbContext();
+        var snapshot = await db.GameSnapshots.AsNoTracking().SingleAsync(s => s.GameId == dto.Id);
+        Assert.Equal(0, snapshot.Version);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyTwice_KeepsExactlyOneSnapshot()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+        var key = $"history-replay-{Guid.NewGuid()}";
+
+        var first = await PostGameAsync(client, key, "{}");
+        first.EnsureSuccessStatusCode();
+        var second = await PostGameAsync(client, key, "{}");
+        second.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(second);
+
+        await using var db = fixture.CreateDbContext();
+        Assert.Equal(1, await db.GameSnapshots.CountAsync(s => s.GameId == dto.Id));
+    }
+
+    [Fact]
+    public async Task PostGames_UnreadableConfiguration_ReturnsBadRequestAndCreatesNoGame()
+    {
+        using var client = fixture.CreateClient();
+        await LoginAnonymouslyAsync(client);
+        var key = $"unreadable-{Guid.NewGuid()}";
+
+        var response = await PostGameAsync(client, key, "5");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        Assert.False(await db.Games.AnyAsync(g => g.IdempotencyKey == key));
+    }
+
+    [Fact]
     public async Task GetRecentGames_WithoutCookie_ReturnsUnauthorized()
     {
         using var client = fixture.CreateClient();

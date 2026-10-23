@@ -30,6 +30,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             "idempotency-key",
             new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -56,6 +57,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             "idempotency-key",
             new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -82,6 +84,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             "idempotency-key",
             new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
@@ -102,12 +105,100 @@ public class GameEndpointsTests
             FixedTimeProvider,
             "idempotency-key",
             new GameEndpoints.CreateGameRequest(default),
+            CreateEngine().Object,
             NullLogger<Game>.Instance
         );
 
         Assert.IsType<ValidationProblem>(result.Result);
         Assert.Empty(db.Games);
         Assert.Empty(db.GameMembers);
+    }
+
+    [Fact]
+    public async Task CreateGame_UnreadableConfiguration_ReturnsValidationProblemAndSavesNothing()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var engine = CreateEngine(readable: false);
+
+        var result = await GameEndpoints.CreateGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            FixedTimeProvider,
+            "idempotency-key",
+            new GameEndpoints.CreateGameRequest(ParseConfiguration("5")),
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        var problem = Assert.IsType<ValidationProblem>(result.Result);
+        Assert.Contains(nameof(GameEndpoints.CreateGameRequest.Configuration), problem.ProblemDetails.Errors.Keys);
+        Assert.Empty(db.Games);
+        engine.Verify(
+            e => e.Begin(It.IsAny<Guid>(), It.IsAny<JsonElement>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task CreateGame_LoggedIn_BeginsHistoryOnceForTheNewGame()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var engine = CreateEngine();
+        var configuration = ParseConfiguration("""{"foo":"bar"}""");
+
+        var result = await GameEndpoints.CreateGame(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            FixedTimeProvider,
+            "idempotency-key",
+            new GameEndpoints.CreateGameRequest(configuration),
+            engine.Object,
+            NullLogger<Game>.Instance
+        );
+
+        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
+        engine.Verify(
+            e =>
+                e.Begin(
+                    ok.Value!.Id,
+                    It.Is<JsonElement>(c => c.GetRawText() == configuration.GetRawText()),
+                    LoggedInUser,
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task CreateGame_CalledTwiceWithSameKey_BeginsHistoryOnEachCall()
+    {
+        var userManager = GetMockUserManager();
+        await using var db = CreateInMemoryDb();
+        var engine = CreateEngine();
+        var request = new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}"""));
+
+        for (var i = 0; i < 2; i++)
+        {
+            await GameEndpoints.CreateGame(
+                LoggedInPrincipal,
+                userManager.Object,
+                db,
+                FixedTimeProvider,
+                "idempotency-key",
+                request,
+                engine.Object,
+                NullLogger<Game>.Instance
+            );
+        }
+
+        engine.Verify(
+            e => e.Begin(It.IsAny<Guid>(), It.IsAny<JsonElement>(), LoggedInUser, It.IsAny<CancellationToken>()),
+            Times.Exactly(2)
+        );
     }
 
     [Fact]
@@ -985,6 +1076,13 @@ public class GameEndpointsTests
         );
 
         Assert.Equal("LogJoinRefusedGameFull", logger.LatestRecord.Id.Name);
+    }
+
+    private static Mock<IGameEngine> CreateEngine(bool readable = true)
+    {
+        var engine = new Mock<IGameEngine>();
+        engine.Setup(e => e.IsConfigurationValid(It.IsAny<JsonElement>())).Returns(readable);
+        return engine;
     }
 
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
