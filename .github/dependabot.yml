@@ -27,6 +27,17 @@ updates:
         patterns:
           - "*lint*"
           - "*prettier*"
+      vitest:
+        applies-to: version-updates
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+        exclude-patterns:
+          - "@vitest/eslint-plugin"
+      bugsnag:
+        applies-to: version-updates
+        patterns:
+          - "@bugsnag/*"
     ignore:
       - dependency-name: "@angular*"
         update-types: [ "version-update:semver-major" ]
@@ -51,6 +62,10 @@ updates:
         applies-to: version-updates
         patterns:
           - "*Aspire.*"
+    ignore:
+      # A security pin on StreamJsonRpc's transitive dependency, which is built against 2.x
+      - dependency-name: "MessagePack"
+        update-types: [ "version-update:semver-major" ]
 
   - package-ecosystem: "dotnet-sdk"
     directory: "/backend"
