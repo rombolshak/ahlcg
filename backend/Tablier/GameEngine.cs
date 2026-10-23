@@ -3,8 +3,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Json.Patch;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Tablier.Contract;
+using Tablier.Data;
 
 namespace Tablier;
 
@@ -12,6 +14,7 @@ namespace Tablier;
 public sealed partial class GameEngine<TConfiguration, TState, TView>(
     GameRules<TConfiguration, TState, TView> rules,
     IGameHistory<TState> history,
+    ApplicationDbContext db,
     IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
@@ -20,6 +23,8 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     where TState : ISchemaVersioned
 {
     private const int MaxAttempts = 3;
+
+    private readonly record struct MembershipChange(string Member, bool Joined);
 
     private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
@@ -41,8 +46,49 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             LogHistoryBegun(logger, gameId);
     }
 
+    public async Task SyncMembers(Guid gameId, CancellationToken ct)
+    {
+        var conflicts = 0;
+        while (conflicts < MaxAttempts)
+        {
+            var stored = await history.LoadCurrent(gameId, ct);
+            if (stored is null)
+                return;
+
+            var change = await FindNextMembershipChange(gameId, stored.State, ct);
+            if (change is null)
+            {
+                LogNothingToSync(logger, gameId);
+                return;
+            }
+
+            var result = change.Value.Joined
+                ? rules.Processor.AddMember(stored.State, change.Value.Member)
+                : rules.Processor.RemoveMember(stored.State, change.Value.Member);
+            var committed = await history.Append(gameId, stored, result, choice: null, ct);
+            if (committed is null)
+            {
+                conflicts++;
+                LogAppendConflict(logger, gameId, stored.Version, conflicts);
+                continue;
+            }
+
+            conflicts = 0;
+            if (change.Value.Joined)
+                LogMemberAddedBySync(logger, gameId, change.Value.Member, committed.Version);
+            else
+                LogMemberRemovedBySync(logger, gameId, change.Value.Member, committed.Version);
+            await SendStateChanged(gameId, stored, committed);
+            await AdvanceNonPlayerSteps(gameId, committed, ct);
+        }
+
+        LogSyncAbandoned(logger, gameId, MaxAttempts);
+    }
+
     public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct)
     {
+        await SyncMembers(gameId, ct);
+
         var stored = await history.LoadCurrent(gameId, ct);
         if (stored is null)
         {
@@ -94,6 +140,23 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
         LogActionAbandoned(logger, gameId, member, MaxAttempts);
         return false;
+    }
+
+    private async Task<MembershipChange?> FindNextMembershipChange(Guid gameId, TState state, CancellationToken ct)
+    {
+        var rows = await db
+            .GameMembers.AsNoTracking()
+            .Where(m => m.GameId == gameId)
+            .Select(m => m.UserId)
+            .ToListAsync(ct);
+        var inState = rules.Processor.GetMembers(state);
+
+        var joiner = rows.Where(row => !inState.Contains(row)).Order(StringComparer.Ordinal).FirstOrDefault();
+        if (joiner is not null)
+            return new MembershipChange(joiner, Joined: true);
+
+        var leaver = inState.Except(rows).Order(StringComparer.Ordinal).FirstOrDefault();
+        return leaver is null ? null : new MembershipChange(leaver, Joined: false);
     }
 
     private bool IsOffered(TState state, string member, string action) =>
@@ -161,6 +224,18 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             return default;
         }
     }
+
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} membership already matches its state; nothing to sync")]
+    private static partial void LogNothingToSync(ILogger logger, Guid gameId);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} was added to game {GameId} by sync at version {Version}")]
+    private static partial void LogMemberAddedBySync(ILogger logger, Guid gameId, string userId, int version);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} was removed from game {GameId} by sync at version {Version}")]
+    private static partial void LogMemberRemovedBySync(ILogger logger, Guid gameId, string userId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Membership sync of game {GameId} was abandoned after {Attempts} conflicts")]
+    private static partial void LogSyncAbandoned(ILogger logger, Guid gameId, int attempts);
 
     [LoggerMessage(LogLevel.Information, "Game {GameId} began its history")]
     private static partial void LogHistoryBegun(ILogger logger, Guid gameId);
