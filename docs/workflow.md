@@ -179,6 +179,8 @@ Generated code has to be excluded in **two** places or the exclusion backfires. 
 
 **chromatic.yml** — on pushes touching `frontend/src/**` or `frontend/public/assets/fonts/**`, skipped for dependabot branches. Builds Storybook and uploads to Chromatic.
 
+**auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot ones. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
+
 Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`.
 
 ## Debugging

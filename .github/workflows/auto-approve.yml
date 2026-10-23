@@ -1,0 +1,28 @@
+name: "Auto-approve"
+
+# The main ruleset dismisses approvals on push, so every push to a qualifying PR is re-approved.
+# Approving needs "Allow GitHub Actions to create and approve pull requests" in the repo settings.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  approve:
+    name: Approve
+    if: >-
+      !github.event.pull_request.draft &&
+      (github.event.pull_request.user.login == 'dependabot[bot]' ||
+       github.event.pull_request.user.login == 'rombolshak')
+    runs-on: ubuntu-latest
+    env:
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - run: gh pr review --approve "$PR_URL"
+      - if: github.event.pull_request.user.login == 'dependabot[bot]'
+        run: gh pr merge --auto --squash "$PR_URL"
