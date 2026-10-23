@@ -5,7 +5,7 @@ using Tablier;
 using Tablier.Contract;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddServiceDefaults().AddTablier("ahlcg");
+builder.AddServiceDefaults().AddTablier("ahlcg", "cache");
 builder
     .Services.AddSingleton<IGameConfigurator<FixtureConfiguration, FixtureState>, FixtureConfigurator>()
     .AddSingleton<IGameStateProcessor<FixtureState>, FixtureStateProcessor>()

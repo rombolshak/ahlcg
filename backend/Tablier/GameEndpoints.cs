@@ -298,12 +298,9 @@ public static partial class GameEndpoints
         Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result,
         Game? Updated
     )> AddMembership(ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider, ILogger logger) =>
-        ExecutionStrategyExtensions.ExecuteAsync<(
-            Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>,
-            Game?
-        )>(
-            db.Database.CreateExecutionStrategy(),
-            async () =>
+        db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(async () =>
             {
                 db.ChangeTracker.Clear();
                 await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
@@ -341,8 +338,7 @@ public static partial class GameEndpoints
                 LogMemberJoined(logger, gameId, userId);
 
                 return (TypedResults.Ok(ToDto(member)), game);
-            }
-        );
+            });
 
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
         ClaimsPrincipal principal,
@@ -492,50 +488,48 @@ public static partial class GameEndpoints
         Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult> Result,
         Game? Updated
     )> DeleteMembership(ApplicationDbContext db, Guid id, string callerId, string userId, ILogger logger) =>
-        ExecutionStrategyExtensions.ExecuteAsync<(
-            Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>,
-            Game?
-        )>(
-            db.Database.CreateExecutionStrategy(),
-            async () =>
-            {
-                db.ChangeTracker.Clear();
-                await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-
-                var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
-                if (game is null || game.Members.All(m => m.UserId != callerId))
+        db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync<(Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>, Game?)>(
+                async () =>
                 {
-                    LogNotAMember(logger, id, callerId);
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), null);
+                    db.ChangeTracker.Clear();
+                    await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+                    var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == id);
+                    if (game is null || game.Members.All(m => m.UserId != callerId))
+                    {
+                        LogNotAMember(logger, id, callerId);
+                        return (TypedResults.Problem(statusCode: StatusCodes.Status403Forbidden), null);
+                    }
+
+                    var target = game.Members.SingleOrDefault(m => m.UserId == userId);
+                    if (target is null)
+                    {
+                        LogRemovalTargetNotAMember(logger, id, userId);
+                        return (TypedResults.NoContent(), null);
+                    }
+
+                    if (game.Members.Count == 1)
+                    {
+                        LogRemovalRefusedLastMember(logger, id, userId);
+                        return (
+                            TypedResults.ValidationProblem(
+                                new Dictionary<string, string[]> { [nameof(userId)] = ["LastMember"] }
+                            ),
+                            null
+                        );
+                    }
+
+                    game.Members.Remove(target);
+                    game.IntendedPlayersCount -= 1;
+                    await db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    LogMemberRemoved(logger, id, userId, callerId);
+
+                    return (TypedResults.NoContent(), game);
                 }
-
-                var target = game.Members.SingleOrDefault(m => m.UserId == userId);
-                if (target is null)
-                {
-                    LogRemovalTargetNotAMember(logger, id, userId);
-                    return (TypedResults.NoContent(), null);
-                }
-
-                if (game.Members.Count == 1)
-                {
-                    LogRemovalRefusedLastMember(logger, id, userId);
-                    return (
-                        TypedResults.ValidationProblem(
-                            new Dictionary<string, string[]> { [nameof(userId)] = ["LastMember"] }
-                        ),
-                        null
-                    );
-                }
-
-                game.Members.Remove(target);
-                game.IntendedPlayersCount -= 1;
-                await db.SaveChangesAsync();
-                await transaction.CommitAsync();
-                LogMemberRemoved(logger, id, userId, callerId);
-
-                return (TypedResults.NoContent(), game);
-            }
-        );
+            );
 
     private static async Task DisconnectMember(
         GameSessions sessions,
