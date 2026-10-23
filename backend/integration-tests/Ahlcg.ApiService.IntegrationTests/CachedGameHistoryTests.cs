@@ -1,6 +1,8 @@
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
@@ -75,6 +77,9 @@ public class CachedGameHistoryTests(AppFixture fixture)
             inner,
             redis,
             Options.Create(new GameHistoryCacheOptions()),
+            new TablierMetrics(
+                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+            ),
             NullLogger<CachedGameHistory<TestState>>.Instance
         );
 

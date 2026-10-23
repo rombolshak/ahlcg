@@ -27,8 +27,12 @@ public static class TablierExtensions
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
         builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "store", typeof(GameHistory<>));
-        builder.Services.AddScoped(typeof(IGameHistory<>), typeof(CachedGameHistory<>));
-        builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName));
+        builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "cached", typeof(CachedGameHistory<>));
+        builder.Services.AddScoped(typeof(IGameHistory<>), typeof(MeteredGameHistory<>));
+        builder.Services.AddSingleton<TablierMetrics>();
+        builder
+            .Services.AddOpenTelemetry()
+            .WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName, TablierMetrics.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 
         var rateLimits =
@@ -57,8 +61,34 @@ public static class TablierExtensions
     public static IServiceCollection AddGameEngine<TConfiguration, TState, TView>(this IServiceCollection services)
         where TState : ISchemaVersioned =>
         services
-            .AddScoped<GameRules<TConfiguration, TState, TView>>()
-            .AddScoped<IGameEngine, GameEngine<TConfiguration, TState, TView>>();
+            .AddScoped(provider =>
+            {
+                var metrics = provider.GetRequiredService<TablierMetrics>();
+                var time = provider.GetRequiredService<TimeProvider>();
+                return new GameRules<TConfiguration, TState, TView>(
+                    new MeteredGameConfigurator<TConfiguration, TState>(
+                        provider.GetRequiredService<IGameConfigurator<TConfiguration, TState>>(),
+                        metrics,
+                        time
+                    ),
+                    new MeteredGameStateProcessor<TState>(
+                        provider.GetRequiredService<IGameStateProcessor<TState>>(),
+                        metrics,
+                        time
+                    ),
+                    new MeteredGameViewProjector<TState, TView>(
+                        provider.GetRequiredService<IGameViewProjector<TState, TView>>(),
+                        metrics,
+                        time
+                    )
+                );
+            })
+            .AddScoped<GameEngine<TConfiguration, TState, TView>>()
+            .AddScoped<IGameEngine>(provider => new MeteredGameEngine(
+                provider.GetRequiredService<GameEngine<TConfiguration, TState, TView>>(),
+                provider.GetRequiredService<TablierMetrics>(),
+                provider.GetRequiredService<TimeProvider>()
+            ));
 
     public static WebApplication MapTablier(this WebApplication app)
     {
