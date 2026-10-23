@@ -48,13 +48,14 @@ public sealed partial class CachedGameHistory<TState>(
         if (appended is not null)
         {
             await WriteGuarded(gameId, appended);
-        }
-        else
-        {
-            await Evict(gameId);
+            return appended;
         }
 
-        return appended;
+        var current = await inner.LoadCurrent(gameId, ct);
+        if (current is not null && await WriteGuarded(gameId, current))
+            LogRefreshedAfterRefusedAppend(logger, gameId, current.Version);
+
+        return null;
     }
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)
@@ -79,7 +80,7 @@ public sealed partial class CachedGameHistory<TState>(
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         inner.LoadAt(gameId, version, ct);
 
-    private async Task WriteGuarded(Guid gameId, StoredState<TState> stored)
+    private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)
             await redis
@@ -95,16 +96,15 @@ public sealed partial class CachedGameHistory<TState>(
                 );
         if (written == 0)
             LogWriteSkippedNewerCached(logger, gameId, stored.Version);
+
+        return written == 1;
     }
 
-    private async Task Evict(Guid gameId)
-    {
-        await redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
-        LogCurrentEvicted(logger, gameId);
-    }
-
-    [LoggerMessage(LogLevel.Debug, "Cached current state of game {GameId} evicted")]
-    private static partial void LogCurrentEvicted(ILogger logger, Guid gameId);
+    [LoggerMessage(
+        LogLevel.Debug,
+        "Append for game {GameId} refused; cached state refreshed from the store to version {Version}"
+    )]
+    private static partial void LogRefreshedAfterRefusedAppend(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,

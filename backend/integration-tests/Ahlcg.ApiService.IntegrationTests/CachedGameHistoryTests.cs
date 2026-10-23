@@ -29,18 +29,54 @@ public class CachedGameHistoryTests(AppFixture fixture)
         IConnectionMultiplexer Redis
     );
 
+    private sealed class PausingLoads(IGameHistory<TestState> inner) : IGameHistory<TestState>
+    {
+        public TaskCompletionSource Loaded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<StoredState<TestState>?> Begin(Guid gameId, TestState initial, CancellationToken ct) =>
+            inner.Begin(gameId, initial, ct);
+
+        public Task<StoredState<TestState>?> Append(
+            Guid gameId,
+            StoredState<TestState> previous,
+            StepResult<TestState> result,
+            PlayerChoice? choice,
+            CancellationToken ct
+        ) => inner.Append(gameId, previous, result, choice, ct);
+
+        public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct)
+        {
+            var loaded = await inner.LoadCurrent(gameId, ct);
+            Loaded.SetResult();
+            await Resume.Task;
+            return loaded;
+        }
+
+        public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
+            inner.LoadAt(gameId, version, ct);
+    }
+
     private Run NewRun(Guid gameId)
     {
         var redis = ConnectionMultiplexer.Connect(fixture.CacheConnectionString);
-        var store = new GameHistory<TestState>(fixture.CreateDbContext(), NullLogger<GameHistory<TestState>>.Instance);
-        var cached = new CachedGameHistory<TestState>(
-            new GameHistory<TestState>(fixture.CreateDbContext(), NullLogger<GameHistory<TestState>>.Instance),
+        return new Run(gameId, NewStore(), NewCached(NewStore(), redis), redis);
+    }
+
+    private GameHistory<TestState> NewStore() =>
+        new(fixture.CreateDbContext(), NullLogger<GameHistory<TestState>>.Instance);
+
+    private static CachedGameHistory<TestState> NewCached(
+        IGameHistory<TestState> inner,
+        IConnectionMultiplexer redis
+    ) =>
+        new(
+            inner,
             redis,
             Options.Create(new GameHistoryCacheOptions()),
             NullLogger<CachedGameHistory<TestState>>.Instance
         );
-        return new Run(gameId, store, cached, redis);
-    }
 
     [Fact]
     public async Task Begin_WhenCacheHoldsNewerVersion_LeavesTheNewerOne()
@@ -120,7 +156,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Append_Refused_EvictsSoNextLoadCurrentReadsStore()
+    public async Task Append_Refused_RefreshesCacheFromStore()
     {
         var gameId = await SeedGameAsync();
         var run = NewRun(gameId);
@@ -128,9 +164,31 @@ public class CachedGameHistoryTests(AppFixture fixture)
         await run.Store.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None);
 
         var refused = await run.Cached.Append(gameId, begun!, Step(9), choice: null, CancellationToken.None);
+        await DeleteGameAsync(gameId);
         var loaded = await run.Cached.LoadCurrent(gameId, CancellationToken.None);
 
         Assert.Null(refused);
+        Assert.Equal(new StoredState<TestState>(1, State(1)), loaded);
+    }
+
+    [Fact]
+    public async Task LoadCurrent_MissFinishingAfterRefusedAppend_DoesNotRegressCachedHead()
+    {
+        var gameId = await SeedGameAsync();
+        var run = NewRun(gameId);
+        var begun = await run.Cached.Begin(gameId, State(0), CancellationToken.None);
+        await run.Redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
+        var pausing = new PausingLoads(NewStore());
+        var slowMiss = NewCached(pausing, run.Redis).LoadCurrent(gameId, CancellationToken.None);
+        await pausing.Loaded.Task;
+
+        await run.Cached.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None);
+        await run.Cached.Append(gameId, begun!, Step(9), choice: null, CancellationToken.None);
+        pausing.Resume.SetResult();
+        await slowMiss;
+        await DeleteGameAsync(gameId);
+        var loaded = await run.Cached.LoadCurrent(gameId, CancellationToken.None);
+
         Assert.Equal(new StoredState<TestState>(1, State(1)), loaded);
     }
 
