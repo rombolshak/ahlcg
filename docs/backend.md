@@ -4,7 +4,7 @@
 
 [comments.md](comments.md) applies here as it does to the frontend: a comment is an exception, and XML-doc is for non-obvious public contracts only.
 
-**Method names start with a verb** — `GetCurrentKey`, `GetMemberGroupName`, `FindNextMembershipChange`, not `CurrentKey`, `MemberGroup`, `NextMembershipChange`. A noun reads as a property and hides that work is done. `[LoggerMessage]` methods are `Log…`, and predicates are `Is…`/`Has…`/`Holds…`.
+**Method names start with a verb** — `GetGameStateKey`, `GetMemberGroupName`, `FindNextMembershipChange`, not `CurrentKey`, `MemberGroup`, `NextMembershipChange`. A noun reads as a property and hides that work is done. `[LoggerMessage]` methods are `Log…`, and predicates are `Is…`/`Has…`/`Holds…`.
 
 ## Projects
 
@@ -144,7 +144,7 @@ Configured in `Ahlcg.ServiceDefaults/Extensions.cs`, applied by `AddServiceDefau
 
 - OpenTelemetry logs, metrics, and traces, exported over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. SignalR hub instrumentation is added separately in `AddTablier()`.
 
-The step loop has a second meter, `TablierMetrics.MeterName`, recorded only by decorators — `MeteredGameEngine`, `MeteredGameHistory` and one per rules interface — so the engine and the store carry no metric calls. Each seam is one duration histogram tagged by `method` (and `outcome` where the call can refuse); a histogram exports its count, so call rates come from it rather than from separate counters. The cache adds a hit/miss counter. The instruments sit in a singleton because the decorators are scoped.
+The step loop has a second meter, `TablierMetrics.MeterName`, recorded only by decorators — `MeteredGameEngine`, `MeteredGameHistory` and one per rules interface, all on the `MeteredDecorator` base — so the engine and the store carry no metric calls. Each seam is one duration histogram tagged by `method` and `outcome`; a histogram exports its count, so call rates come from it rather than from separate counters. The cache adds a hit/miss counter. The instruments sit in a singleton because the decorators are scoped.
 
 Game sessions carry their own meter, `GameSessions.MeterName`, registered in `AddTablier()` rather than in `Ahlcg.ServiceDefaults` — service defaults are shared with `Ahlcg.Migrator`, which has no sessions to measure. `AddOpenTelemetry()` is idempotent, so calling it again after `AddServiceDefaults()` appends rather than replaces. Two things about those instruments are worth knowing before changing them:
 
