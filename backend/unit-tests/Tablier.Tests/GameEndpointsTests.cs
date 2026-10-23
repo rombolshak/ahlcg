@@ -751,6 +751,15 @@ public class GameEndpointsTests
             Times.Once
         );
         groups.Verify(
+            g =>
+                g.RemoveFromGroupAsync(
+                    "target-conn",
+                    GameHub.GetMemberGroupName(game.Id, OtherUser),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        groups.Verify(
             g => g.RemoveFromGroupAsync("caller-conn", It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never
         );

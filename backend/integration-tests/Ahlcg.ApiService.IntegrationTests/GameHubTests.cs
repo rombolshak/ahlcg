@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
@@ -22,17 +21,17 @@ public class GameHubTests(AppFixture fixture)
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
-        var userId = await LoginAnonymouslyAsync(client);
-        var gameId = await CreateGameAsync(client);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var gameId = await HubTestSupport.CreateGameAsync(client);
 
-        await using var connection = BuildConnection(cookies, $"gameId={gameId}");
+        await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         var announced = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         connection.On<string>(nameof(IGameClient.MemberConnected), id => announced.TrySetResult(id));
 
         await connection.StartAsync();
 
         Assert.Equal(HubConnectionState.Connected, connection.State);
-        Assert.Equal(userId, await WithTimeoutAsync(announced.Task));
+        Assert.Equal(userId, await HubTestSupport.WithTimeoutAsync(announced.Task));
     }
 
     [Fact]
@@ -40,21 +39,21 @@ public class GameHubTests(AppFixture fixture)
     {
         var ownerCookies = new CookieContainer();
         using var owner = fixture.CreateClient(ownerCookies);
-        await LoginAnonymouslyAsync(owner);
-        var gameId = await CreateGameAsync(owner);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await HubTestSupport.CreateGameAsync(owner);
 
         var outsiderCookies = new CookieContainer();
         using var outsider = fixture.CreateClient(outsiderCookies);
-        await LoginAnonymouslyAsync(outsider);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
 
-        await using var connection = BuildConnection(outsiderCookies, $"gameId={gameId}");
+        await using var connection = HubTestSupport.BuildConnection(fixture, outsiderCookies, $"gameId={gameId}");
         var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         connection.On<string>(nameof(IGameClient.Exit), reason => exited.TrySetResult(reason));
 
         await connection.StartAsync();
 
         Assert.Equal(HubConnectionState.Connected, connection.State);
-        Assert.Equal("NotAMember", await WithTimeoutAsync(exited.Task));
+        Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(exited.Task));
     }
 
     [Fact]
@@ -62,9 +61,9 @@ public class GameHubTests(AppFixture fixture)
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
 
-        await using var connection = BuildConnection(cookies, query: null);
+        await using var connection = HubTestSupport.BuildConnection(fixture, cookies, query: null);
 
         var error = await StartAndWaitForCloseAsync(connection);
 
@@ -76,7 +75,7 @@ public class GameHubTests(AppFixture fixture)
     {
         var gameId = Guid.NewGuid();
 
-        await using var connection = BuildConnection(new CookieContainer(), $"gameId={gameId}");
+        await using var connection = HubTestSupport.BuildConnection(fixture, new CookieContainer(), $"gameId={gameId}");
 
         await Assert.ThrowsAnyAsync<Exception>(() => connection.StartAsync());
     }
@@ -86,11 +85,11 @@ public class GameHubTests(AppFixture fixture)
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
-        var userId = await LoginAnonymouslyAsync(client);
-        var gameId = await CreateGameAsync(client);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var gameId = await HubTestSupport.CreateGameAsync(client);
         var joinedAt = await ReadLastPlayedAtAsync(gameId, userId);
 
-        await using (var connection = BuildConnection(cookies, $"gameId={gameId}"))
+        await using (var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}"))
         {
             await connection.StartAsync();
             await connection.StopAsync();
@@ -105,15 +104,15 @@ public class GameHubTests(AppFixture fixture)
     {
         var ownerCookies = new CookieContainer();
         using var owner = fixture.CreateClient(ownerCookies);
-        await LoginAnonymouslyAsync(owner);
-        var gameId = await CreateGameAsync(owner);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await HubTestSupport.CreateGameAsync(owner);
 
         var targetCookies = new CookieContainer();
         using var target = fixture.CreateClient(targetCookies);
-        var targetId = await LoginAnonymouslyAsync(target);
+        var targetId = await HubTestSupport.LoginAnonymouslyAsync(fixture, target);
         await AddMembershipAsync(gameId, targetId);
 
-        await using var connection = BuildConnection(targetCookies, $"gameId={gameId}");
+        await using var connection = HubTestSupport.BuildConnection(fixture, targetCookies, $"gameId={gameId}");
         var exited = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         connection.On<string>(nameof(IGameClient.Exit), reason => exited.TrySetResult(reason));
         await connection.StartAsync();
@@ -121,14 +120,14 @@ public class GameHubTests(AppFixture fixture)
         var removeResponse = await owner.DeleteAsync($"/games/{gameId}/members/{targetId}");
         removeResponse.EnsureSuccessStatusCode();
 
-        Assert.Equal("NotAMember", await WithTimeoutAsync(exited.Task));
+        Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(exited.Task));
 
-        await using var reconnection = BuildConnection(targetCookies, $"gameId={gameId}");
+        await using var reconnection = HubTestSupport.BuildConnection(fixture, targetCookies, $"gameId={gameId}");
         var exitedAgain = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         reconnection.On<string>(nameof(IGameClient.Exit), reason => exitedAgain.TrySetResult(reason));
         await reconnection.StartAsync();
 
-        Assert.Equal("NotAMember", await WithTimeoutAsync(exitedAgain.Task));
+        Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(exitedAgain.Task));
     }
 
     [Fact]
@@ -136,10 +135,10 @@ public class GameHubTests(AppFixture fixture)
     {
         var cookies = new CookieContainer();
         using var client = fixture.CreateClient(cookies);
-        var userId = await LoginAnonymouslyAsync(client);
-        var gameId = await CreateGameAsync(client);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var gameId = await HubTestSupport.CreateGameAsync(client);
 
-        await using (var connection = BuildConnection(cookies, $"gameId={gameId}"))
+        await using (var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}"))
         {
             await connection.StartAsync();
 
@@ -197,47 +196,6 @@ public class GameHubTests(AppFixture fixture)
         return member.GetProperty("isOnline").GetBoolean();
     }
 
-    private HubConnection BuildConnection(CookieContainer cookies, string? query)
-    {
-        var url = new Uri(fixture.ApiBaseAddress, query is null ? "game" : $"game?{query}");
-        return new HubConnectionBuilder()
-            .WithUrl(
-                url,
-                options =>
-                {
-                    options.Cookies = cookies;
-                    options.HttpMessageHandlerFactory = _ => new HttpClientHandler
-                    {
-                        CookieContainer = cookies,
-                        ServerCertificateCustomValidationCallback =
-                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-                    };
-                    options.WebSocketConfiguration = socket =>
-                        socket.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-                }
-            )
-            .Build();
-    }
-
-    private static async Task<Guid> CreateGameAsync(HttpClient client)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
-        {
-            Content = JsonContent.Create(
-                new GameEndpoints.CreateGameRequest(JsonDocument.Parse("""{"hub":true}""").RootElement.Clone()),
-                options: JsonSerializerOptions.Web
-            ),
-        };
-        request.Headers.Add("Idempotency-Key", $"hub-{Guid.NewGuid()}");
-
-        var response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
-
-        var dto = await response.Content.ReadFromJsonAsync<GameEndpoints.GameDto>(JsonSerializerOptions.Web);
-        Assert.NotNull(dto);
-        return dto.Id;
-    }
-
     private async Task<DateTimeOffset> ReadLastPlayedAtAsync(Guid gameId, string userId)
     {
         await using var db = fixture.CreateDbContext();
@@ -280,31 +238,6 @@ public class GameHubTests(AppFixture fixture)
 
         await connection.StartAsync();
 
-        return await WithTimeoutAsync(closed.Task);
-    }
-
-    private static async Task<T> WithTimeoutAsync<T>(Task<T> task)
-    {
-        var completed = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(15)));
-        Assert.Same(task, completed);
-        return await task;
-    }
-
-    /// <summary>
-    /// Logs an anonymous session in on <paramref name="client"/> and returns the id of the user
-    /// created for it, found as the row that appeared in AspNetUsers as a side effect of the call.
-    /// </summary>
-    private async Task<string> LoginAnonymouslyAsync(HttpClient client)
-    {
-        await using var before = fixture.CreateDbContext();
-        var beforeIds = await before.Users.Select(u => u.Id).ToListAsync();
-
-        var response = await client.PostAsync("/auth/loginAnonymously", content: null);
-        response.EnsureSuccessStatusCode();
-
-        await using var after = fixture.CreateDbContext();
-        var afterIds = await after.Users.Select(u => u.Id).ToListAsync();
-
-        return afterIds.Except(beforeIds).Single();
+        return await HubTestSupport.WithTimeoutAsync(closed.Task);
     }
 }

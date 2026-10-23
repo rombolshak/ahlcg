@@ -1,9 +1,12 @@
+using System.Collections.Frozen;
 using Tablier.Contract;
 
 namespace Ahlcg.Rules.Fixture;
 
 public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
 {
+    public IReadOnlySet<string> GetMembers(FixtureState state) => state.Secrets.Keys.ToFrozenSet();
+
     public IReadOnlyDictionary<string, IReadOnlySet<string>> GetMembersActions(FixtureState state) =>
         state.RevealPending ? [] : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
 

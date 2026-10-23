@@ -1,3 +1,6 @@
+using System.Text.Json.Nodes;
+using Json.Patch;
+
 namespace Tablier;
 
 #pragma warning disable MA0048
@@ -5,6 +8,8 @@ public enum ExitReason
 {
     NotAMember,
 }
+
+public sealed record MemberState(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
 #pragma warning restore MA0048
 
 public interface IGameClient

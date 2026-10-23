@@ -572,8 +572,12 @@ public static partial class GameEndpoints
             return;
 
         var gameGroup = id.ToString();
+        var memberGroup = GameHub.GetMemberGroupName(id, userId);
         foreach (var connectionId in connectionIds)
+        {
             await hub.Groups.RemoveFromGroupAsync(connectionId, gameGroup);
+            await hub.Groups.RemoveFromGroupAsync(connectionId, memberGroup);
+        }
         await hub.Clients.Clients([.. connectionIds]).Exit(ExitReason.NotAMember);
     }
 
