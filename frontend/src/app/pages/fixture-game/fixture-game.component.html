@@ -1,0 +1,71 @@
+<div class="absolute inset-0 bg-zinc-900/60"></div>
+
+<div class="relative z-10 flex size-full flex-col items-center gap-6 overflow-y-auto py-10 text-base-content">
+  <h1 class="font-[Conkordia] text-[52px] tracking-wide">Fixture game</h1>
+
+  @switch (screen()) {
+    @case ("loading") {
+      <div class="flex w-2xl flex-col gap-4" data-testId="loading">
+        <div class="h-[110px] w-full skeleton rounded-box opacity-80"></div>
+        <div class="h-[110px] w-full skeleton rounded-box opacity-60"></div>
+        <div class="h-[110px] w-full skeleton rounded-box opacity-40"></div>
+      </div>
+    }
+    @case ("ready") {
+      <div class="flex w-2xl flex-col gap-6" data-testId="ready">
+        <div class="stats w-full bg-base-200 shadow-sm">
+          <div class="stat">
+            <div class="stat-title">Shared</div>
+            <div class="stat-value" data-testId="shared">{{ store.view()?.shared }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Your secret</div>
+            <div class="stat-value" data-testId="own-secret">{{ store.view()?.ownSecret }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Revealed</div>
+            <div class="stat-value" data-testId="revealed">{{ revealed() }}</div>
+          </div>
+        </div>
+
+        <div class="card bg-base-200 shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title">Other members</h2>
+            <ul class="flex flex-col gap-2" data-testId="others">
+              @for (other of others(); track other.userId) {
+                <li class="flex items-center justify-between">
+                  <span data-testId="other-label">{{ other.label }}</span>
+                  <span data-testId="other-sign" [class]="other.signClass">{{ other.sign }}</span>
+                </li>
+              } @empty {
+                <li class="text-base-content/70" data-testId="alone">You are alone at the table.</li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div class="card bg-base-200 shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title">Journal</h2>
+            <ul class="flex flex-col gap-2" data-testId="journal">
+              @for (entry of journal(); track $index) {
+                <li data-testId="journal-entry">{{ entry }}</li>
+              } @empty {
+                <li class="text-base-content/70" data-testId="journal-empty">No entries yet.</li>
+              }
+            </ul>
+          </div>
+        </div>
+      </div>
+    }
+    @default {
+      <div role="alert" [class]="notice()?.className" [attr.data-testId]="notice()?.testId">
+        <span>{{ notice()?.text }}</span>
+      </div>
+    }
+  }
+</div>
+
+<ah-dialog #settings>
+  <ah-settings />
+</ah-dialog>

@@ -18,6 +18,10 @@ const gameSummary = type({
 export type GameSummary = typeof gameSummary.infer;
 const gameSummaries = gameSummary.array();
 
+const gameMember = type({ userId: 'string', userName: 'string | null', isAnonymous: 'boolean', isOnline: 'boolean' });
+export type GameMember = typeof gameMember.infer;
+const gameMembers = gameMember.array();
+
 @Service()
 export class GamesService {
   private readonly http = inject(HttpClient);
@@ -72,6 +76,20 @@ export class GamesService {
 
   public archive(): Observable<GameSummary[]> {
     return this.fetchGames('/api/games/archive', 'archive games');
+  }
+
+  public members(gameId: string): Observable<GameMember[]> {
+    return this.http.get<unknown>(`/api/games/${gameId}/members`).pipe(
+      map(response => {
+        const members = gameMembers(response);
+        if (members instanceof ArkErrors) {
+          console.error('Invalid game members response', members.summary);
+          return members.throw();
+        }
+
+        return members;
+      }),
+    );
   }
 
   private fetchGames(url: string, label: string): Observable<GameSummary[]> {

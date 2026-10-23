@@ -1,4 +1,5 @@
 ﻿import { computed } from '@angular/core';
+import { applyJsonPatch } from '@core/apply-json-patch';
 import { patchState, signalStore, withComputed, withMethods, withProps, withState, WritableStateSource } from '@ngrx/signals';
 import { ArkErrors } from 'arktype';
 import { gsap } from 'gsap';
@@ -13,8 +14,7 @@ import { AssetCard, EventCard, PlayerCard, SkillCard } from '@domain/entities/pl
 import { GameEntity, isAct, isAgenda, isAsset, isEnemy, isEvent, isInvestigator, isLocation, isPlayerCard, isSkill } from '@domain/game-entity';
 import { gameState, GameState } from '@domain/game-state';
 import { Flip } from 'gsap/Flip';
-import { produce } from 'immer';
-import { applyPatch, Operation } from 'rfc6902';
+import { Operation } from 'rfc6902';
 
 gsap.registerPlugin(Flip);
 
@@ -37,14 +37,9 @@ function applyStatePatches(store: WritableStateSource<State>, changes: Operation
     let newState: GameState | null;
     if (oldState.gameState === null && changes.length === 1 && changes[0]?.op === 'replace' && changes[0].path === '') {
       newState = changes[0].value as GameState;
-    } else
-      newState = produce(oldState.gameState, draft => {
-        const results = applyPatch(draft, changes);
-        const errors = results.filter(r => r !== null);
-        if (errors.length > 0) {
-          throw new Error('Error applying changes to game state: ' + errors.map(e => e.message).join('; '));
-        }
-      });
+    } else {
+      newState = applyJsonPatch(oldState.gameState, changes);
+    }
 
     validateState(newState);
     return { gameState: newState };
