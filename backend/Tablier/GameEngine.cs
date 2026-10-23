@@ -188,7 +188,13 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         var previousMembers = rules.Processor.GetMembers(previous.State);
         foreach (var member in rules.Processor.GetMembers(next.State))
         {
-            var before = previousMembers.Contains(member) ? ProjectView(previous.State, member) : new JsonObject();
+            if (!previousMembers.Contains(member))
+            {
+                LogChangeSkippedForJoiner(logger, gameId, member, next.Version);
+                continue;
+            }
+
+            var before = ProjectView(previous.State, member);
             var after = ProjectView(next.State, member);
             var change = new StateChange(
                 next.Version,
@@ -278,6 +284,12 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
     [LoggerMessage(LogLevel.Information, "Game {GameId} advanced to version {Version}")]
     private static partial void LogAdvanced(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(
+        LogLevel.Debug,
+        "Version {Version} of game {GameId} was not pushed to user {UserId}: they just joined"
+    )]
+    private static partial void LogChangeSkippedForJoiner(ILogger logger, Guid gameId, string userId, int version);
 
     [LoggerMessage(LogLevel.Debug, "Game {GameId} advance after version {Version} was refused; another writer won")]
     private static partial void LogAdvanceConflict(ILogger logger, Guid gameId, int version);
