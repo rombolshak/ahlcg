@@ -214,6 +214,7 @@ public class GameStepLoopTests(AppFixture fixture)
         Assert.Equal(1, change.GetProperty("version").GetInt32());
         var others = ApplyView(ownerSync, change)["others"]!.AsObject();
         Assert.Equal(nameof(SecretSign.Zero), others[newcomer.UserId]!.GetValue<string>());
+        Assert.False(await newcomer.HasChangeWithinAsync(TimeSpan.FromMilliseconds(500)));
     }
 
     [Fact]
@@ -312,7 +313,6 @@ public class GameStepLoopTests(AppFixture fixture)
         var member = await AddUnsyncedMemberAsync(owner);
         await member.GetStateAsync();
         await owner.NextChangeAsync();
-        await member.NextChangeAsync();
         return (owner, member);
     }
 
