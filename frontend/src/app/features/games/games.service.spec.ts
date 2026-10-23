@@ -207,4 +207,34 @@ describe('GamesService', () => {
     expect(result?.[0]?.completedAt).toBeNull();
     expect(result?.[1]?.completedAt).toEqual(new Date('2026-01-05T00:00:00+00:00'));
   });
+
+  it('should GET /api/games/{id}/members and return the validated members', () => {
+    let result: unknown;
+    service.members('game-1').subscribe(members => {
+      result = members;
+    });
+
+    http.expectOne('/api/games/game-1/members').flush([
+      { userId: 'u1', userName: 'Roland', isAnonymous: false, isOnline: true },
+      { userId: 'u2', userName: null, isAnonymous: true, isOnline: false },
+    ]);
+
+    expect(result).toEqual([
+      { userId: 'u1', userName: 'Roland', isAnonymous: false, isOnline: true },
+      { userId: 'u2', userName: null, isAnonymous: true, isOnline: false },
+    ]);
+  });
+
+  it('should throw when the members response is malformed', () => {
+    let error: unknown;
+    service.members('game-1').subscribe({
+      error: err => {
+        error = err;
+      },
+    });
+
+    http.expectOne('/api/games/game-1/members').flush([{ userId: 'u1', isOnline: 'yes' }]);
+
+    expect(error).toBeTruthy();
+  });
 });

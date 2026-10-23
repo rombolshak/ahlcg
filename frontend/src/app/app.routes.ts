@@ -16,7 +16,7 @@ export const routes: Routes = [
   },
   {
     path: 'game/:id',
-    loadComponent: () => import('@pages/game-view/game-view.component').then(c => c.GameViewComponent),
+    loadComponent: () => import('@pages/fixture-game/fixture-game.component').then(c => c.FixtureGameComponent),
     pathMatch: 'prefix',
   },
 ];
