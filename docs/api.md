@@ -41,15 +41,24 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 | Direction | Message | Payload |
 | --- | --- | --- |
 | Client → server | `Ping()` | returns a UTC timestamp |
-| Server → client | `Exit` | an `ExitReason`, to the caller only — stop the connection and do not reconnect |
-| Server → group | `MemberConnected` | the user id |
-| Server → group | `MemberDisconnected` | the user id |
+| Client → server | `GetState()` | returns `MemberState` — the version, the member's view and, per offered action, the patch it would apply to that view — or `null` |
+| Client → server | `Execute(action)` | returns `true` once the step is committed and its events were sent, `false` if it was not applied |
+| Server → client | `Exit` | to the caller only: an `ExitReason` — stop the connection and do not reconnect |
+| Server → client | `MemberConnected` | to every member of the game: the user id |
+| Server → client | `MemberDisconnected` | to every member of the game: the user id |
+| Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version |
+
+**`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
+
+**`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `false`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
+
+**There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
 
 **A hub method that answers the caller returns its answer; it does not push one.** `Ping()` is `Task<DateTime>`, so the client gets it as the result of `invoke('Ping')`. Pushing the answer through `IGameClient` instead would look equivalent and is not: a push carries no correlation id, so a client with two calls in flight cannot tell which reply belongs to which, and every caller has to register and tear down a handler. Keep request/response on the return value and reserve `IGameClient` for messages the server sends unprompted.
 
 **`ExitReason` crosses the wire as a string** (`"NotAMember"`), not a number. That is not SignalR's default — `AddSignalR()` in `AddTablier()` registers a `JsonStringEnumConverter` on the hub's payload serializer to get it. Drop that converter and every enum silently becomes an integer, which no client reading `"NotAMember"` will match.
 
-One group per game, named by the game id. Both broadcasts go to the whole group, so a member receives their own `MemberConnected` too.
+One group per game, named by the game id. Both presence broadcasts go to the whole group, so a member receives their own `MemberConnected` too. A second group per member, `{gameId}:{userId}`, carries `StateChanged`, since each member's diff is different.
 
 **The broadcasts are per member, not per connection.** A member with two tabs open produces one `memberConnected` when the first arrives and one `memberDisconnected` when the last goes — closing one tab does not announce them offline while they are still present in the other.
 

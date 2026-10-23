@@ -17,7 +17,7 @@ Agents get a Git Bash tool as well, which means `sed`, `awk`, and heredocs techn
 
 ## Running
 
-**Everything (recommended)** — Postgres + PgAdmin + migrator + API + frontend dev server:
+**Everything (recommended)** — Postgres + PgAdmin + Valkey + migrator + API + frontend dev server:
 
 ```bash
 cd backend/Ahlcg.AppHost
