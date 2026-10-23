@@ -24,6 +24,8 @@ public abstract class AppFixtureBase : IAsyncLifetime
 
     public string ConnectionString { get; private set; } = null!;
 
+    public string CacheConnectionString { get; private set; } = null!;
+
     public Uri ApiBaseAddress => _apiBaseAddress;
 
     protected virtual int? AccountCreationPermitLimit => null;
@@ -62,6 +64,9 @@ public abstract class AppFixtureBase : IAsyncLifetime
         ConnectionString =
             await _app.GetConnectionStringAsync("ahlcg")
             ?? throw new InvalidOperationException("No connection string for 'ahlcg'.");
+        CacheConnectionString =
+            await _app.GetConnectionStringAsync("cache")
+            ?? throw new InvalidOperationException("No connection string for 'cache'.");
     }
 
     public async Task DisposeAsync() => await _app.DisposeAsync();

@@ -1,3 +1,6 @@
+using System.Text.Json.Nodes;
+using Json.Patch;
+
 namespace Tablier;
 
 #pragma warning disable MA0048
@@ -5,6 +8,10 @@ public enum ExitReason
 {
     NotAMember,
 }
+
+public sealed record MemberState(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
+
+public sealed record StateChange(int Version, JsonPatch ViewPatch, IReadOnlyDictionary<string, JsonPatch> Actions);
 #pragma warning restore MA0048
 
 public interface IGameClient
@@ -12,6 +19,8 @@ public interface IGameClient
     Task MemberConnected(string userId);
 
     Task MemberDisconnected(string userId);
+
+    Task StateChanged(StateChange change);
 
     // The method name is the SignalR wire name the frontend listens on.
 #pragma warning disable CA1716

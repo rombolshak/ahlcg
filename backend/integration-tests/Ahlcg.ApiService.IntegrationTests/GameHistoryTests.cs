@@ -423,59 +423,6 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Begin_ContextTracksPendingChanges_ThrowsAndLeavesThemPending()
-    {
-        var gameId = await SeedGameAsync();
-        await using var db = fixture.CreateDbContext();
-        var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
-        var game = await TrackModifiedGameAsync(db, gameId);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            history.Begin(gameId, State(0), CancellationToken.None)
-        );
-
-        Assert.Equal(EntityState.Modified, db.Entry(game).State);
-        await using var reader = fixture.CreateDbContext();
-        Assert.False(await reader.GameSnapshots.AnyAsync(s => s.GameId == gameId));
-        Assert.Equal(1, (await reader.Games.AsNoTracking().SingleAsync(g => g.Id == gameId)).IntendedPlayersCount);
-    }
-
-    [Fact]
-    public async Task Append_ContextTracksPendingChanges_ThrowsAndLeavesThemPending()
-    {
-        var gameId = await SeedGameAsync();
-        await using var db = fixture.CreateDbContext();
-        var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
-        var begun = await history.Begin(gameId, State(0), CancellationToken.None);
-        var game = await TrackModifiedGameAsync(db, gameId);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            history.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None)
-        );
-
-        Assert.Equal(EntityState.Modified, db.Entry(game).State);
-        await using var reader = fixture.CreateDbContext();
-        Assert.False(await reader.GameSteps.AnyAsync(s => s.GameId == gameId));
-        Assert.Equal(1, (await reader.Games.AsNoTracking().SingleAsync(g => g.Id == gameId)).IntendedPlayersCount);
-    }
-
-    [Fact]
-    public async Task Append_ContextTracksUnchangedEntity_ThrowsAndKeepsItTracked()
-    {
-        var gameId = await SeedGameAsync();
-        await using var db = fixture.CreateDbContext();
-        var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
-        var begun = await history.Begin(gameId, State(0), CancellationToken.None);
-        var game = await db.Games.SingleAsync(g => g.Id == gameId);
-
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            history.Append(gameId, begun!, Step(1), choice: null, CancellationToken.None)
-        );
-
-        Assert.Equal(EntityState.Unchanged, db.Entry(game).State);
-    }
-
-    [Fact]
     public async Task Append_AfterWrite_LeavesContextTrackingNothing()
     {
         var gameId = await SeedGameAsync();
@@ -486,13 +433,6 @@ public class GameHistoryTests(AppFixture fixture)
         await history.Append(gameId, begun!, Step(1, checkpoint: "a"), choice: null, CancellationToken.None);
 
         Assert.Empty(db.ChangeTracker.Entries());
-    }
-
-    private static async Task<Game> TrackModifiedGameAsync(ApplicationDbContext db, Guid gameId)
-    {
-        var game = await db.Games.SingleAsync(g => g.Id == gameId);
-        game.IntendedPlayersCount = 4;
-        return game;
     }
 
     [Fact]

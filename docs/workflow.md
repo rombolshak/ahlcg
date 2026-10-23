@@ -17,7 +17,7 @@ Agents get a Git Bash tool as well, which means `sed`, `awk`, and heredocs techn
 
 ## Running
 
-**Everything (recommended)** — Postgres + PgAdmin + migrator + API + frontend dev server:
+**Everything (recommended)** — Postgres + PgAdmin + Valkey + migrator + API + frontend dev server:
 
 ```bash
 cd backend/Ahlcg.AppHost
@@ -178,6 +178,8 @@ Generated code has to be excluded in **two** places or the exclusion backfires. 
 **e2e.yml** — .NET 10 and Node, installs the Aspire CLI and runs `aspire certs trust` (same reason as `backend.yml`: `apiservice` binds its `https` launch profile even though the suite itself talks HTTP), `npm ci` and `npx playwright install chromium` in `e2e/`, then `npm test`. No Coveralls step and no Sonar step — this tier does not collect coverage (see [testing.md](testing.md)). Uploads the Playwright HTML report as an artifact on failure.
 
 **chromatic.yml** — on pushes touching `frontend/src/**` or `frontend/public/assets/fonts/**`, skipped for dependabot branches. Builds Storybook and uploads to Chromatic.
+
+**auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot ones. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
 
 Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`.
 

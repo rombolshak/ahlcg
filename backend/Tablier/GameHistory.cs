@@ -17,23 +17,31 @@ public readonly record struct PlayerChoice(string Member, string Action);
 #pragma warning restore MA0048
 
 public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
+    : IGameHistory<TState>
     where TState : ISchemaVersioned
 {
     public async Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct)
     {
-        RequireEmptyChangeTracker();
-        if (await FindHead(gameId, ct) is not null)
-        {
-            LogBeginRefusedAlreadyBegun(logger, gameId);
-            return null;
-        }
+        var begun = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                db.ChangeTracker.Clear();
+                if (await FindHead(gameId, ct) is not null)
+                {
+                    LogBeginRefusedAlreadyBegun(logger, gameId);
+                    return false;
+                }
 
-        db.GameSnapshots.Add(CreateSnapshot(gameId, 0, initial));
-        if (!await TrySave(ct))
-        {
-            LogBeginRefusedAlreadyBegun(logger, gameId);
+                db.GameSnapshots.Add(CreateSnapshot(gameId, 0, initial));
+                if (await TrySave(ct))
+                    return true;
+
+                LogBeginRefusedAlreadyBegun(logger, gameId);
+                return false;
+            });
+        if (!begun)
             return null;
-        }
 
         LogHistoryBegun(logger, gameId);
         return new StoredState<TState>(0, initial);
@@ -42,51 +50,58 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     public async Task<StoredState<TState>?> Append(
         Guid gameId,
         StoredState<TState> previous,
-        StepResult<TState> step,
+        StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct
     )
     {
-        RequireEmptyChangeTracker();
-        var head = await FindHead(gameId, ct);
-        if (head is null)
-        {
-            LogAppendRefusedNotBegun(logger, gameId, previous.Version);
-            return null;
-        }
-
-        if (head != previous.Version)
-        {
-            LogAppendRefusedStale(logger, gameId, previous.Version, head.Value);
-            return null;
-        }
-
         var version = previous.Version + 1;
-        var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(step.State));
-        db.GameSteps.Add(
-            new GameStep
+        var writesSnapshot = result.Checkpoint is not null || result.IsBaseline;
+        var appended = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
             {
-                GameId = gameId,
-                Version = version,
-                Actor = choice?.Member,
-                Action = choice?.Action,
-                Patch = JsonSerializer.SerializeToDocument(patch),
-                Checkpoint = step.Checkpoint,
-                IsIrreversible = step.IsIrreversible,
-                IsBaseline = step.IsBaseline,
-            }
-        );
-        var writesSnapshot = step.Checkpoint is not null || step.IsBaseline;
-        if (writesSnapshot)
-        {
-            db.GameSnapshots.Add(CreateSnapshot(gameId, version, step.State));
-        }
+                db.ChangeTracker.Clear();
+                var head = await FindHead(gameId, ct);
+                if (head is null)
+                {
+                    LogAppendRefusedNotBegun(logger, gameId, previous.Version);
+                    return false;
+                }
 
-        if (!await TrySave(ct))
-        {
-            LogAppendRefusedConcurrent(logger, gameId, previous.Version);
+                if (head != previous.Version)
+                {
+                    LogAppendRefusedStale(logger, gameId, previous.Version, head.Value);
+                    return false;
+                }
+
+                var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(result.State));
+                db.GameSteps.Add(
+                    new GameStep
+                    {
+                        GameId = gameId,
+                        Version = version,
+                        Actor = choice?.Member,
+                        Action = choice?.Action,
+                        Patch = JsonSerializer.SerializeToDocument(patch),
+                        Checkpoint = result.Checkpoint,
+                        IsIrreversible = result.IsIrreversible,
+                        IsBaseline = result.IsBaseline,
+                    }
+                );
+                if (writesSnapshot)
+                {
+                    db.GameSnapshots.Add(CreateSnapshot(gameId, version, result.State));
+                }
+
+                if (await TrySave(ct))
+                    return true;
+
+                LogAppendRefusedConcurrent(logger, gameId, previous.Version);
+                return false;
+            });
+        if (!appended)
             return null;
-        }
 
         LogStepAppended(logger, gameId, version);
         if (writesSnapshot)
@@ -94,7 +109,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             LogSnapshotWritten(logger, gameId, version);
         }
 
-        return new StoredState<TState>(version, step.State);
+        return new StoredState<TState>(version, result.State);
     }
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)
@@ -175,16 +190,6 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         }
 
         return new StoredState<TState>(version, Deserialize(snapshot.State));
-    }
-
-    private void RequireEmptyChangeTracker()
-    {
-        if (db.ChangeTracker.Entries().Any())
-        {
-            throw new InvalidOperationException(
-                "The history store needs a DbContext that tracks nothing: it clears the tracker after every write."
-            );
-        }
     }
 
     private async Task<bool> TrySave(CancellationToken ct)

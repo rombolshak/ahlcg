@@ -1,9 +1,12 @@
+using System.Collections.Frozen;
 using Tablier.Contract;
 
 namespace Ahlcg.Rules.Fixture;
 
 public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
 {
+    public IReadOnlySet<string> GetMembers(FixtureState state) => state.Secrets.Keys.ToFrozenSet();
+
     public IReadOnlyDictionary<string, IReadOnlySet<string>> GetMembersActions(FixtureState state) =>
         state.RevealPending ? [] : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
 
@@ -51,5 +54,25 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
         };
 
         return new StepResult<FixtureState>(next, "reveal", IsIrreversible: true);
+    }
+
+    public StepResult<FixtureState> AddMember(FixtureState state, string member)
+    {
+        if (state.Secrets.ContainsKey(member))
+        {
+            throw new ArgumentException($"Member '{member}' is already in the game.", nameof(member));
+        }
+
+        return new StepResult<FixtureState>(state with { Secrets = state.Secrets.Add(member, 0) });
+    }
+
+    public StepResult<FixtureState> RemoveMember(FixtureState state, string member)
+    {
+        if (!state.Secrets.ContainsKey(member))
+        {
+            throw new ArgumentException($"Member '{member}' is not in the game.", nameof(member));
+        }
+
+        return new StepResult<FixtureState>(state with { Secrets = state.Secrets.Remove(member) });
     }
 }

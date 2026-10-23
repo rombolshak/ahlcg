@@ -29,7 +29,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task PostGames_WithoutIdempotencyKeyHeader_ReturnsBadRequest()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
         {
@@ -47,7 +47,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task PostGames_Authenticated_CreatesGameOwnedByCaller()
     {
         using var client = fixture.CreateClient();
-        var userId = await LoginAnonymouslyAsync(client);
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
 
         var response = await PostGameAsync(client, $"owner-{Guid.NewGuid()}", """{"foo":"bar"}""");
         response.EnsureSuccessStatusCode();
@@ -65,7 +65,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task PostGames_SameKeyTwiceSameUser_ReturnsSameGameAndCreatesOneRow()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
         var key = $"same-user-{Guid.NewGuid()}";
 
         var first = await PostGameAsync(client, key, """{"a":1}""");
@@ -91,8 +91,8 @@ public class GameEndpointsTests(AppFixture fixture)
     {
         using var clientA = fixture.CreateClient();
         using var clientB = fixture.CreateClient();
-        await LoginAnonymouslyAsync(clientA);
-        await LoginAnonymouslyAsync(clientB);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientA);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientB);
         var key = $"shared-{Guid.NewGuid()}";
 
         var responseA = await PostGameAsync(clientA, key, """{"a":1}""");
@@ -114,7 +114,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task PostGames_Authenticated_ReturnsConfigurationUnchanged()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
         const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
 
         var response = await PostGameAsync(client, $"config-{Guid.NewGuid()}", json);
@@ -123,6 +123,52 @@ public class GameEndpointsTests(AppFixture fixture)
 
         using var expected = JsonDocument.Parse(json);
         Assert.True(JsonElement.DeepEquals(expected.RootElement, dto.Configuration));
+    }
+
+    [Fact]
+    public async Task PostGames_Authenticated_BeginsHistoryAtVersionZero()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        var response = await PostGameAsync(client, $"history-{Guid.NewGuid()}", "{}");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        await using var db = fixture.CreateDbContext();
+        var snapshot = await db.GameSnapshots.AsNoTracking().SingleAsync(s => s.GameId == dto.Id);
+        Assert.Equal(0, snapshot.Version);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyTwice_KeepsExactlyOneSnapshot()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"history-replay-{Guid.NewGuid()}";
+
+        var first = await PostGameAsync(client, key, "{}");
+        first.EnsureSuccessStatusCode();
+        var second = await PostGameAsync(client, key, "{}");
+        second.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(second);
+
+        await using var db = fixture.CreateDbContext();
+        Assert.Equal(1, await db.GameSnapshots.CountAsync(s => s.GameId == dto.Id));
+    }
+
+    [Fact]
+    public async Task PostGames_UnreadableConfiguration_ReturnsBadRequestAndCreatesNoGame()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"unreadable-{Guid.NewGuid()}";
+
+        var response = await PostGameAsync(client, key, "5");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        Assert.False(await db.Games.AnyAsync(g => g.IdempotencyKey == key));
     }
 
     [Fact]
@@ -140,8 +186,8 @@ public class GameEndpointsTests(AppFixture fixture)
     {
         using var clientA = fixture.CreateClient();
         using var clientB = fixture.CreateClient();
-        await LoginAnonymouslyAsync(clientA);
-        await LoginAnonymouslyAsync(clientB);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientA);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientB);
 
         var responseA = await PostGameAsync(clientA, $"caller-a-{Guid.NewGuid()}", """{"a":1}""");
         responseA.EnsureSuccessStatusCode();
@@ -162,7 +208,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task GetRecentGames_ReturnsConfigurationUnchanged()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
         const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
 
         var createResponse = await PostGameAsync(client, $"config-{Guid.NewGuid()}", json);
@@ -200,7 +246,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task GetLatestGame_NoGames_ReturnsNoContent()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
 
         var response = await client.GetAsync("/games/latest");
 
@@ -211,7 +257,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task GetLatestGame_AfterTwoCreates_ReturnsTheMostRecent()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
 
         var first = await PostGameAsync(client, $"latest-first-{Guid.NewGuid()}", """{"a":1}""");
         first.EnsureSuccessStatusCode();
@@ -242,11 +288,11 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task GetMembers_NonMember_ReturnsForbidden()
     {
         using var owner = fixture.CreateClient();
-        await LoginAnonymouslyAsync(owner);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
         var gameId = await CreateGameAsync(owner);
 
         using var outsider = fixture.CreateClient();
-        await LoginAnonymouslyAsync(outsider);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
 
         var response = await outsider.GetAsync($"/games/{gameId}/members");
 
@@ -267,11 +313,11 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task RemoveMember_NonMember_ReturnsForbidden()
     {
         using var owner = fixture.CreateClient();
-        var ownerId = await LoginAnonymouslyAsync(owner);
+        var ownerId = await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
         var gameId = await CreateGameAsync(owner);
 
         using var outsider = fixture.CreateClient();
-        await LoginAnonymouslyAsync(outsider);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
 
         var response = await outsider.DeleteAsync($"/games/{gameId}/members/{ownerId}");
 
@@ -292,11 +338,11 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task SetMembersCount_NonMember_ReturnsForbidden()
     {
         using var owner = fixture.CreateClient();
-        await LoginAnonymouslyAsync(owner);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
         var gameId = await CreateGameAsync(owner);
 
         using var outsider = fixture.CreateClient();
-        await LoginAnonymouslyAsync(outsider);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
 
         var response = await PutMembersCountAsync(outsider, gameId, 2);
 
@@ -307,7 +353,7 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task SetMembersCount_Raise_UpdatesIntendedPlayersCount()
     {
         using var client = fixture.CreateClient();
-        await LoginAnonymouslyAsync(client);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
         var gameId = await CreateGameAsync(client);
 
         var response = await PutMembersCountAsync(client, gameId, 3);
@@ -322,10 +368,10 @@ public class GameEndpointsTests(AppFixture fixture)
     public async Task SetMembersCount_LowerBelowMemberCount_ReturnsValidationProblemAndLeavesCountUnchanged()
     {
         using var owner = fixture.CreateClient();
-        await LoginAnonymouslyAsync(owner);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
         var gameId = await CreateGameAsync(owner);
         using var second = fixture.CreateClient();
-        var secondId = await LoginAnonymouslyAsync(second);
+        var secondId = await HubTestSupport.LoginAnonymouslyAsync(fixture, second);
         await AddMembershipAsync(gameId, secondId);
 
         var response = await PutMembersCountAsync(owner, gameId, 1);
@@ -408,25 +454,5 @@ public class GameEndpointsTests(AppFixture fixture)
         );
         Assert.NotNull(games);
         return games;
-    }
-
-    /// <summary>
-    /// Logs an anonymous session in on <paramref name="client"/> and returns the id of the user
-    /// that was created for it, found as the row that appeared in AspNetUsers as a side effect
-    /// of this call. Safe because the fixture's Postgres is exclusive to this test run and tests
-    /// in this class run sequentially (shared collection fixture).
-    /// </summary>
-    private async Task<string> LoginAnonymouslyAsync(HttpClient client)
-    {
-        await using var before = fixture.CreateDbContext();
-        var beforeIds = await before.Users.Select(u => u.Id).ToListAsync();
-
-        var response = await client.PostAsync("/auth/loginAnonymously", content: null);
-        response.EnsureSuccessStatusCode();
-
-        await using var after = fixture.CreateDbContext();
-        var afterIds = await after.Users.Select(u => u.Id).ToListAsync();
-
-        return afterIds.Except(beforeIds).Single();
     }
 }
