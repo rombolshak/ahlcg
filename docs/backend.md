@@ -92,7 +92,7 @@ A rules module implements the three `Tablier.Contract` interfaces and is pure: n
 - **Nothing precomputed is stored.** The rules are deterministic because randomness is in the state, so re-running `Execute` gives exactly the state whose patch was offered. Patches are never produced by the rules: the engine diffs the member's view before against after.
 - **Serialisation is optimistic only.** There is no per-game lock and no state on `GameSession`; `Append`'s version check decides, and a refusal reloads and retries. That is what leaves room for more than one replica, and it is why events can arrive out of order.
 - **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances any pending non-player step. Join, removal and `GetState` all call it, so a crash between a membership commit and its step repairs itself; a row inserted directly reaches the state on that member's next `GetState`.
-- **Events go to per-member groups, never `Clients.User`**, which would cross games. A member no longer in the state receives nothing.
+- **Events go to per-member groups, never `Clients.User`**, which would cross games. A member no longer in the state receives nothing, and neither does one who is new in it: the step that adds them would send a patch built from an empty view, so their first view comes from `GetState`.
 - **A step is committed before it is sent.** A connection lost or a send failing in between leaves a committed step with unsent events; clients recover from the version gap.
 
 ## Persistence and migrations

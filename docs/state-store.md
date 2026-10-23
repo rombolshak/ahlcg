@@ -37,7 +37,7 @@ protected readonly cards = computed(() =>
 **`updateState(changes: Operation[])`** — applies RFC6902 patches. The sequence matters:
 
 1. `Flip.getState('ah-investigator-avatar')` captures DOM geometry **before** the state changes.
-2. `applyStatePatches` mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
+2. `applyStatePatches` delegates to `applyJsonPatch` (`core/apply-json-patch.ts`, shared with the fixture game store), which mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
 3. `applyPatch` results are checked; any non-null result throws with the collected messages.
 4. `validateState` runs the full arktype schema on the result and calls `ArkErrors.throw()` on failure — an invalid patch aborts the update rather than corrupting the store.
 5. A `requestAnimationFrame` callback runs `Flip.from(...)` after Angular has rendered.
