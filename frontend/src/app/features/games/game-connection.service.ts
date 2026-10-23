@@ -1,7 +1,7 @@
 import { inject, InjectionToken, Service, signal, Signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { ArkErrors, type } from 'arktype';
-import { from, map, Observable, throwError } from 'rxjs';
+import { from, map, Observable, Subject, Subscription, throwError } from 'rxjs';
 
 export type ExitReason = 'NotAMember';
 export type DisconnectedReason = 'initial' | 'server_rejected' | 'network_error';
@@ -10,6 +10,17 @@ export type GameConnectionState = { status: 'disconnected'; reason: Disconnected
 
 const exitReason = type("'NotAMember'");
 const pingTimestamp = type('string.date.parse');
+
+const operation = type({ op: "'add' | 'replace' | 'test'", path: 'string', value: 'unknown' })
+  .or({ op: "'remove'", path: 'string' })
+  .or({ op: "'move' | 'copy'", from: 'string', path: 'string' });
+const actions = type({ '[string]': operation.array() });
+const memberState = type({ version: 'number.integer', view: 'unknown', actions }).or('null');
+const stateChange = type({ version: 'number.integer', viewPatch: operation.array(), actions });
+
+export type MemberState = NonNullable<typeof memberState.infer>;
+export type StateChange = typeof stateChange.infer;
+export type MemberStateEvent = { kind: 'reset'; state: MemberState | null } | { kind: 'change'; change: StateChange };
 
 export type GameHubConnectionFactory = (url: string) => HubConnection;
 
@@ -24,8 +35,15 @@ export class GameConnectionService {
   private readonly _state = signal<GameConnectionState>({ status: 'disconnected', reason: 'initial' });
   public readonly state: Signal<GameConnectionState> = this._state.asReadonly();
 
+  private readonly events = new Subject<MemberStateEvent>();
+  public readonly memberStateEvents: Observable<MemberStateEvent> = this.events.asObservable();
+
   private connection: HubConnection | undefined;
   private gameId: string | undefined;
+  private lastVersion: number | null = null;
+  private syncing = false;
+  private buffer: StateChange[] = [];
+  private resyncSubscription: Subscription | undefined;
 
   public connect(gameId: string): void {
     if (this.gameId === gameId) return;
@@ -40,6 +58,7 @@ export class GameConnectionService {
     });
     connection.onreconnected(() => {
       this._state.set({ status: 'connected' });
+      this.resync(connection);
     });
     connection.onclose(error => {
       if (error) this.close('network_error');
@@ -53,11 +72,23 @@ export class GameConnectionService {
 
       this.close('server_rejected');
     });
+    connection.on('StateChanged', (payload: unknown) => {
+      if (this.connection !== connection) return;
+
+      const validated = stateChange(payload);
+      if (validated instanceof ArkErrors) {
+        console.error('Invalid state change', validated.summary);
+        return validated.throw();
+      }
+
+      this.handleChange(connection, validated);
+    });
 
     this._state.set({ status: 'connecting' });
     connection.start().then(
       () => {
         this._state.set({ status: 'connected' });
+        this.resync(connection);
       },
       () => {
         this.close('network_error');
@@ -86,7 +117,70 @@ export class GameConnectionService {
     );
   }
 
+  private handleChange(connection: HubConnection, change: StateChange): void {
+    if (this.syncing) {
+      this.buffer.push(change);
+      return;
+    }
+
+    const last = this.lastVersion;
+    if (last !== null && change.version <= last) return;
+
+    if (last !== null && change.version === last + 1) {
+      this.lastVersion = change.version;
+      this.events.next({ kind: 'change', change });
+      return;
+    }
+
+    this.buffer.push(change);
+    this.resync(connection);
+  }
+
+  private resync(connection: HubConnection): void {
+    if (this.connection !== connection) return;
+
+    this.syncing = true;
+    this.resyncSubscription?.unsubscribe();
+    this.resyncSubscription = from(connection.invoke<unknown>('GetState'))
+      .pipe(
+        map(answer => {
+          const validated = memberState(answer);
+          if (validated instanceof ArkErrors) {
+            console.error('Invalid member state', validated.summary);
+            return validated.throw();
+          }
+
+          return validated;
+        }),
+      )
+      .subscribe({
+        next: state => {
+          this.events.next({ kind: 'reset', state });
+          this.lastVersion = state?.version ?? null;
+          this.syncing = false;
+          this.drainBuffer(connection, state !== null);
+        },
+        error: (error: unknown) => {
+          this.syncing = false;
+          throw error;
+        },
+      });
+  }
+
+  private drainBuffer(connection: HubConnection, hasState: boolean): void {
+    const pending = this.buffer.sort((a, b) => a.version - b.version);
+    this.buffer = [];
+    if (!hasState) return;
+
+    for (const change of pending) this.handleChange(connection, change);
+  }
+
   private close(reason: DisconnectedReason): void {
+    this.resyncSubscription?.unsubscribe();
+    this.resyncSubscription = undefined;
+    this.lastVersion = null;
+    this.syncing = false;
+    this.buffer = [];
     void this.connection?.stop();
     this.connection = undefined;
     this.gameId = undefined;

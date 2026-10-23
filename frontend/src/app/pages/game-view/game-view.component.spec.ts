@@ -19,7 +19,7 @@ const fakeConnection = {
   off: noop,
   start: () => Promise.resolve(),
   stop: () => Promise.resolve(),
-  invoke: () => Promise.resolve(),
+  invoke: () => Promise.resolve(null),
 } as unknown as HubConnection;
 
 describe('GameViewComponent', () => {
