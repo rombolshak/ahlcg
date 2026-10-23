@@ -61,7 +61,7 @@ public sealed partial class CachedGameHistory<TState>(
     {
         var fields = await redis
             .GetDatabase()
-            .HashGetAsync(GameHistoryCacheKeys.GetCurrentKey(gameId), [VersionField, StateField]);
+            .HashGetAsync(CacheKeys.GetGameStateKey(gameId), [VersionField, StateField]);
         if (fields[0].HasValue && fields[1].HasValue)
         {
             var state = JsonSerializer.Deserialize<TState>((string)fields[1]!);
@@ -86,7 +86,7 @@ public sealed partial class CachedGameHistory<TState>(
                 .GetDatabase()
                 .ScriptEvaluateAsync(
                     GuardedWriteScript,
-                    [GameHistoryCacheKeys.GetCurrentKey(gameId)],
+                    [CacheKeys.GetGameStateKey(gameId)],
                     [
                         stored.Version.ToString(CultureInfo.InvariantCulture),
                         JsonSerializer.Serialize(stored.State),
@@ -99,7 +99,7 @@ public sealed partial class CachedGameHistory<TState>(
 
     private async Task Evict(Guid gameId)
     {
-        await redis.GetDatabase().KeyDeleteAsync(GameHistoryCacheKeys.GetCurrentKey(gameId));
+        await redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
         LogCurrentEvicted(logger, gameId);
     }
 

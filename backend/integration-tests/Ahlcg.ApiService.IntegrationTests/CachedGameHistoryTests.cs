@@ -50,7 +50,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
         await run
             .Redis.GetDatabase()
             .HashSetAsync(
-                GameHistoryCacheKeys.GetCurrentKey(gameId),
+                CacheKeys.GetGameStateKey(gameId),
                 [new HashEntry("version", "5"), new HashEntry("state", JsonSerializer.Serialize(State(5)))]
             );
 
