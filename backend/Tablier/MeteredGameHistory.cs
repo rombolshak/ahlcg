@@ -6,11 +6,11 @@ public sealed class MeteredGameHistory<TState>(
     [FromKeyedServices("cached")] IGameHistory<TState> inner,
     TablierMetrics metrics,
     TimeProvider time
-) : IGameHistory<TState>
+) : MeteredDecorator(metrics.HistoryDuration, time), IGameHistory<TState>
     where TState : ISchemaVersioned
 {
     public Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct) =>
-        Measure("begin", TablierMetrics.OutcomeRefused, () => inner.Begin(gameId, initial, ct));
+        MeasureAsync("begin", () => inner.Begin(gameId, initial, ct), OkOr(OutcomeRefused));
 
     public Task<StoredState<TState>?> Append(
         Guid gameId,
@@ -18,31 +18,14 @@ public sealed class MeteredGameHistory<TState>(
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct
-    ) => Measure("append", TablierMetrics.OutcomeRefused, () => inner.Append(gameId, previous, result, choice, ct));
+    ) => MeasureAsync("append", () => inner.Append(gameId, previous, result, choice, ct), OkOr(OutcomeRefused));
 
     public Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct) =>
-        Measure("load_current", TablierMetrics.OutcomeMissing, () => inner.LoadCurrent(gameId, ct));
+        MeasureAsync("load_current", () => inner.LoadCurrent(gameId, ct), OkOr(OutcomeMissing));
 
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
-        Measure("load_at", TablierMetrics.OutcomeMissing, () => inner.LoadAt(gameId, version, ct));
+        MeasureAsync("load_at", () => inner.LoadAt(gameId, version, ct), OkOr(OutcomeMissing));
 
-    private async Task<StoredState<TState>?> Measure(
-        string method,
-        string nullOutcome,
-        Func<Task<StoredState<TState>?>> call
-    )
-    {
-        var started = time.GetTimestamp();
-        var outcome = TablierMetrics.OutcomeError;
-        try
-        {
-            var stored = await call();
-            outcome = stored is null ? nullOutcome : TablierMetrics.OutcomeOk;
-            return stored;
-        }
-        finally
-        {
-            metrics.RecordHistory(method, outcome, time.GetElapsedTime(started));
-        }
-    }
+    private static Func<StoredState<TState>?, string> OkOr(string nullOutcome) =>
+        stored => stored is null ? nullOutcome : OutcomeOk;
 }

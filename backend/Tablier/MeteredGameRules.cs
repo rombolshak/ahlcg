@@ -7,27 +7,17 @@ public sealed class MeteredGameConfigurator<TConfiguration, TState>(
     IGameConfigurator<TConfiguration, TState> inner,
     TablierMetrics metrics,
     TimeProvider time
-) : IGameConfigurator<TConfiguration, TState>
+) : MeteredDecorator(metrics.RulesDuration, time), IGameConfigurator<TConfiguration, TState>
 {
-    public TState InitializeGame(TConfiguration configuration, IReadOnlyList<string> members, ulong seed)
-    {
-        var started = time.GetTimestamp();
-        try
-        {
-            return inner.InitializeGame(configuration, members, seed);
-        }
-        finally
-        {
-            metrics.RecordRules("initialize_game", time.GetElapsedTime(started));
-        }
-    }
+    public TState InitializeGame(TConfiguration configuration, IReadOnlyList<string> members, ulong seed) =>
+        Measure("initialize_game", () => inner.InitializeGame(configuration, members, seed));
 }
 
 public sealed class MeteredGameStateProcessor<TState>(
     IGameStateProcessor<TState> inner,
     TablierMetrics metrics,
     TimeProvider time
-) : IGameStateProcessor<TState>
+) : MeteredDecorator(metrics.RulesDuration, time), IGameStateProcessor<TState>
 {
     public IReadOnlySet<string> GetMembers(TState state) => Measure("get_members", () => inner.GetMembers(state));
 
@@ -44,38 +34,15 @@ public sealed class MeteredGameStateProcessor<TState>(
 
     public StepResult<TState> RemoveMember(TState state, string member) =>
         Measure("remove_member", () => inner.RemoveMember(state, member));
-
-    private T Measure<T>(string method, Func<T> call)
-    {
-        var started = time.GetTimestamp();
-        try
-        {
-            return call();
-        }
-        finally
-        {
-            metrics.RecordRules(method, time.GetElapsedTime(started));
-        }
-    }
 }
 
 public sealed class MeteredGameViewProjector<TState, TView>(
     IGameViewProjector<TState, TView> inner,
     TablierMetrics metrics,
     TimeProvider time
-) : IGameViewProjector<TState, TView>
+) : MeteredDecorator(metrics.RulesDuration, time), IGameViewProjector<TState, TView>
 {
-    public TView GetMemberView(TState state, string member)
-    {
-        var started = time.GetTimestamp();
-        try
-        {
-            return inner.GetMemberView(state, member);
-        }
-        finally
-        {
-            metrics.RecordRules("get_member_view", time.GetElapsedTime(started));
-        }
-    }
+    public TView GetMemberView(TState state, string member) =>
+        Measure("get_member_view", () => inner.GetMemberView(state, member));
 }
 #pragma warning restore MA0048
