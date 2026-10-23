@@ -5,14 +5,15 @@
 | Area | Status |
 | --- | --- |
 | Auth (anonymous login, sign-in and anonymous upgrade, logout, session info) | Implemented, backend + frontend |
-| Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture |
+| Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture, and not routed: `/game/:id` renders the fixture game view below |
 | Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
+| Fixture game view (`/game/:id`: shared counter, own secret, other members by name, journal) | Implemented, renders the server's fixture view. Scaffolding until the Arkham board takes server state (#151) |
 | Game records: create, list recent and completed, fetch the latest (`/games`) | Implemented, backend + frontend. The main menu creates and continues games; Case files lists them. Nothing sets a game completed yet |
-| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `GetState` and `Execute` on the hub, a `StateChanged` per committed version. No Arkham rules; no frontend consumer |
-| SignalR | Server hub with in-memory game sessions, one group per game and one per member, connect/disconnect broadcasts, and the step loop above; client connects from the game view and carries **no game state yet** — transport, connection state and `Ping` only |
+| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `GetState` and `Execute` on the hub, a `StateChanged` per committed version. No Arkham rules; the only frontend consumer is the fixture game view, and nothing calls `Execute` yet |
+| SignalR | Server hub with in-memory game sessions, one group per game and one per member, connect/disconnect broadcasts, and the step loop above; the client connects from the game view, pulls state with `GetState` on connect and reconnect, and emits version-ordered state events. It does not interpret the view |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
-`GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server.
+`GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server. No route reaches it today.
 
 ## Components
 

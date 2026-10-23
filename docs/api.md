@@ -46,7 +46,7 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 | Server → client | `Exit` | to the caller only: an `ExitReason` — stop the connection and do not reconnect |
 | Server → client | `MemberConnected` | to every member of the game: the user id |
 | Server → client | `MemberDisconnected` | to every member of the game: the user id |
-| Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version |
+| Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version. A member who joins in that version does not get it: their first view comes from `GetState` |
 
 **`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
 
@@ -68,7 +68,7 @@ One group per game, named by the game id. Both presence broadcasts go to the who
 
 The frontend client is `GameConnectionService` (`features/games/game-connection.service.ts`). It connects through **`/api/game?gameId=…`**, not `/game`: the hub path collides with the SPA's own `/game/:id` route, and the dev proxy already rewrites `^/api` → `` . That entry carries `ws: true`, without which the websocket upgrade is not proxied and SignalR quietly falls back to long polling.
 
-It carries no game state — the board still renders `@domain/testing/test-game-state`. What exists is the transport, its connection state, and `Ping`.
+It carries game state without knowing its shape: `memberStateEvents` emits `reset` (the `GetState` answer, possibly `null`, after the start and after every automatic reconnect) and `change` (a `StateChanged`). A `StateChanged` is held while a `GetState` is in flight, dropped when its version is at or below the last known, emitted when it is the next one, and otherwise triggers another `GetState`. The view stays `unknown` and the patches are RFC 6902 operations; the consumer interprets them.
 
 ## Development endpoints
 

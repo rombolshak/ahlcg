@@ -12,7 +12,8 @@ frontend/
 │   │   ├── transloco-loader.ts
 │   │   ├── pages/
 │   │   │   ├── main-menu/            title/, menu-items-list/
-│   │   │   └── game-view/
+│   │   │   ├── fixture-game/         the /game/:id page and its store
+│   │   │   └── game-view/            the Arkham board (unrouted)
 │   │   │       ├── game-header/
 │   │   │       ├── cards-hand/
 │   │   │       ├── card-details-text/
@@ -34,8 +35,8 @@ frontend/
 │   │   │   ├── game-entity.ts        entity union + type guards
 │   │   │   └── game-map.model.ts, meta-info.ts, action.model.ts,
 │   │   │       card.constants.ts, display.options.ts
-│   │   ├── core/                     auth/, card-info, dialog/, list-navigation,
-│   │   │                             input-manager, settings/
+│   │   ├── core/                     apply-json-patch, auth/, card-info, dialog/,
+│   │   │                             list-navigation, input-manager, settings/
 │   │   ├── ui/                       kit/ takes primitives, game/ takes domain models
 │   │   │   ├── kit/                  art-button/, art-panel/, numeric-text/, text-with-overlay/,
 │   │   │   │                         svg/, json-editor/, single-bar/
@@ -65,9 +66,9 @@ Fixtures split by whether they touch a framework. The ten pure fixtures (`entiti
 - `''` → `MainMenuComponent` (`pathMatch: 'full'`)
 - `'case-files'` → `CaseFilesComponent`
 - `'join/:code'` → `MainMenuComponent` again — the link opens the main menu's "Clearance code" dialog, prefilled, rather than a screen of its own
-- `'game/:id'` → `GameViewComponent` (`pathMatch: 'prefix'`)
+- `'game/:id'` → `FixtureGameComponent` (`pathMatch: 'prefix'`)
 
-There is no wildcard route. `:id` reaches `GameViewComponent` as an `input.required<string>()` — that works because `provideRouter` is configured `withComponentInputBinding()`, without which the input would never be set and the component would throw. The id decides which game the SignalR connection binds to; the board itself still loads a fixture.
+There is no wildcard route. `:id` reaches `FixtureGameComponent` as an `input.required<string>()` — that works because `provideRouter` is configured `withComponentInputBinding()`, without which the input would never be set and the component would throw. The id decides which game the SignalR connection binds to and whose state the page renders.
 
 Neither `case-files` nor the main menu's "Clearance code" item has an auth guard, and neither menu entry is
 disabled when signed out: each issues its request anyway, gets a `401`, and `authInterceptor` prompts
@@ -90,7 +91,7 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. Called from `features/card/` and from the `pages/game-view/` components that lay out their own card details — never from `ui/`, whose card components take a resolved `CardInfo` as an input. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
-| `GameConnectionService` | The SignalR connection for one game, opened by `GameViewComponent` from the route's `:id` and closed on leave. Connects to **`/api/game?gameId=…`**, not `/game` — the hub path collides with the SPA's own `/game/:id` route, so it goes through the dev proxy's `^/api` rewrite. Exposes a `Signal` of `connecting` / `connected` / `disconnected`, the last carrying `initial`, `server_rejected` or `network_error`. A drop is retried by SignalR's automatic reconnect, which gives up after its default backoff (0s, 2s, 10s, 30s) and reports `network_error`. The one thing that stops it retrying *early* is an `Exit` message from the server, which the service answers by stopping the connection itself — a close on its own is indistinguishable from a drop, which is why the server asks rather than hangs up. `connect()` is idempotent per game id — calling it again for the game already connected is a no-op, and a different id replaces the connection. Message names are PascalCase (`'Ping'`, `'Exit'`) because SignalR takes them verbatim from the server — a lowercase handler silently never fires. The `HubConnection` is built by the `GAME_HUB_CONNECTION_FACTORY` token so specs can substitute a fake. Carries no game state yet — that is #251. |
+| `GameConnectionService` | The SignalR connection for one game, opened by `FixtureGameComponent` from the route's `:id` and closed on leave. Connects to **`/api/game?gameId=…`**, not `/game` — the hub path collides with the SPA's own `/game/:id` route, so it goes through the dev proxy's `^/api` rewrite. Exposes a `Signal` of `connecting` / `connected` / `disconnected`, the last carrying `initial`, `server_rejected` or `network_error`. A drop is retried by SignalR's automatic reconnect, which gives up after its default backoff (0s, 2s, 10s, 30s) and reports `network_error`. The one thing that stops it retrying *early* is an `Exit` message from the server, which the service answers by stopping the connection itself — a close on its own is indistinguishable from a drop, which is why the server asks rather than hangs up. `connect()` is idempotent per game id — calling it again for the game already connected is a no-op, and a different id replaces the connection. Message names are PascalCase (`'Ping'`, `'Exit'`, `'GetState'`, `'StateChanged'`) because SignalR takes them verbatim from the server — a lowercase handler silently never fires. The `HubConnection` is built by the `GAME_HUB_CONNECTION_FACTORY` token so specs can substitute a fake. Carries game state without interpreting it: `memberStateEvents` emits a `reset` after the start and every reconnect, from `GetState`, and a version-ordered `change` per `StateChanged` (see [api.md](api.md#signalr-game)). |
 | `DebugTimelineService` | Records `createPatch` diffs of store state and replays them (`F9`), or restores the original (`F8`). Game-view scoped. |
 
 `imageUrl(descriptor)` is a pure function in `domain/card-art/`, not a service — it maps a typed `ImageDescriptor` tuple (or a bare string) to `/assets/images/{...}.webp`. Add new image categories to the `ImageDescriptor` union, not as raw strings.

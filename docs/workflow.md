@@ -34,7 +34,7 @@ npm ci
 npm start        # http://localhost:4200
 ```
 
-`proxy.conf.js` targets `process.env.services__apiservice__http__0`, which only Aspire sets. Outside Aspire, `/api/*` has no target: the game view still works (it renders a local fixture) but auth requests fail and the main menu shows the logged-out state. This is expected, not a bug to fix.
+`proxy.conf.js` targets `process.env.services__apiservice__http__0`, which only Aspire sets. Outside Aspire, `/api/*` has no target: auth requests fail and the main menu shows the logged-out state, and `/game/:id` shows its connection-lost notice because there is no hub to connect to. This is expected, not a bug to fix.
 
 **API alone** (needs a Postgres reachable via the `ahlcg` connection string):
 
