@@ -149,7 +149,7 @@ Husky, installed from `frontend/package.json` (`"prepare": "husky"`); hook scrip
 
 If anything under `backend/` is staged, it also runs `dotnet csharpier format` on the staged `.cs`, `.csproj` and `.props` files and re-stages them. A partially staged file is re-staged whole.
 
-**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed, `dotnet build -p:CSharpier_Check=true && dotnet test` if `backend/` changed. The check flag matters: without it the build would reformat files that are already committed and still pass. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
+**pre-push** — diffs the branch against its remote ref (falling back to `origin/main`) and runs `npm run ci:all` if `frontend/src` changed (which does not include `lint:i18n`; that runs only as CI's `i18n` job), `dotnet build -p:CSharpier_Check=true && dotnet test` if `backend/` changed. The check flag matters: without it the build would reformat files that are already committed and still pass. Runtime is unchanged by the component tier: `test:component` runs only in CI, not here, so pre-push never requires a locally installed Chromium binary (see [testing.md](testing.md)).
 
 Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly that; it is a personal escape hatch, not a workflow.)
 
@@ -166,8 +166,14 @@ Commit messages follow `area: what changed` (`ux: keyboard input manager`, `test
 - **backend** ← `backend/**`, `.github/workflows/backend.yml`
 - **frontend** ← `frontend/src/**`, `frontend/*.json`, `.github/workflows/frontend.yml`
 - **e2e** ← `backend/**`, `frontend/**`, `e2e/**`, `.github/workflows/e2e.yml`
+- **chromatic** ← `frontend/src/**`, `frontend/public/assets/fonts/**`
+- **i18n** ← `frontend/src/**/i18n/**`, `frontend/i18n-languages.json`, `frontend/scripts/i18n-langs.mjs`
 
-It calls the reusable `backend.yml` / `frontend.yml` / `e2e.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend` — `e2e` does not report coverage, so it is not in that list.
+Every filter except `i18n` ignores the files in `i18n/` folders other than `en.json`, so a Crowdin translation PR runs only the `i18n` job, which is `npm run lint:i18n` and nothing else. The filter runs with `predicate-quantifier: 'every'`, because a `!` exclusion only works that way; each filter's include paths are therefore one brace pattern, and a new path goes inside the braces, not on a line of its own.
+
+It calls the reusable `backend.yml` / `frontend.yml` / `e2e.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend` — `e2e` does not report coverage, so it is not in that list. The same job then polls the commit statuses until Coveralls has judged the build against the thresholds set in its repo settings, and fails if either of its statuses fails: the overall one, whose context carries the event (`coverage/coveralls (pull_request)`), and `coverage/coveralls/patch`.
+
+**The only required check is `ci-passed`** (plus Chromatic's `UI Tests`, below). A job a filter skips reports as passed, but a check that never runs blocks a merge forever, so the path-filtered jobs cannot be required themselves. `ci-passed` runs on `always()` and fails if any job it needs failed or was cancelled. A new job goes into its `needs`, or its failures will not block a merge.
 
 **backend.yml** — .NET 10, installs `dotnet-reportgenerator-globaltool`, `dotnet-coverage`, `dotnet-sonarscanner`, and the Aspire CLI (then `aspire certs trust`, so the integration tests can serve HTTPS), wraps restore/build/test in a Sonar session (`rombolshak_ahlcg_backend`), collects coverage across the whole process tree with `dotnet-coverage`, generates `coveragereport/` (HTML + Cobertura + SonarQube, excluding generated code and migrations), uploads `Cobertura.xml` to Coveralls.
 
@@ -177,11 +183,13 @@ Generated code has to be excluded in **two** places or the exclusion backfires. 
 
 **e2e.yml** — .NET 10 and Node, installs the Aspire CLI and runs `aspire certs trust` (same reason as `backend.yml`: `apiservice` binds its `https` launch profile even though the suite itself talks HTTP), `npm ci` and `npx playwright install chromium` in `e2e/`, then `npm test`. No Coveralls step and no Sonar step — this tier does not collect coverage (see [testing.md](testing.md)). Uploads the Playwright HTML report as an artifact on failure.
 
-**chromatic.yml** — on pushes touching `frontend/src/**` or `frontend/public/assets/fonts/**`, skipped for dependabot branches. Builds Storybook and uploads to Chromatic.
+**Sonar** blocks a merge through the jobs, not through its own check: both scans set `sonar.qualitygate.wait=true`, so a failed quality gate fails the scan step and with it the `backend` or `frontend` job.
+
+**chromatic** — a job in `ci.yml` that runs on every PR. When its filter did not match, it skips the Storybook build and calls the action with `skip: true`, which makes Chromatic post a passing `UI Tests` status without testing anything. The job therefore must never be skipped as a whole, or `UI Tests` (a required check) never appears. `exitZeroOnChanges` keeps visual changes from failing the job; they are accepted or rejected in Chromatic, which turns `UI Tests` green or red.
 
 **auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot ones. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
 
-Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`.
+Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`. Chromatic is not, so `CHROMATIC_PROJECT_TOKEN` must also be a Dependabot secret: without it the skip call cannot authenticate and Dependabot PRs never get `UI Tests`.
 
 ## Debugging
 

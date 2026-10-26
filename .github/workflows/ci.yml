@@ -16,6 +16,8 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       frontend: ${{ steps.filter.outputs.frontend }}
       e2e: ${{ steps.filter.outputs.e2e }}
+      chromatic: ${{ steps.filter.outputs.chromatic }}
+      i18n: ${{ steps.filter.outputs.i18n }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,19 +25,21 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: filter
         with:
+          predicate-quantifier: 'every'
           filters: |
             backend:
-              - 'backend/**'
-              - '.github/workflows/backend.yml'
+              - '{backend/**,.github/workflows/backend.yml}'
             frontend:
-              - 'frontend/src/**'
-              - 'frontend/*.json'
-              - '.github/workflows/frontend.yml'
+              - '{frontend/src/**,frontend/*.json,.github/workflows/frontend.yml}'
+              - '!frontend/src/**/i18n/!(en.json)'
             e2e:
-              - 'backend/**'
-              - 'frontend/**'
-              - 'e2e/**'
-              - '.github/workflows/e2e.yml'
+              - '{backend/**,frontend/**,e2e/**,.github/workflows/e2e.yml}'
+              - '!frontend/src/**/i18n/!(en.json)'
+            chromatic:
+              - '{frontend/src/**,frontend/public/assets/fonts/**}'
+              - '!frontend/src/**/i18n/!(en.json)'
+            i18n:
+              - '{frontend/src/**/i18n/**,frontend/i18n-languages.json,frontend/scripts/i18n-langs.mjs}'
   backend:
     needs:
       - paths-filter
@@ -57,8 +61,67 @@ jobs:
     uses: ./.github/workflows/e2e.yml
     secrets: inherit
 
+  i18n:
+    needs:
+      - paths-filter
+    if: needs.paths-filter.outputs.i18n == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'frontend'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - name: Check translation files
+        run: npm run lint:i18n
+
+  chromatic:
+    name: Run Chromatic
+    needs:
+      - paths-filter
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'frontend'
+    env:
+      CHANGED: ${{ needs.paths-filter.outputs.chromatic }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        if: env.CHANGED == 'true'
+        with:
+          node-version: latest
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+      - name: Install dependencies
+        if: env.CHANGED == 'true'
+        run: npm ci
+      - name: Build storybook
+        if: env.CHANGED == 'true'
+        run: npm run build-storybook
+      - name: Run Chromatic
+        uses: chromaui/action@latest
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          skip: ${{ env.CHANGED != 'true' }}
+          exitZeroOnChanges: true
+          onlyChanged: true
+          externals: public/assets/(fonts|images)/**
+          workingDir: 'frontend'
+          traceChanged: true
+          debug: true
+          storybookBuildDir: 'storybook-static'
+
   coveralls:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: read
     needs:
       - backend
       - frontend
@@ -71,3 +134,36 @@ jobs:
           parallel-finished: true
           debug: 'true'
           carryforward: 'frontend,backend'
+      - name: Wait for Coveralls verdict
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          for i in $(seq 30); do
+            statuses=$(gh api "repos/${{ github.repository }}/commits/$SHA/status" \
+              --jq '.statuses[] | select(.context | startswith("coverage/coveralls")) | "\(.context): \(.state)"')
+            if grep -q '^coverage/coveralls (' <<< "$statuses" && ! grep -q ': pending$' <<< "$statuses"; then
+              echo "$statuses"
+              ! grep -qE ': (failure|error)$' <<< "$statuses"
+              exit
+            fi
+            sleep 10
+          done
+          echo "No Coveralls status after 5 minutes"; exit 1
+
+  ci-passed:
+    runs-on: ubuntu-latest
+    needs:
+      - paths-filter
+      - backend
+      - frontend
+      - e2e
+      - i18n
+      - chromatic
+      - coveralls
+    if: always()
+    steps:
+      - name: Fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

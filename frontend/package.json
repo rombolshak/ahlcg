@@ -33,7 +33,7 @@
     "i18n:langs": "node scripts/i18n-langs.mjs",
     "lint:i18n": "node scripts/i18n-langs.mjs --check",
     "i18n:screenshots": "node scripts/capture-screenshots.mjs",
-    "lint:all": "npm run i18n:langs && npm run lint:tsc:all && npm run lint && npm run lint:style && npm run lint:spelling && npm run lint:format && npm run lint:i18n",
+    "lint:all": "npm run i18n:langs && npm run lint:tsc:all && npm run lint && npm run lint:style && npm run lint:spelling && npm run lint:format",
     "ci:all": "npm run lint:all && npm run test:ci && npm run test:scripts",
     "shove": "git config push.autoSetupRemote true && git add . && git commit -m 'wip: shoved' --no-verify && git push --no-verify",
     "prepare": "husky && npm run i18n:langs",

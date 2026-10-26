@@ -25,6 +25,7 @@ Match the same split `.github/workflows/ci.yml` uses via `dorny/paths-filter`, s
 | Changed | Run |
 | --- | --- |
 | `frontend/src/**` or `frontend/*.json` | `cd frontend && npm run ci:all` |
+| `frontend/src/**/i18n/**` or `frontend/i18n-languages.json` | `cd frontend && npm run lint:i18n` |
 | `backend/**` | `cd backend && dotnet build && dotnet test` |
 
 Nothing relevant changed → say so and stop. Do not run the full suite "to be safe"; the frontend suite is slow and that habit makes the command annoying enough to skip.
