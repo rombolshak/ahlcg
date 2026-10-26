@@ -16,3 +16,4 @@ bundles:
 files:
   - source: /frontend/src/app/**/en.json
     translation: /frontend/src/app/**/%two_letters_code%.json
+    skip_untranslated_strings: true
