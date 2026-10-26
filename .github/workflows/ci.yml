@@ -141,12 +141,13 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           for i in $(seq 30); do
-            state=$(gh api "repos/${{ github.repository }}/commits/$SHA/status" \
-              --jq '.statuses[] | select(.context == "coverage/coveralls") | .state')
-            case "$state" in
-              success) exit 0 ;;
-              failure|error) echo "Coveralls reported $state"; exit 1 ;;
-            esac
+            statuses=$(gh api "repos/${{ github.repository }}/commits/$SHA/status" \
+              --jq '.statuses[] | select(.context | startswith("coverage/coveralls")) | "\(.context): \(.state)"')
+            if grep -q '^coverage/coveralls (' <<< "$statuses" && ! grep -q ': pending$' <<< "$statuses"; then
+              echo "$statuses"
+              ! grep -qE ': (failure|error)$' <<< "$statuses"
+              exit
+            fi
             sleep 10
           done
           echo "No Coveralls status after 5 minutes"; exit 1
