@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { GameConnectionService, MemberStateEvent } from '@features/games/game-connection.service';
+import { GameConnectionService, MemberState, MemberStateEvent } from '@features/games/game-connection.service';
 import { GamesService } from '@features/games/games.service';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { NEVER, Observable, of } from 'rxjs';
@@ -10,6 +10,7 @@ const view: FixtureView = {
   shared: 3,
   revealed: 4,
   ownSecret: 7,
+  actingPlayers: [],
   others: { 'user-2': 'Positive', 'user-3': 'Negative' },
   journal: [
     { key: 'fixture.revealed', parameters: { value: 2 } },
@@ -22,7 +23,13 @@ const withEvents = (events: Observable<MemberStateEvent>) =>
     providers: [
       {
         provide: GameConnectionService,
-        useValue: { state: signal({ status: 'connected' }), connect: () => undefined, disconnect: () => undefined, memberStateEvents: events },
+        useValue: {
+          state: signal({ status: 'connected' }),
+          connect: () => undefined,
+          disconnect: () => undefined,
+          execute: () => NEVER,
+          memberStateEvents: events,
+        },
       },
       {
         provide: GamesService,
@@ -48,8 +55,24 @@ const meta: Meta<FixtureGameComponent> = {
 export default meta;
 type Story = StoryObj<FixtureGameComponent>;
 
+const offeredActions: MemberState['actions'] = {
+  'shared:dec': [{ op: 'replace', path: '/shared', value: 2 }],
+  'shared:inc': [{ op: 'replace', path: '/shared', value: 4 }],
+  'secret:dec': [{ op: 'replace', path: '/ownSecret', value: 6 }],
+  'secret:inc': [{ op: 'replace', path: '/ownSecret', value: 8 }],
+  reveal: [{ op: 'replace', path: '/revealed', value: 5 }],
+};
+
 export const Ready: Story = {
   decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: {} } }))],
+};
+
+export const YourMove: Story = {
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: offeredActions } }))],
+};
+
+export const Waiting: Story = {
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view: { ...view, actingPlayers: ['user-2', 'user-3'] }, actions: {} } }))],
 };
 
 export const Empty: Story = {

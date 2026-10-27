@@ -10,6 +10,7 @@ export type GameConnectionState = { status: 'disconnected'; reason: Disconnected
 
 const exitReason = type("'NotAMember'");
 const pingTimestamp = type('string.date.parse');
+const committedVersion = type('number.integer | null');
 
 const operation = type({ op: "'add' | 'replace' | 'test'", path: 'string', value: 'unknown' })
   .or({ op: "'remove'", path: 'string' })
@@ -109,6 +110,23 @@ export class GameConnectionService {
         const validated = pingTimestamp(timestamp);
         if (validated instanceof ArkErrors) {
           console.error('Invalid ping timestamp', validated.summary);
+          return validated.throw();
+        }
+
+        return validated;
+      }),
+    );
+  }
+
+  public execute(action: string): Observable<number | null> {
+    const connection = this.connection;
+    if (!connection) return throwError(() => new Error('Cannot execute an action without an active connection.'));
+
+    return from(connection.invoke<unknown>('Execute', action)).pipe(
+      map(version => {
+        const validated = committedVersion(version);
+        if (validated instanceof ArkErrors) {
+          console.error('Invalid committed version', validated.summary);
           return validated.throw();
         }
 

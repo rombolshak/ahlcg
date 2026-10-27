@@ -224,6 +224,41 @@ describe('GameConnectionService', () => {
     expect(error).toBeDefined();
   });
 
+  it('should surface the version the server returns from Execute', async () => {
+    service.connect('game-1');
+    fake.answer('Execute', 4);
+
+    const version = await new Promise<number | null>(resolve => service.execute('shared:inc').subscribe(resolve));
+
+    expect(fake.connection.invoke).toHaveBeenCalledWith('Execute', 'shared:inc');
+    expect(version).toBe(4);
+  });
+
+  it('should surface a null answer from Execute', async () => {
+    service.connect('game-1');
+    fake.answer('Execute', null);
+
+    const version = await new Promise<number | null>(resolve => service.execute('shared:inc').subscribe(resolve));
+
+    expect(version).toBeNull();
+  });
+
+  it('should error an execute when the server returns an invalid version', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    service.connect('game-1');
+    fake.answer('Execute', 'four');
+
+    const error = await new Promise<unknown>(resolve => service.execute('shared:inc').subscribe({ error: resolve }));
+
+    expect(error).toBeDefined();
+  });
+
+  it('should error an execute when there is no connection', async () => {
+    const error = await new Promise<unknown>(resolve => service.execute('shared:inc').subscribe({ error: resolve }));
+
+    expect(error).toBeInstanceOf(Error);
+  });
+
   describe('state sync', () => {
     it('should emit a reset with the GetState answer once start resolves', async () => {
       service.connect('game-1');

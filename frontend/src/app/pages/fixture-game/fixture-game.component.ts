@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal, OnDestroy, OnInit, viewChild } from '@angular/core';
-import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
 import { GameConnectionService } from '@features/games/game-connection.service';
@@ -21,6 +21,8 @@ const NOTICES: Record<NoticeId, Notice> = {
   'network-error': { testId: 'network-error', className: 'alert w-2xl alert-error', text: 'The connection to the server was lost.' },
   empty: { testId: 'empty', className: 'alert w-2xl alert-info', text: 'This game has no state yet.' },
 };
+
+const ACTIONS = { sharedDec: 'shared:dec', sharedInc: 'shared:inc', secretDec: 'secret:dec', secretInc: 'secret:inc', reveal: 'reveal' } as const;
 
 const SIGN_CLASSES = { Negative: 'badge badge-error', Zero: 'badge badge-neutral', Positive: 'badge badge-success' } as const;
 
@@ -59,7 +61,7 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
   });
 
   private readonly othersKey = computed(() => {
-    const view = this.store.view();
+    const view = this.store.viewModel();
     return view ? Object.keys(view.others).sort().join(',') : undefined;
   });
 
@@ -77,7 +79,7 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
   });
 
   protected readonly others = computed(() => {
-    const view = this.store.view();
+    const view = this.store.viewModel();
     if (!view) return [];
 
     const names = this.names();
@@ -89,19 +91,34 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
     }));
   });
 
-  protected readonly revealed = computed(() => this.store.view()?.revealed ?? 'None yet');
+  protected readonly revealed = computed(() => this.store.viewModel()?.revealed ?? 'None yet');
 
   protected readonly journal = computed(() =>
-    [...(this.store.view()?.journal ?? [])]
+    [...(this.store.viewModel()?.journal ?? [])]
       .reverse()
       .map(entry => (entry.key === 'fixture.revealed' ? `Revealed ${String(entry.parameters['value'])}` : entry.key)),
   );
 
-  constructor() {
-    this.connection.memberStateEvents.pipe(takeUntilDestroyed()).subscribe(event => {
-      if (event.kind === 'reset') this.store.reset(event.state);
-      else this.store.apply(event.change);
-    });
+  protected readonly actions = ACTIONS;
+
+  private readonly available = computed(() => new Set(this.store.availableActions()));
+
+  protected readonly turn = computed(() => {
+    if (this.store.holdsActions()) return 'Your move';
+
+    const acting = this.store.viewModel()?.actingPlayers ?? [];
+    const waiting = this.others()
+      .filter(other => acting.includes(other.userId))
+      .map(other => other.label);
+    return waiting.length > 0 ? `Waiting for ${waiting.join(', ')}` : 'Resolving…';
+  });
+
+  protected isAvailable(action: string): boolean {
+    return this.available().has(action);
+  }
+
+  protected choose(action: string): void {
+    this.store.choose(action);
   }
 
   public ngOnInit(): void {
@@ -110,10 +127,10 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
         this.settingsDialog().open();
       },
     });
-    this.connection.connect(this.id());
+    this.store.connect(this.id());
   }
 
   public ngOnDestroy(): void {
-    this.connection.disconnect();
+    this.store.disconnect();
   }
 }
