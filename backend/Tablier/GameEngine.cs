@@ -110,18 +110,18 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         return new MemberState(stored.Version, view, actions);
     }
 
-    public async Task<bool> Execute(Guid gameId, string member, string action, CancellationToken ct)
+    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct)
     {
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
             var stored = await history.LoadCurrent(gameId, ct);
             if (stored is null)
-                return false;
+                return null;
 
             if (!IsOffered(stored.State, member, action))
             {
                 LogActionRejectedNotOffered(logger, gameId, member, action);
-                return false;
+                return null;
             }
 
             var result = rules.Processor.Execute(stored.State, member, action);
@@ -135,11 +135,11 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             LogStepCommitted(logger, gameId, member, committed.Version);
             await SendStateChanged(gameId, stored, committed);
             await AdvanceNonPlayerSteps(gameId, committed, ct);
-            return true;
+            return committed.Version;
         }
 
         LogActionAbandoned(logger, gameId, member, MaxAttempts);
-        return false;
+        return null;
     }
 
     private async Task<MembershipChange?> FindNextMembershipChange(Guid gameId, TState state, CancellationToken ct)

@@ -36,12 +36,12 @@ public class GameEngineTests
         var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
 
         // then
-        Assert.True(executed);
+        Assert.Equal(1, executed);
         run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Once);
     }
 
     [Fact]
-    public async Task Execute_AppendRefusedOnEveryAttempt_ReturnsFalseAndSendsNothing()
+    public async Task Execute_AppendRefusedOnEveryAttempt_ReturnsNullAndSendsNothing()
     {
         // given
         var run = CreateRun(loads: [Open], appends: [false, false, false]);
@@ -50,12 +50,12 @@ public class GameEngineTests
         var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
 
         // then
-        Assert.False(executed);
+        Assert.Null(executed);
         run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Never);
     }
 
     [Fact]
-    public async Task Execute_StateDoesNotOfferAction_ReturnsFalseWithoutAppending()
+    public async Task Execute_StateDoesNotOfferAction_ReturnsNullWithoutAppending()
     {
         // given
         var run = CreateRun(loads: [Closed], appends: []);
@@ -64,7 +64,7 @@ public class GameEngineTests
         var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
 
         // then
-        Assert.False(executed);
+        Assert.Null(executed);
         run.History.Verify(
             h =>
                 h.Append(
@@ -79,7 +79,7 @@ public class GameEngineTests
     }
 
     [Fact]
-    public async Task Execute_AdvanceAppendRefused_StillReturnsTrueAndSendsOnlyThePlayerStep()
+    public async Task Execute_AdvanceAppendRefused_StillReturnsTheVersionAndSendsOnlyThePlayerStep()
     {
         // given
         var run = CreateRun(loads: [Open], appends: [true, false]);
@@ -88,8 +88,22 @@ public class GameEngineTests
         var executed = await run.Engine.Execute(GameId, Member, Close, CancellationToken.None);
 
         // then
-        Assert.True(executed);
+        Assert.Equal(1, executed);
         run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Execute_NonPlayerStepFollows_ReturnsThePlayerStepVersionNotTheAdvancedOne()
+    {
+        // given
+        var run = CreateRun(loads: [Open], appends: [true, true]);
+
+        // when
+        var executed = await run.Engine.Execute(GameId, Member, Close, CancellationToken.None);
+
+        // then
+        Assert.Equal(1, executed);
+        run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Exactly(2));
     }
 
     [Fact]
