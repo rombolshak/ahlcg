@@ -32,6 +32,7 @@ describe('FixtureGameComponent', () => {
   let fixture: ComponentFixture<FixtureGameComponent>;
   let events: Subject<MemberStateEvent>;
   let state: ReturnType<typeof signal<GameConnectionState>>;
+  let inviteCode: ReturnType<typeof signal<string | null>>;
   let connect: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
   let members: ReturnType<typeof vi.fn>;
@@ -50,6 +51,7 @@ describe('FixtureGameComponent', () => {
   beforeEach(async () => {
     events = new Subject<MemberStateEvent>();
     state = signal<GameConnectionState>({ status: 'connected' });
+    inviteCode = signal<string | null>(null);
     connect = vi.fn();
     disconnect = vi.fn();
     registerGlobal = vi.fn();
@@ -60,7 +62,7 @@ describe('FixtureGameComponent', () => {
       imports: [FixtureGameComponent, getTranslocoModule()],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: GameConnectionService, useValue: { state, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
+        { provide: GameConnectionService, useValue: { state, inviteCode, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
         { provide: GamesService, useValue: { members } },
         { provide: InputManagerService, useValue: { registerGlobal } },
       ],
@@ -181,6 +183,21 @@ describe('FixtureGameComponent', () => {
     await emit({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'replace', path: '/shared', value: 9 }], actions: {} } });
 
     expect(text('shared')).toBe('9');
+  });
+
+  describe('clearance code', () => {
+    it('should show the code when the connection holds one', async () => {
+      inviteCode.set('K7M2QX');
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      expect(text('invite-code')).toBe('Clearance code K7M2QX');
+    });
+
+    it('should show nothing when there is no code', async () => {
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      expect(has('invite-code')).toBe(false);
+    });
   });
 
   describe('actions', () => {

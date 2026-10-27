@@ -22,6 +22,8 @@ public interface IGameClient
 
     Task StateChanged(StateChange change);
 
+    Task InviteCodeChanged(string? code);
+
     // The method name is the SignalR wire name the frontend listens on.
 #pragma warning disable CA1716
     Task Exit(ExitReason reason);

@@ -849,6 +849,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             game.Id,
             new GameEndpoints.SetMembersCountRequest(2),
             NullLogger<Game>.Instance
@@ -874,6 +875,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -905,6 +907,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -915,6 +918,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -943,6 +947,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()),
             CreateEngine().Object,
@@ -969,6 +974,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -996,6 +1002,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -1022,6 +1029,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code!),
             CreateEngine().Object,
@@ -1049,6 +1057,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -1071,6 +1080,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             CreateSessions(),
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest("UNKNOWN"),
             CreateEngine().Object,
@@ -1098,6 +1108,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
@@ -1124,6 +1135,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
@@ -1151,6 +1163,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
@@ -1178,6 +1191,7 @@ public class GameEndpointsTests
             userManager.Object,
             db,
             sessions,
+            CreateMockHub().Hub.Object,
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
@@ -1288,6 +1302,51 @@ public class GameEndpointsTests
         engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task RemoveMember_OpenSeatsAfterRemoval_SendsTheRotatedCodeAfterTheRemovedMemberLeftTheGroup()
+    {
+        var userManager = GetMockUserManager(LoggedInUser, OtherUser);
+        await using var db = CreateInMemoryDb();
+        var codes = new Queue<string>(["OLDCOD", "NEWCOD"]);
+        var sessions = CreateSessions(codes.Dequeue);
+        var (hub, groups, clients) = CreateMockHub();
+        var order = new List<string>();
+        var groupClient = new Mock<IGameClient>();
+        groupClient
+            .Setup(c => c.InviteCodeChanged(It.IsAny<string?>()))
+            .Callback<string?>(code => order.Add($"code:{code}"))
+            .Returns(Task.CompletedTask);
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(groupClient.Object);
+        var targetClient = new Mock<IGameClient>();
+        clients
+            .Setup(c => c.Clients(It.Is<IReadOnlyList<string>>(ids => ids.Contains("target-conn"))))
+            .Returns(targetClient.Object);
+        groups
+            .Setup(g => g.RemoveFromGroupAsync("target-conn", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback(() => order.Add("removed"))
+            .Returns(Task.CompletedTask);
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, intendedPlayersCount: 3);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, LoggedInUser, "caller-conn", FixedNow);
+        sessions.Join(game.Id, OtherUser, "target-conn", FixedNow);
+        sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3);
+
+        await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            userManager.Object,
+            db,
+            sessions,
+            hub.Object,
+            game.Id,
+            OtherUser,
+            CreateEngine().Object,
+            NullLogger<Game>.Instance
+        );
+
+        Assert.Equal(["removed", "removed", "code:NEWCOD"], order);
+    }
+
     private static Mock<IGameEngine> CreateEngine(bool readable = true)
     {
         var engine = new Mock<IGameEngine>();
@@ -1378,6 +1437,7 @@ public class GameEndpointsTests
         var hub = new Mock<IHubContext<GameHub, IGameClient>>();
         hub.Setup(h => h.Groups).Returns(groups.Object);
         hub.Setup(h => h.Clients).Returns(clients.Object);
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
         return (hub, groups, clients);
     }
 

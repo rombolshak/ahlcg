@@ -1,6 +1,7 @@
 <div class="absolute inset-0 bg-zinc-900/60"></div>
 
 <div class="relative z-10 flex size-full flex-col items-center gap-6 overflow-y-auto py-10 text-base-content">
+  <!-- eslint-disable @angular-eslint/template/cyclomatic-complexity -- scaffolding view, complexity 6 against a limit of 5 -->
   <h1 class="font-[Conkordia] text-[52px] tracking-wide">Fixture game</h1>
 
   @switch (screen()) {
@@ -14,6 +15,10 @@
     @case ("ready") {
       <div class="flex w-2xl flex-col gap-6" data-testId="ready">
         <div class="text-center text-xl" data-testId="turn">{{ turn() }}</div>
+
+        @if (store.inviteCode(); as code) {
+          <div class="text-center text-base-content/70" data-testId="invite-code">Clearance code {{ code }}</div>
+        }
 
         <div class="stats w-full bg-base-200 shadow-sm">
           <div class="stat">
@@ -115,6 +120,7 @@
       </div>
     }
   }
+  <!-- eslint-enable @angular-eslint/template/cyclomatic-complexity -->
 </div>
 
 <ah-dialog #settings>

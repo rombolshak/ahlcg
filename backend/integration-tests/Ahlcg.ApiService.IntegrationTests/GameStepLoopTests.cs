@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Channels;
@@ -308,6 +309,41 @@ public class GameStepLoopTests(AppFixture fixture)
             var acting = sync.GetProperty("view").GetProperty("actingPlayers").EnumerateArray();
             Assert.Equal(expected, acting.Select(p => p.GetString()));
         }
+    }
+
+    [Fact]
+    public async Task InviteCode_JoinFillsTheTable_OwnerAndJoinerBothReceiveNoCode()
+    {
+        var ownerCookies = new CookieContainer();
+        using var owner = fixture.CreateClient(ownerCookies);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await HubTestSupport.CreateGameAsync(owner);
+        var membersCount = await owner.PutAsJsonAsync(
+            $"/games/{gameId}/membersCount",
+            new GameEndpoints.SetMembersCountRequest(2)
+        );
+        membersCount.EnsureSuccessStatusCode();
+        var ownerCodes = Channel.CreateUnbounded<string?>();
+        await using var ownerConnection = HubTestSupport.BuildConnection(fixture, ownerCookies, $"gameId={gameId}");
+        ownerConnection.On<string?>(nameof(IGameClient.InviteCodeChanged), code => ownerCodes.Writer.TryWrite(code));
+        await ownerConnection.StartAsync();
+        var code = await HubTestSupport.WithTimeoutAsync(ownerCodes.Reader.ReadAsync().AsTask());
+        Assert.NotNull(code);
+        Assert.Equal(6, code.Length);
+
+        var joinerCookies = new CookieContainer();
+        using var joiner = fixture.CreateClient(joinerCookies);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, joiner);
+        var join = await joiner.PostAsJsonAsync("/games/join", new GameEndpoints.JoinGameRequest(code));
+        join.EnsureSuccessStatusCode();
+
+        var closed = await HubTestSupport.WithTimeoutAsync(ownerCodes.Reader.ReadAsync().AsTask());
+        Assert.Null(closed);
+        var joinerCodes = Channel.CreateUnbounded<string?>();
+        await using var joinerConnection = HubTestSupport.BuildConnection(fixture, joinerCookies, $"gameId={gameId}");
+        joinerConnection.On<string?>(nameof(IGameClient.InviteCodeChanged), c => joinerCodes.Writer.TryWrite(c));
+        await joinerConnection.StartAsync();
+        Assert.Null(await HubTestSupport.WithTimeoutAsync(joinerCodes.Reader.ReadAsync().AsTask()));
     }
 
     private async Task<GameRun> StartGameAsync()
