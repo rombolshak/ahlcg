@@ -24,5 +24,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - run: gh pr review --approve "$PR_URL"
-      - if: github.event.pull_request.user.login == 'dependabot[bot]'
+      - if: >-
+          github.event.pull_request.user.login == 'dependabot[bot]' ||
+          github.event.pull_request.head.ref == 'l10n_main'
         run: gh pr merge --auto --squash "$PR_URL"

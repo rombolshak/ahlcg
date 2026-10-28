@@ -187,7 +187,7 @@ Generated code has to be excluded in **two** places or the exclusion backfires. 
 
 **chromatic** — a job in `ci.yml` that runs on every PR. When its filter did not match, it skips the Storybook build and calls the action with `skip: true`, which makes Chromatic post a passing `UI Tests` status without testing anything. The job therefore must never be skipped as a whole, or `UI Tests` (a required check) never appears. `exitZeroOnChanges` keeps visual changes from failing the job; they are accepted or rejected in Chromatic, which turns `UI Tests` green or red.
 
-**auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot ones. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
+**auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot and Crowdin ones. Crowdin opens its PRs as `rombolshak`, so they are recognised by their `l10n_main` head branch. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
 
 Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`. Chromatic is not, so `CHROMATIC_PROJECT_TOKEN` must also be a Dependabot secret: without it the skip call cannot authenticate and Dependabot PRs never get `UI Tests`.
 
