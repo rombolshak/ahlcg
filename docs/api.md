@@ -42,15 +42,16 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 | --- | --- | --- |
 | Client → server | `Ping()` | returns a UTC timestamp |
 | Client → server | `GetState()` | returns `MemberState` — the version, the member's view and, per offered action, the patch it would apply to that view — or `null` |
-| Client → server | `Execute(action)` | returns `true` once the step is committed and its events were sent, `false` if it was not applied |
+| Client → server | `Execute(action)` | returns the version the caller's step was committed at, once it and any steps the server advanced after it were sent, or `null` if it was not applied |
 | Server → client | `Exit` | to the caller only: an `ExitReason` — stop the connection and do not reconnect |
 | Server → client | `MemberConnected` | to every member of the game: the user id |
 | Server → client | `MemberDisconnected` | to every member of the game: the user id |
+| Server → client | `InviteCodeChanged` | to every member of the game: the session's invite code, or `null` while no seat is open. Sent after every sync or rotation of the code, connecting included, so a client gets the current code right after it connects. Unversioned: the code is session data, never part of the state |
 | Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version. A member who joins in that version does not get it: their first view comes from `GetState` |
 
 **`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
 
-**`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `false`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
+**`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `null`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
 
 **There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
 
