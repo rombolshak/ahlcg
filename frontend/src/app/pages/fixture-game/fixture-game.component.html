@@ -13,18 +13,69 @@
     }
     @case ("ready") {
       <div class="flex w-2xl flex-col gap-6" data-testId="ready">
+        <div class="text-center text-xl" data-testId="turn">{{ turn() }}</div>
+
         <div class="stats w-full bg-base-200 shadow-sm">
           <div class="stat">
             <div class="stat-title">Shared</div>
-            <div class="stat-value" data-testId="shared">{{ store.view()?.shared }}</div>
+            <div class="stat-value" data-testId="shared">{{ store.viewModel()?.shared }}</div>
+            <div class="join stat-actions">
+              <button
+                class="btn join-item btn-sm"
+                type="button"
+                aria-label="Decrease"
+                data-testId="shared-dec"
+                [disabled]="!isAvailable(actions.sharedDec)"
+                (click)="choose(actions.sharedDec)"
+              >
+                −
+              </button>
+              <button
+                class="btn join-item btn-sm"
+                type="button"
+                aria-label="Increase"
+                data-testId="shared-inc"
+                [disabled]="!isAvailable(actions.sharedInc)"
+                (click)="choose(actions.sharedInc)"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div class="stat">
             <div class="stat-title">Your secret</div>
-            <div class="stat-value" data-testId="own-secret">{{ store.view()?.ownSecret }}</div>
+            <div class="stat-value" data-testId="own-secret">{{ store.viewModel()?.ownSecret }}</div>
+            <div class="join stat-actions">
+              <button
+                class="btn join-item btn-sm"
+                type="button"
+                aria-label="Decrease"
+                data-testId="secret-dec"
+                [disabled]="!isAvailable(actions.secretDec)"
+                (click)="choose(actions.secretDec)"
+              >
+                −
+              </button>
+              <button
+                class="btn join-item btn-sm"
+                type="button"
+                aria-label="Increase"
+                data-testId="secret-inc"
+                [disabled]="!isAvailable(actions.secretInc)"
+                (click)="choose(actions.secretInc)"
+              >
+                +
+              </button>
+            </div>
           </div>
           <div class="stat">
             <div class="stat-title">Revealed</div>
             <div class="stat-value" data-testId="revealed">{{ revealed() }}</div>
+            <div class="stat-actions">
+              <button class="btn btn-sm" type="button" data-testId="reveal" [disabled]="!isAvailable(actions.reveal)" (click)="choose(actions.reveal)">
+                Reveal
+              </button>
+            </div>
           </div>
         </div>
 

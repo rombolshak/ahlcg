@@ -13,6 +13,7 @@ const view: FixtureView = {
   shared: 3,
   revealed: null,
   ownSecret: 7,
+  actingPlayers: [],
   others: { 'user-2': 'Positive' },
   journal: [
     { key: 'fixture.revealed', parameters: { value: 4 } },
@@ -20,7 +21,12 @@ const view: FixtureView = {
   ],
 };
 
-const memberState = (memberView: FixtureView): MemberState => ({ version: 1, view: memberView, actions: {} });
+const offered: MemberState['actions'] = {
+  'shared:inc': [{ op: 'replace', path: '/shared', value: 4 }],
+  reveal: [{ op: 'replace', path: '/revealed', value: 1 }],
+};
+
+const memberState = (memberView: FixtureView, actions: MemberState['actions'] = {}): MemberState => ({ version: 1, view: memberView, actions });
 
 describe('FixtureGameComponent', () => {
   let fixture: ComponentFixture<FixtureGameComponent>;
@@ -29,6 +35,7 @@ describe('FixtureGameComponent', () => {
   let connect: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
   let members: ReturnType<typeof vi.fn>;
+  let execute: ReturnType<typeof vi.fn>;
   let registerGlobal: ReturnType<typeof vi.fn>;
 
   const element = (testId: string) => (fixture.nativeElement as HTMLElement).querySelector(`[data-testId=${testId}]`);
@@ -46,13 +53,14 @@ describe('FixtureGameComponent', () => {
     connect = vi.fn();
     disconnect = vi.fn();
     registerGlobal = vi.fn();
+    execute = vi.fn().mockReturnValue(NEVER);
     members = vi.fn().mockReturnValue(of<GameMember[]>([{ userId: 'user-2', userName: 'Roland', isAnonymous: false, isOnline: true }]));
 
     await TestBed.configureTestingModule({
       imports: [FixtureGameComponent, getTranslocoModule()],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: GameConnectionService, useValue: { state, connect, disconnect, memberStateEvents: events.asObservable() } },
+        { provide: GameConnectionService, useValue: { state, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
         { provide: GamesService, useValue: { members } },
         { provide: InputManagerService, useValue: { registerGlobal } },
       ],
@@ -173,5 +181,58 @@ describe('FixtureGameComponent', () => {
     await emit({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'replace', path: '/shared', value: 9 }], actions: {} } });
 
     expect(text('shared')).toBe('9');
+  });
+
+  describe('actions', () => {
+    const button = (testId: string) => element(testId) as HTMLButtonElement;
+
+    it('should enable only the buttons whose action is offered', async () => {
+      await emit({ kind: 'reset', state: memberState(view, offered) });
+
+      expect(button('shared-inc').disabled).toBe(false);
+      expect(button('reveal').disabled).toBe(false);
+      expect(button('shared-dec').disabled).toBe(true);
+      expect(button('secret-dec').disabled).toBe(true);
+      expect(button('secret-inc').disabled).toBe(true);
+    });
+
+    it('should change the view before the server answers when a button is clicked', async () => {
+      await emit({ kind: 'reset', state: memberState(view, offered) });
+
+      button('shared-inc').click();
+      await fixture.whenStable();
+
+      expect(execute).toHaveBeenCalledWith('shared:inc');
+      expect(text('shared')).toBe('4');
+    });
+
+    it('should disable every button while a choice is pending', async () => {
+      await emit({ kind: 'reset', state: memberState(view, offered) });
+
+      button('shared-inc').click();
+      await fixture.whenStable();
+
+      expect(['shared-dec', 'shared-inc', 'secret-dec', 'secret-inc', 'reveal'].every(testId => button(testId).disabled)).toBe(true);
+    });
+  });
+
+  describe('turn line', () => {
+    it('should say it is your move when actions are offered', async () => {
+      await emit({ kind: 'reset', state: memberState(view, offered) });
+
+      expect(text('turn')).toBe('Your move');
+    });
+
+    it('should name the other members who are acting', async () => {
+      await emit({ kind: 'reset', state: memberState({ ...view, actingPlayers: ['user-2'] }) });
+
+      expect(text('turn')).toBe('Waiting for Roland');
+    });
+
+    it('should say the game is resolving when nobody is acting', async () => {
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      expect(text('turn')).toBe('Resolving…');
+    });
   });
 });
