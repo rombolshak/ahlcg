@@ -99,10 +99,17 @@ public partial class GameHub(
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
         await groups.AddToGroupAsync(connectionId, GetMemberGroupName(gameId, userId));
         LogConnected(logger, gameId, userId, connectionId);
-        sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
+        var session = sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
+        await SendInviteCode(clients, gameId, session);
 
         if (change.MemberPresenceChanged)
             await clients.Group(gameId.ToString()).MemberConnected(userId);
+    }
+
+    public static async Task SendInviteCode(IHubClients<IGameClient> clients, Guid gameId, GameSession? session)
+    {
+        if (session is not null)
+            await clients.Group(gameId.ToString()).InviteCodeChanged(session.InviteCode);
     }
 
     public static async Task Disconnect(

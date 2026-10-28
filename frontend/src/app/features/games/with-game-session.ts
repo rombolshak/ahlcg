@@ -40,10 +40,14 @@ export function withGameSession<TView>(viewSchema: (data: unknown) => TView | Ar
       _offeredActions: {},
       _pendingAction: null,
     }),
-    withComputed(store => ({
-      availableActions: computed(() => (store._pendingAction() === null ? Object.keys(store._offeredActions()) : [])),
-      holdsActions: computed(() => Object.keys(store._offeredActions()).length > 0),
-    })),
+    withComputed(store => {
+      const connection = inject(GameConnectionService);
+      return {
+        availableActions: computed(() => (store._pendingAction() === null ? Object.keys(store._offeredActions()) : [])),
+        holdsActions: computed(() => Object.keys(store._offeredActions()).length > 0),
+        inviteCode: computed(() => connection.inviteCode()),
+      };
+    }),
     withMethods(store => {
       const connection = inject(GameConnectionService);
       let eventsSubscription: Subscription | undefined;

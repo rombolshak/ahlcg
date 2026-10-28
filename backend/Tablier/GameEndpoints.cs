@@ -301,6 +301,7 @@ public static partial class GameEndpoints
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
         GameSessions sessions,
+        IHubContext<GameHub, IGameClient> hub,
         TimeProvider timeProvider,
         JoinGameRequest request,
         IGameEngine engine,
@@ -323,7 +324,10 @@ public static partial class GameEndpoints
 
         var (result, game, added) = await AddMembership(db, gameId.Value, user.Id, timeProvider, logger);
         if (game is not null)
-            sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
+        {
+            var session = sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
+            await GameHub.SendInviteCode(hub.Clients, game.Id, session);
+        }
 
         if (added)
         {
@@ -527,7 +531,8 @@ public static partial class GameEndpoints
         await engine.SyncMembers(id, ct);
 
         await DisconnectMember(sessions, hub, id, userId);
-        sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
+        var session = sessions.RotateInviteCode(id, game.Members.Count, game.IntendedPlayersCount);
+        await GameHub.SendInviteCode(hub.Clients, id, session);
 
         return result;
     }
@@ -607,6 +612,7 @@ public static partial class GameEndpoints
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
         GameSessions sessions,
+        IHubContext<GameHub, IGameClient> hub,
         Guid id,
         SetMembersCountRequest request,
         ILogger<Game> logger
@@ -637,7 +643,8 @@ public static partial class GameEndpoints
 
         LogMembersCountChanged(logger, id, request.Count, user.Id);
 
-        sessions.SyncInviteCode(id, memberCount, request.Count);
+        var session = sessions.SyncInviteCode(id, memberCount, request.Count);
+        await GameHub.SendInviteCode(hub.Clients, id, session);
 
         return TypedResults.NoContent();
     }

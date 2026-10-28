@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { signalStore } from '@ngrx/signals';
 import { type } from 'arktype';
@@ -25,6 +26,7 @@ const change = (version: number, items: string[], actions: StateChange['actions'
 describe('withGameSession', () => {
   let store: InstanceType<typeof TestStore>;
   let events: Subject<MemberStateEvent>;
+  let inviteCode: ReturnType<typeof signal<string | null>>;
   let execute: ReturnType<typeof vi.fn<(action: string) => Observable<number | null>>>;
   let connect: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
@@ -47,12 +49,16 @@ describe('withGameSession', () => {
     unhandled = vi.fn<(error: unknown) => void>();
     config.onUnhandledError = unhandled;
     events = new Subject<MemberStateEvent>();
+    inviteCode = signal<string | null>(null);
     execute = vi.fn<(action: string) => Observable<number | null>>().mockReturnValue(new Subject<number | null>());
     connect = vi.fn();
     disconnect = vi.fn();
 
     TestBed.configureTestingModule({
-      providers: [TestStore, { provide: GameConnectionService, useValue: { memberStateEvents: events.asObservable(), connect, disconnect, execute } }],
+      providers: [
+        TestStore,
+        { provide: GameConnectionService, useValue: { memberStateEvents: events.asObservable(), inviteCode, connect, disconnect, execute } },
+      ],
     });
     store = TestBed.inject(TestStore);
     store.connect('game-1');
@@ -65,6 +71,14 @@ describe('withGameSession', () => {
   it('should start loading', () => {
     expect(store.status()).toBe('loading');
     expect(store.viewModel()).toBeNull();
+  });
+
+  it('should expose the connection invite code', () => {
+    expect(store.inviteCode()).toBeNull();
+
+    inviteCode.set('K7M2QX');
+
+    expect(store.inviteCode()).toBe('K7M2QX');
   });
 
   it('should connect through the connection service', () => {

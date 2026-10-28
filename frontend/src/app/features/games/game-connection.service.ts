@@ -11,6 +11,7 @@ export type GameConnectionState = { status: 'disconnected'; reason: Disconnected
 const exitReason = type("'NotAMember'");
 const pingTimestamp = type('string.date.parse');
 const committedVersion = type('number.integer | null');
+const inviteCode = type('string | null');
 
 const operation = type({ op: "'add' | 'replace' | 'test'", path: 'string', value: 'unknown' })
   .or({ op: "'remove'", path: 'string' })
@@ -35,6 +36,9 @@ export class GameConnectionService {
 
   private readonly _state = signal<GameConnectionState>({ status: 'disconnected', reason: 'initial' });
   public readonly state: Signal<GameConnectionState> = this._state.asReadonly();
+
+  private readonly _inviteCode = signal<string | null>(null);
+  public readonly inviteCode: Signal<string | null> = this._inviteCode.asReadonly();
 
   private readonly events = new Subject<MemberStateEvent>();
   public readonly memberStateEvents: Observable<MemberStateEvent> = this.events.asObservable();
@@ -83,6 +87,18 @@ export class GameConnectionService {
       }
 
       this.handleChange(connection, validated);
+    });
+
+    connection.on('InviteCodeChanged', (payload: unknown) => {
+      if (this.connection !== connection) return;
+
+      const validated = inviteCode(payload);
+      if (validated instanceof ArkErrors) {
+        console.error('Invalid invite code', validated.summary);
+        return validated.throw();
+      }
+
+      this._inviteCode.set(validated);
     });
 
     this._state.set({ status: 'connecting' });
@@ -202,6 +218,7 @@ export class GameConnectionService {
     void this.connection?.stop();
     this.connection = undefined;
     this.gameId = undefined;
+    this._inviteCode.set(null);
     this._state.set({ status: 'disconnected', reason });
   }
 }

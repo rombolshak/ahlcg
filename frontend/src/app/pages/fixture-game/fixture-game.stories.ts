@@ -18,13 +18,14 @@ const view: FixtureView = {
   ],
 };
 
-const withEvents = (events: Observable<MemberStateEvent>) =>
+const withEvents = (events: Observable<MemberStateEvent>, inviteCode: string | null = null) =>
   moduleMetadata({
     providers: [
       {
         provide: GameConnectionService,
         useValue: {
           state: signal({ status: 'connected' }),
+          inviteCode: signal(inviteCode),
           connect: () => undefined,
           disconnect: () => undefined,
           execute: () => NEVER,
@@ -39,6 +40,7 @@ const withEvents = (events: Observable<MemberStateEvent>) =>
               { userId: 'user-2', userName: 'Roland', isAnonymous: false, isOnline: true },
               { userId: 'user-3', userName: null, isAnonymous: true, isOnline: false },
             ]),
+          setMembersCount: () => of(undefined),
         },
       },
     ],
@@ -65,6 +67,10 @@ const offeredActions: MemberState['actions'] = {
 
 export const Ready: Story = {
   decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: {} } }))],
+};
+
+export const WithClearanceCode: Story = {
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: {} } }), 'K7M2QX')],
 };
 
 export const YourMove: Story = {

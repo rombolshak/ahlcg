@@ -123,6 +123,30 @@ public class GameHubTests
     }
 
     [Fact]
+    public async Task Connect_OpenSeats_SendsTheInviteCodeToTheGroup()
+    {
+        var sessions = CreateSessions();
+        await using var db = CreateInMemoryDb();
+        var gameId = await SeedMembershipAsync(db, MemberUser, intendedPlayersCount: 2);
+        var groupClient = new Mock<IGameClient>();
+        var clients = new Mock<IHubCallerClients<IGameClient>>();
+        clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
+
+        await GameHub.Connect(
+            sessions,
+            db,
+            FixedTimeProvider,
+            clients.Object,
+            Mock.Of<IGroupManager>(),
+            new GameConnection(gameId, MemberUser, "conn-1"),
+            NullLogger.Instance
+        );
+
+        groupClient.Verify(c => c.InviteCodeChanged(sessions.Find(gameId)!.InviteCode), Times.Once);
+        Assert.NotNull(sessions.Find(gameId)!.InviteCode);
+    }
+
+    [Fact]
     public async Task Connect_SameMemberSecondConnection_DoesNotBroadcastAgain()
     {
         var sessions = CreateSessions();

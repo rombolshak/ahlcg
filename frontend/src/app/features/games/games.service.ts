@@ -92,6 +92,10 @@ export class GamesService {
     );
   }
 
+  public setMembersCount(gameId: string, count: number): Observable<void> {
+    return this.http.put(`/api/games/${gameId}/membersCount`, { count }).pipe(map(() => undefined));
+  }
+
   private fetchGames(url: string, label: string): Observable<GameSummary[]> {
     return this.http.get<unknown>(url).pipe(
       map(response => {

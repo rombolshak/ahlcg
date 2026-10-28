@@ -32,9 +32,11 @@ describe('FixtureGameComponent', () => {
   let fixture: ComponentFixture<FixtureGameComponent>;
   let events: Subject<MemberStateEvent>;
   let state: ReturnType<typeof signal<GameConnectionState>>;
+  let inviteCode: ReturnType<typeof signal<string | null>>;
   let connect: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
   let members: ReturnType<typeof vi.fn>;
+  let setMembersCount: ReturnType<typeof vi.fn>;
   let execute: ReturnType<typeof vi.fn>;
   let registerGlobal: ReturnType<typeof vi.fn>;
 
@@ -50,18 +52,20 @@ describe('FixtureGameComponent', () => {
   beforeEach(async () => {
     events = new Subject<MemberStateEvent>();
     state = signal<GameConnectionState>({ status: 'connected' });
+    inviteCode = signal<string | null>(null);
     connect = vi.fn();
     disconnect = vi.fn();
     registerGlobal = vi.fn();
     execute = vi.fn().mockReturnValue(NEVER);
+    setMembersCount = vi.fn().mockReturnValue(of(undefined));
     members = vi.fn().mockReturnValue(of<GameMember[]>([{ userId: 'user-2', userName: 'Roland', isAnonymous: false, isOnline: true }]));
 
     await TestBed.configureTestingModule({
       imports: [FixtureGameComponent, getTranslocoModule()],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: GameConnectionService, useValue: { state, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
-        { provide: GamesService, useValue: { members } },
+        { provide: GameConnectionService, useValue: { state, inviteCode, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
+        { provide: GamesService, useValue: { members, setMembersCount } },
         { provide: InputManagerService, useValue: { registerGlobal } },
       ],
     }).compileComponents();
@@ -181,6 +185,60 @@ describe('FixtureGameComponent', () => {
     await emit({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'replace', path: '/shared', value: 9 }], actions: {} } });
 
     expect(text('shared')).toBe('9');
+  });
+
+  describe('clearance code', () => {
+    it('should show the code when the connection holds one', async () => {
+      inviteCode.set('K7M2QX');
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      expect(text('invite-code')).toBe('Clearance code K7M2QX');
+    });
+
+    it('should show nothing when there is no code', async () => {
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      expect(has('invite-code')).toBe(false);
+    });
+  });
+
+  describe('seats', () => {
+    it('should open one seat beyond the current members', async () => {
+      // given
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      // when
+      (element('open-seat') as HTMLButtonElement).click();
+
+      // then
+      expect(setMembersCount).toHaveBeenCalledWith('game-1', 3);
+    });
+
+    it('should close the open seats down to the current members', async () => {
+      // given
+      inviteCode.set('K7M2QX');
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      // when
+      (element('close-seats') as HTMLButtonElement).click();
+
+      // then
+      expect(setMembersCount).toHaveBeenCalledWith('game-1', 2);
+      expect(has('open-seat')).toBe(false);
+    });
+
+    it('should disable the seat button while the change is in flight', async () => {
+      // given
+      setMembersCount.mockReturnValue(NEVER);
+      await emit({ kind: 'reset', state: memberState(view) });
+
+      // when
+      (element('open-seat') as HTMLButtonElement).click();
+      await fixture.whenStable();
+
+      // then
+      expect((element('open-seat') as HTMLButtonElement).disabled).toBe(true);
+    });
   });
 
   describe('actions', () => {

@@ -45,6 +45,7 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
   let closeCallback: ((error?: Error) => void) | undefined;
   let exitHandler: ((reason: unknown) => void) | undefined;
   let stateChangedHandler: ((payload: unknown) => void) | undefined;
+  let inviteCodeHandler: ((payload: unknown) => void) | undefined;
   const answers: Record<string, unknown> = { Ping: '2026-01-01T00:00:00Z', GetState: null };
 
   const connection: FakeHubConnection = {
@@ -60,6 +61,7 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
     on: vi.fn((method: string, handler: (arg: never) => void) => {
       if (method === 'Exit') exitHandler = handler as (reason: unknown) => void;
       if (method === 'StateChanged') stateChangedHandler = handler as (payload: unknown) => void;
+      if (method === 'InviteCodeChanged') inviteCodeHandler = handler as (payload: unknown) => void;
     }),
     off: vi.fn(),
     start: vi.fn(() => startResult),
@@ -74,6 +76,7 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
     triggerClose: (error?: Error) => closeCallback?.(error),
     triggerExit: (reason: unknown) => exitHandler?.(reason),
     triggerStateChanged: (payload: unknown) => stateChangedHandler?.(payload),
+    triggerInviteCodeChanged: (payload: unknown) => inviteCodeHandler?.(payload),
     answer: (method: string, value: unknown) => {
       answers[method] = value;
     },
@@ -143,6 +146,42 @@ describe('GameConnectionService', () => {
 
     expect(service.state()).toEqual({ status: 'disconnected', reason: 'server_rejected' });
     expect(fake.connection.stop).toHaveBeenCalledOnce();
+  });
+
+  it('should follow the invite code the server sends', () => {
+    service.connect('game-1');
+
+    fake.triggerInviteCodeChanged('K7M2QX');
+    expect(service.inviteCode()).toBe('K7M2QX');
+
+    fake.triggerInviteCodeChanged(null);
+    expect(service.inviteCode()).toBeNull();
+  });
+
+  it('should reject an invite code that is not a string or null and keep the previous one', () => {
+    service.connect('game-1');
+    fake.triggerInviteCodeChanged('K7M2QX');
+
+    expect(() => fake.triggerInviteCodeChanged(42)).toThrow();
+    expect(service.inviteCode()).toBe('K7M2QX');
+  });
+
+  it('should forget the invite code on disconnect', () => {
+    service.connect('game-1');
+    fake.triggerInviteCodeChanged('K7M2QX');
+
+    service.disconnect();
+
+    expect(service.inviteCode()).toBeNull();
+  });
+
+  it('should forget the invite code when connecting to another game', () => {
+    service.connect('game-1');
+    fake.triggerInviteCodeChanged('K7M2QX');
+
+    service.connect('game-2');
+
+    expect(service.inviteCode()).toBeNull();
   });
 
   it('should fail validation rather than accept an unrecognised exit reason', () => {
