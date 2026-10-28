@@ -10,6 +10,10 @@ api_token_env: CROWDIN_PERSONAL_TOKEN
 
 preserve_hierarchy: true
 
+# Replacing the default message drops its `[ci skip]`, which kept CI off the translation PR.
+commit_message: "i18n: %original_file_name% (%language%)"
+append_commit_message: false
+
 bundles:
   - 1
 
