@@ -30,7 +30,7 @@ public partial class GameHub(
         return engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
     }
 
-    public Task<bool> Execute(string action)
+    public Task<int?> Execute(string action)
     {
         var (gameId, userId) = GetCaller();
 

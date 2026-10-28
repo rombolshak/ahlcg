@@ -22,8 +22,12 @@ public sealed class MeteredGameEngine(IGameEngine inner, TablierMetrics metrics,
             state => state is null ? OutcomeRefused : OutcomeOk
         );
 
-    public Task<bool> Execute(Guid gameId, string member, string action, CancellationToken ct) =>
-        MeasureAsync("execute", () => inner.Execute(gameId, member, action, ct), OkOrRefused);
+    public Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct) =>
+        MeasureAsync(
+            "execute",
+            () => inner.Execute(gameId, member, action, ct),
+            version => version is null ? OutcomeRefused : OutcomeOk
+        );
 
     private static string OkOrRefused(bool accepted) => accepted ? OutcomeOk : OutcomeRefused;
 }

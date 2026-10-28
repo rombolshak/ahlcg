@@ -12,5 +12,5 @@ public interface IGameEngine
 
     Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct);
 
-    Task<bool> Execute(Guid gameId, string member, string action, CancellationToken ct);
+    Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct);
 }

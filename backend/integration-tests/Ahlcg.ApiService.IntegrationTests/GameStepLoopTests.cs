@@ -95,10 +95,10 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var game = await StartGameAsync();
         var sync = await game.GetStateAsync();
 
-        var executed = await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc");
+        var executed = await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
 
-        Assert.True(executed);
         var change = await game.NextChangeAsync();
+        Assert.Equal(change.GetProperty("version").GetInt32(), executed);
         Assert.Equal(1, change.GetProperty("version").GetInt32());
         Assert.Equal(1, ApplyView(sync, change)["shared"]!.GetValue<int>());
         var actions = change.GetProperty("actions").EnumerateObject().Select(a => a.Name);
@@ -117,7 +117,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var sync = await game.GetStateAsync();
         var promised = Apply(sync, action);
 
-        await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), action);
+        await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), action);
 
         var firstChange = await game.NextChangeAsync();
         var actual =
@@ -128,13 +128,13 @@ public class GameStepLoopTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Execute_ActionNotOffered_ReturnsFalseAndChangesNothing()
+    public async Task Execute_ActionNotOffered_ReturnsNullAndChangesNothing()
     {
         await using var game = await StartGameAsync();
 
-        var executed = await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "nope");
+        var executed = await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "nope");
 
-        Assert.False(executed);
+        Assert.Null(executed);
         Assert.False(await game.HasChangeWithinAsync(TimeSpan.FromMilliseconds(500)));
         await using var db = fixture.CreateDbContext();
         Assert.False(await db.GameSteps.AnyAsync(s => s.GameId == game.GameId));
@@ -146,15 +146,18 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var game = await StartGameAsync();
         var sync = await game.GetStateAsync();
 
-        var executed = await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "reveal");
+        var executed = await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "reveal");
 
-        Assert.True(executed);
+        Assert.Equal(1, executed);
         var pending = await game.NextChangeAsync();
         var advanced = await game.NextChangeAsync();
         Assert.Equal(1, pending.GetProperty("version").GetInt32());
         Assert.Empty(pending.GetProperty("actions").EnumerateObject());
         Assert.Equal(2, advanced.GetProperty("version").GetInt32());
-        var revealed = ApplyView(sync, pending, advanced)["revealed"]!.GetValue<int>();
+        Assert.Empty(ApplyView(sync, pending)["actingPlayers"]!.AsArray());
+        var advancedView = ApplyView(sync, pending, advanced);
+        Assert.Equal([game.UserId], advancedView["actingPlayers"]!.AsArray().Select(p => p!.GetValue<string>()));
+        var revealed = advancedView["revealed"]!.GetValue<int>();
         Assert.InRange(revealed, 1, 6);
         var actions = advanced.GetProperty("actions").EnumerateObject().Select(a => a.Name);
         Assert.Equal(OfferedActions.Order(StringComparer.Ordinal), actions.Order(StringComparer.Ordinal));
@@ -167,11 +170,11 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var second = await first.ConnectAgainAsync();
 
         var results = await Task.WhenAll(
-            first.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc"),
-            second.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc")
+            first.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc"),
+            second.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc")
         );
 
-        Assert.All(results, Assert.True);
+        Assert.Equal([1, 2], results.Order());
         await using var db = fixture.CreateDbContext();
         var versions = await db
             .GameSteps.Where(s => s.GameId == first.GameId)
@@ -188,8 +191,8 @@ public class GameStepLoopTests(AppFixture fixture)
     public async Task GetState_AfterExecute_ReportsTheLatestCommittedVersion()
     {
         await using var game = await StartGameAsync();
-        await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "reveal");
-        await game.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc");
+        await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "reveal");
+        await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
 
         var sync = await game.GetStateAsync();
 
@@ -226,9 +229,9 @@ public class GameStepLoopTests(AppFixture fixture)
         var ownerSync = await owner.GetStateAsync();
         var memberSync = await member.GetStateAsync();
 
-        var executed = await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc");
+        var executed = await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
 
-        Assert.True(executed);
+        Assert.Equal(2, executed);
         var ownerChange = await owner.NextChangeAsync();
         var memberChange = await member.NextChangeAsync();
         Assert.Equal(2, ownerChange.GetProperty("version").GetInt32());
@@ -245,8 +248,8 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var __ = member;
         var before = await member.GetStateAsync();
 
-        await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "secret:inc");
-        await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "secret:inc");
+        await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "secret:inc");
+        await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "secret:inc");
 
         var changes = new[] { await member.NextChangeAsync(), await member.NextChangeAsync() };
         var after = await member.GetStateAsync();
@@ -286,7 +289,25 @@ public class GameStepLoopTests(AppFixture fixture)
         var others = ApplyView(ownerSync, change)["others"]!.AsObject();
         Assert.False(others.ContainsKey(member.UserId));
         Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(member.Exited));
-        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.Execute), "shared:inc"));
+        Assert.Null(await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc"));
+    }
+
+    [Fact]
+    public async Task GetState_SharedGame_ListsEveryMemberActingOrderedForBoth()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+
+        var ownerSync = await owner.GetStateAsync();
+        var memberSync = await member.GetStateAsync();
+
+        string[] expected = [.. new[] { owner.UserId, member.UserId }.Order(StringComparer.Ordinal)];
+        foreach (var sync in new[] { ownerSync, memberSync })
+        {
+            var acting = sync.GetProperty("view").GetProperty("actingPlayers").EnumerateArray();
+            Assert.Equal(expected, acting.Select(p => p.GetString()));
+        }
     }
 
     private async Task<GameRun> StartGameAsync()

@@ -8,7 +8,10 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
     public IReadOnlySet<string> GetMembers(FixtureState state) => state.Secrets.Keys.ToFrozenSet();
 
     public IReadOnlyDictionary<string, IReadOnlySet<string>> GetMembersActions(FixtureState state) =>
-        state.RevealPending ? [] : state.Secrets.Keys.ToDictionary(member => member, _ => FixtureActions.All);
+        GetActingMembers(state).ToDictionary(member => member, _ => FixtureActions.All);
+
+    public static IEnumerable<string> GetActingMembers(FixtureState state) =>
+        state.RevealPending ? [] : state.Secrets.Keys;
 
     public StepResult<FixtureState> Execute(FixtureState state, string member, string action)
     {
