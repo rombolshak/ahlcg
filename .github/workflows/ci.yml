@@ -129,7 +129,7 @@ jobs:
     needs:
       - backend
       - frontend
-    if: always() && (needs.backend.result != 'skipped' || needs.frontend.result != 'skipped')
+    if: ${{ !cancelled() && (needs.backend.result != 'skipped' || needs.frontend.result != 'skipped') }}
     steps:
       - name: Finish parallel build
         uses: coverallsapp/github-action@master
