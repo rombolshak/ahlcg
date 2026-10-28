@@ -52,9 +52,6 @@ jobs:
         run: dotnet-coverage collect --settings coverage.runsettings --output coverage.cobertura.xml --output-format cobertura -- dotnet test --no-build --verbosity normal --logger:"trx"
       - name: Create coverage report
         run: reportgenerator -reports:"coverage.cobertura.xml" -targetDir:"coveragereport" -reporttypes:Html,cobertura,SonarQube -filefilters:"-*Generated*,-*Migrations/*,-*.g.cs" -classfilters:"-*Generated*"
-      - name: Stop Sonar
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -63,3 +60,6 @@ jobs:
           debug: 'true'
           parallel: true
           flag-name: 'backend'
+
+      - name: Stop Sonar
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
