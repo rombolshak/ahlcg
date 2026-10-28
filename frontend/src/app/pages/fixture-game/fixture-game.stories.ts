@@ -40,6 +40,7 @@ const withEvents = (events: Observable<MemberStateEvent>, inviteCode: string | n
               { userId: 'user-2', userName: 'Roland', isAnonymous: false, isOnline: true },
               { userId: 'user-3', userName: null, isAnonymous: true, isOnline: false },
             ]),
+          setMembersCount: () => of(undefined),
         },
       },
     ],

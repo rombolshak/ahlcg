@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal, OnDestroy, OnInit, viewChild } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, linkedSignal, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
 import { GameConnectionService } from '@features/games/game-connection.service';
 import { GameMember, GamesService } from '@features/games/games.service';
 import { SettingsComponent } from '@features/settings/settings.component';
+import { finalize } from 'rxjs';
 import { FixtureGameStore } from './fixture-game.store';
 
 type NoticeId = 'rejected' | 'network-error' | 'empty';
@@ -40,6 +41,7 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
   private readonly inputManager = inject(InputManagerService);
   private readonly connection = inject(GameConnectionService);
   private readonly games = inject(GamesService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly store = inject(FixtureGameStore);
   private readonly settingsDialog = viewChild.required<DialogComponent>('settings');
 
@@ -112,6 +114,35 @@ export class FixtureGameComponent implements OnInit, OnDestroy {
       .map(other => other.label);
     return waiting.length > 0 ? `Waiting for ${waiting.join(', ')}` : 'Resolving…';
   });
+
+  private readonly memberCount = computed(() => Object.keys(this.store.viewModel()?.others ?? {}).length + 1);
+
+  protected readonly changingSeats = signal(false);
+
+  protected openSeat(): void {
+    this.setSeats(this.memberCount() + 1);
+  }
+
+  protected closeSeats(): void {
+    this.setSeats(this.memberCount());
+  }
+
+  private setSeats(count: number): void {
+    this.changingSeats.set(true);
+    this.games
+      .setMembersCount(this.id(), count)
+      .pipe(
+        finalize(() => {
+          this.changingSeats.set(false);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        error: (err: unknown) => {
+          console.error('Could not change the seats', err);
+        },
+      });
+  }
 
   protected isAvailable(action: string): boolean {
     return this.available().has(action);

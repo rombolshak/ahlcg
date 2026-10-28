@@ -225,6 +225,22 @@ describe('GamesService', () => {
     ]);
   });
 
+  it('should PUT the count to /api/games/{id}/membersCount', () => {
+    let completed = false;
+    service.setMembersCount('game-1', 3).subscribe({
+      complete: () => {
+        completed = true;
+      },
+    });
+
+    const req = http.expectOne('/api/games/game-1/membersCount');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ count: 3 });
+    req.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(completed).toBe(true);
+  });
+
   it('should throw when the members response is malformed', () => {
     let error: unknown;
     service.members('game-1').subscribe({
