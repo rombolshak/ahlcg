@@ -1,8 +1,14 @@
 using System.Text.Json.Serialization;
 using AspNetCore.SignalR.OpenTelemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Tablier.Auth;
 using Tablier.Contract;
 using Tablier.Data;
+using Tablier.Engine;
+using Tablier.Engine.History;
+using Tablier.Engine.History.Cache;
+using Tablier.Games;
+using Tablier.Telemetry;
 
 namespace Tablier;
 
