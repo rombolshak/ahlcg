@@ -23,7 +23,7 @@ jobs:
           dotnet-version: 10
       - uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: 26
           cache: 'npm'
           cache-dependency-path: 'e2e/package-lock.json'
       # apiservice binds its https launch profile, so Kestrel needs a developer certificate.
