@@ -13,4 +13,4 @@ The backend implements **authentication and game records only** — creating a g
 
 Start at **[docs/README.md](docs/README.md)**, which routes to the right file for a given task.
 
-Before changing frontend code, read [docs/frontend-conventions.md](docs/frontend-conventions.md) — the codebase uses `input()`/`output()`, `@if`/`@for`, `inject()`, the `ah` selector prefix, and `OnPush` everywhere, with no exceptions.
+Before changing frontend code, read [docs/frontend/frontend-conventions.md](docs/frontend/frontend-conventions.md) — the codebase uses `input()`/`output()`, `@if`/`@for`, `inject()`, the `ah` selector prefix, and `OnPush` everywhere, with no exceptions.

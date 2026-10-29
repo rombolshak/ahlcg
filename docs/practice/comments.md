@@ -24,7 +24,7 @@ The comments worth keeping explain **why**, and specifically a *why* that is not
 - **An ordering constraint** — this must happen before that, and the reason is in a different file. `DialogService.open()` calling `dialogRef.instance.open()` last is a real example: nothing at the call site shows that content can emit `result` synchronously from `onOpened`.
 - **A workaround for something external** — a framework behaviour, a browser quirk, a library bug. Name the thing being worked around.
 - **A deliberate choice that reads as a mistake** — the code a maintainer would "fix" and thereby break. `DialogService` not injecting `AuthService` is one: the alternative is a cyclic-DI error at runtime, and nothing local says so.
-- **A suppression** — `// eslint-disable-next-line` and `@ts-expect-error` always carry their reason. That is a hard rule (see [frontend-conventions.md](frontend-conventions.md#typescript-strictness)).
+- **A suppression** — `// eslint-disable-next-line` and `@ts-expect-error` always carry their reason. That is a hard rule (see [frontend-conventions.md](../frontend/frontend-conventions.md#typescript-strictness)).
 
 Everything else is noise, and noise costs more than nothing: comments are not compiled, not tested, and not reviewed as carefully as code, so they drift into lying.
 

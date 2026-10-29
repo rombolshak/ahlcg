@@ -16,7 +16,7 @@ import { AccountComponent } from './account.component';
  * Opening a dialog for real does **not** by itself earn a story a place at this tier: happy-dom
  * runs `showModal()` and the rest of `DialogService.open()` fine (`dialog.service.spec.ts`), so a
  * story earns F1 only when its *assertion* needs real layout or real focus — see
- * `docs/testing.md`'s "Component tests (F1)" section. `UpgradeStacked` stays only for the
+ * `docs/practice/testing.md`'s "Component tests (F1)" section. `UpgradeStacked` stays only for the
  * top-layer hit test; everything else it used to assert moved to `account.component.spec.ts`.
  *
  * `Anonymous`/`Permanent`/`SignedOut` and `AccountKeyboardNavigation` below need none of the
@@ -153,7 +153,7 @@ export const AccountKeyboardNavigation: Story = {
     if (!dialogElement) throw new Error('Expected the account dialog to be in the canvas');
 
     // `listNavigation` (`core/list-navigation.ts`) only moves a `selectedIndex` signal and never
-    // calls `focus()` — docs/testing.md names that as correctly staying at the happy-dom tier. What
+    // calls `focus()` — docs/practice/testing.md names that as correctly staying at the happy-dom tier. What
     // this story can newly observe is what only a real `showModal()` provides: native focus landing
     // inside the dialog, and a real `keydown` reaching `AccountComponent` through the input layer
     // that `DialogComponent.open()` pushes (nothing pushes it for `[isOpen]="true"`). Selection

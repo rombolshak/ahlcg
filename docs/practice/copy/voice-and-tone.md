@@ -67,7 +67,7 @@ The player is a visitor, not a scholar: they came to *play*, so the archive word
 
 The test is what the string is about, not how atmospheric it is: if it describes something **the software** does, it is archive vocabulary in either register. Sorcery reaching a control the user operates — an account, a sign-out, a password field — is the frame leaking, and it makes the fiction weaker rather than stronger. A desk that keeps no record of you is colder than any binding rite.
 
-**Game rules terms are Fantasy Flight's and are fixed** — *chaos bag*, *upkeep phase*, *evade*, *clue*, *resource*, *mythos*. Never paraphrase or prettify one; a player scanning for a rules word needs that exact word. [glossary.md](glossary.md) has the set.
+**Game rules terms are Fantasy Flight's and are fixed** — *chaos bag*, *upkeep phase*, *evade*, *clue*, *resource*, *mythos*. Never paraphrase or prettify one; a player scanning for a rules word needs that exact word. [glossary.md](../../glossary.md) has the set.
 
 ## Do
 
@@ -94,7 +94,7 @@ The test is what the string is about, not how atmospheric it is: if it describes
 ## Mechanics that constrain the words
 
 - An **`en.json` in the `i18n/` folder beside the component that renders the string** is the source, one per component. **English is the only language you write** — the files beside it lag behind and fall back to English key by key. Never hand-translate. The other languages are written by human translators who speak them, briefed by [translating.md](translating.md).
-- Keys are `snake_case`, nested only within the file. What used to be a feature-area prefix is now the folder the file sits in — see [frontend.md](frontend.md#internationalization).
+- Keys are `snake_case`, nested only within the file. What used to be a feature-area prefix is now the folder the file sits in — see [frontend.md](../../frontend/frontend.md#internationalization).
 - **British spelling** — *enrol*, *flavour*, *apologising*. It is what `docs/` already uses; the English strings had nothing either way until `account.anonymous.upgrade` forced the call.
 - Interpolation is `{{param}}` — the token must survive rewording verbatim; where it sits in the sentence is free.
 - `#x#` and `@x@` are markup for `WithAhSymbolsPipe` (`frontend/src/app/ui/pipes/with-ah-symbols.pipe.ts`): `#n#` becomes the glyph in the Arkham symbol font, `@Evade@` becomes bold italic. **They only render where the template pipes the string through `withAhSymbols`** — anywhere else they show as literal hashes, so do not introduce one without checking the template.
@@ -113,6 +113,6 @@ The test is what the string is about, not how atmospheric it is: if it describes
 
 ## How new copy gets written
 
-A user-visible string is not invented in passing while implementing something else. Run [`/wording`](../.claude/commands/wording.md): it builds the brief, the `wordsmith` agent proposes variants against this file, you choose, and the chosen strings go into `en.json`. `/work` stops at the same gate — a plan that adds strings routes through `/wording` before the implementer is handed anything.
+A user-visible string is not invented in passing while implementing something else. Run [`/wording`](../../../.claude/commands/wording.md): it builds the brief, the `wordsmith` agent proposes variants against this file, you choose, and the chosen strings go into `en.json`. `/work` stops at the same gate — a plan that adds strings routes through `/wording` before the implementer is handed anything.
 
 This file is the standard, so it is also the thing to change when the standard is wrong. If a chosen wording contradicts a rule here and the wording is right, the rule was wrong — fix it here in the same change.

@@ -61,4 +61,4 @@ There is no auth guard and no token handling: the session is the `AspNetCore.Ide
 
 ## Data flow: game state
 
-See [state-store.md](state-store.md). Summary: `setState` installs a whole `GameState`; `updateState(Operation[])` applies RFC6902 patches through immer, re-validates the result with arktype, and wraps the change in a GSAP Flip transition.
+See [state-store.md](frontend/state-store.md). Summary: `setState` installs a whole `GameState`; `updateState(Operation[])` applies RFC6902 patches through immer, re-validates the result with arktype, and wraps the change in a GSAP Flip transition.

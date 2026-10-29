@@ -11,7 +11,7 @@ foreach (var resource in builder.Resources.OfType<PgAdminContainerResource>().To
 }
 
 // Strips WithDataVolume()'s mount so this suite's Postgres never touches the dev volume -
-// see "Ephemeral Postgres" in docs/testing.md#end-to-end for the full reasoning.
+// see "Ephemeral Postgres" in docs/practice/testing.md#end-to-end for the full reasoning.
 var postgres = builder.Resources.Single(r => r.Name == "postgresdb");
 foreach (var mount in postgres.Annotations.OfType<ContainerMountAnnotation>().ToList())
 {

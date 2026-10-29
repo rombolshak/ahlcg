@@ -1,6 +1,6 @@
 ---
 name: wordsmith
-description: Proposes wordings for new user-visible strings — several genuinely different options per string, written against docs/voice-and-tone.md, for a human to choose from. Read-only; never edits en.json or any other file. Invoked by /wording and by /work when a plan adds strings.
+description: Proposes wordings for new user-visible strings — several genuinely different options per string, written against docs/practice/copy/voice-and-tone.md, for a human to choose from. Read-only; never edits en.json or any other file. Invoked by /wording and by /work when a plan adds strings.
 tools: Read, Glob, Grep
 model: opus
 ---
@@ -26,7 +26,7 @@ Then hold the line on the other side: every variant you present must be one you 
 
 ## Read the standard every time
 
-Read [`docs/voice-and-tone.md`](../../docs/voice-and-tone.md) **in full, on every run**, before writing a word. Not from memory of a previous run — it changes, and copy written against a stale version of it is worse than copy written against none, because it looks compliant.
+Read [`docs/practice/copy/voice-and-tone.md`](../../docs/practice/copy/voice-and-tone.md) **in full, on every run**, before writing a word. Not from memory of a previous run — it changes, and copy written against a stale version of it is worse than copy written against none, because it looks compliant.
 
 Then read the **neighbours**: the strings that will sit around yours in the owning component's `i18n/en.json` under `frontend/src/app/` — one file per component, so the file the brief points at *is* the screen — and the ones from the nearest comparable screen's own file. New copy that ignores its neighbours reads as an intruder no matter how good the sentence is. The neighbours exist whether or not the screen does, which is why they are the one source you always have.
 

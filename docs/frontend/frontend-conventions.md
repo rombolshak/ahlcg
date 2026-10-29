@@ -175,7 +175,7 @@ Tailwind utility classes in templates. Global CSS, the daisyUI plugin, and the c
 
 ## Comments
 
-Rarely. A comment is an exception that has to justify itself; code that needs prose to be understood usually needs reshaping instead. The rule, what survives it, and the separate standard for TSDoc on exported symbols are in [comments.md](comments.md), which applies to the backend too.
+Rarely. A comment is an exception that has to justify itself; code that needs prose to be understood usually needs reshaping instead. The rule, what survives it, and the separate standard for TSDoc on exported symbols are in [comments.md](../practice/comments.md), which applies to the backend too.
 
 ## Commits
 

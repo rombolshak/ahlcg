@@ -6,7 +6,7 @@ This file holds only what the spec cannot carry.
 
 ## Reaching the API
 
-Two route groups: `/auth` (`app.MapGroup("auth")`, tagged `Auth`) and `/games` (`app.MapGroup("games")`, tagged `Games`). From the frontend dev server the same routes are reached under an `/api` prefix — `/api/auth/*`, `/api/games` — see [architecture.md](architecture.md).
+Two route groups: `/auth` (`app.MapGroup("auth")`, tagged `Auth`) and `/games` (`app.MapGroup("games")`, tagged `Games`). From the frontend dev server the same routes are reached under an `/api` prefix — `/api/auth/*`, `/api/games` — see [architecture.md](../architecture.md).
 
 ## Routes that deliberately do not exist
 

@@ -40,7 +40,7 @@ For each failure, fix the **cause**, not the symptom:
 - Never weaken or delete a failing assertion to make a test pass. If a test is genuinely wrong, say so and explain why before changing it.
 - cspell failures usually mean a real typo. If the word is legitimately new, add it to the project dictionary rather than rewording around it.
 - Prettier failures: `npm run format`.
-- Check `docs/testing.md` for the known frontend traps — `ECONNREFUSED` on assets means a missing `serveCardAssets` interceptor; a never-resolving emission means `output()` was treated as an Observable; a non-compiling input assignment means `componentRef.setInput` is needed.
+- Check `docs/practice/testing.md` for the known frontend traps — `ECONNREFUSED` on assets means a missing `serveCardAssets` interceptor; a never-resolving emission means `output()` was treated as an Observable; a non-compiling input assignment means `componentRef.setInput` is needed.
 
 Re-run after fixing. Repeat until green or genuinely stuck.
 

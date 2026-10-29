@@ -4,7 +4,7 @@
 # Locally: set CROWDIN_PROJECT_ID and CROWDIN_PERSONAL_TOKEN in your shell.
 # In CI: repository secrets of the same names.
 #
-# See docs/translating.md for the workflow this serves.
+# See docs/practice/copy/translating.md for the workflow this serves.
 project_id_env: CROWDIN_PROJECT_ID
 api_token_env: CROWDIN_PERSONAL_TOKEN
 
