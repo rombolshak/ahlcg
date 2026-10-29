@@ -1,0 +1,459 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Ahlcg.ApiService.IntegrationTests.Fixture;
+using Microsoft.EntityFrameworkCore;
+using Tablier.Data;
+using Tablier.Games;
+
+namespace Ahlcg.ApiService.IntegrationTests.Games;
+
+/// <summary>
+/// Drives POST /games, GET /games/recent, and GET /games/archive over real HTTP against the real
+/// Aspire-orchestrated app and Postgres. EF's InMemory provider (used by the unit tests) does not
+/// enforce unique indexes, so the idempotency criteria can only be proven here.
+/// </summary>
+[Collection(AppCollection.Name)]
+public class GameEndpointsTests(AppFixture fixture)
+{
+    [Fact]
+    public async Task PostGames_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await PostGameAsync(client, "unauth-key", """{"foo":"bar"}""");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostGames_WithoutIdempotencyKeyHeader_ReturnsBadRequest()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
+        {
+            Content = JsonContent.Create(
+                new GameEndpoints.CreateGameRequest(ParseConfig("""{"foo":"bar"}""")),
+                options: JsonSerializerOptions.Web
+            ),
+        };
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostGames_Authenticated_CreatesGameOwnedByCaller()
+    {
+        using var client = fixture.CreateClient();
+        var userId = await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        var response = await PostGameAsync(client, $"owner-{Guid.NewGuid()}", """{"foo":"bar"}""");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        await using var db = fixture.CreateDbContext();
+        var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == dto.Id);
+        Assert.Equal(userId, stored.OwnerId);
+        Assert.Equal(1, stored.IntendedPlayersCount);
+
+        await db.GameMembers.AsNoTracking().SingleAsync(m => m.GameId == dto.Id && m.UserId == userId);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyTwiceSameUser_ReturnsSameGameAndCreatesOneRow()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"same-user-{Guid.NewGuid()}";
+
+        var first = await PostGameAsync(client, key, """{"a":1}""");
+        first.EnsureSuccessStatusCode();
+        var firstDto = await ReadGameAsync(first);
+
+        var second = await PostGameAsync(client, key, """{"a":1}""");
+        second.EnsureSuccessStatusCode();
+        var secondDto = await ReadGameAsync(second);
+
+        Assert.Equal(firstDto.Id, secondDto.Id);
+
+        await using var db = fixture.CreateDbContext();
+        var count = await db.Games.CountAsync(g => g.IdempotencyKey == key);
+        Assert.Equal(1, count);
+
+        var memberCount = await db.GameMembers.CountAsync(m => m.GameId == firstDto.Id);
+        Assert.Equal(1, memberCount);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyDifferentUsers_CreatesTwoGames()
+    {
+        using var clientA = fixture.CreateClient();
+        using var clientB = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientA);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientB);
+        var key = $"shared-{Guid.NewGuid()}";
+
+        var responseA = await PostGameAsync(clientA, key, """{"a":1}""");
+        var responseB = await PostGameAsync(clientB, key, """{"a":1}""");
+        responseA.EnsureSuccessStatusCode();
+        responseB.EnsureSuccessStatusCode();
+
+        var dtoA = await ReadGameAsync(responseA);
+        var dtoB = await ReadGameAsync(responseB);
+
+        Assert.NotEqual(dtoA.Id, dtoB.Id);
+
+        await using var db = fixture.CreateDbContext();
+        var count = await db.Games.CountAsync(g => g.IdempotencyKey == key);
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public async Task PostGames_Authenticated_ReturnsConfigurationUnchanged()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
+
+        var response = await PostGameAsync(client, $"config-{Guid.NewGuid()}", json);
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        using var expected = JsonDocument.Parse(json);
+        Assert.True(JsonElement.DeepEquals(expected.RootElement, dto.Configuration));
+    }
+
+    [Fact]
+    public async Task PostGames_Authenticated_BeginsHistoryAtVersionZero()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        var response = await PostGameAsync(client, $"history-{Guid.NewGuid()}", "{}");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        await using var db = fixture.CreateDbContext();
+        var snapshot = await db.GameSnapshots.AsNoTracking().SingleAsync(s => s.GameId == dto.Id);
+        Assert.Equal(0, snapshot.Version);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyTwice_KeepsExactlyOneSnapshot()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"history-replay-{Guid.NewGuid()}";
+
+        var first = await PostGameAsync(client, key, "{}");
+        first.EnsureSuccessStatusCode();
+        var second = await PostGameAsync(client, key, "{}");
+        second.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(second);
+
+        await using var db = fixture.CreateDbContext();
+        Assert.Equal(1, await db.GameSnapshots.CountAsync(s => s.GameId == dto.Id));
+    }
+
+    [Fact]
+    public async Task PostGames_UnreadableConfiguration_ReturnsBadRequestAndCreatesNoGame()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"unreadable-{Guid.NewGuid()}";
+
+        var response = await PostGameAsync(client, key, "5");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        Assert.False(await db.Games.AnyAsync(g => g.IdempotencyKey == key));
+    }
+
+    [Fact]
+    public async Task GetRecentGames_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games/recent");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetRecentGames_Authenticated_ReturnsOnlyCallersGames()
+    {
+        using var clientA = fixture.CreateClient();
+        using var clientB = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientA);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, clientB);
+
+        var responseA = await PostGameAsync(clientA, $"caller-a-{Guid.NewGuid()}", """{"a":1}""");
+        responseA.EnsureSuccessStatusCode();
+        var dtoA = await ReadGameAsync(responseA);
+
+        var responseB = await PostGameAsync(clientB, $"caller-b-{Guid.NewGuid()}", """{"b":1}""");
+        responseB.EnsureSuccessStatusCode();
+        var dtoB = await ReadGameAsync(responseB);
+
+        var gamesA = await GetRecentGamesAsync(clientA);
+        var idsA = gamesA.Select(g => g.Id).ToList();
+
+        Assert.Contains(dtoA.Id, idsA);
+        Assert.DoesNotContain(dtoB.Id, idsA);
+    }
+
+    [Fact]
+    public async Task GetRecentGames_ReturnsConfigurationUnchanged()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        const string json = """{"nested":{"array":[1,2,3]},"value":"hello"}""";
+
+        var createResponse = await PostGameAsync(client, $"config-{Guid.NewGuid()}", json);
+        createResponse.EnsureSuccessStatusCode();
+        var created = await ReadGameAsync(createResponse);
+
+        var games = await GetRecentGamesAsync(client);
+
+        var listed = Assert.Single(games, g => g.Id == created.Id);
+        using var expected = JsonDocument.Parse(json);
+        Assert.True(JsonElement.DeepEquals(expected.RootElement, listed.Configuration));
+    }
+
+    [Fact]
+    public async Task GetArchivedGames_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games/archive");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync("/games/latest");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_NoGames_ReturnsNoContent()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        var response = await client.GetAsync("/games/latest");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetLatestGame_AfterTwoCreates_ReturnsTheMostRecent()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+
+        var first = await PostGameAsync(client, $"latest-first-{Guid.NewGuid()}", """{"a":1}""");
+        first.EnsureSuccessStatusCode();
+        await ReadGameAsync(first);
+
+        var second = await PostGameAsync(client, $"latest-second-{Guid.NewGuid()}", """{"a":2}""");
+        second.EnsureSuccessStatusCode();
+        var secondDto = await ReadGameAsync(second);
+
+        var response = await client.GetAsync("/games/latest");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+
+        Assert.Equal(secondDto.Id, dto.Id);
+    }
+
+    [Fact]
+    public async Task GetMembers_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.GetAsync($"/games/{Guid.NewGuid()}/members");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetMembers_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
+
+        var response = await outsider.GetAsync($"/games/{gameId}/members");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveMember_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await client.DeleteAsync($"/games/{Guid.NewGuid()}/members/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RemoveMember_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        var ownerId = await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
+
+        var response = await outsider.DeleteAsync($"/games/{gameId}/members/{ownerId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_WithoutCookie_ReturnsUnauthorized()
+    {
+        using var client = fixture.CreateClient();
+
+        var response = await PutMembersCountAsync(client, Guid.NewGuid(), 2);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_NonMember_ReturnsForbidden()
+    {
+        using var owner = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await CreateGameAsync(owner);
+
+        using var outsider = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, outsider);
+
+        var response = await PutMembersCountAsync(outsider, gameId, 2);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_Raise_UpdatesIntendedPlayersCount()
+    {
+        using var client = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var gameId = await CreateGameAsync(client);
+
+        var response = await PutMembersCountAsync(client, gameId, 3);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == gameId);
+        Assert.Equal(3, stored.IntendedPlayersCount);
+    }
+
+    [Fact]
+    public async Task SetMembersCount_LowerBelowMemberCount_ReturnsValidationProblemAndLeavesCountUnchanged()
+    {
+        using var owner = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await CreateGameAsync(owner);
+        using var second = fixture.CreateClient();
+        var secondId = await HubTestSupport.LoginAnonymouslyAsync(fixture, second);
+        await AddMembershipAsync(gameId, secondId);
+
+        var response = await PutMembersCountAsync(owner, gameId, 1);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await using var db = fixture.CreateDbContext();
+        var stored = await db.Games.AsNoTracking().SingleAsync(g => g.Id == gameId);
+        Assert.Equal(1, stored.IntendedPlayersCount);
+    }
+
+    private async Task AddMembershipAsync(Guid gameId, string userId)
+    {
+        await using var db = fixture.CreateDbContext();
+        var now = DateTimeOffset.UtcNow;
+        db.GameMembers.Add(
+            new GameMember
+            {
+                GameId = gameId,
+                UserId = userId,
+                JoinedAt = now,
+                LastPlayedAt = now,
+            }
+        );
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task<Guid> CreateGameAsync(HttpClient client)
+    {
+        var response = await PostGameAsync(client, $"members-{Guid.NewGuid()}", """{"a":1}""");
+        response.EnsureSuccessStatusCode();
+        var dto = await ReadGameAsync(response);
+        return dto.Id;
+    }
+
+    private static async Task<HttpResponseMessage> PutMembersCountAsync(HttpClient client, Guid gameId, int count)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Put, $"/games/{gameId}/membersCount")
+        {
+            Content = JsonContent.Create(
+                new GameEndpoints.SetMembersCountRequest(count),
+                options: JsonSerializerOptions.Web
+            ),
+        };
+        return await client.SendAsync(request);
+    }
+
+    private static JsonElement ParseConfig(string json) => JsonDocument.Parse(json).RootElement.Clone();
+
+    private static async Task<HttpResponseMessage> PostGameAsync(
+        HttpClient client,
+        string idempotencyKey,
+        string configurationJson
+    )
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/games")
+        {
+            Content = JsonContent.Create(
+                new GameEndpoints.CreateGameRequest(ParseConfig(configurationJson)),
+                options: JsonSerializerOptions.Web
+            ),
+        };
+        request.Headers.Add("Idempotency-Key", idempotencyKey);
+        return await client.SendAsync(request);
+    }
+
+    private static async Task<GameEndpoints.GameDto> ReadGameAsync(HttpResponseMessage response)
+    {
+        var dto = await response.Content.ReadFromJsonAsync<GameEndpoints.GameDto>(JsonSerializerOptions.Web);
+        Assert.NotNull(dto);
+        return dto;
+    }
+
+    private static async Task<IReadOnlyList<GameEndpoints.GameDto>> GetRecentGamesAsync(HttpClient client)
+    {
+        var response = await client.GetAsync("/games/recent");
+        response.EnsureSuccessStatusCode();
+
+        var games = await response.Content.ReadFromJsonAsync<IReadOnlyList<GameEndpoints.GameDto>>(
+            JsonSerializerOptions.Web
+        );
+        Assert.NotNull(games);
+        return games;
+    }
+}
