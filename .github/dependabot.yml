@@ -10,14 +10,14 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      angular:
+      minor-and-patch:
         applies-to: version-updates
         patterns:
-          - "@angular*"
+          - "*"
         update-types:
           - "minor"
           - "patch"
-      minor-and-patch:
+      security:
         applies-to: security-updates
         update-types:
           - "patch"
@@ -27,6 +27,8 @@ updates:
         patterns:
           - "*lint*"
           - "*prettier*"
+        update-types:
+          - "major"
       vitest:
         applies-to: version-updates
         patterns:
@@ -34,10 +36,14 @@ updates:
           - "@vitest/*"
         exclude-patterns:
           - "@vitest/eslint-plugin"
+        update-types:
+          - "major"
       bugsnag:
         applies-to: version-updates
         patterns:
           - "@bugsnag/*"
+        update-types:
+          - "major"
     ignore:
       - dependency-name: "@angular*"
         update-types: [ "version-update:semver-major" ]
@@ -46,22 +52,41 @@ updates:
     directory: "/e2e"
     schedule:
       interval: "weekly"
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "nuget"
     directory: "/backend"
     schedule:
       interval: "weekly"
     groups:
+      minor-and-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
       dotnet:
         applies-to: version-updates
         patterns:
           - "Microsoft.*"
           - "AspNetCore.*"
           - "OpenTelemetry.*"
+        update-types:
+          - "major"
       aspire:
         applies-to: version-updates
         patterns:
           - "*Aspire.*"
+        update-types:
+          - "major"
     ignore:
       # A security pin on StreamJsonRpc's transitive dependency, which is built against 2.x
       - dependency-name: "MessagePack"
