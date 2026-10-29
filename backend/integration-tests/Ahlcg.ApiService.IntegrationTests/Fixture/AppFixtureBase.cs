@@ -45,15 +45,15 @@ public abstract class AppFixtureBase : IAsyncLifetime
             builder.Resources.Remove(resource);
         }
 
+        var apiService = builder
+            .CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(r => r.Name == "apiservice"))
+            .WithEnvironment("Tablier__GameHistoryCleanup__Interval", "30.00:00:00");
         if (AccountCreationPermitLimit is { } permitLimit)
         {
-            var apiService = builder.Resources.OfType<ProjectResource>().Single(r => r.Name == "apiservice");
-            builder
-                .CreateResourceBuilder(apiService)
-                .WithEnvironment(
-                    "RateLimits__AccountCreation__PermitLimit",
-                    permitLimit.ToString(CultureInfo.InvariantCulture)
-                );
+            apiService.WithEnvironment(
+                "RateLimits__AccountCreation__PermitLimit",
+                permitLimit.ToString(CultureInfo.InvariantCulture)
+            );
         }
 
         _app = await builder.BuildAsync();

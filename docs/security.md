@@ -57,8 +57,8 @@ Nothing in this repo deploys anything; there is no Dockerfile, pipeline, or envi
 ## Key files
 
 - `backend/Tablier/TablierExtensions.cs` — Identity, cookie options, middleware order
-- `backend/Tablier/AuthEndpoints.cs` — auth handlers
-- `backend/Tablier/RateLimits.cs` — the join and account-creation limiters
-- `backend/Tablier/GameHub.cs` — hub authorization
+- `backend/Tablier/Auth/AuthEndpoints.cs` — auth handlers
+- `backend/Tablier/Auth/RateLimits.cs` — the join and account-creation limiters
+- `backend/Tablier/Games/GameHub.cs` — hub authorization
 - `backend/Ahlcg.ServiceDefaults/Extensions.cs` — OTel, health checks
 - `frontend/src/app/app.config.ts` — Bugsnag key (public)
