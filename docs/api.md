@@ -1,6 +1,6 @@
 # API Reference
 
-**The OpenAPI document is the reference, not this file.** Routes, request and response shapes, status codes and per-endpoint semantics live in `/openapi/v1.json` (browsable at `/scalar/v1`, both Development only), generated from `backend/Tablier/AuthEndpoints.cs` and `GameEndpoints.cs`. An endpoint is documented by its `.WithDescription()` and `.Produces()` calls; if something about a route is missing or wrong, fix it there, not here.
+**The OpenAPI document is the reference, not this file.** Routes, request and response shapes, status codes and per-endpoint semantics live in `/openapi/v1.json` (browsable at `/scalar/v1`, both Development only), generated from `backend/Tablier/Auth/AuthEndpoints.cs` and `backend/Tablier/Games/GameEndpoints.cs`. An endpoint is documented by its `.WithDescription()` and `.Produces()` calls; if something about a route is missing or wrong, fix it there, not here.
 
 This file holds only what the spec cannot carry.
 
