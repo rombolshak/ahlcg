@@ -50,7 +50,7 @@ body:
     id: conventions
     attributes:
       label: Conventions that apply
-      description: Only the non-obvious ones relevant here, with the doc that covers them. Do not restate docs/frontend-conventions.md — link it.
+      description: Only the non-obvious ones relevant here, with the doc that covers them. Do not restate docs/frontend/frontend-conventions.md — link it.
     validations:
       required: false
 

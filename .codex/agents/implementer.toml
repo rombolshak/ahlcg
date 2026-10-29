@@ -18,8 +18,8 @@ Read the plan file first, in full, before touching anything.
 Never write code from memory of how Angular or .NET "usually" works. This project has hard rules that differ from defaults.
 
 1. `docs/README.md` — routing table telling you which doc covers your change.
-2. **Any frontend change: `docs/frontend-conventions.md` is mandatory.** No exceptions.
-3. The doc your change maps to (`docs/state-store.md`, `docs/backend.md`, `docs/api.md`, `docs/testing.md`).
+2. **Any frontend change: `docs/frontend/frontend-conventions.md` is mandatory.** No exceptions.
+3. The doc your change maps to (`docs/frontend/state-store.md`, `docs/backend/backend.md`, `docs/backend/api.md`, `docs/practice/testing.md`).
 4. **The nearest existing code of the same kind.** Adding a component? Read two neighbouring components and their specs. This matters more than the docs — the local idiom is the spec.
 
 ## Rules

@@ -24,12 +24,12 @@ Map changed code to the docs that describe it:
 
 | Changed | Check |
 | --- | --- |
-| `frontend/src/app/**` component/service/directive | `docs/frontend.md` (layout tree, service table), `docs/frontend-conventions.md` |
-| `frontend/src/app/pages/game-view/store/**` | `docs/state-store.md` |
-| `backend/**` endpoints, entities, migrations | `docs/backend.md`, `docs/api.md` |
-| Auth, cookies, secrets | `docs/security.md` |
-| Specs, test setup, `angular.json` test target | `docs/testing.md` |
-| `package.json` scripts, workflows, husky hooks | `docs/workflow.md` |
+| `frontend/src/app/**` component/service/directive | `docs/frontend/frontend.md` (layout tree, service table), `docs/frontend/frontend-conventions.md` |
+| `frontend/src/app/pages/game-view/store/**` | `docs/frontend/state-store.md` |
+| `backend/**` endpoints, entities, migrations | `docs/backend/backend.md`, `docs/backend/api.md` |
+| Auth, cookies, secrets | `docs/backend/security.md` |
+| Specs, test setup, `angular.json` test target | `docs/practice/testing.md` |
+| `package.json` scripts, workflows, husky hooks | `docs/practice/workflow.md` |
 | What exists at all | `docs/architecture.md` — the status table |
 
 Grep the docs for names you changed — a renamed service or moved file is the most common source of a stale claim.

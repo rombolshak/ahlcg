@@ -90,7 +90,7 @@ report a wholly English locale as complete. The source language is exempt, being
 deliberately excludes the `cards/`, `traits/` and `campaigns/` subtrees. Both `CROWDIN_PROJECT_ID` (the numeric id,
 not the slug) and `CROWDIN_PERSONAL_TOKEN` are read from the environment and must never be committed. Translations
 arrive as pull requests Crowdin opens against `main`, so a hand-edit to a non-`en` locale will be overwritten on the
-next sync. See [translating.md](translating.md).
+next sync. See [translating.md](copy/translating.md).
 
 **Context is uploaded by CI, not by hand.** `.github/workflows/crowdin-context.yml` builds Storybook, captures
 screenshots and pushes the `en.context.json` notes on every merge to `main` that touches an `en.json`, the notes, a

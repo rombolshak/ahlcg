@@ -26,16 +26,16 @@ Never write code from memory of how Angular or .NET "usually" works. This projec
 Read, in this order:
 
 1. `docs/README.md` — routing table telling you which doc covers your change.
-2. **Any frontend change: `docs/frontend-conventions.md`, in full, is mandatory.** No exceptions. It covers component API, templates, DI, naming, domain models and branded ids, path aliases, TypeScript strictness, validation, and styling.
+2. **Any frontend change: `docs/frontend/frontend-conventions.md`, in full, is mandatory.** No exceptions. It covers component API, templates, DI, naming, domain models and branded ids, path aliases, TypeScript strictness, validation, and styling.
 3. The doc your change maps to:
 
    | Touching | Read |
    | --- | --- |
-   | Any code at all | `docs/comments.md` — comments are the exception here, not the habit |
-   | Components, services, routes, translations, styles | `docs/frontend.md` |
-   | The game state store, patches, animations | `docs/state-store.md` |
-   | Any backend code — endpoints, entities, migrations, the hub, logging | `docs/backend.md` |
-   | Anything with a test — which is everything | `docs/testing.md` |
+   | Any code at all | `docs/practice/comments.md` — comments are the exception here, not the habit |
+   | Components, services, routes, translations, styles | `docs/frontend/frontend.md` |
+   | The game state store, patches, animations | `docs/frontend/state-store.md` |
+   | Any backend code — endpoints, entities, migrations, the hub, logging | `docs/backend/backend.md` |
+   | Anything with a test — which is everything | `docs/practice/testing.md` |
    | An unfamiliar card-game term | `docs/glossary.md` |
 
 4. **The nearest existing code of the same kind.** Adding a component? Read two neighbouring components and their specs. This matters more than the docs — where the two ever disagree, the code wins (`docs/README.md` says so explicitly), and the local idiom is what review compares you against.

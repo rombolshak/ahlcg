@@ -26,7 +26,7 @@ The pairing is deliberate: dread in the heading, plain fact in the body. Keep it
 
 ## Rules terms are fixed
 
-Game vocabulary belongs to Fantasy Flight and is not yours to improve: *chaos bag*, *upkeep phase*, *evade*, *clue*, *resource*, *mythos*, *act*, *agenda*. [glossary.md](glossary.md) has the English set.
+Game vocabulary belongs to Fantasy Flight and is not yours to improve: *chaos bag*, *upkeep phase*, *evade*, *clue*, *resource*, *mythos*, *act*, *agenda*. [glossary.md](../../glossary.md) has the English set.
 
 **Use the term the official edition in your language uses**, taken from the printed cards or a localised card database — not a translation you prefer. A player scanning for a rules word needs the exact word their cards use. The two Spanish entries already in the repo are the pattern: `act` → `Acto`, `agenda` → `Plan`.
 
@@ -93,7 +93,7 @@ One consequence worth knowing: if the correct translation genuinely *is* the Eng
 
 Two things exist to make the context above unnecessary to remember:
 
-- The **glossary** carries every term in the two categories above — the fixed Fantasy Flight rules words and this app's own coinages — with a note on each saying which it is and what sense is meant. **It lives in Crowdin and is maintained there**, because the half that matters most is the per-language terms, and those are yours to fill in as you go. It was seeded from [glossary.md](glossary.md) and the lexicon in [voice-and-tone.md](voice-and-tone.md), which stay the repo-side record of what the English terms mean and which of them are not ours to change; if you change a term's meaning, change it in those too.
+- The **glossary** carries every term in the two categories above — the fixed Fantasy Flight rules words and this app's own coinages — with a note on each saying which it is and what sense is meant. **It lives in Crowdin and is maintained there**, because the half that matters most is the per-language terms, and those are yours to fill in as you go. It was seeded from [glossary.md](../../glossary.md) and the lexicon in [voice-and-tone.md](voice-and-tone.md), which stay the repo-side record of what the English terms mean and which of them are not ours to change; if you change a term's meaning, change it in those too.
 - **Screenshots** are captured from Storybook, so every state has one, including the ones that are awkward to reach in a running app — the empty Case files screen, its error state, the signed-out account panel. They are regenerated with `npm run i18n:screenshots` and uploaded by `crowdin screenshot upload --auto-tag`, which tags strings by matching the text Crowdin reads off the image. They are not committed; they are build output.
 
 ### Where context comes from

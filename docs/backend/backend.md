@@ -2,7 +2,7 @@
 
 .NET 10 solution in `backend/`. All projects set `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` — warnings break the build.
 
-[comments.md](comments.md) applies here as it does to the frontend: a comment is an exception, and XML-doc is for non-obvious public contracts only.
+[comments.md](../practice/comments.md) applies here as it does to the frontend: a comment is an exception, and XML-doc is for non-obvious public contracts only.
 
 **Method names start with a verb** — `GetGameStateKey`, `GetMemberGroupName`, `FindNextMembershipChange`, not `CurrentKey`, `MemberGroup`, `NextMembershipChange`. A noun reads as a property and hides that work is done. `[LoggerMessage]` methods are `Log…`, and predicates are `Is…`/`Has…`/`Holds…`.
 
@@ -18,7 +18,7 @@
 | `Ahlcg.Migrator` | One-shot `BackgroundService` that applies migrations and stops the host |
 | `Ahlcg.ServiceDefaults` | Shared OpenTelemetry, health checks, and HTTP resilience |
 | `unit-tests/Tablier.Tests` | xUnit + Moq, handler-level, no database |
-| `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres, and exercises code that needs real Postgres but has no route yet (`GameHistory<TState>`) — see [testing.md](testing.md) |
+| `integration-tests/Ahlcg.ApiService.IntegrationTests` | xUnit + Aspire.Hosting.Testing, drives the real API over real HTTP against real Postgres, and exercises code that needs real Postgres but has no route yet (`GameHistory<TState>`) — see [testing.md](../practice/testing.md) |
 
 ## Startup
 
@@ -26,7 +26,7 @@
 
 - The connection string name is `ahlcg`, supplied by Aspire.
 - OpenAPI, Scalar, and the developer exception page are **Development-only**. A missing endpoint in a deployed environment is usually this, not a bug.
-- `Ahlcg.AppHost` registers `apiservice` with `launchProfileName: "https"` so it exposes the HTTPS endpoint in addition to the default `http` one. This exists for the integration tests: the auth cookie is `Secure`, and .NET's `CookieContainer` will not send a `Secure` cookie over plain HTTP. See [testing.md](testing.md).
+- `Ahlcg.AppHost` registers `apiservice` with `launchProfileName: "https"` so it exposes the HTTPS endpoint in addition to the default `http` one. This exists for the integration tests: the auth cookie is `Secure`, and .NET's `CookieContainer` will not send a `Secure` cookie over plain HTTP. See [testing.md](../practice/testing.md).
 
 ## Endpoints
 

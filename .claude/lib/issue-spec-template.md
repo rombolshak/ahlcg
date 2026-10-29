@@ -31,7 +31,7 @@ at the plan gate — but concrete enough that two people would build the same th
 ## Conventions that apply
 
 Only the non-obvious ones relevant to this issue, with the doc that covers them.
-Do not restate all of docs/frontend-conventions.md — link it.
+Do not restate all of docs/frontend/frontend-conventions.md — link it.
 
 ## Test plan
 

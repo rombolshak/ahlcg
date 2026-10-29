@@ -37,7 +37,7 @@ Compare the diff against the approved plan.
 
 ### 3. Conventions — does it match this codebase?
 
-Check against `docs/frontend-conventions.md` and `docs/testing.md`. Read them; do not review from memory.
+Check against `docs/frontend/frontend-conventions.md` and `docs/practice/testing.md`. Read them; do not review from memory.
 
 Frontend:
 - `ChangeDetectionStrategy.OnPush` on every component
