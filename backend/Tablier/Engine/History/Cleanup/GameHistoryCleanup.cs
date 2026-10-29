@@ -9,6 +9,7 @@ public sealed record GameHistoryCleanupResult(int Games, long Steps, long Snapsh
 #pragma warning restore MA0048
 
 public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<GameHistoryCleanup> logger)
+    : IGameHistoryCleanup
 {
     public const long LockKey = 6770001;
 

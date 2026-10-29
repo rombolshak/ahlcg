@@ -30,7 +30,7 @@ public static class TablierExtensions
             .BindConfiguration(GameHistoryCleanupOptions.SectionName)
             .Validate(o => o.Interval > TimeSpan.Zero)
             .ValidateOnStart();
-        builder.Services.AddScoped<GameHistoryCleanup>();
+        builder.Services.AddScoped<IGameHistoryCleanup, GameHistoryCleanup>();
         builder.Services.AddHostedService<GameHistoryCleanupService>();
 
         builder.Services.AddProblemDetails().AddOpenApi().AddValidation();

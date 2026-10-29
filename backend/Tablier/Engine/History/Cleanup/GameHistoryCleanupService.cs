@@ -27,7 +27,7 @@ public sealed partial class GameHistoryCleanupService(
         try
         {
             await using var scope = scopes.CreateAsyncScope();
-            await scope.ServiceProvider.GetRequiredService<GameHistoryCleanup>().Run(ct);
+            await scope.ServiceProvider.GetRequiredService<IGameHistoryCleanup>().Run(ct);
         }
         catch (Exception e) when (e is not OperationCanceledException || !ct.IsCancellationRequested)
         {
