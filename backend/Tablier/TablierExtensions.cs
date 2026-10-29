@@ -7,6 +7,7 @@ using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
+using Tablier.Engine.History.Cleanup;
 using Tablier.Games;
 using Tablier.Telemetry;
 
@@ -24,6 +25,13 @@ public static class TablierExtensions
         builder.AddNpgsqlDbContext<ApplicationDbContext>(connectionName);
         builder.AddRedisClient(cacheConnectionName);
         builder.Services.AddOptions<GameHistoryCacheOptions>().BindConfiguration(GameHistoryCacheOptions.SectionName);
+        builder
+            .Services.AddOptions<GameHistoryCleanupOptions>()
+            .BindConfiguration(GameHistoryCleanupOptions.SectionName)
+            .Validate(o => o.Interval > TimeSpan.Zero)
+            .ValidateOnStart();
+        builder.Services.AddScoped<GameHistoryCleanup>();
+        builder.Services.AddHostedService<GameHistoryCleanupService>();
 
         builder.Services.AddProblemDetails().AddOpenApi().AddValidation();
 
