@@ -13,6 +13,7 @@ preserve_hierarchy: true
 # Replacing the default message drops its `[ci skip]`, which kept CI off the translation PR.
 commit_message: "i18n: %original_file_name% (%language%)"
 append_commit_message: false
+pull_request_title: "i18n: translations from Crowdin"
 
 bundles:
   - 1
