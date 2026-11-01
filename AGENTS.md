@@ -11,4 +11,4 @@ Read CONTRIBUTING.md for project overview and references.
 
 ## Feature work
 
-Feature work runs through the issue-driven workflow in [docs/practice/ai-workflow.md](docs/practice/ai-workflow.md): `/groom` → `/work` → `/ship`, with a plan-approval gate before any code is written. Issues are the spec store — the context needed to implement something belongs in the issue body, not in a chat log.
+Feature work runs through the issue-driven workflow in [docs/practice/ai-workflow.md](docs/practice/ai-workflow.md): groom the parent before decompose, then groom and work each actionable child. Codex uses `$ai-workflow <action>`; Claude Code uses `/<action>`. UI changes require approved Figma mockups before implementation planning. Work gates the layer plan, then runs wording, implementation, bounded independent review, docs sync, and `gh stack submit` per layer. Issues hold the approved spec, design references, plan, and progress; implementation never invents UI copy.

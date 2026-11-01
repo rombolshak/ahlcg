@@ -2,7 +2,7 @@
 
 Shared procedure. `/groom`, `/work`, `/ship`, and `/decompose` all reference this rather than restating it.
 
-Read `.claude/project-fields.json` for the IDs. **If that file does not exist, run `/project-bootstrap` first** — do not guess IDs, and do not silently skip the status update.
+Read the active client's project-field cache: `.claude/project-fields.json` in Claude Code or `.codex/project-fields.json` in Codex. If it is missing, run `/project-bootstrap` in Claude Code or `$ai-workflow project-bootstrap` in Codex first; do not guess IDs or silently skip the status update.
 
 ## Find the project item for an issue
 
@@ -32,11 +32,11 @@ gh project item-edit \
   --single-select-option-id <optionId>
 ```
 
-All four IDs come from `.claude/project-fields.json` plus the item lookup above.
+All four IDs come from the active client's project-field cache plus the item lookup above.
 
 ## Write the Iteration field
 
-Iteration option IDs are **not** cached in `.claude/project-fields.json` — only the field id is. Iterations are created and completed over time, so the ids must be read live:
+Iteration option IDs are **not** cached in the project-field cache — only the field id is. Iterations are created and completed over time, so the ids must be read live:
 
 ```bash
 gh api graphql -f query='
@@ -74,6 +74,6 @@ gh project item-edit \
 
 ## Failure handling
 
-- **"option not found"** or a missing field name → the board changed since bootstrap. Rerun `/project-bootstrap` and retry once.
+- **"option not found"** or a missing field name → the board changed since bootstrap. Rerun the active client's project-bootstrap action and retry once.
 - **Missing `project` scope** → tell the user to run `! gh auth refresh -s project`. Do not work around it.
 - **Any other failure** → report it plainly and carry on with the rest of the command. A failed status write should never silently pass, but it also should not abort work that already succeeded. Say clearly which state the board is in versus what you intended.

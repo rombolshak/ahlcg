@@ -20,16 +20,16 @@ Rules of thumb:
 
 ## What to ask
 
-Explore the code before asking, so the options are real ones rather than abstractions. Two to four questions, and make them the ones you genuinely cannot answer yourself:
+Explore the code before asking, so the options are real ones rather than abstractions. Start with the highest-impact unresolved decision. Ask focused questions and follow the answers through their consequences until outcome, boundaries, acceptance criteria, and tradeoffs are clear. Ask one decision at a time when the next question depends on the answer; batch only independent questions. Probe assumptions and contradictions, and recommend an option with reasons. Do not impose a fixed question count or stop after one round. Explore these dimensions as needed:
 
 - **Outcome** — what is true after this ships that is not true now? Phrase the options as observable behaviour.
 - **Boundary** — where does it stop? The adjacent thing a reasonable person would assume is included is usually the thing that is not. This answer becomes *Out of scope*, which prevents more churn than any other section.
 - **Depth** — the throwaway version or the real one? A hardcoded fixture, a working slice, or the complete feature are three different issues.
 - **Shape**, only when the code leaves a genuine fork — two designs a reader would recognise as different, each with a real consequence.
 
-Use `AskUserQuestion`. Concrete options beat open prompts: it is far easier to reject a wrong option than to write a spec from a blank page. Offer a recommendation first when you have one, and say why.
+Ask the user directly in the active client (`AskUserQuestion` in Claude Code). Concrete options beat open prompts: it is far easier to reject a wrong option than to write a spec from a blank page. Offer a recommendation first when you have one, and say why.
 
-Ask **before** writing the body or proposing a breakdown, in one round if you can. A question that arrives after the user has read a page of proposed prose has already wasted their time.
+Ask **before** writing the body or proposing a breakdown. Continue follow-up questions until material ambiguity is resolved; summarize the agreed decisions before drafting. A question that arrives after the user has read a page of proposed prose has already wasted their time.
 
 ## What to do with the answers
 

@@ -44,6 +44,11 @@ What a reasonable person might assume is included but is not — with the issue
 number that covers it, if one exists. This section prevents scope creep more
 reliably than any other part of the template.
 
+## Grooming
+
+Added by groom: approved spec date, approval provenance, and any nonblocking unknowns.
+A materially changed scope requires renewed grooming.
+
 ## Open questions
 
 Only if there are any. Things the user explicitly did not decide yet, recorded as

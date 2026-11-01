@@ -19,9 +19,9 @@ Where those facts come from depends on whether the screen exists yet, and both c
 
 **The UI does not exist yet** — the usual case when `/work` calls this, because the copy gate deliberately runs before implementation. There is no template to read, so take the layout facts from these, in this order:
 
-1. **The approved plan.** It names the component, what it sits inside, what is next to it, and what the call site will pass. That is the plan's job here, and it was approved with those facts in it.
-2. **The Figma frame, if the screen was designed.** For a new screen it usually was, and it is the only place the *real* room for the string is visible — how wide the button is, where a title wraps, how many lines the body gets. Read it rather than estimating.
-3. **The nearest comparable existing screen.** A confirm dialog is shaped like the other confirm dialogs; its template and its keys tell you what a control in that position can carry.
+1. **The approved Figma frames.** Read the real slot dimensions, states, neighbors, and relevant viewport layouts. UI work requires their approval before implementation planning; placeholder text is not selected copy.
+2. **The approved implementation plan.** Read the component ownership, key semantics, call-site parameters, and binding requirements. The plan does not choose the words.
+3. **The nearest comparable existing screen.** Use it for details the approved design leaves unspecified; label any inferred constraint as an assumption.
 
 What is available either way, built or not: the neighbouring keys in the owning component's `en.json`, the semantic siblings in the other components' files, and the standard.
 
@@ -51,6 +51,8 @@ If the user rejects the set or steers it, go back to **the same agent** with `Se
 Two rounds is usually the limit. If the third pass is still wrong, the brief was wrong: say so, fix the brief with the user, and start clean.
 
 ## 5. Write the chosen strings
+
+If the chosen wording changes approved layout or interaction, return to Figma approval before implementation. Otherwise use the approved slot; do not redesign it silently.
 
 Only after an explicit choice, and only into an `en.json` under `frontend/src/app/`:
 

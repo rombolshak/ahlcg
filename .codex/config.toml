@@ -1,0 +1,10 @@
+# Main workflow orchestrator: grooming, decomposition, and planning.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+
+[mcp_servers.aspire]
+command = "aspire"
+args = [
+    "agent",
+    "mcp",
+]

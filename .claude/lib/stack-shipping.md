@@ -1,0 +1,36 @@
+# Submit one reviewed layer
+
+Shared by both clients' ship actions and invoked after each clean work-layer review and docs sync. A standalone ship resumes this phase; it does not waive missing plan, wording, verification, review, or design approvals. In Codex the `shipper` executes this procedure for the caller, then returns; it does not spawn itself or start another layer. Return hook/code failures to the caller for the owning role instead of editing source. Claude Code executes this through its native ship command.
+
+## Check state and authorization
+
+Read the issue and approved layer record, branch, `git status --short`, and complete change set against the recorded base, including untracked files. Refuse main. Confirm verification covers the final code and review findings are resolved. Stage only this layer's reviewed files, selected copy, and synced docs. Never include unrelated changes.
+
+Honor existing permission to commit, publish, and update PR metadata. If missing, prepare the reviewed diff, proposed commit, PR title, and body, then request that permission. Do not repeat confirmation once authorized; sandbox/tool approvals still apply.
+
+## Commit with hooks
+
+Use `area: what changed`, a lowercase imperative subject without a trailing period. Area is free-form, not conventional commits. Preserve session attribution requirements. Never use `--no-verify` or `npm run shove`. Fix hook failures through the owning phase and rerun affected checks and review before publishing changed code. For Windows command-line length failures, stage smaller groups and make descriptive commits within the same layer; do not bypass checks.
+
+## Register and submit the stack
+
+Inspect `gh stack --help`, `gh stack init --help`, `gh stack add --help`, `gh stack submit --help`, and `gh stack view` to establish the installed extension's behavior and current membership. Confirm the branches were registered when created by work. If resuming an unregistered first branch, adopt it with init as the installed help specifies. Use add to create a missing next branch from its predecessor, not to recreate a branch that already exists. Do not reinitialize an existing stack or register unrelated branches. The first PR targets main; each later PR targets its predecessor.
+
+Run `gh stack submit --auto` for unattended submission after authorization; this is the noninteractive form of `gh stack submit` and creates new PRs as drafts by default. Preserve that draft state unless the user authorized ready-for-review publication (`--open`). It publishes and creates or updates the stack's PRs. Do not replace it with a separate `git push` / `gh pr create` workflow. Do not merge, force-push, or silently publish unrelated changes to earlier layers. If the extension is unavailable or requires an unexpected destructive operation, report the blocker and stop.
+
+Discover the actual PR for the layer branch and read its URL, head, base, title, and body. Update its metadata using `gh pr edit <number> --title <title> --body-file <temporary-file>`. Use an actual UTF-8 temp file; never embed a multiline body in shell arguments. Preserve stack navigation or other extension-managed metadata when editing the body.
+
+The title describes this layer's concrete outcome. The body contains:
+
+- What changed and why, written for a reviewer without the conversation.
+- This layer's acceptance criteria and what remains for later layers.
+- Approved Figma links when relevant.
+- Actual verification commands and results, plus review outcome and docs updates.
+- Stack position and predecessor/successor information, preserving tool-managed content.
+- `Refs #<issue>` for intermediate layers; `Closes #<issue>` only on the final layer covering the completed issue together with its predecessors.
+
+Read back the PR metadata and confirm its URL, base, head, and body are correct before reporting success. Opening the PR moves the board to Review through GitHub automation; do not duplicate that write. Iteration stays as set by work.
+
+## Record and continue
+
+Record the layer's base, branch, commit, PR URL, validation and review outcome in the issue through an authorized write. Then return to work for the next layer. If submission partially succeeds or metadata editing fails, report exactly which local commits and remote PRs exist and stop before continuing. Resume from that state rather than creating duplicate PRs.

@@ -26,7 +26,7 @@ gh issue view $1 --json parent 2>/dev/null || gh api graphql -f query='
   }' -F owner=rombolshak -F repo=ahlcg -F number=$1
 ```
 
-Read the parent's body, and its parent's, until you reach the top. Also check for existing sub-issues of `#$1` — if it already has children, it is a parent, not a task, and you probably want `/decompose` instead. Say so and stop.
+Read the parent's body, and its parent's, until you reach the top. Check existing sub-issues for inherited boundaries and overlap. Grooming applies to parents too: clarify their outcome, scope, and depth before decomposition. Do not create or restructure children here; use decompose for a new breakdown and redecompose for an existing one after the parent spec is approved.
 
 ## 2. Explore the actual code
 
@@ -68,7 +68,7 @@ Fold in the inherited context from the parent chain, and the user's answers from
 
 ## 6. Show it, then write it
 
-Show the proposed body and **wait for approval**. It is going into a permanent, human-visible record — it should not appear on GitHub unreviewed.
+Include a `## Grooming` record in the proposed body with the spec date and unresolved decisions. Blocking questions about scope, acceptance criteria, or decomposition must be resolved before Ready to dev. Show the proposed body and **wait for approval**. It is going into a permanent, human-visible record — it should not appear on GitHub unreviewed.
 
 On approval:
 
@@ -78,7 +78,7 @@ gh issue edit $1 --body-file <tmpfile>
 
 Write the body via a temp file in `$CLAUDE_JOB_DIR/tmp` (or the system temp dir) — never inline in the shell, since bodies contain backticks, quotes, and newlines that will not survive argument quoting on Windows.
 
-Then set **Status → Ready to dev** following `.claude/lib/project-status.md`.
+The approved body now contains its `## Grooming` record; do not add unreviewed decisions after writing it. An unresolved decision that changes scope, acceptance criteria, or decomposition is blocking; keep Status Proposed and return to the interview instead of marking it ready. Re-groom materially changed specs. Then set **Status → Ready to dev** following `.claude/lib/project-status.md`.
 
 If the issue's `Type` field is unset, suggest one based on its scope and depth in the tree, but ask before setting it — type drives the user's board layout.
 

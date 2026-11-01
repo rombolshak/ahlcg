@@ -1,70 +1,64 @@
 # AI-Assisted Workflow
 
-How this project is built with Claude Code. Issues are the spec store; slash commands move work through stages; you approve the plan before any code is written.
+Issues are the spec store. Codex uses `$ai-workflow <action> [argument]`; Claude Code uses `/action [argument]`. Both follow the shared work cycle in `.claude/lib/work-cycle.md` and shipping procedure in `.claude/lib/stack-shipping.md`.
 
 ## The loop
 
+Groom the parent before decomposition, then groom and work its actionable children:
+
+```text
+Codex:       $ai-workflow groom 455
+             $ai-workflow decompose 455
+             $ai-workflow groom 57
+             $ai-workflow work 57
+Claude Code: /groom 455 -> /decompose 455 -> /groom 57 -> /work 57
 ```
-/decompose 455   epic → child issues, linked as sub-issues, added to the board
-/redecompose 142 parent that ALREADY has children → audit the breakdown, fill in thin bodies
-/groom 57        thin issue → audit what it claims → implementable spec, written back to the issue body
-/work 57         issue → audit → branch → PLAN GATE → COPY GATE → implementation → verify → self-review
-/ship            commit → push → PR that closes the issue
-```
 
-`/decompose` is for a parent with no children yet; `/redecompose` is for one that already has them — most of this board, decomposed before the spec template existed. It assesses whether each child still makes sense against the current code (already done? obsolete? wrong size? missing?) before writing any bodies, and preserves existing body text and comment history rather than overwriting it. Both propose everything for approval before touching a real issue.
+Use redecompose after grooming a parent that already has children. Grooming explores real code, audits existing claims, then probes unresolved intent and consequences until the scope and criteria are clear. The approved spec and grooming record live in the issue body. Parent grooming defines the boundary; child grooming makes each implementation spec stand alone.
 
-Two supporting commands:
+## Work phases and approvals
 
-- `/verify` — run exactly what CI would run for whatever changed, and fix failures. Called automatically by `/work`; run it directly when you have edited something by hand.
-- `/sync-docs` — fix claims in `docs/` that a change made untrue.
-- `/wording` — get the words for new user-visible strings written and chosen. Called by `/work` when the plan adds any; run it directly to rewrite copy that already ships.
+1. Validate dependencies, independently audit the issue, and explore actual code.
+2. For changes to UI appearance or interaction, delegate preparation or inspection to the Codex figma-designer (Claude uses its native tools) for Figma mockups and obtain explicit approval of the relevant frames and revision. Do this before implementation planning. Placeholder copy is provisional. Internal refactors with no UI change state why this gate is skipped.
+3. Present a concrete implementation plan, split into smaller reviewable layers where practical. Include files, criteria coverage, tests, and copy semantics and constraints, but no proposed UI wording. Wait for approval and establish publication authorization.
+4. For each layer, run wording for all new or changed user-visible copy. The wordsmith proposes; the human chooses; the caller writes English resources and translator notes before implementation.
+5. The implementer receives the complete approved plan, current layer, issue criteria, approved mockups, and prepared resource manifest. It binds keys and writes code; it never authors or changes copy. Missing or ill-fitting copy returns to wording.
+6. Verify and independently review requirements, plan/design adherence, code quality and conventions, and security. Review the full layer against its recorded base, including staged, unstaged, and untracked files. Allow two fix passes after the initial review; unresolved defects then go to the human. No shipping with open defects.
+7. After clean review, the Codex docs-sync agent updates affected docs; the caller checks the resulting claims. Claude uses its native sync-docs command.
+8. Delegate one layer to the Codex shipper with publication authorization and verification/review evidence (Claude uses its native ship command). Commit with hooks, submit using `gh stack submit`, update and verify this layer's PR title/body, and record progress. Only then branch and implement the next approved layer. Later PRs target their predecessor. Intermediate PRs reference the issue; only the final layer closes it.
 
-One setup command:
+Record approved designs, plan, selected copy, base commits, layer progress, and PR URLs in the issue through authorized writes so work can resume without chat history. Changed design or scope returns to the relevant approval gate. Existing authorization persists; tool/sandbox permissions still apply. No automatic merges or hook bypasses.
 
-- `/project-bootstrap` — resolve the GitHub Project's field and option IDs into `.claude/project-fields.json`. Run once, and again whenever you add or rename a board field.
+## Supporting actions and configuration
 
-## Why it is shaped this way
+- `wording`: choose copy independently; load the copy standard on every run. English only.
+- `verify`: derive applicable checks from the live CI workflows; distinguish local results from hosted checks.
+- `sync-docs`: fix false claims and directly affected omissions. Work calls this after clean review for every layer.
+- `ship`: resume submission of an already approved, verified, reviewed layer; work calls it automatically when publication is authorized.
+- `project-bootstrap`: resolve project fields into `.codex/project-fields.json` or `.claude/project-fields.json`. Re-run after field changes.
 
-**Issues hold the spec.** Everything an implementer needs lives in the issue body, folded down from its parents. Nothing important lives in a chat log. The test of a groomed issue is that someone with no memory of the conversation that created it can implement it correctly.
+Codex action references live in `.agents/skills/ai-workflow/`, and custom agents in `.codex/agents/`. Claude commands and agents live in `.claude/commands/` and `.claude/agents/`. Codex delegates to issue-auditor, figma-designer, wordsmith, implementer, reviewer, docs-sync, and shipper; every report is awaited. The main conversation owns grooming, decomposition, planning, approval gates, fix budgets, and continuation. Claude retains its existing agent roles, native commands, and frontmatter models. Conventions live in the relevant docs, not duplicated agent checklists.
 
-**Commands ask what you meant; they do not guess.** `/groom`, `/decompose`, and `/redecompose` explore the code first, then interview you about outcome, boundary, and depth before writing anything — because most issues here are a title and an empty body, and a title records that you had a thought, not what it was. The answers go into the issue body, so the question is asked once rather than re-guessed by everything downstream. See `.claude/lib/intent-interview.md`.
+Codex safeguards in `.codex/rules/project.rules` block dangerous command forms and prompt for outward writes when trusted. They supplement sandbox and runtime approval rules. Claude's command allowlist remains client-specific. Neither client may bypass hooks with `--no-verify` or use `npm run shove`.
 
-**Conventions live in `docs/`, and only in `docs/`.** The `implementer` and `reviewer` agents are told which doc governs their change and required to read it; they do not carry their own copy of the rules. A checklist pasted into a prompt goes stale silently and then two sources disagree with no way to tell which is current. If a rule changes, it changes in one file.
+## Codex model routing
 
-**The issue body is checked before it is trusted.** Bodies are written once and then rot — a spec groomed two months ago names files that have been renamed and services that have been deleted, and it reads exactly as confidently as it did the day it was written. So `/groom` and `/work` both run the read-only `issue-auditor` agent first: it extracts every checkable claim in the body, verifies it against the current code, and reports what is stale, wrong, or unverifiable. It never edits anything. `/work` then plans against reality and tells you where the body was wrong; it stops only when the acceptance criteria themselves cannot be built as written. Sonnet does this, because checking a claim against a grep is mechanical, and running it in a subagent keeps the search output out of the planning context.
+The project default in `.codex/config.toml` is the main orchestrator model. Each role pins its own model and reasoning effort in `.codex/agents/<role>.toml`:
 
-**Copy is chosen, not produced.** A string a user reads is a design decision, and until `/wording` existed it was made silently in the middle of a diff — one plausible sentence, never compared against an alternative, approved because the rest of the change was fine. So `/work` stops a second time whenever the plan adds strings: the `wordsmith` agent proposes several genuinely different wordings against `docs/practice/copy/voice-and-tone.md`, you pick, and only then is the implementer handed anything. It runs before implementation on purpose — copy judged next to a working screen gets waved through.
+| Role | Model | Effort |
+| --- | --- | --- |
+| Main: groom, decompose, plan, coordinate | `gpt-6-astra` | `medium` |
+| figma-designer | `gpt-6.1-terra` | `medium` |
+| issue-auditor | `gpt-6-luna` | `high` |
+| wordsmith | `gpt-6-astra` | `medium` |
+| implementer | `gpt-6.1-sol` | `medium` |
+| reviewer | `gpt-6.1-sol` | `high` |
+| docs-sync | `gpt-6.1-sol` | `medium` |
+| shipper | `gpt-6-luna` | `low` |
 
-**One approval gate, at the plan.** `/work` explores, then stops and shows you a plan. Nothing is written until you approve. Reviewing an approach costs a minute; reviewing a wrong 400-line diff costs an afternoon.
+Project config applies in trusted repositories; an explicit session/CLI model selection can override the main default. Applying a file does not change an already-running conversation's model. Start a new session or select Astra/medium for main orchestration when needed. Model-specific delegation uses fresh context and complete phase inputs; if a configured role/model is unavailable, report the blocker rather than silently falling back. Agent instructions limit their responsibilities; all inherit the parent's actual permissions and available tools.
 
-**Green here means green in CI.** `/verify` mirrors the `dorny/paths-filter` split in `.github/workflows/ci.yml`, so it runs the frontend suite only when frontend files changed, and the same commands CI runs.
-
-**Review is independent.** The `reviewer` agent reads the diff with fresh context and reports against three separate axes — acceptance criteria, the approved plan, and conventions — without the ability to edit. A reviewer that can quietly fix things is a reviewer you cannot trust to tell you everything.
-
-## Model routing
-
-Cheap models do the mechanical work; Opus is spent where judgment is.
-
-| Stage | Model |
-| --- | --- |
-| `/decompose`, `/redecompose` | opus |
-| `/groom` | sonnet |
-| `/work` — planning | opus |
-| `/work` — implementation | sonnet (`implementer` agent) |
-| `/verify` | sonnet |
-| `/ship` | haiku |
-| `/sync-docs` | sonnet |
-| `/wording` | opus |
-| `issue-auditor` agent | sonnet |
-| `reviewer` agent | sonnet |
-| `wordsmith` agent | opus |
-
-`/work` runs on Opus, plans, and hands the **approved plan file** to the Sonnet `implementer` — the plan file is the handoff artifact, so the decisions survive the model switch.
-
-Each is a single `model:` line in the command or agent frontmatter. If a stage disappoints, change that one word. `/groom` on Sonnet is the most likely candidate for promotion to `opus`.
-
-**There is no temperature dial.** Agent frontmatter takes `name`, `description`, `tools` and `model` — nothing that turns creativity up. `wordsmith` needs variance more than any other stage here, so the divergence is written into its prompt as an explicit standard (variants must differ in *approach*, one must reach past the safe centre) rather than bought with a sampling parameter. If a future Claude Code exposes one, that prompt section is where it belongs.
+The agent definitions remain in the host's conventional flat discovery directory; the six-entry code-folder guideline does not reorganize this configuration registry.
 
 ## Issue types
 
@@ -104,21 +98,21 @@ They are independent: nesting an issue does not order it, and blocking it does n
 
 `/work` checks `blocked_by` before it starts and stops if anything there is still open, naming it. That is a stop, not a refusal — say the blocker is stale and it will offer to remove the edge rather than route around it silently.
 
-The procedure and the API shape are in `.claude/lib/issue-dependencies.md`.
+The procedure and API shape are in `.claude/lib/issue-dependencies.md`.
 
 ## Board status
 
 Commands move cards so the board stays true without dragging:
 
-| Command | Status becomes |
+| Action | Status becomes |
 | --- | --- |
-| `/decompose` (new children) | Proposed |
+| `/decompose` (new children after parent grooming) | Proposed |
 | `/redecompose` | Ready to dev if the body is now a real spec, else Proposed |
 | `/groom` | Ready to dev |
-| `/work` | In progress |
-| `/ship` | Review |
+| `/work` after plan approval | In progress |
+| work submits each layer (or standalone ship) | Review, through PR automation |
 
-Field IDs come from `.claude/project-fields.json`; the shared procedure is `.claude/lib/project-status.md`.
+Field IDs come from `.claude/project-fields.json` in Claude Code and `.codex/project-fields.json` in Codex; the shared procedure is `.claude/lib/project-status.md`.
 
 ## Files
 
@@ -128,9 +122,11 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 ├── agents/
 │   ├── issue-auditor.md read-only check of an issue body against the code (sonnet)
 │   ├── implementer.md executes an approved plan (sonnet)
-│   ├── reviewer.md    read-only three-axis review (sonnet)
+│   ├── reviewer.md    read-only requirements, design, quality, and security review (sonnet)
 │   └── wordsmith.md   read-only copy variants for new strings (opus)
 ├── lib/
+│   ├── work-cycle.md          shared per-layer work procedure
+│   ├── stack-shipping.md      shared stack submission procedure
 │   ├── project-status.md      shared board-mutation procedure
 │   ├── issue-dependencies.md  reading and writing Blocked by / Blocking
 │   ├── intent-interview.md    how commands ask what an issue is for
@@ -140,6 +136,14 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 .github/ISSUE_TEMPLATE/ task.yml, epic.yml — same shape the commands read
 ```
 
+Codex equivalents:
+
+```
+.agents/skills/ai-workflow/     workflow entry point and action references
+.codex/agents/                  seven model-pinned workflow roles
+.codex/project-fields.json     generated by the project-bootstrap action
+```
+
 ## Setup
 
 1. `gh` CLI installed and authenticated **with project scope**:
@@ -147,12 +151,13 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
    gh auth refresh -s project
    ```
    Without it, every board write fails.
-2. Run `/project-bootstrap` once to generate `.claude/project-fields.json`.
+2. Ensure the `gh stack` extension is installed and its help is available, and connect Figma for UI work.
+3. Run `project-bootstrap` once for each client: `/project-bootstrap` in Claude Code or `$ai-workflow project-bootstrap` in Codex. This generates that client's project-field cache.
 
 ## Working with it
 
 - **A one-line idea is a fine issue.** Create it with a title, run `/groom` later — grooming will ask you what you meant rather than inferring it. Blank issues are deliberately enabled.
-- **Answer the interview properly; it is the cheapest step here.** Four questions before a breakdown costs a minute. The same misunderstanding found after the code is written costs the breakdown, the specs, and the diff.
+- **Answer the interview properly; it is the cheapest step here.** Clarifying the outcome and boundaries before a breakdown saves rework. The same misunderstanding found after the code is written costs the breakdown, the specs, and the diff.
 - **If `/work` says an issue is too thin, believe it.** It is refusing to invent requirements — a plausible guess written as if it were the spec is the most expensive failure this workflow can produce.
 - **When the audit says the body is stale, the body is still stale on GitHub.** `/work` plans around it and tells you; it does not rewrite the issue, because that is your record. If the drift was substantial, re-run `/groom` afterwards so the next reader is not misled by the same text.
 - **Read the reviewer's findings, especially scope creep.** Unrequested changes are flagged even when they are improvements, because you approved a specific scope.
@@ -161,5 +166,5 @@ Field IDs come from `.claude/project-fields.json`; the shared procedure is `.cla
 ## What is deliberately not here
 
 - **No GitHub Actions `@claude`.** Work happens in local sessions.
-- **No background delegation.** Every subagent — `issue-auditor`, `implementer`, `reviewer`, `wordsmith` — is synchronous, inside the command that invoked it.
+- **No fire-and-forget delegation.** Each custom agent — `issue-auditor`, `implementer`, `reviewer`, `wordsmith` — is awaited by the workflow before it continues.
 - **No enforcement hooks.** The husky hooks and CI already gate quality. Extra hooks are worth adding once real recurring mistakes are observed — building them pre-emptively is guessing.
