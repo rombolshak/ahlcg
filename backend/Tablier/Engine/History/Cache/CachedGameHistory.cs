@@ -86,6 +86,26 @@ public sealed partial class CachedGameHistory<TState>(
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         inner.LoadAt(gameId, version, ct);
 
+    public async Task<StoredState<TState>?> Restore(
+        Guid gameId,
+        StoredState<TState> previous,
+        int targetVersion,
+        CancellationToken ct
+    )
+    {
+        var restored = await inner.Restore(gameId, previous, targetVersion, ct);
+        if (restored is not null)
+            await WriteGuarded(gameId, restored);
+        else
+        {
+            var current = await inner.LoadCurrent(gameId, ct);
+            if (current is not null && await WriteGuarded(gameId, current))
+                LogRefreshedAfterRefusedRestore(logger, gameId, current.Version);
+        }
+
+        return restored;
+    }
+
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)
@@ -111,6 +131,12 @@ public sealed partial class CachedGameHistory<TState>(
         "Append for game {GameId} refused; cached state refreshed from the store to version {Version}"
     )]
     private static partial void LogRefreshedAfterRefusedAppend(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(
+        LogLevel.Debug,
+        "Restore for game {GameId} refused; cached state refreshed from the store to version {Version}"
+    )]
+    private static partial void LogRefreshedAfterRefusedRestore(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,

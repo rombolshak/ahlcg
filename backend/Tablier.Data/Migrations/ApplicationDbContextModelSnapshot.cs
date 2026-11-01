@@ -17,7 +17,7 @@ namespace Tablier.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -328,6 +328,9 @@ namespace Tablier.Data.Migrations
                     b.Property<string>("Patch")
                         .IsRequired()
                         .HasColumnType("jsonb");
+
+                    b.Property<int?>("RestoredVersion")
+                        .HasColumnType("integer");
 
                     b.HasKey("GameId", "Version");
 

@@ -53,10 +53,19 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct
+    ) => await AppendCore(gameId, previous, result, choice, restoredVersion: null, ct);
+
+    private async Task<StoredState<TState>?> AppendCore(
+        Guid gameId,
+        StoredState<TState> previous,
+        StepResult<TState> result,
+        PlayerChoice? choice,
+        int? restoredVersion,
+        CancellationToken ct
     )
     {
         var version = previous.Version + 1;
-        var writesSnapshot = result.Checkpoint is not null || result.IsBaseline;
+        var writesSnapshot = result.Checkpoint is not null || result.IsBaseline || result.IsIrreversible;
         var appended = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
@@ -87,6 +96,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
                         Checkpoint = result.Checkpoint,
                         IsIrreversible = result.IsIrreversible,
                         IsBaseline = result.IsBaseline,
+                        RestoredVersion = restoredVersion,
                     }
                 );
                 if (writesSnapshot)
@@ -171,25 +181,143 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     public async Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct)
     {
+        var loaded = await LoadHistoryAt(gameId, version, ct);
+        return loaded is null ? null : Reconstruct(gameId, loaded.Value.History);
+    }
+
+    public async Task<StoredState<TState>?> Restore(
+        Guid gameId,
+        StoredState<TState> previous,
+        int targetVersion,
+        CancellationToken ct
+    )
+    {
+        if (targetVersion >= previous.Version)
+        {
+            LogRestoreRefusedTargetNotBeforeHead(logger, gameId, targetVersion, previous.Version);
+            return null;
+        }
+
+        var loaded = await LoadHistoryAt(gameId, targetVersion, ct);
+        if (loaded is null)
+            return null;
+
+        var target = Reconstruct(gameId, loaded.Value.History);
+        return await AppendCore(
+            gameId,
+            previous,
+            new StepResult<TState>(target.State, loaded.Value.Checkpoint),
+            choice: null,
+            targetVersion,
+            ct
+        );
+    }
+
+    private async Task<(LoadedHistory History, string? Checkpoint)?> LoadHistoryAt(
+        Guid gameId,
+        int version,
+        CancellationToken ct
+    )
+    {
+        if (version < 0)
+        {
+            LogLoadAtRefusedInvalidVersion(logger, gameId, version);
+            return null;
+        }
+
+        var loaded = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync(
+                    IsolationLevel.RepeatableRead,
+                    ct
+                );
+                return await ReadHistoryAt(gameId, version, ct);
+            });
+        if (loaded.Barrier is not null)
+        {
+            LogLoadAtRefusedBehindBarrier(logger, gameId, version, loaded.Barrier.Value);
+            return null;
+        }
+        if (loaded.History is null)
+        {
+            LogLoadAtRefusal(gameId, version, loaded.Reason);
+            return null;
+        }
+        return (loaded.History, loaded.Checkpoint);
+    }
+
+    private async Task<HistoryRead> ReadHistoryAt(Guid gameId, int version, CancellationToken ct)
+    {
         var barrier = await db
             .GameSteps.Where(s => s.GameId == gameId && s.Version > version && (s.IsIrreversible || s.IsBaseline))
             .MinAsync(s => (int?)s.Version, ct);
         if (barrier is not null)
-        {
-            LogLoadAtRefusedBehindBarrier(logger, gameId, version, barrier.Value);
-            return null;
-        }
-
+            return new HistoryRead(History: null, Checkpoint: null, barrier, LoadRefusal.None);
         var snapshot = await db
             .GameSnapshots.AsNoTracking()
-            .SingleOrDefaultAsync(s => s.GameId == gameId && s.Version == version, ct);
+            .Where(s => s.GameId == gameId && s.Version <= version)
+            .OrderByDescending(s => s.Version)
+            .FirstOrDefaultAsync(ct);
         if (snapshot is null)
-        {
-            LogLoadAtRefusedNoSnapshot(logger, gameId, version);
-            return null;
-        }
+            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.NoSnapshot);
+        var steps = await db
+            .GameSteps.AsNoTracking()
+            .Where(s => s.GameId == gameId && s.Version > snapshot.Version && s.Version <= version)
+            .OrderBy(s => s.Version)
+            .ToListAsync(ct);
+        var target =
+            version == 0
+                ? null
+                : await db
+                    .GameSteps.AsNoTracking()
+                    .SingleOrDefaultAsync(s => s.GameId == gameId && s.Version == version, ct);
+        if (version != 0 && target is null)
+            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.MissingVersion);
+        if (
+            steps.Count != version - snapshot.Version
+            || steps.Where((s, i) => s.Version != snapshot.Version + i + 1).Any()
+        )
+            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.Gap);
+        return new HistoryRead(new LoadedHistory(snapshot, steps), target?.Checkpoint, Barrier: null, LoadRefusal.None);
+    }
 
-        return new StoredState<TState>(version, Deserialize(snapshot.State));
+    private void LogLoadAtRefusal(Guid gameId, int version, LoadRefusal reason)
+    {
+        switch (reason)
+        {
+            case LoadRefusal.NoSnapshot:
+                LogLoadAtRefusedNoSnapshot(logger, gameId, version);
+                break;
+            case LoadRefusal.MissingVersion:
+                LogLoadAtRefusedMissingVersion(logger, gameId, version);
+                break;
+            case LoadRefusal.Gap:
+                LogLoadAtRefusedGap(logger, gameId, version);
+                break;
+        }
+    }
+
+    private static StoredState<TState> Reconstruct(Guid gameId, LoadedHistory history)
+    {
+        var node = history.Snapshot.State.Deserialize<JsonNode>();
+        foreach (var step in history.Steps)
+        {
+            var result = step.Patch.Deserialize<JsonPatch>()!.Apply(node);
+            if (!result.IsSuccess)
+                throw new InvalidOperationException(
+                    string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}"
+                    )
+                );
+            node = result.Result;
+        }
+        return new StoredState<TState>(
+            history.Steps.Count == 0 ? history.Snapshot.Version : history.Steps[^1].Version,
+            Deserialize(node)
+        );
     }
 
     private async Task<bool> TrySave(CancellationToken ct)
@@ -236,6 +364,16 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     private sealed record LoadedHistory(GameSnapshot Snapshot, List<GameStep> Steps);
 
+    private sealed record HistoryRead(LoadedHistory? History, string? Checkpoint, int? Barrier, LoadRefusal Reason);
+
+    private enum LoadRefusal
+    {
+        None,
+        NoSnapshot,
+        MissingVersion,
+        Gap,
+    }
+
     [LoggerMessage(LogLevel.Information, "History of game {GameId} begun")]
     private static partial void LogHistoryBegun(ILogger logger, Guid gameId);
 
@@ -272,6 +410,26 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     )]
     private static partial void LogLoadAtRefusedBehindBarrier(ILogger logger, Guid gameId, int version, int barrier);
 
-    [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: no snapshot at version {Version}")]
+    [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: no snapshot at or before version {Version}")]
     private static partial void LogLoadAtRefusedNoSnapshot(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: version {Version} does not exist")]
+    private static partial void LogLoadAtRefusedMissingVersion(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: patch chain to version {Version} has a gap")]
+    private static partial void LogLoadAtRefusedGap(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: version {Version} is negative")]
+    private static partial void LogLoadAtRefusedInvalidVersion(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(
+        LogLevel.Warning,
+        "Restore refused for game {GameId}: target {Version} is not before previous version {Head}"
+    )]
+    private static partial void LogRestoreRefusedTargetNotBeforeHead(
+        ILogger logger,
+        Guid gameId,
+        int version,
+        int head
+    );
 }
