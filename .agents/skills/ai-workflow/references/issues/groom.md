@@ -1,0 +1,83 @@
+
+Turn issue **#$1** into a spec someone could implement without any of the context in your head.
+
+Many issues in this repo start as a title and an empty body. Grooming is what makes "the issue contains everything needed to implement it" actually true.
+
+## 1. Gather context
+
+```bash
+gh issue view $1 --json number,title,body,state,url
+```
+
+Then walk **up** the tree — a task inherits its epic's context, and that context should end up in the child rather than requiring a reader to climb the tree:
+
+```bash
+gh issue view $1 --json parent 2>/dev/null || gh api graphql -f query='
+  query($owner:String!,$repo:String!,$number:Int!){
+    repository(owner:$owner,name:$repo){
+      issue(number:$number){ parent { number title body } }
+    }
+  }' -F owner=rombolshak -F repo=ahlcg -F number=$1
+```
+
+Read the parent's body, and its parent's, until you reach the top. Check existing sub-issues for inherited boundaries and overlap. Grooming applies to parents too: clarify their outcome, scope, and depth before decomposition. Do not create or restructure children here; use decompose for a new breakdown and redecompose for an existing one after the parent spec is approved.
+
+## 2. Explore the actual code
+
+This is the step that makes the difference between a useful spec and a plausible-sounding one.
+
+- `docs/README.md` — routing table; read the doc your issue maps to.
+- `docs/architecture.md` — **what actually exists**; its status table is the authority. Never write criteria that assume something it lists as missing.
+- Find and read the real files this would touch. Read a neighbouring implementation of the same kind.
+- `docs/glossary.md` for any card-game term you are unsure of. Getting a rules term wrong makes the whole spec wrong.
+
+Also read the issue's **dependencies** — what blocks it, and what it blocks — per `.claude/lib/issue-dependencies.md`. If it is blocked by something still open, say so now: grooming it is fine, but the user should know it is not startable.
+
+## 3. Audit what the body already claims
+
+Skip this only if the body is genuinely empty — there is nothing to check. Otherwise, whatever text is already there is the thing most likely to mislead you: it was written against an older codebase, and re-grooming around a stale premise produces a spec that reads well and cannot be built.
+
+Delegate to the configured Codex `issue-auditor` agent with the issue number, full body, and parent context; wait for its report.
+
+Use its findings two ways:
+
+- **Correct them in the spec you write.** A claim it marked `STALE` or `WRONG` must not survive into the new body unchanged.
+- **Turn the `UNVERIFIABLE` ones into interview questions.** A claim nothing in the repo confirms or denies is usually a claim about intent, and the user is the only source for it.
+
+Report the findings to the user when you show the proposed body for approval, so they can see what changed and why.
+
+## 4. Ask what it is for
+
+Follow `.claude/lib/intent-interview.md`.
+
+This is the step that separates a spec from a plausible-sounding paraphrase of the title. You have just read the code, so you can now ask questions the user could not have answered in the abstract — which is exactly why this comes after exploration and not before.
+
+Do not skip it because the title seems self-explanatory. Titles always seem self-explanatory to the person who wrote them.
+
+## 5. Write the spec
+
+Follow `.claude/lib/issue-spec-template.md` exactly.
+
+Fold in the inherited context from the parent chain, and the user's answers from the previous step, so the issue stands alone.
+
+## 6. Show it, then write it
+
+Include a `## Grooming` record in the proposed body with the spec date and unresolved decisions. Blocking questions about scope, acceptance criteria, or decomposition must be resolved before Ready to dev. Show the proposed body and **wait for approval**. It is going into a permanent, human-visible record — it should not appear on GitHub unreviewed.
+
+On approval:
+
+```bash
+gh issue edit $1 --body-file <tmpfile>
+```
+
+Write the body via a temp file in `the system temporary directory` (or the system temp dir) — never inline in the shell, since bodies contain backticks, quotes, and newlines that will not survive argument quoting on Windows.
+
+The approved body now contains its `## Grooming` record; do not add unreviewed decisions after writing it. An unresolved decision that changes scope, acceptance criteria, or decomposition is blocking; keep Status Proposed and return to the interview instead of marking it ready. Re-groom materially changed specs. Then set **Status → Ready to dev** following `.claude/lib/project-status.md`.
+
+If the issue's `Type` field is unset, suggest one based on its scope and depth in the tree, but ask before setting it — type drives the user's board layout.
+
+If grooming surfaced a real ordering constraint — this cannot start until something else lands — propose the dependency and, on approval, record it per `.claude/lib/issue-dependencies.md`. Only genuine blockers; see the rules there.
+
+## 7. Report
+
+State what you learned that was not in the original issue — separating what you found in the code, what the audit found untrue in the old body, and what the user told you. Note any dependency added or any open blocker, and anything you could not resolve. If something is still ambiguous after the interview, leave it recorded as an open question in the body rather than papering over it with a confident guess.

@@ -30,6 +30,10 @@ Check the `Type` field:
 
 If `#$1` is already an actionable type (`Task`, `Sub-task`, `Bug`) with a decent body, say so and point at `/work` instead.
 
+## Grooming prerequisite
+
+Read the parent body and its `## Grooming` record. A current, explicitly approved parent spec with no blocking open questions is required before proposing children or restructuring an existing breakdown. If that record is absent or scope changed since approval, stop and direct the user to `/groom $1` first. A plausible title or a Ready to dev status alone is not proof of grooming.
+
 ## 1. Understand the parent
 
 ```bash
@@ -64,7 +68,7 @@ Ask specifically about **boundary and depth** here — how much of this the user
 
 Good children:
 
-- **Independently implementable** — each becomes one branch, one PR. If two must land together, they are one issue.
+- **Independently implementable** — each is a coherent issue with its own acceptance criteria. Work may split that issue into reviewed layers and stacked PRs. If two children cannot be specified or verified independently, combine them into one issue.
 - **Vertically sliced where possible** — a thin end-to-end capability beats a horizontal "add all the models" layer, because a horizontal slice cannot be verified until its siblings land.
 - **Ordered**, with dependencies stated as real `Blocked by` edges. Say which must come first and why. Only genuine blockers — read the rules in `.claude/lib/issue-dependencies.md` before proposing any, and check the direction of each edge in a sentence: *"B is blocked by A."*
 - **Sized for a session.** If you cannot describe a child's acceptance criteria in a few bullets, it is still an epic — mark it as one to decompose again later rather than pretending it is a task.

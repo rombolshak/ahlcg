@@ -1,0 +1,123 @@
+# Keep project workflow safeguards when Codex requests commands outside the sandbox.
+# Project-local rules load when this repository's .codex configuration is trusted.
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Force pushes are not part of the project workflow.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "Force pushes are not part of the project workflow.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "origin", "main"],
+    decision = "forbidden",
+    justification = "Do not push directly to main; use a review branch.",
+)
+
+prefix_rule(
+    pattern = ["git", "commit", "--no-verify"],
+    decision = "forbidden",
+    justification = "Project hooks must not be bypassed.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--no-verify"],
+    decision = "forbidden",
+    justification = "Project hooks must not be bypassed.",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard resets can discard work; keep changes and recover them deliberately.",
+)
+
+prefix_rule(
+    pattern = ["npm", "run", "shove"],
+    decision = "forbidden",
+    justification = "This script bypasses project hooks.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "create"],
+    decision = "prompt",
+    justification = "Creating an issue writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "edit"],
+    decision = "prompt",
+    justification = "Editing an issue writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "close"],
+    decision = "prompt",
+    justification = "Closing an issue writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "comment"],
+    decision = "prompt",
+    justification = "Commenting on an issue writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "project", "item-add"],
+    decision = "prompt",
+    justification = "Adding a project item writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "project", "item-edit"],
+    decision = "prompt",
+    justification = "Editing a project item writes to GitHub.",
+)
+
+prefix_rule(
+    pattern = ["gh", "api", "--method"],
+    decision = "prompt",
+    justification = "This GitHub API call may write data.",
+)
+
+prefix_rule(
+    pattern = ["gh", "api", "-X"],
+    decision = "prompt",
+    justification = "This GitHub API call may write data.",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "prompt",
+    justification = "Merging a pull request is an external repository change.",
+)
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Pushing publishes the branch to the remote repository.",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "prompt",
+    justification = "Creating a pull request publishes repository content.",
+)
+
+
+prefix_rule(
+    pattern = ["gh", "stack", "submit"],
+    decision = "prompt",
+    justification = "Submitting a stack publishes branches and creates or updates pull requests.",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "edit"],
+    decision = "prompt",
+    justification = "Editing pull request metadata writes to GitHub.",
+)

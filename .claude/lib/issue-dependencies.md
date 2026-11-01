@@ -48,7 +48,7 @@ gh api --method DELETE \
 
 There is only a `blocked_by` write endpoint. To record "A blocks B", write it as "B is blocked by A".
 
-Write `--method` **before** the path, exactly as above. `.claude/settings.json` auto-allows `gh api repos/…` as a read and prompts on `gh api --method …`; putting the flag after the path smuggles a mutation past a permission rule that exists to catch it.
+Write `--method` **before** the path, exactly as above, so the mutation is explicit in both clients. Claude Code's permission allowlist is in `.claude/settings.json`; Codex uses its own command approval and sandbox settings.
 
 ## Rules
 

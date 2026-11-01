@@ -12,6 +12,10 @@ Two jobs, in this order — structure first, because there is no point writing a
 1. **Is the decomposition still right?** It was made at some point in the past, against a codebase that has since moved.
 2. **Do the surviving children have implementable bodies?** Most existing issues are a title and an empty body.
 
+## Grooming prerequisite
+
+Read the parent body and its `## Grooming` record. A current, explicitly approved parent spec with no blocking open questions is required before proposing children or restructuring an existing breakdown. If that record is absent or scope changed since approval, stop and direct the user to `/groom $1` first. A plausible title or a Ready to dev status alone is not proof of grooming.
+
 ## 1. Read the whole subtree
 
 ```bash

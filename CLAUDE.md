@@ -10,7 +10,7 @@ Read CONTRIBUTING.md for project overview and references.
 - **This is Windows. Use PowerShell (`powershell` v5 / `pwsh` v7) and the `Write`/`Edit` tools** — not `sed`, `awk`, or bash heredocs, and prefer PowerShell over Python or Node for one-off scripts. A Git Bash tool exists, which is exactly why this needs saying. Long text into a CLI always goes through a temp file and `--body-file`. See [docs/practice/workflow.md](docs/practice/workflow.md#shell).
 - **Backend code logs every decision it makes** — each refusal, state change and no-op, through `[LoggerMessage]`, ids only. See [docs/backend/backend.md](docs/backend/backend.md#logging).
 - Warnings are errors on the backend (`TreatWarningsAsErrors`). Never bypass hooks with `--no-verify`.
-- Commit messages are `area: what changed` — `ux: keyboard input manager`, `tests: migrate to vitest`. Not conventional commits; the area is free-form.
+- Commit subjects and PR titles use `area: what changed`, lowercase imperative wording, and no trailing period: `ux: add keyboard input manager`, `tests: migrate to vitest`. The area is free-form; this is not Conventional Commits.
 - **If pre-commit fails on command-line length, split the commit into smaller ones** staged by area. That is a Windows argument-length limit, not a lint failure, and never a reason for `--no-verify`.
 
 ## Feature work

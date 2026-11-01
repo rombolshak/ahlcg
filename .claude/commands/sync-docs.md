@@ -14,9 +14,11 @@ Find and fix claims in `docs/` that the current changes made false.
 If `$1` names an area or file, start there. Otherwise:
 
 ```bash
-git diff --name-only main...HEAD
+git diff --name-only <layer-base-commit>
 git status --porcelain
 ```
+
+When called by work, use its recorded layer base and include staged, unstaged, and relevant untracked files. Standalone, resolve the merge base with main if no layer base is recorded.
 
 ## 2. Find affected claims
 
@@ -49,4 +51,4 @@ Follow the documented conventions for these files:
 
 List each doc changed and the claim that had become false. If you found nothing stale, say so — that is a normal and good result, not a reason to make edits.
 
-If a change makes a doc *incomplete* rather than *wrong* (a new service with no row in the table), flag it and ask whether to add it, rather than silently expanding scope.
+If a change makes a doc *incomplete* rather than *wrong* (a new service with no row in the table), add the directly affected factual entry within the approved scope. Ask only if completing the documentation would require a new product decision or unrelated scope.

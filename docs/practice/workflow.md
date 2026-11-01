@@ -157,7 +157,7 @@ Do not bypass hooks with `--no-verify`. (`npm run shove` exists and does exactly
 
 The fix is to **split the commit into several smaller ones**, staged by area, until each is under the limit. It is not `--no-verify`: that skips the checks the size problem prevented from running, which is the opposite of what the situation calls for.
 
-Commit messages follow `area: what changed` (`ux: keyboard input manager`, `tests: migrate to vitest`). Nothing enforces this: `@commitlint/config-conventional` is configured in `frontend/package.json`, but `frontend/.husky/` contains only `pre-commit` and `pre-push` — there is no `commit-msg` hook, so commitlint never runs.
+Commit subjects and PR titles use `area: what changed`, lowercase imperative wording, and no trailing period (`ux: add keyboard input manager`, `tests: migrate to vitest`). The area is free-form; this is not Conventional Commits. See `.claude/lib/stack-shipping.md` for submission and final PR title verification. Commit subjects have no hook enforcement: `@commitlint/config-conventional` is configured in `frontend/package.json`, but `frontend/.husky/` contains only `pre-commit` and `pre-push` — there is no `commit-msg` hook, so commitlint never runs.
 
 ## CI
 

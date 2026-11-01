@@ -22,7 +22,7 @@ The backend implements **authentication and game records** — creating a game, 
 | Call an endpoint | `/openapi/v1.json` (or `/scalar/v1`) — then [api.md](backend/api.md) for the SignalR hub and what the spec omits |
 | Write or debug a test, or decide which tier a new test belongs in | [testing.md](practice/testing.md) |
 | Run things, ports, CI, git hooks | [workflow.md](practice/workflow.md) |
-| Build a feature with Claude Code (issues, commands, plan gate) | [ai-workflow.md](practice/ai-workflow.md) |
+| Build a feature with Codex or Claude Code (issues, skills/commands, plan gate) | [ai-workflow.md](practice/ai-workflow.md) |
 | Auth model, cookies, secrets, production hardening | [security.md](backend/security.md) |
 | Unfamiliar card-game term | [glossary.md](glossary.md) |
 

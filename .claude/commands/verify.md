@@ -1,5 +1,5 @@
 ---
-description: Run exactly what CI would run for whatever changed, and fix what fails.
+description: Run the applicable CI checks for the complete layer and fix failures.
 allowed-tools: Bash, Read, Edit, Glob, Grep
 model: sonnet
 ---
@@ -9,23 +9,28 @@ Run the checks CI will run, scoped to what actually changed, and fix failures.
 ## 1. Scope
 
 ```bash
-git diff --name-only main...HEAD
+git diff --name-only <layer-base-commit>
+git ls-files --others --exclude-standard
 git status --porcelain
 ```
 
 Include uncommitted work — the point is to catch problems before committing, not after.
 
-Match the same split `.github/workflows/ci.yml` uses via `dorny/paths-filter`, so a green run here means a green run there:
+Use the recorded layer base; standalone, resolve the merge base with main if no layer base exists. Include staged, unstaged, committed layer changes and relevant untracked files.
 
-| Changed | Run |
+Read `.github/workflows/ci.yml` and its called workflows each time, rather than relying on a copied path-filter table. Match their current filters and exclusions. Current local checks include:
+
+| Selected CI area | Local checks |
 | --- | --- |
-| `frontend/src/**` or `frontend/*.json` | `cd frontend && npm run ci:all` |
-| `frontend/src/**/i18n/**` or `frontend/i18n-languages.json` | `cd frontend && npm run lint:i18n` |
-| `backend/**` | `cd backend && dotnet build && dotnet test` |
+| Frontend | In `frontend`: `npm run ci:all` and `npm run test:component` |
+| i18n | In `frontend`: `npm run lint:i18n` |
+| Backend | In `backend`: `dotnet build` then `dotnet test` |
+| End-to-end | In `e2e`: `npm test`, with the prerequisites from `.github/workflows/e2e.yml` and `docs/practice/testing.md` |
+| Chromatic | In `frontend`: `npm run build-storybook`; hosted visual approval remains a CI result |
 
-Nothing relevant changed → say so and stop. Do not run the full suite "to be safe"; the frontend suite is slow and that habit makes the command annoying enough to skip.
+Workflow changes themselves can select checks. Read the live scripts before running them. Use the Aspire skill if managing the AppHost or its prerequisites. Do not claim local build/test commands reproduce hosted coverage, Sonar, Coveralls, or Chromatic results; report those separately. Do not publish artifacts or use CI secrets just to simulate a hosted job.
 
-`npm run ci:all` is `lint:all` + `test:ci` — ESLint, Stylelint, cspell, Prettier check, `tsc` over both app and spec tsconfigs, then Vitest. On the backend, `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` is set everywhere, so a warning is a failure.
+Nothing relevant changed: report that and stop. Do not run the application suites for workflow-documentation-only changes. Backend warnings are errors. Report unavailable prerequisites or skipped checks explicitly; incomplete validation is not green.
 
 ## 2. Fix
 
