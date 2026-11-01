@@ -12,7 +12,9 @@ An issue and its project card are different objects; field writes target the car
 gh project item-list <projectNumber> --owner <owner> --format json --limit 500
 ```
 
-Find the entry whose `content.number` matches the issue number, and take its `id`.
+Check the response's `totalCount` against the returned `items` count. If fewer items were returned, increase `--limit` to at least `totalCount` and retry, or paginate `ProjectV2.items` with `pageInfo`. Do not infer an absent card from a truncated list; if a complete lookup fails, stop that field update and report it.
+
+Find the entry whose content repository and `content.number` match this repository and issue, and take its `id`. Issue numbers alone are not unique across project repositories.
 
 If the issue has no card yet (it is not on the board), add it first:
 

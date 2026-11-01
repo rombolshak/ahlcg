@@ -1,19 +1,3 @@
-### breadcrumbs
-Breadcrumbs helps users to navigate
+# Shared instructions
 
-[breadcrumbs docs](https://daisyui.com/components/breadcrumbs/)
-
-#### Class names
-- component: `breadcrumbs`
-
-#### Syntax
-```html
-<div class="breadcrumbs">
-  <ul><li><a>Link</a></li></ul>
-</div>
-```
-
-#### Rules
-- breadcrumbs only has one main class name
-- Can contain icons inside the links
-- If you set `max-width` or the list gets larger than the container it will scroll
+Read [.agents/skills/daisyui/components/breadcrumbs.md](../../../../.agents/skills/daisyui/components/breadcrumbs.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

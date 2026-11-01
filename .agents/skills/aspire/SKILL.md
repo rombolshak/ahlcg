@@ -46,8 +46,8 @@ the bootstrap skills (`aspire-init` / `aspireify`) or to a runtime sub-skill:
 ## Default Workflow
 
 0. **Bootstrap branch** — if **no AppHost exists** in the repo, route to
-   [`aspire-init`](../aspire-init/SKILL.md) for the skeleton drop. If an AppHost stub exists
-   but is **unwired** (no resources declared), route to [`aspireify`](../aspireify/SKILL.md).
+   `aspire-init` (not bundled here; discover it before use) for the skeleton drop. If an AppHost stub exists
+   but is **unwired** (no resources declared), route to `aspireify` (not bundled here; discover it before use).
    Only continue with the steps below once a wired AppHost is present.
 1. Confirm workspace is Aspire — identify the AppHost
 2. `aspire start` (or `aspire start --isolated` in worktrees or whenever shared local state is risky)
@@ -76,9 +76,9 @@ the bootstrap skills (`aspire-init` / `aspireify`) or to a runtime sub-skill:
 | Task | Route To |
 |------|----------|
 | Start, stop, wait, restart, rebuild | → [aspire-orchestration](aspire-orchestration/SKILL.md) |
-| Create a new Aspire project from a template (`aspire new`) | → [aspire-init](../aspire-init/SKILL.md) (in-plugin) |
-| Add Aspire to an existing repo (`aspire init`, drop skeleton) | → [aspire-init](../aspire-init/SKILL.md) (in-plugin) |
-| Wire AppHost / scaffold resource graph / add integrations after `aspire init` | → [aspireify](../aspireify/SKILL.md) (in-plugin) |
+| Create a new Aspire project from a template (`aspire new`) | → `aspire-init` if available; otherwise use `aspire new --help` / `aspire init --help` and official Aspire docs |
+| Add Aspire to an existing repo (`aspire init`, drop skeleton) | → `aspire-init` if available; otherwise use `aspire new --help` / `aspire init --help` and official Aspire docs |
+| Wire AppHost / scaffold resource graph / add integrations after `aspire init` | → `aspireify` if available; otherwise inspect APIs with `aspire docs search` and `aspire docs api search` |
 | Deploy, publish, destroy, pipeline steps | → [aspire-deployment](aspire-deployment/SKILL.md) |
 | Logs, traces, metrics, dashboard, browser logs | → [aspire-monitoring](aspire-monitoring/SKILL.md) |
 | Deployed app monitoring (Azure) | → `azure-diagnostics` skill (azure-skills plugin) |
@@ -119,6 +119,8 @@ Rebuild command, browser-logs telemetry).
 
 ## Project-Local Skill Override
 
+This is the project-local router. The override rule below applies only to a separate plugin copy; never defer this file to itself.
+
 If any of the following exist project-locally (from `aspire agent init` or Aspire
 `aspire init`), **warn the user** and **defer to the project-local copy** — repo-specific
 guidance there should not be overridden by the in-plugin sibling:
@@ -156,4 +158,4 @@ Either install method works. The `dotnet tool install` path produces a NativeAOT
 - [aspire-monitoring/references/monitoring.md](aspire-monitoring/references/monitoring.md) — App state, logs, traces, search filtering, dashboard links, and export workflows.
 - [aspire-monitoring/references/playwright-handoff.md](aspire-monitoring/references/playwright-handoff.md) — Playwright handoff after Aspire endpoint discovery.
 - [aspire-deployment/SKILL.md](aspire-deployment/SKILL.md) — Deployment and pipeline-step workflows.
-- [../aspireify/references/apphost-wiring.md](../aspireify/references/apphost-wiring.md) — C# and TypeScript AppHost API lookup and wiring patterns.
+- AppHost wiring guidance is not bundled. Discover `aspireify` before using it, or use `aspire docs search` and `aspire docs api search` for official C# / TypeScript patterns.

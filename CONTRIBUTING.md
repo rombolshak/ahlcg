@@ -7,7 +7,7 @@ Fan-made, rules-compliant digital implementation of Arkham Horror: The Card Game
 
 ## Where the project actually stands
 
-The backend implements **authentication and game records only** — creating a game, listing the ones you are a member of, and fetching the most recent. The frontend calls those three from the main menu; the game view is the active work and renders from a **hardcoded fixture** (`@testing/test-game-state`). There is no API for game *state*, no SignalR client, and no deployment pipeline. Do not write code that assumes otherwise.
+See [docs/architecture.md — What exists](docs/architecture.md#what-exists) for the current capability status, including the server-driven fixture game, the separate Arkham board, and deployment limitations.
 
 ## Documentation
 

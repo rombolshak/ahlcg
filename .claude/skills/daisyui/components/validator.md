@@ -1,17 +1,3 @@
-### validator
-Validator class changes the color of form elements to error or success based on input's validation rules
+# Shared instructions
 
-[validator docs](https://daisyui.com/components/validator/)
-
-#### Class names
-- component: `validator`
-- part: `validator-hint`
-
-#### Syntax
-```html
-<input type="{type}" class="input validator" required />
-<p class="validator-hint">Error message</p>
-```
-
-#### Rules
-- Use with `input`, `select`, `textarea`
+Read [.agents/skills/daisyui/components/validator.md](../../../../.agents/skills/daisyui/components/validator.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

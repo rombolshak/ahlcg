@@ -1,19 +1,3 @@
-### alert
-Alert informs users about important events
+# Shared instructions
 
-[alert docs](https://daisyui.com/components/alert/)
-
-#### Class names
-- component: `alert`
-- style: `alert-outline`, `alert-dash`, `alert-soft`
-- color: `alert-info`, `alert-success`, `alert-warning`, `alert-error`
-- direction: `alert-vertical`, `alert-horizontal`
-
-#### Syntax
-```html
-<div role="alert" class="alert {MODIFIER}">{CONTENT}</div>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of each style/color/direction class names
-- Add `sm:alert-horizontal` for responsive layouts
+Read [.agents/skills/daisyui/components/alert.md](../../../../.agents/skills/daisyui/components/alert.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

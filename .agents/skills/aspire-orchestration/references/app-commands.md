@@ -41,7 +41,7 @@ aspire init --language typescript
 repo and installs the **`aspireify`** agent skill alongside it. `aspire init` itself does not
 wire resources, projects, or integrations. Hand off the wiring step to:
 
-1. The in-plugin sibling skill: [`../../aspireify/SKILL.md`](../../aspireify/SKILL.md), or
+1. An available `aspireify` skill discovered in the active environment (not bundled in this repository), or
 2. The project-local `.agents/skills/aspireify/SKILL.md` if `aspire init` installed it
    (project-local wins — defer to it and warn the user).
 

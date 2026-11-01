@@ -1,17 +1,3 @@
-### checkbox
-Checkboxes are used to select or deselect a value
+# Shared instructions
 
-[checkbox docs](https://daisyui.com/components/checkbox/)
-
-#### Class names
-- component: `checkbox`
-- color: `checkbox-primary`, `checkbox-secondary`, `checkbox-accent`, `checkbox-neutral`, `checkbox-success`, `checkbox-warning`, `checkbox-info`, `checkbox-error`
-- size: `checkbox-xs`, `checkbox-sm`, `checkbox-md`, `checkbox-lg`, `checkbox-xl`
-
-#### Syntax
-```html
-<input type="checkbox" class="checkbox {MODIFIER}" />
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of each color/size class names
+Read [.agents/skills/daisyui/components/checkbox.md](../../../../.agents/skills/daisyui/components/checkbox.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

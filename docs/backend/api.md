@@ -28,7 +28,7 @@ Authenticated with the same session cookie as the endpoints; anonymous accounts 
 
 **Membership is the only gate.** A caller with no `GameMember` row for that game is sent `Exit(NotAMember)` and joins neither the session nor the group. A game that does not exist takes the same path, so the answer leaks nothing about whether it does.
 
-**`Exit(NotAMember)` is also sent mid-session.** `DELETE /games/{id}/members/{userId}` sends it to a removed member's live connections, dropping them from the group at the same time — membership can end while a connection is open, not only be refused at connect.
+**`Exit(NotAMember)` is also sent mid-session.** The successful removal path sends it to the removed member's live connections and drops them from groups. Cleanup can be skipped if state reconciliation fails after the membership row is deleted; see [revocation limitations](backend.md#the-step-loop).
 
 **A turned-away caller is asked to leave, not cut off.** SignalR has already completed the handshake by the time `OnConnectedAsync` runs, so `start()` *succeeds* whatever the server decides — a client cannot read "start resolved" as "I am a member". Rather than force-closing, the hub sends `Exit` and leaves the connection open; **stopping it is the client's job.** A client that ignores `Exit` stays connected to nothing: it is in no group and no session, so no game traffic reaches it.
 
@@ -52,6 +52,8 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 **`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
 
 **`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `null`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
+
+These checks use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Cache failures can also surface after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
 
 **There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
 

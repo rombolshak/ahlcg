@@ -1,6 +1,6 @@
 # Translating
 
-How a language gets from empty to shipped. This file is the brief for a **human translator**; it is also what a translation platform would be handed as project instructions if one is ever set up.
+How a language gets from empty to shipped. This file is the brief for a **human translator** working through the existing Crowdin integration.
 
 **If you are an agent working in this repo, this file is not a licence to translate.** English is still the only language written here — see the rule in [voice-and-tone.md](voice-and-tone.md#mechanics-that-constrain-the-words). Hand-translating a locale file means producing copy in a language nobody in review can read, which is how a deliberate voice turns into machine output. The process below assumes a person who speaks the target language and plays the game.
 
@@ -63,7 +63,8 @@ That adds the language for the session regardless of coverage, and it shows up i
 To see where every language stands:
 
 ```
-cd frontend && npm run lint:i18n
+cd frontend
+npm run lint:i18n
 ```
 
 which prints the per-language coverage table — one row per language, summed across every file. `missing` counts keys absent from your files, `untranslated` ones present but blank or still English, and `orphans` ones your files carry that the `en.json` beside them does not. It also runs in CI, where **orphans fail the build** (usually the sign that a key was renamed upstream), while missing and untranslated counts are reported and never fail.
@@ -119,10 +120,13 @@ The JSONL is transient and gitignored. `crowdin context status` reports coverage
 
 CI does all of this on merge, so you only need it to see the result before merging.
 
-```bash
-export CROWDIN_PROJECT_ID=932245        # the NUMERIC id, not the `ahlcg-online` slug
-export CROWDIN_PERSONAL_TOKEN=…         # never commit it; CI reads it from a repo secret
-cd frontend && npm run build-storybook && npm run i18n:screenshots && cd ..
+```powershell
+$env:CROWDIN_PROJECT_ID = '932245'      # the NUMERIC id, not the `ahlcg-online` slug
+$env:CROWDIN_PERSONAL_TOKEN = '…'       # never commit it; CI reads it from a repo secret
+cd frontend
+npm run build-storybook
+npm run i18n:screenshots
+cd ..
 npx --prefix frontend crowdin context status -f "**/en.json"
 ```
 

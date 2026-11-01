@@ -2,6 +2,8 @@
 
 Issues are the spec store. Codex uses `$ai-workflow <action> [argument]`; Claude Code uses `/action [argument]`. Both follow the shared work cycle in `.claude/lib/work-cycle.md` and shipping procedure in `.claude/lib/stack-shipping.md`.
 
+Explicit standalone requests for documentation corrections (including documentation typos) and workflow-instruction maintenance use focused checks and need no new issue or design, wording or implementation-plan gate. Product UI copy corrections still require wording. This path does not authorize application behavior changes or publication. Behavioral bug fixes follow the issue cycle, usually as one layer; omit design and wording only when no UI or copy changes trigger them.
+
 ## The loop
 
 Groom the parent before decomposition, then groom and work its actionable children:
@@ -25,9 +27,11 @@ Use redecompose after grooming a parent that already has children. Grooming expl
 5. The implementer receives the complete approved plan, current layer, issue criteria, approved mockups, and prepared resource manifest. It binds keys and writes code; it never authors or changes copy. Missing or ill-fitting copy returns to wording.
 6. Verify and independently review requirements, plan/design adherence, code quality and conventions, and security. Review the full layer against its recorded base, including staged, unstaged, and untracked files. Allow two fix passes after the initial review; unresolved defects then go to the human. No shipping with open defects.
 7. After clean review, the Codex docs-sync agent updates affected docs; the caller checks the resulting claims. Claude uses its native sync-docs command.
-8. Delegate one layer to the Codex shipper with publication authorization and verification/review evidence (Claude uses its native ship command). Commit with hooks and use `area: what changed` for both commit subjects and PR titles, with lowercase imperative wording and no trailing period. The area is free-form; this is not Conventional Commits. Submit using `gh stack submit`, then update and read back this layer's PR title/body to verify the title follows that rule, as required by `.claude/lib/stack-shipping.md`, and record progress. Only then branch and implement the next approved layer. Later PRs target their predecessor. Intermediate PRs reference the issue; only the final layer closes it.
+8. Delegate one layer to the Codex shipper with publication authorization and verification/review evidence (Claude uses its native ship command). Commit with hooks and use `area: what changed` for both commit subjects and PR titles, with lowercase imperative wording and no trailing period. The area is free-form; this is not Conventional Commits. Submit using `gh stack submit --auto --open`; every submitted PR must be Ready (`isDraft=false`). Update and read back this layer's PR title/body to verify the naming rule and readiness, as required by `.claude/lib/stack-shipping.md`, and record progress. Only then branch and implement the next approved layer. Later PRs target their predecessor. Intermediate PRs reference the issue; only the final layer closes it.
 
 Record approved designs, plan, selected copy, base commits, layer progress, and PR URLs in the issue through authorized writes so work can resume without chat history. Changed design or scope returns to the relevant approval gate. Existing authorization persists; tool/sandbox permissions still apply. No automatic merges or hook bypasses.
+
+Record pre-existing changes and isolate the layer from unrelated files; unrelated dirty files may coexist. Use a separate worktree or resolve overlapping edits with the user. Do not stash, discard or include someone else's work. If Figma is unavailable, complete independent exploration and request access or an explicit exception with an agreed reviewable alternative; do not silently waive the design gate.
 
 ## Supporting actions and configuration
 
@@ -56,7 +60,7 @@ The project default in `.codex/config.toml` is the main orchestrator model. Each
 | docs-sync | `gpt-6.1-sol` | `medium` |
 | shipper | `gpt-6-luna` | `medium` |
 
-Project config applies in trusted repositories; an explicit session/CLI model selection can override the main default. Applying a file does not change an already-running conversation's model. Start a new session or select Sol/high for main orchestration when needed. Model-specific delegation uses fresh context and complete phase inputs; if a configured role/model is unavailable, report the blocker rather than silently falling back. Agent instructions limit their responsibilities; all inherit the parent's actual permissions and available tools.
+Project config applies in trusted repositories; an explicit session/CLI model selection can override the main default. Applying a file does not change an already-running conversation's model. Start a new session or select Sol/high for main orchestration when needed. Model-specific delegation uses fresh context and complete phase inputs. If a configured role/model is unavailable, complete independent preparation, report the blocked phase and resume after the user explicitly selects an available role/model or changes configuration. Never claim an independent phase ran when it did not. Agent instructions limit their responsibilities; all inherit the parent's actual permissions and available tools.
 
 The agent definitions remain in the host's conventional flat discovery directory; the six-entry code-folder guideline does not reorganize this configuration registry.
 

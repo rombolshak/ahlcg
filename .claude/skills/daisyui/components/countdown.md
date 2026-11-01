@@ -1,19 +1,3 @@
-### countdown
-Countdown gives you a transition effect when you change a number between 0 to 999
+# Shared instructions
 
-[countdown docs](https://daisyui.com/components/countdown/)
-
-#### Class names
-- component: `countdown`
-
-#### Syntax
-```html
-<span class="countdown">
-  <span style="--value:{number};">number</span>
-</span>
-```
-
-#### Rules
-- The `--value` CSS variable and text must be a number between 0 and 999
-- you need to change the span text and the `--value` CSS variable using JS
-- you need to add `aria-live="polite"` and `aria-label="{number}"` so screen readers can properly read changes
+Read [.agents/skills/daisyui/components/countdown.md](../../../../.agents/skills/daisyui/components/countdown.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

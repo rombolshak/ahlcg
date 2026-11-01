@@ -13,15 +13,27 @@ Agents get a Git Bash tool as well, which means `sed`, `awk`, and heredocs techn
 
 ## Prerequisites
 
-.NET SDK 10.x, Node.js with npm, and a container runtime — Docker or Podman (Aspire starts Postgres in a container). The container runtime is needed for `dotnet test` too, not just for running the app: the backend integration tests start the real AppHost. The end-to-end suite (`cd e2e`) needs it for the same reason, plus Node for the `webfrontend` resource it leaves running. See [testing.md](testing.md).
+Use .NET SDK 10.x, Node.js 26 with npm (the CI version), and a running Docker or Podman container runtime. The checked-in Angular CLI dependency accepts Node `^22.22.3`, `^24.15.0` or `>=26.0.0`; use the CI version for reproducible results. Backend integration tests and E2E also start AppHost containers. See [testing.md](testing.md).
+
+From the repository root, prepare a clone with PowerShell:
+
+```powershell
+dotnet tool restore
+dotnet tool install --global Aspire.Cli --version 13.4.6
+aspire certs trust --non-interactive
+npm --prefix frontend ci
+npm --prefix e2e ci
+```
+
+Skip the global tool installation if that version is already installed. Install E2E Chromium from `e2e/` with `npx playwright install chromium` before running that suite. AppHost supplies `ConnectionStrings:ahlcg` for PostgreSQL and `ConnectionStrings:cache` for Valkey/Redis, and runs migrations before starting the API. The Aspire CLI version above matches the CI setup; the root tool manifest supplies repository tools such as CSharpier.
 
 ## Running
 
 **Everything (recommended)** — Postgres + PgAdmin + Valkey + migrator + API + frontend dev server:
 
-```bash
+```powershell
 cd backend/Ahlcg.AppHost
-dotnet run
+aspire start --non-interactive
 ```
 
 The Aspire dashboard opens on `https://localhost:17157` (or `http://localhost:15066`, per `Properties/launchSettings.json`). Container and service ports — including PgAdmin and Postgres — are assigned dynamically; take them from the dashboard, not from a doc.
@@ -36,11 +48,14 @@ npm start        # http://localhost:4200
 
 `proxy.conf.js` targets `process.env.services__apiservice__http__0`, which only Aspire sets. Outside Aspire, `/api/*` has no target: auth requests fail and the main menu shows the logged-out state, and `/game/:id` shows its connection-lost notice because there is no hub to connect to. This is expected, not a bug to fix.
 
-**API alone** (needs a Postgres reachable via the `ahlcg` connection string):
+**API alone** needs PostgreSQL and Valkey/Redis. From the repository root, set both connection names and apply migrations before starting it (replace the local values with your own):
 
-```bash
-cd backend/Ahlcg.ApiService
-dotnet run       # http://localhost:5521, https://localhost:7460
+```powershell
+$env:ConnectionStrings__ahlcg = 'Host=localhost;Port=5432;Database=ahlcg;Username=postgres;Password=LOCAL_PASSWORD'
+$env:ConnectionStrings__cache = 'localhost:6379'
+$env:DOTNET_ENVIRONMENT = 'Development'
+dotnet run --project backend/Ahlcg.Migrator
+dotnet run --project backend/Ahlcg.ApiService --launch-profile https
 ```
 
 Scalar API explorer: `/scalar/v1`. OpenAPI: `/openapi/v1.json`.
@@ -99,9 +114,7 @@ run can upload a screenshot before the string it describes exists. Both uploads 
 repairs that race. Run them locally only to see the result before merging.
 
 `npm run lint` chains `lint:deps`, which cruises `src/` with dependency-cruiser (`.dependency-cruiser.mjs`) for
-module- and folder-level import cycles. Its rules are `severity: "warn"`, so it prints violations and still exits
-0 — the folder cycles it reports are pre-existing damage that #541 removes. A **new** cycle is still a warning,
-not a failure, until #541's closing issue flips both rules to `error`.
+module- and folder-level import cycles. Both cycle rules use `severity: "error"`, so a cycle fails linting.
 
 ### Backend (`cd backend`)
 
@@ -169,7 +182,7 @@ Commit subjects and PR titles use `area: what changed`, lowercase imperative wor
 - **chromatic** ← `frontend/src/**`, `frontend/public/assets/fonts/**`
 - **i18n** ← `frontend/src/**/i18n/**`, `frontend/i18n-languages.json`, `frontend/scripts/i18n-langs.mjs`
 
-Every filter except `i18n` ignores the files in `i18n/` folders other than `en.json`, so a Crowdin translation PR runs only the `i18n` job, which is `npm run lint:i18n` and nothing else. The filter runs with `predicate-quantifier: 'every'`, because a `!` exclusion only works that way; each filter's include paths are therefore one brace pattern, and a new path goes inside the braces, not on a line of its own.
+The frontend, E2E and Chromatic filters exclude every file inside `i18n/` other than `en.json`, so a Crowdin translation PR runs only the `i18n` job (`npm run lint:i18n`). This exclusion also skips executable `scope.ts` files, a current coverage gap. Frontend filtering omits scripts, Storybook configuration and root JS/MJS/TS configuration; Chromatic filtering omits image assets; changes to `ci.yml` itself do not select downstream suites ([#753](https://github.com/rombolshak/ahlcg/issues/753)). The filter uses `predicate-quantifier: 'every'`; keep additions inside its brace include pattern so exclusions continue to work.
 
 It calls the reusable `backend.yml` / `frontend.yml` / `e2e.yml`, then a `coveralls` job posts `parallel-finished` with `carryforward: frontend,backend` — `e2e` does not report coverage, so it is not in that list. The same job then polls the commit statuses until Coveralls has judged the build against the thresholds set in its repo settings, and fails if either of its statuses fails: the overall one, whose context carries the event (`coverage/coveralls (pull_request)`), and `coverage/coveralls/patch`.
 
@@ -179,7 +192,7 @@ It calls the reusable `backend.yml` / `frontend.yml` / `e2e.yml`, then a `covera
 
 Generated code has to be excluded in **two** places or the exclusion backfires. Filtering migrations out of the coverage report alone leaves Sonar analysing the source files with no coverage data for them, which it reads as zero — so the Sonar session also passes `sonar.coverage.exclusions` and `sonar.cpd.exclusions` for `**/Migrations/**`. Quality rules still apply to them, which matters because the one hand-written part of a migration is a `migrationBuilder.Sql(...)` backfill; if a finding there is ever genuinely unfixable, widen it to `sonar.exclusions` rather than suppressing rule by rule.
 
-**frontend.yml** — Node 26 (pinned: latest picks up prereleases the Angular CLI rejects) with npm cache, `npm ci --force` (a workaround for Tailwind 4 resolution), `npm run ci:all`, then Playwright's system dependencies (`npx playwright install-deps chromium`) and `npm run test:component` (the F1 tier; `test:component` downloads the browser itself), Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
+**frontend.yml** — Node 26 with npm cache, `npm ci`, `npm run ci:all`, then Playwright's system dependencies (`npx playwright install-deps chromium`) and `npm run test:component` (the F1 tier; `test:component` downloads the browser itself), Coveralls, then a SonarQube scan using `frontend/sonar-project.properties` (project key `rombolshak_ahlcg`).
 
 **e2e.yml** — .NET 10 and Node, installs the Aspire CLI and runs `aspire certs trust` (same reason as `backend.yml`: `apiservice` binds its `https` launch profile even though the suite itself talks HTTP), `npm ci` and `npx playwright install chromium` in `e2e/`, then `npm test`. No Coveralls step and no Sonar step — this tier does not collect coverage (see [testing.md](testing.md)). Uploads the Playwright HTML report as an artifact on failure.
 
@@ -189,7 +202,7 @@ Generated code has to be excluded in **two** places or the exclusion backfires. 
 
 **auto-approve.yml** — approves non-draft PRs opened by `dependabot[bot]` or `rombolshak`, again on every push since the ruleset dismisses stale approvals, and turns on squash auto-merge for the Dependabot and Crowdin ones. Crowdin opens its PRs as `rombolshak`, so they are recognised by their `l10n_main` head branch. It satisfies the one-approval rule only; status checks still gate the merge. Depends on the repo setting that lets Actions approve pull requests.
 
-Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and Sonar steps are skipped for `dependabot[bot]`. Chromatic is not, so `CHROMATIC_PROJECT_TOKEN` must also be a Dependabot secret: without it the skip call cannot authenticate and Dependabot PRs never get `UI Tests`.
+Required secrets: `SONAR_TOKEN`, `CHROMATIC_PROJECT_TOKEN`. Coveralls and the frontend Sonar scan skip `dependabot[bot]`; backend Sonar start/end steps do not, so missing secret access can fail those runs ([#754](https://github.com/rombolshak/ahlcg/issues/754)). Chromatic also runs for Dependabot, so `CHROMATIC_PROJECT_TOKEN` must be a Dependabot secret: without it the skip call cannot authenticate and those PRs never get `UI Tests`.
 
 ## Debugging
 

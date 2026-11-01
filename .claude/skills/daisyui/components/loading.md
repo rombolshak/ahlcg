@@ -1,17 +1,3 @@
-### loading
-Loading shows an animation to indicate that something is loading
+# Shared instructions
 
-[loading docs](https://daisyui.com/components/loading/)
-
-#### Class names
-- component: `loading`
-- style: `loading-spinner`, `loading-dots`, `loading-ring`, `loading-ball`, `loading-bars`, `loading-infinity`
-- size: `loading-xs`, `loading-sm`, `loading-md`, `loading-lg`, `loading-xl`
-
-#### Syntax
-```html
-<span class="loading {MODIFIER}"></span>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the style/size class names
+Read [.agents/skills/daisyui/components/loading.md](../../../../.agents/skills/daisyui/components/loading.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

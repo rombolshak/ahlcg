@@ -1,18 +1,3 @@
-### status
-Status is a really small icon to visually show the current status of an element, like online, offline, error, etc
+# Shared instructions
 
-[status docs](https://daisyui.com/components/status/)
-
-#### Class Names:
-- Component: `status`
-- Color: `status-neutral`, `status-primary`, `status-secondary`, `status-accent`, `status-info`, `status-success`, `status-warning`, `status-error`
-- Size: `status-xs`, `status-sm`, `status-md`, `status-lg`, `status-xl`
-
-#### Syntax
-```html
-<span class="status {MODIFIER}"></span>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the color/size class names
-- This compnent renders a small visual indicator to draw attention
+Read [.agents/skills/daisyui/components/status.md](../../../../.agents/skills/daisyui/components/status.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

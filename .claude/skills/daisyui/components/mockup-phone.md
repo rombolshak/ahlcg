@@ -1,19 +1,3 @@
-### mockup-phone
-Phone mockup shows a mockup of an iPhone
+# Shared instructions
 
-[mockup-phone docs](https://daisyui.com/components/mockup-phone/)
-
-#### Class names
-- component: `mockup-phone`
-- part: `mockup-phone-camera`, `mockup-phone-display`
-
-#### Syntax
-```html
-<div class="mockup-phone">
-  <div class="mockup-phone-camera"></div>
-  <div class="mockup-phone-display">{CONTENT}</div>
-</div>
-```
-
-#### Rules
-- Inside `mockup-phone-display` you can add anything
+Read [.agents/skills/daisyui/components/mockup-phone.md](../../../../.agents/skills/daisyui/components/mockup-phone.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.
