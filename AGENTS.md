@@ -7,7 +7,7 @@ Read CONTRIBUTING.md for project overview and references.
 - **The backend implements authentication and game records only** — create a game, list the ones you are a member of, fetch the most recent. The game view renders a hardcoded fixture (`@domain/testing/test-game-state`). The SignalR client connects and reports connection state but carries **no game state**. There is no API for game *state* and no deployment pipeline. Do not write code that assumes otherwise.
 - **Backend code logs every decision it makes** — each refusal, state change and no-op, through `[LoggerMessage]`, ids only. See [docs/backend/backend.md](docs/backend/backend.md#logging).
 - Warnings are errors on the backend (`TreatWarningsAsErrors`). Never bypass hooks with `--no-verify`.
-- Commit messages are `area: what changed` — `ux: keyboard input manager`, `tests: migrate to vitest`. Not conventional commits; the area is free-form.
+- Commit subjects and PR titles use `area: what changed`, lowercase imperative wording, and no trailing period: `ux: add keyboard input manager`, `tests: migrate to vitest`. The area is free-form; this is not Conventional Commits.
 
 ## Feature work
 
