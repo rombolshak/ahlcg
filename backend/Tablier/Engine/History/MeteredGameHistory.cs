@@ -27,6 +27,13 @@ public sealed class MeteredGameHistory<TState>(
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         MeasureAsync("load_at", () => inner.LoadAt(gameId, version, ct), OkOr(OutcomeMissing));
 
+    public Task<StoredState<TState>?> Restore(
+        Guid gameId,
+        StoredState<TState> previous,
+        int targetVersion,
+        CancellationToken ct
+    ) => MeasureAsync("restore", () => inner.Restore(gameId, previous, targetVersion, ct), OkOr(OutcomeRefused));
+
     private static Func<StoredState<TState>?, string> OkOr(string nullOutcome) =>
         stored => stored is null ? nullOutcome : OutcomeOk;
 }

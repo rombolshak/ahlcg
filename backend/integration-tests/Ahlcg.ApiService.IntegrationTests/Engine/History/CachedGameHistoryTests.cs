@@ -5,6 +5,7 @@ using Ahlcg.ApiService.IntegrationTests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
@@ -61,6 +62,13 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
         public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
             inner.LoadAt(gameId, version, ct);
+
+        public Task<StoredState<TestState>?> Restore(
+            Guid gameId,
+            StoredState<TestState> previous,
+            int targetVersion,
+            CancellationToken ct
+        ) => inner.Restore(gameId, previous, targetVersion, ct);
     }
 
     private Run CreateRun(Guid gameId)
@@ -74,7 +82,8 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
     private static CachedGameHistory<TestState> CreateCached(
         IGameHistory<TestState> inner,
-        IConnectionMultiplexer redis
+        IConnectionMultiplexer redis,
+        FakeLogger<CachedGameHistory<TestState>>? logger = null
     ) =>
         new(
             inner,
@@ -83,7 +92,9 @@ public class CachedGameHistoryTests(AppFixture fixture)
             new TablierMetrics(
                 new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
             ),
-            NullLogger<CachedGameHistory<TestState>>.Instance
+            logger
+                ?? (Microsoft.Extensions.Logging.ILogger<CachedGameHistory<TestState>>)
+                    NullLogger<CachedGameHistory<TestState>>.Instance
         );
 
     [Fact]
@@ -224,5 +235,54 @@ public class CachedGameHistoryTests(AppFixture fixture)
         var loaded = await run.Cached.LoadAt(gameId, 0, CancellationToken.None);
 
         Assert.Equal(new StoredState<TestState>(0, CreateState(0)), loaded);
+    }
+
+    [Fact]
+    public async Task Restore_UpdatesCacheAndRefusedStaleRestoreRefreshesIt()
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
+        var one = await run.Cached.Append(gameId, begun!, CreateStep(1), choice: null, CancellationToken.None);
+        var restored = await run.Cached.Restore(gameId, one!, 0, CancellationToken.None);
+        Assert.Equal(new StoredState<TestState>(2, CreateState(0)), restored);
+        var three = await run.Store.Append(gameId, restored!, CreateStep(3), choice: null, CancellationToken.None);
+        Assert.Null(await run.Cached.Restore(gameId, one!, 0, CancellationToken.None));
+        await DeleteGameAsync(gameId);
+        Assert.Equal(three, await run.Cached.LoadCurrent(gameId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Restore_WhenCacheHoldsNewerVersion_DoesNotRegressIt()
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
+        var one = await run.Cached.Append(gameId, begun!, CreateStep(1), choice: null, CancellationToken.None);
+        await run
+            .Redis.GetDatabase()
+            .HashSetAsync(
+                CacheKeys.GetGameStateKey(gameId),
+                [new HashEntry("version", "5"), new HashEntry("state", JsonSerializer.Serialize(CreateState(5)))]
+            );
+        await run.Cached.Restore(gameId, one!, 0, CancellationToken.None);
+        await DeleteGameAsync(gameId);
+        Assert.Equal(
+            new StoredState<TestState>(5, CreateState(5)),
+            await run.Cached.LoadCurrent(gameId, CancellationToken.None)
+        );
+    }
+
+    [Fact]
+    public async Task Restore_RefusedAndRefreshed_LogsRestore()
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
+        await run.Store.Append(gameId, begun!, CreateStep(1), choice: null, CancellationToken.None);
+        var logger = new FakeLogger<CachedGameHistory<TestState>>();
+        var cached = CreateCached(CreateStore(), run.Redis, logger);
+        await cached.Restore(gameId, begun!, -1, CancellationToken.None);
+        Assert.Equal("LogRefreshedAfterRefusedRestore", logger.LatestRecord.Id.Name);
     }
 }
