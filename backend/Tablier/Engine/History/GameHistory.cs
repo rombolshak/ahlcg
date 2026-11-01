@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Tablier.Contract;
 using Tablier.Data;
+using Tablier.Engine.History.Rewind;
 
 namespace Tablier.Engine.History;
 
@@ -183,6 +184,39 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
     {
         var loaded = await LoadHistoryAt(gameId, version, ct);
         return loaded is null ? null : Reconstruct(gameId, loaded.Value.History);
+    }
+
+    public async Task<RewindHistory?> GetRewindHistory(Guid gameId, int expectedHead, CancellationToken ct)
+    {
+        var result = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync(
+                    IsolationLevel.RepeatableRead,
+                    ct
+                );
+                var head = await FindHead(gameId, ct);
+                if (head != expectedHead)
+                    return (Head: head, History: (RewindHistory?)null);
+                var steps = await db
+                    .GameSteps.AsNoTracking()
+                    .Where(s => s.GameId == gameId)
+                    .OrderBy(s => s.Version)
+                    .Select(s => new RewindStep(
+                        s.Version,
+                        s.Actor,
+                        s.Checkpoint,
+                        s.IsIrreversible || s.IsBaseline,
+                        s.RestoredVersion
+                    ))
+                    .ToListAsync(ct);
+                var hasInitial = await db.GameSnapshots.AnyAsync(s => s.GameId == gameId && s.Version == 0, ct);
+                return (Head: head, History: RewindHistory.Create(expectedHead, steps, hasInitial));
+            });
+        if (result.History is null)
+            LogRewindHistoryRefused(logger, gameId, expectedHead, result.Head);
+        return result.History;
     }
 
     public async Task<StoredState<TState>?> Restore(
@@ -432,4 +466,10 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         int version,
         int head
     );
+
+    [LoggerMessage(
+        LogLevel.Warning,
+        "Rewind history refused for game {GameId}, requested head {Version}, actual head {Head}"
+    )]
+    private static partial void LogRewindHistoryRefused(ILogger logger, Guid gameId, int version, int? head);
 }

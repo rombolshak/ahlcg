@@ -12,6 +12,7 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
+using Tablier.Engine.History.Rewind;
 using Tablier.Telemetry;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
@@ -62,6 +63,9 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
         public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
             inner.LoadAt(gameId, version, ct);
+
+        public Task<RewindHistory?> GetRewindHistory(Guid gameId, int expectedHead, CancellationToken ct) =>
+            inner.GetRewindHistory(gameId, expectedHead, ct);
 
         public Task<StoredState<TestState>?> Restore(
             Guid gameId,

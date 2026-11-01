@@ -470,6 +470,38 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
+    public async Task GetRewindHistory_ReadsLiveMetadataAndRejectsStaleHead()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendAsync(CreateStep(1, checkpoint: "a"), new PlayerChoice("A", "action"));
+        await run.AppendAsync(CreateStep(2, checkpoint: "b"), new PlayerChoice("B", "action"));
+        await run.AppendAsync(CreateStep(3), new PlayerChoice("C", "action"));
+        var restored = await run.History.Restore(run.GameId, run.Current, 2, CancellationToken.None);
+        var history = await run.History.GetRewindHistory(run.GameId, restored!.Version, CancellationToken.None);
+        Assert.NotNull(history);
+        Assert.Equal(1, history.GetUndoTarget());
+        Assert.Equal(["B"], history.GetConsent(1, "A")!.Order());
+        Assert.Null(history.GetConsent(3, "A"));
+        Assert.Null(await run.History.GetRewindHistory(run.GameId, 3, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetRewindHistory_AfterCleanup_StopsAtBaseline()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendAsync(CreateStep(1, checkpoint: "a"));
+        await run.AppendAsync(CreateStep(2, baseline: true));
+        await run.AppendAsync(CreateStep(3), new PlayerChoice("B", "action"));
+        await new GameHistoryCleanup(fixture.CreateDbContext(), NullLogger<GameHistoryCleanup>.Instance).Run(
+            CancellationToken.None
+        );
+        var history = await run.History.GetRewindHistory(run.GameId, 3, CancellationToken.None);
+        Assert.NotNull(history);
+        Assert.Equal(2, history.GetUndoTarget());
+        Assert.Null(history.GetConsent(1, "A"));
+    }
+
+    [Fact]
     public async Task LoadCurrent_GameNotBegun_IsRefused()
     {
         var gameId = await SeedGameAsync();

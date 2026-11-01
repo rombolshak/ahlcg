@@ -1,4 +1,5 @@
 using Tablier.Contract;
+using Tablier.Engine.History.Rewind;
 
 namespace Tablier.Engine.History;
 
@@ -18,6 +19,8 @@ public interface IGameHistory<TState>
     Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct);
 
     Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct);
+
+    Task<RewindHistory?> GetRewindHistory(Guid gameId, int expectedHead, CancellationToken ct);
 
     Task<StoredState<TState>?> Restore(
         Guid gameId,
