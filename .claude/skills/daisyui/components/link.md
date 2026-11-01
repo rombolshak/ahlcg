@@ -1,17 +1,3 @@
-### link
-Link adds the missing underline style to links
+# Shared instructions
 
-[link docs](https://daisyui.com/components/link/)
-
-#### Class names
-- component: `link`
-- style: `link-hover`
-- color: `link-neutral`, `link-primary`, `link-secondary`, `link-accent`, `link-success`, `link-info`, `link-warning`, `link-error`
-
-#### Syntax
-```html
-<a class="link {MODIFIER}">Click me</a>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the modifier class names
+Read [.agents/skills/daisyui/components/link.md](../../../../.agents/skills/daisyui/components/link.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

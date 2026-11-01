@@ -1,16 +1,3 @@
-### kbd
-Kbd is used to display keyboard shortcuts
+# Shared instructions
 
-[kbd docs](https://daisyui.com/components/kbd/)
-
-#### Class names
-- component: `kbd`
-- size: `kbd-xs`, `kbd-sm`, `kbd-md`, `kbd-lg`, `kbd-xl`
-
-#### Syntax
-```html
-<kbd class="kbd {MODIFIER}">K</kbd>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the size class names
+Read [.agents/skills/daisyui/components/kbd.md](../../../../.agents/skills/daisyui/components/kbd.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

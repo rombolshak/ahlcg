@@ -189,10 +189,6 @@ export class MainMenuComponent {
     });
   }
 
-  /**
-   * Enabled while signed out too: the list request 401s, `authInterceptor` prompts and replays it,
-   * and a dismissal surfaces the 401 into the page's own error state.
-   */
   private createLoadGameButton() {
     return {
       name: 'load_game',

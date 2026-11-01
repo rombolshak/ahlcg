@@ -30,13 +30,13 @@ Local orchestration (`backend/Ahlcg.AppHost`, .NET Aspire), in dependency order:
 4. `apiservice` — the API, health-checked on `/health`
 5. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`
 
-Aspire injects `services__apiservice__http__0` into the frontend process. `frontend/proxy.conf.js` reads that variable as the proxy target and rewrites `/api/*` → `*` on the API. **This is the only wiring between frontend and backend.** Running `npm start` without Aspire leaves the target undefined, so `/api` calls fail — the game view still works (fixture-driven), auth does not.
+Aspire injects `services__apiservice__http__0` into the frontend process. `frontend/proxy.conf.js` reads that variable as the proxy target and rewrites `/api/*` → `*` on the API, including the SignalR hub. Running `npm start` without Aspire leaves the target undefined, so API calls fail. The routed fixture game requires the server; only the unrouted Arkham board uses a local fixture.
 
 ## Stack
 
 | Frontend | | Backend | |
 | --- | --- | --- | --- |
-| Angular | 21.2 (zoneless, standalone) | .NET | 10.0 |
+| Angular | 22.2.x (zoneless, standalone) | .NET | 10.0 |
 | State | `@ngrx/signals` | Web | ASP.NET Core Minimal APIs |
 | Validation | arktype | Auth | ASP.NET Identity, cookie sessions |
 | Patching | `rfc6902` + `immer` | ORM | EF Core 10.0 + Npgsql |
@@ -55,10 +55,10 @@ Other notable frontend deps: `@panzoom/panzoom` (board pan/zoom), `vanilla-jsone
 2. `401` is mapped to `undefined` — that is the "logged out" signal, not an error.
 3. Menu items switch on `currentUser() !== undefined`.
 
-Anything else that needs an account does not check first. `authInterceptor` catches a `401` from any call except `GET /api/auth/info`, opens the sign-in prompt through `DialogService`, and **replays the original request** once the user is authenticated, so the caller resumes where it left off. An `HttpContextToken` marks the replay so a second `401` fails instead of looping. A dialog dismissed without signing in rethrows the original error.
+`authInterceptor` catches a `401` from any call except `GET /api/auth/info`, opens the sign-in prompt through `DialogService`, and **replays the original request** once the user is authenticated. An `HttpContextToken` marks the replay so a second `401` fails instead of looping. A dialog dismissed without signing in rethrows the original error. Resources keyed on the current user, such as Case files, skip requests while signed out.
 
 There is no auth guard and no token handling: the session is the `AspNetCore.Identity.Application` cookie, sent automatically.
 
 ## Data flow: game state
 
-See [state-store.md](frontend/state-store.md). Summary: `setState` installs a whole `GameState`; `updateState(Operation[])` applies RFC6902 patches through immer, re-validates the result with arktype, and wraps the change in a GSAP Flip transition.
+See [state-store.md](frontend/state-store.md). The routed fixture page uses `withGameSession` for confirmed server views and optimistic actions. The separate Arkham board uses `GameStateStore`: `setState` installs its local fixture without runtime validation; `updateState(Operation[])` applies patches, validates the result, and animates it with GSAP Flip.

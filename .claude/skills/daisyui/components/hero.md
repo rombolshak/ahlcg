@@ -1,19 +1,3 @@
-### hero
-Hero is a component for displaying a large box or image with a title and description
+# Shared instructions
 
-[hero docs](https://daisyui.com/components/hero/)
-
-#### Class names
-- component: `hero`
-- part: `hero-content`, `hero-overlay`
-
-#### Syntax
-```html
-<div class="hero {MODIFIER}">{CONTENT}</div>
-```
-
-#### Rules
-- {MODIFIER} is optional
-- Use `hero-content` for the text content
-- Use `hero-overlay` inside the hero to overlay the background image with a color
-- Content can contain a figure
+Read [.agents/skills/daisyui/components/hero.md](../../../../.agents/skills/daisyui/components/hero.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

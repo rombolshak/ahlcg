@@ -1,18 +1,3 @@
-### pagination
-Pagination is a group of buttons
+# Shared instructions
 
-[pagination docs](https://daisyui.com/components/pagination/)
-
-#### Class names
-- component: `join`
-- part: `join-item`
-- direction: `join-vertical`, `join-horizontal`
-
-#### Syntax
-```html
-<div class="join">{CONTENT}</div>
-```
-
-#### Rules
-- Use `join-item` for each button or link inside the pagination
-- Use `btn` class for styling pagination items
+Read [.agents/skills/daisyui/components/pagination.md](../../../../.agents/skills/daisyui/components/pagination.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

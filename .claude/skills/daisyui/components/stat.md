@@ -1,21 +1,3 @@
-### stat
-Stat is used to show numbers and data in a block
+# Shared instructions
 
-[stat docs](https://daisyui.com/components/stat/)
-
-#### Class names
-- Component: `stats`
-- Part: `stat`, `stat-title`, `stat-value`, `stat-desc`, `stat-figure`, `stat-actions`
-- Direction: `stats-horizontal`, `stats-vertical`
-
-#### Syntax
-```html
-<div class="stats {MODIFIER}">
-  <div class="stat">{CONTENT}</div>
-</div>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the direction class names
-- It's horizontal by default but you can make it vertical with the `stats-vertical` class
-- Content includes `stat-title`, `stat-value`, `stat-desc` inside a `stat`
+Read [.agents/skills/daisyui/components/stat.md](../../../../.agents/skills/daisyui/components/stat.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

@@ -1,14 +1,3 @@
-### mockup-window
-Window mockup shows a box that looks like an operating system window
+# Shared instructions
 
-[mockup-window docs](https://daisyui.com/components/mockup-window/)
-
-#### Class names
-- component: `mockup-window`
-
-#### Syntax
-```html
-<div class="mockup-window">
-  <div>{CONTENT}</div>
-</div>
-```
+Read [.agents/skills/daisyui/components/mockup-window.md](../../../../.agents/skills/daisyui/components/mockup-window.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

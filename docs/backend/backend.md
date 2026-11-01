@@ -71,7 +71,7 @@ Three rules govern it. Everything else is in the code.
 `GameHistory<TState>` stores a game as results, never as events to replay: an RFC 6902 patch per step, plus snapshots. Loading never runs rules, so a rules change cannot alter a past game. `Tablier.Data` knows neither `TState` nor the patch library; the store serialises the state itself.
 
 - **The store issues versions.** `Begin`, `Append` and `LoadCurrent` return a `StoredState<TState>`; the caller hands the last one back as `previous` and never computes a version. A stale `previous` is refused, so a caller still holding a state from before a rewind cannot append.
-- **The schema version travels in the state** (`TState : ISchemaVersioned`), and is copied to a column on each snapshot so stale snapshots can be found by query. A `TState` is always the current schema: old JSON is upcast before it is deserialised, never after.
+- **The schema version travels in the state** (`TState : ISchemaVersioned`), and is copied to a column on each snapshot so stale snapshots can be found by query. The store and cache deserialize JSON directly into `TState`; there is no upcasting or state-schema migration support ([#641](https://github.com/rombolshak/ahlcg/issues/641)). A schema change must account for existing stored JSON rather than assuming it will be converted.
 - **History is append-only.** A rewind appends the restored state as an irreversible checkpoint; nothing in the game flow deletes a row.
 - **Retention limits are queries; deletion is maintenance.** A checkpoint or baseline writes a snapshot. `LoadAt` refuses any version behind a later irreversible or baseline step, so a snapshot rewind can no longer reach is unreachable whether or not its row still exists. The store does not know what a scenario is.
 - **`GameHistoryCleanupService` reclaims the unreachable rows off the step loop**, every `Tablier:GameHistoryCleanup:Interval`. It deletes every step and snapshot below the latest baseline, and every snapshot between the latest baseline and the latest irreversible step except the newest. It runs as one set-based statement, so a concurrent `Append` sits above every bound that statement read. A transaction-scoped advisory lock lets one replica run at a time; the others skip.
@@ -83,18 +83,26 @@ Three rules govern it. Everything else is in the code.
 
 A rules module implements the three `Tablier.Contract` interfaces and is pure: no logging, DI or I/O. `Ahlcg.Rules.Fixture` is the only one so far.
 
+`IGameStateProcessor<TState>` is consumed as a pure transition interface. `Execute`, `Advance`, `AddMember` and `RemoveMember` must return a new state without mutating the input: the engine retains the previous state to compute view patches and executes offered actions speculatively. Given identical state, member and action, a transition must return the same result. `GetMembers` and `GetMembersActions` must be observational only.
+
+An empty set of offered actions across **all** members means “call `Advance` again” to the current engine. Automatic transitions must eventually offer a player action; there is no terminal-state signal or iteration bound. A terminal state with no actions would keep advancing. These are engine requirements, not guarantees enforced by the interface.
+
 **Randomness lives in the state.** The engine supplies one seed, to `InitializeGame`; the module turns it into a `GameRandom`, keeps it in its state, and every draw stores the advanced generator back. Never use `System.Random`, `Guid`, the clock, or any other entropy. Because the generator is state, a whole campaign draws from one sequence, snapshots persist it, a rewind restores it so a re-done step cannot re-roll, and precomputing every offered action is safe since each starts from the same generator.
 
 ## The step loop
 
 `GameEngine<TConfiguration, TState, TView>` is the one place that knows the rules' types. Hub and endpoints depend on the non-generic `IGameEngine`, so they stay non-generic and their tests mock it; `AddGameEngine<,,>()` in `Program.cs` picks the types.
 
-- **The engine is scoped and shares the caller's `DbContext`.** `GameHistory` refuses a tracking context, so every endpoint clears the change tracker after its own save and before calling the engine.
+- **The engine is scoped and shares the caller's `DbContext`.** `GameHistory` clears its tracker before writes and after saving. Callers must save pending changes first; unsaved tracked changes can be detached by history operations.
 - **Nothing precomputed is stored.** The rules are deterministic because randomness is in the state, so re-running `Execute` gives exactly the state whose patch was offered. Patches are never produced by the rules: the engine diffs the member's view before against after.
 - **Serialisation is optimistic only.** There is no per-game lock and no state on `GameSession`; `Append`'s version check decides, and a refusal reloads and retries. That is what leaves room for more than one replica, and it is why events can arrive out of order.
-- **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances any pending non-player step. Join, removal and `GetState` all call it, so a crash between a membership commit and its step repairs itself; a row inserted directly reaches the state on that member's next `GetState`.
+- **Membership is reconciled, not pushed.** `SyncMembers` diffs the `GameMembers` rows against `GetMembers(state)` and commits one `AddMember` or `RemoveMember` step per difference, then advances non-player steps after each membership step. Join, removal and `GetState` call it. When membership already matches, it returns without advancing.
 - **Events go to per-member groups, never `Clients.User`**, which would cross games. A member no longer in the state receives nothing, and neither does one who is new in it: the step that adds them would send a patch built from an empty view, so their first view comes from `GetState`.
-- **A step is committed before it is sent.** A connection lost or a send failing in between leaves a committed step with unsent events; clients recover from the version gap.
+- **A step is committed before it is sent.** A version gap causes clients to reload state, but does not resume automatic transitions. A crash or failed broadcast after a player commit can leave a state with no player actions; loading it with unchanged membership does not recover the automatic loop ([#751](https://github.com/rombolshak/ahlcg/issues/751)).
+
+**Failure boundaries.** `CachedGameHistory` awaits Redis reads and writes without a fallback or exception suppression. `Begin` and `Append` commit to PostgreSQL before writing the cache, so a cache exception can report failure after a successful commit and prevent the engine from broadcasting or advancing. Do not treat an exception as proof that no mutation occurred ([#752](https://github.com/rombolshak/ahlcg/issues/752)).
+
+**Revocation is not atomic.** `RemoveMember` deletes membership before awaiting reconciliation, removing connections from groups and rotating the invite code. A reconciliation exception skips the latter cleanup; a retry sees the missing membership and returns early. `Execute` checks actions offered in stored state, not current membership rows, so stale state and an admitted connection can retain access until reconciliation succeeds. Connection admission checks alone do not close this gap ([#750](https://github.com/rombolshak/ahlcg/issues/750)).
 
 ## Persistence and migrations
 
@@ -112,7 +120,7 @@ Migrations are applied by `Ahlcg.Migrator`, not by the API. It runs them inside 
 
 `GameHub` is mapped at `/game` and authenticated by the same session cookie as the endpoints. The wire contract — the `gameId` query parameter, the membership gate, the message names — is in [api.md](api.md#signalr-game); what follows is why the server is shaped this way.
 
-**A caller the hub turns away is asked to leave rather than cut off.** `Connect` sends `Exit(NotAMember)` and returns instead of throwing, so the connection stays open and stopping it is the client's decision. The reason is on the client side: a close is indistinguishable from a network drop, so a client that inferred rejection from one could not also use automatic reconnect. Keep any future "you may not be here" answer on that path — throw only for a malformed request, which is a client bug rather than an answer.
+**A caller the hub turns away is asked to leave rather than cut off.** Keep membership refusals on the `Exit` path; [the hub contract](api.md#signalr-game) explains the handshake and reconnect rationale.
 
 **A session is live-connection state and is deliberately not persisted.** `GameSessions` is a singleton `ConcurrentDictionary` and there is no entity, `DbSet`, or migration for it. Persisting it inverts on restart: `OnDisconnectedAsync` does not fire when the process dies, so a deploy would leave rows claiming members are online with nothing to reap them. An empty registry after a restart is the correct answer, not lost state. The cost is a **single-replica ceiling** — a second instance would need a backplane, which `AddTablier()` does not configure and `AppHost.cs` does not ask for.
 
@@ -158,7 +166,7 @@ Errors use `AddProblemDetails()`, with one exception: `AuthEndpoints` returns `B
 
 ## Logging
 
-**Every decision the server makes gets a log line.** A branch that refuses, a branch that changes state, and a branch that answers "nothing to do" each log, and each one says *which* branch it was. This matters most where the response is deliberately vague — `POST /games/join` returns one identical `404` for an unknown code, a missing game and a full one, and `signIn` one `403` for a wrong password or a lockout — because the server log is then the only place the difference exists. New code that adds a branch without a log line is incomplete.
+**Every decision the server makes must get a log line.** A branch that refuses, a branch that changes state, and a branch that answers "nothing to do" must each say *which* branch it was. This matters most where responses are deliberately vague, such as join refusals or wrong-password and lockout responses. This is the required standard, not complete current coverage: creation validation and some unauthorized or missing-history branches still return without an application log. New code that adds a branch without a log line is incomplete. Existing gaps are tracked in [#757](https://github.com/rombolshak/ahlcg/issues/757).
 
 What is already logged, so do not log it again: unhandled exceptions (the exception handler logs them at `Error`), exceptions out of the hub's `OnConnectedAsync`/`OnDisconnectedAsync`, EF commands, and every request and hub invocation as a trace span.
 
@@ -177,4 +185,4 @@ In Development, `appsettings.Development.json` lowers the `Ahlcg` and `Tablier` 
 
 ## Configuration
 
-`appsettings.json` / `appsettings.Development.json`, overridden by environment variables. Aspire supplies the `ahlcg` connection string and the OTLP endpoint at run time.
+`appsettings.json` / `appsettings.Development.json`, overridden by environment variables. Aspire supplies the `ahlcg` and `cache` connection strings and the OTLP endpoint at run time.

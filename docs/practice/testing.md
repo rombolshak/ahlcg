@@ -139,7 +139,7 @@ Test names read as sentences: `it('should fire event after animation')`.
 | Emission never resolves | `output()` is not an Observable |
 | A resource still reads as loading after its stream emits | `TestBed.tick()` is synchronous; `rxResource` settles through a microtask. `await fixture.whenStable()` |
 
-ESLint runs `strictTypeChecked` on specs too, and `eslint-plugin-jasmine` is still configured for `src/**/*.spec.ts` — its `no-expect-in-setup-teardown` rule warns; the Jasmine matcher rules are inert since the Vitest migration. `@types/jasmine` and the plugin remain in `package.json` as leftovers.
+ESLint runs `strictTypeChecked` and the Vitest plugin on specs. `@types/jasmine` is absent; the unused `eslint-plugin-jasmine` dependency remains in `package.json`.
 
 ## Backend
 
@@ -165,7 +165,14 @@ LoginAnonymously_FailedToCreateUser_ReturnsBadRequest
 At this tier, endpoints are tested by **calling the static handler directly** with mocked `UserManager` / `SignInManager` and a hand-built `ClaimsPrincipal` — no `WebApplicationFactory`, no Postgres. That also means the whole request pipeline (routing, auth middleware, model binding, endpoint filters) is skipped here; anything that depends on it belongs in the integration tier below. Assert on the typed result and verify the manager interactions:
 
 ```csharp
-var result = await AuthEndpoints.LoginAnonymously(NotAuthenticatedPrincipal, userManager.Object, signInManager.Object);
+var result = await AuthEndpoints.LoginAnonymously(
+    NotAuthenticatedPrincipal,
+    userManager.Object,
+    signInManager.Object,
+    PermissiveLimiter(),
+    NewHttpContext(),
+    NullLogger<AppUser>.Instance
+);
 
 Assert.IsType<Ok>(result.Result);
 userManager.Verify(m => m.CreateAsync(It.Is<AppUser>(p => p.IsAnonymous == true)));
@@ -177,7 +184,7 @@ This is why handlers return `Results<...>` rather than `IResult` — keep new ha
 
 `backend/integration-tests/Ahlcg.ApiService.IntegrationTests` exists because EF's InMemory provider does not enforce unique indexes, so it cannot prove the `POST /games` idempotency behaviour (same key + same user → one row; same key + different users → two rows). Everything InMemory *can't* cover goes here instead, driven over real HTTP against the real app and real Postgres — not by calling handlers with mocks.
 
-**The exception is code that needs Postgres and has no route yet.** `GameHistory<TState>` relies on Postgres unique violations and a repeatable-read transaction, which InMemory lacks, so its tests call it directly with `AppFixture.CreateDbContext()` rather than waiting for an endpoint. Production code is never bent to suit InMemory; if it needs a transaction, its tests are here. The cache decorator is tested here too, against real Valkey from the AppHost. Deleting the game's rows after a write proves a read came from the cache. A test double around the store that pauses `LoadCurrent` reproduces a slow miss interleaved with other writers.
+**Persistence contracts also need direct tests.** `GameHistory<TState>` is reached through game creation and hub methods, but its unique violations, repeatable-read transactions, rewind boundaries and cache interleavings are tested directly with `AppFixture.CreateDbContext()`. InMemory cannot prove these behaviors. The cache decorator is tested against real Valkey from the AppHost: deleting the game's rows after a write proves a read came from the cache, and a store double that pauses `LoadCurrent` reproduces a slow miss interleaved with other writers.
 
 **The step loop is driven end to end here** — real SignalR connections calling `GetState` and `Execute`, collecting `StateChanged`, against the fixture rules module. Its refusal paths (refused append, retries exhausted) have no HTTP trigger, so `GameEngine` is unit-tested with a mocked `IGameHistory` for those.
 
@@ -194,11 +201,15 @@ A collection fixture (`AppFixture`, shared across the test class via `[Collectio
 
 Requires a container runtime — Docker or Podman both work, since Aspire drives whichever DCP finds (real Postgres and Valkey containers are started for each test run). Runs via the same `dotnet test` as the unit tests; GitHub's `ubuntu-latest` runners provide Docker, so CI needs no extra setup, but this tier is slower than the InMemory-backed unit tests.
 
+`AppFixtureBase` currently retains AppHost's PostgreSQL data-volume annotation, unlike the E2E runner below. Disposable database isolation has not been established for this fixture; do not assume stopping a test run deletes its data ([#755](https://github.com/rombolshak/ahlcg/issues/755)).
+
 ## End-to-end
 
 `e2e/` (top level, not under `frontend/`) drives a real Chromium against the real Angular dev server, the real API, and real Postgres — all hosted by the existing AppHost with `webfrontend` left **in**. Contrast this with `AppFixture` above, which removes it because CI there has no Node; this tier is the one that needs it. `pgadmin` is removed, same as `AppFixture`, since it is dev convenience only.
 
 `auth-lifecycle.spec.ts` covers the auth lifecycle end to end — anonymous sign-in, upgrade to a permanent account, sign-out, and sign-in with a wrong then a correct password — driven through the real UI against the real API and Postgres.
+
+There is no corresponding game-flow E2E scenario covering creation, join, actions, reconnect and removal. Unit and backend integration coverage of individual seams does not establish that full browser-to-server flow ([#756](https://github.com/rombolshak/ahlcg/issues/756)).
 
 **Two processes, because each half owns what it is good at.** Playwright owns the run (its CLI, HTML report, traces). A tiny console app, `e2e/apphost/Program.cs`, owns the app model, because `DistributedApplicationTestingBuilder` is the only way to mutate resources before start. `e2e/global-setup.ts` spawns it via `e2e/apphost.ts` and reads the dynamically-assigned `webfrontend` URL from its stdout (Aspire assigns the port, so nothing here hardcodes one); `e2e/global-teardown.ts` closes its stdin, which is the runner's shutdown signal — `Console.In.ReadLineAsync()` returns `null` on EOF, which falls through to `app`'s `DisposeAsync()`.
 

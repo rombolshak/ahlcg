@@ -1,27 +1,3 @@
-### dock
-Dock (also know as Bottom navigation or Bottom bar) is a UI element that provides navigation options to the user. Dock sticks to the bottom of the screen
+# Shared instructions
 
-[dock docs](https://daisyui.com/components/dock/)
-
-#### Class names
-- component: `dock`
-- part: `dock-label`
-- modifier: `dock-active`
-- size: `dock-xs`, `dock-sm`, `dock-md`, `dock-lg`, `dock-xl`
-
-#### Syntax
-```html
-<div class="dock {MODIFIER}">{CONTENT}</div>
-```
-where content is a list of buttons:
-```html
-<button>
-    <svg>{icon}</svg>
-    <span class="dock-label">Text</span>
-</button>
-```
-
-#### Rules
-- {MODIFIER} is optional and can have one of the size class names
-- To make a button active, add `dock-active` class to the button
-- add `<meta name="viewport" content="viewport-fit=cover">` is required for responsiveness of the dock in iOS
+Read [.agents/skills/daisyui/components/dock.md](../../../../.agents/skills/daisyui/components/dock.md) in full and follow it for this task. Resolve its relative references from the canonical file's directory. This compatibility entry preserves the existing path; maintain the instructions in the canonical file only.

@@ -70,11 +70,7 @@ Fixtures split by whether they touch a framework. The ten pure fixtures (`entiti
 
 There is no wildcard route. `:id` reaches `FixtureGameComponent` as an `input.required<string>()` — that works because `provideRouter` is configured `withComponentInputBinding()`, without which the input would never be set and the component would throw. The id decides which game the SignalR connection binds to and whose state the page renders.
 
-Neither `case-files` nor the main menu's "Clearance code" item has an auth guard, and neither menu entry is
-disabled when signed out: each issues its request anyway, gets a `401`, and `authInterceptor` prompts
-sign-in and replays it. `case-files`' `rxResource` is keyed on the current user, so a signed-out visit
-skips the request entirely and lands on the empty state rather than an error; the join dialog instead
-lets the `401` reach its own submission and surfaces through the same interceptor flow.
+Neither `case-files` nor the main menu's "Clearance code" item has an auth guard, and neither menu entry is disabled when signed out. Case files keys its `rxResource` on the current user, so a signed-out visit skips the request and lands on the empty state. Submitting the join dialog issues a request; a `401` prompts sign-in through `authInterceptor`, which replays it after authentication.
 
 ## Application config
 
@@ -87,7 +83,7 @@ Bugsnag is started at module scope with a hardcoded browser API key — that is 
 | Service | Responsibility |
 | --- | --- |
 | `AuthService` | `GET /api/auth/info` on construction; exposes `currentUser: Observable<User \| undefined>`. `401` maps to `undefined`. `loginAnonymously()`, `signIn(credentials)` and `logout()` each post, then `switchMap` into `refreshCurrentUser()`, so `currentUser` carries server truth rather than an optimistic guess. `signIn` covers signing in, registering and upgrading an anonymous account — the server picks the branch, so there is no separate "link" call. All return cold observables — nothing is requested until subscription. |
-| `DialogService` | Opens a dialog imperatively: `open(Component, { titleKey })` creates a `DialogComponent` into a detached host on `document.body`, mounts the component inside it, and returns an `Observable` of the value that component emits on its `result` output. **One dialog per component type** — a second `open()` for a type already showing returns the existing stream, which is what makes concurrent `401`s share one prompt. Teardown (detach, destroy, remove the host, clear the entry) runs on `result` *or* on the dialog closing by any other route, so no dismissal can strand the service. The content component provides `AH_DIALOG_CONTENT` and exposes `result`; `<ah-dialog>` still accepts projected content declaratively, as `SettingsComponent` uses it. |
+| `DialogService` | Opens a dialog imperatively: `open(Component, { size, bindings })` accepts optional sizing and Angular bindings (titles come from content), creates a `DialogComponent` into a detached host on `document.body`, mounts the component inside it, and returns an `Observable` of the value that component emits on its `result` output. **One dialog per component type** — a second `open()` for a type already showing returns the existing stream, which is what makes concurrent `401`s share one prompt. Teardown (detach, destroy, remove the host, clear the entry) runs on `result` *or* on the dialog closing by any other route, so no dismissal can strand the service. The content component provides `AH_DIALOG_CONTENT` and exposes `result`; `<ah-dialog>` still accepts projected content declaratively, as `SettingsComponent` uses it. |
 | `CardInfoService` | Loads and caches a card's description JSON, translated strings, and traits for a `SetInfo`. Returns a `Signal<CardInfo \| undefined>` from a `Signal<GameCard \| undefined>`. Validates with arktype; on failure caches an `isLoadedWithError` placeholder rather than throwing. Called from `features/card/` and from the `pages/game-view/` components that lay out their own card details — never from `ui/`, whose card components take a resolved `CardInfo` as an input. |
 | `InputManagerService` | Keyboard command layers. Maps `event.code` → semantic `InputCommand` (`confirm`, `cancel`, `moveUp`…, `toggleDebugPanel`, `resetState`, `applyPatch`), dispatches to the topmost registered layer. `registerGlobal(layer)` sets the fallback layer; `pushLayer(layer)` returns a `LayerRef` with a `destroy()` to pop it. A layer may be a plain object or an `InputLayerProvider` (`() => InputLayer`), resolved on every keystroke — that is how a pushed layer can keep up with state that changes underneath it, including which commands it handles at all, and therefore which ones fall through to the global layer. `Tab` is deliberately swallowed to disable browser tab navigation. Keys originating in a text-entry element (`<textarea>`, `contenteditable`, or an `<input>` of a text-ish type) are exempt from all of this except `Escape` and `Enter` — otherwise typing would fire `confirm` on Space and navigation on WASD, and `Tab` between form fields would be dead. |
 | `SettingsService<T>` | Generic localStorage-backed settings. Configured per consumer with the `DEFAULT_SETTINGS` and `STORAGE_KEY_SUFFIX` tokens; persists only the diff against defaults under `ahlcg_{suffix}`. `provideUserPreferencesService()` in `features/settings/` is the concrete configuration. |
@@ -102,7 +98,7 @@ It returns an `InputLayer` fragment rather than registering one, so **layer life
 
 ## Internationalization
 
-Transloco, with **every string in a scope** — there is no root translation file.
+Transloco uses component scopes; there is no root translation file. The temporary `FixtureGameComponent` is an existing exception with hardcoded headings, notices and controls. New or changed product copy still follows the wording and localization rules; this exception is not a pattern to copy.
 
 A component's strings sit in an `i18n/` folder beside it as `{lang}.json`, next to `scope.ts` (exporting the scope path as `I18N_SCOPE`) and `en.context.json` (the translator's notes, pushed to Crowdin). **The scope name is that folder's path under `src/app`** — `angular.json` mirrors the tree into `assets/i18n`, and keys are written without the scope prefix. A child that renders its parent's strings imports the same `I18N_SCOPE` from `i18n/` rather than from the parent component, which keeps the folder edge one-way as `no-folder-cycles` requires.
 
@@ -132,6 +128,6 @@ Tailwind CSS 4 via `@tailwindcss/postcss`, plus daisyUI 5. `src/styles.css` impo
 
 ## Storybook
 
-Storybook 10 with `@storybook/angular`, `experimentalZoneless: true`, config in `.storybook/`. `preview.ts` provides `getStoryTranslocoModule()` (from `@testing/story-translations`) and `provideHttpClient()` globally, so stories render translated text without extra setup.
+Storybook 10 with `@storybook/angular-vite` and `zoneless: true`, config in `.storybook/`. `preview.ts` provides `getStoryTranslocoModule()` (from `@testing/story-translations`) and `provideHttpClient()` globally, so stories render translated text without extra setup.
 
 The preview must not import any scope's `en.json`: Chromatic TurboSnap retakes every story when anything `preview.ts` reaches changes. Instead, a Storybook-only Vite plugin in `main.ts` makes each `i18n/scope.ts` register its own `en.json`, so a string change retakes only the stories rendering that scope. The card, trait and campaign fixture strings stay in the preview; they rarely change. Stories sit next to their component as `{name}.stories.ts` and are excluded from Sonar coverage. Chromatic runs them for visual regression in CI.

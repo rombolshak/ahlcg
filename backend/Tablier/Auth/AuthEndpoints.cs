@@ -63,7 +63,8 @@ public static partial class AuthEndpoints
                     + "caller is logged out, a new permanent account is created. A permanent session cannot create a second "
                     + "account: log out first. "
                     + "A 403 means the email is on record and the password was wrong, or the account is locked out — the two "
-                    + "are deliberately indistinguishable, so the route never confirms that an email is registered. "
+                    + "share a response. Unknown emails take the creation or upgrade branch, so the route does not hide "
+                    + "whether an email is registered. "
                     + "Account creation (the last branch) is throttled per IP; exceeding it returns 429. Signing in to an "
                     + "existing account and upgrading an anonymous one are never throttled here."
             )

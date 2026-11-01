@@ -25,12 +25,14 @@ Map changed code to the docs that describe it:
 | Changed | Check |
 | --- | --- |
 | `frontend/src/app/**` component/service/directive | `docs/frontend/frontend.md` (layout tree, service table), `docs/frontend/frontend-conventions.md` |
-| `frontend/src/app/pages/game-view/store/**` | `docs/frontend/state-store.md` |
+| `frontend/src/app/pages/game-view/store/**`, `frontend/src/app/features/games/**` | `docs/frontend/state-store.md` |
 | `backend/**` endpoints, entities, migrations | `docs/backend/backend.md`, `docs/backend/api.md` |
 | Auth, cookies, secrets | `docs/backend/security.md` |
 | Specs, test setup, `angular.json` test target | `docs/practice/testing.md` |
 | `package.json` scripts, workflows, husky hooks | `docs/practice/workflow.md` |
-| What exists at all | `docs/architecture.md` — the status table |
+| What exists at all | `docs/architecture.md` — the canonical status table; `docs/README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and `frontend/README.md` for routing and stale summaries |
+
+Keep capability status in `docs/architecture.md` and link to it from entry points rather than duplicating the inventory. Check source comments and OpenAPI descriptions for stale claims too; report source changes outside the supplied docs scope.
 
 Grep the docs for names you changed — a renamed service or moved file is the most common source of a stale claim.
 

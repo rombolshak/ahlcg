@@ -216,6 +216,8 @@ Prefer surfacing prompt-driving values up front (target subscription/region/reso
 
 ## Project-Local Skill Override
 
+This is the project-local copy. The following override applies to separate plugin copies; never defer this file to itself.
+
 If `.agents/skills/aspire-deployment/SKILL.md` exists (dropped by `aspire agent init`),
 prefer it over this plugin skill — it is the authoritative project-local version with
 content version-aligned to the consumer's Aspire CLI. This plugin skill is the always-on

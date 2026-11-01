@@ -1,4 +1,18 @@
-# Game State Store
+# Game State Stores
+
+## Routed game session
+
+`frontend/src/app/features/games/with-game-session.ts` owns the active `/game/:id` fixture page's state through `FixtureGameStore`. It is separate from the Arkham board store below.
+
+- `GameConnectionService` owns transport, state resets and version ordering. The feature subscribes to `memberStateEvents` before connecting and validates every full view and applied patch through the supplied schema.
+- `_confirmedView` and `_confirmedVersion` track server truth. `viewModel` is the displayed view, possibly with one optimistic action patch applied. `status` starts as `loading`; a null reset makes it `empty`, and a non-null reset makes it `ready`.
+- `choose` accepts only an offered action and permits one pending action. It applies the offered patch optimistically and invokes `Execute`; while pending, `availableActions` is empty, although `holdsActions` still describes the confirmed offers.
+- A successful execute response records the committed version. Reconciliation drops the pending action once the confirmed version reaches it. Until then, incoming confirmed changes reapply the pending action's latest offered patch. Missing offers or invalid optimistic patches drop it and restore confirmed truth. A null execute response or error also drops it; errors are rethrown.
+- A null reset clears confirmed state, offers and pending work. `disconnect` unsubscribes from state events, disconnects the transport and drops pending work; it does not clear the retained confirmed view or reset the status to `loading`.
+
+Tracked in [#749](https://github.com/rombolshak/ahlcg/issues/749). Connection replacement currently guards stale state messages, but not every lifecycle callback or delayed `start()` completion. The page connects in `ngOnInit`, so a reused component does not react to a changed route id. Do not assume those lifecycle cases are handled.
+
+## Unrouted Arkham board
 
 `frontend/src/app/pages/game-view/store/game-state.store.ts` — the single source of truth for the board. Read the file; this page explains the parts that are not obvious from it.
 
@@ -32,7 +46,7 @@ protected readonly cards = computed(() =>
 
 ## Writing
 
-**`setState(state: GameState)`** — installs a whole state and clears `isLoading`. Used on load and by the debug panel's reset.
+**`setState(state: GameState)`** — installs a whole state without runtime validation and clears `isLoading`. Used on load and by the debug panel's reset. Only the patch path below invokes the schema validator.
 
 **`updateState(changes: Operation[])`** — applies RFC6902 patches. The sequence matters:
 
@@ -52,13 +66,13 @@ Rejections use `ctx.reject({ path, problem })` (or `expected`/`actual`), so vali
 
 ## Animations
 
-GSAP with the Flip plugin, registered once at module load in the store file. The Flip import carries a `@ts-ignore` for a known typing issue in gsap 3.14.2 (issue #637) — keep it.
+GSAP with the Flip plugin, registered once at module load in the store file. `package.json` requests GSAP `^3.15.0`. A stale `@ts-ignore` mentioning 3.14.2 currently sits above the `Act` import, not the Flip import; it is not evidence that Flip still needs a suppression.
 
 Only `ah-investigator-avatar` elements are currently animated, for 2s with `power2.inOut`. To animate more, widen the `targets` selector in `updateState`. To debug a state transition without motion, comment out the `Flip.from` call.
 
 ## Debug workflow
 
-The game view has no server. `DebugTimelineService` provides the replay loop:
+The unrouted Arkham board uses a local fixture. `DebugTimelineService` provides its replay loop:
 
 - It captures the first non-null state as `originalState` via an `effect`.
 - `recordChanges(newModel)` diffs against the last recorded state with `createPatch` and appends a non-empty patch to `patches`.

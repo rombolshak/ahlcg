@@ -26,14 +26,16 @@ Then the children:
 
 ```bash
 gh api graphql -f query='
-  query($o:String!,$r:String!,$n:Int!){
+  query($o:String!,$r:String!,$n:Int!,$cursor:String){
     repository(owner:$o,name:$r){
       issue(number:$n){
-        subIssues(first:50){ totalCount nodes{ number title state body } }
+        subIssues(first:50,after:$cursor){ totalCount pageInfo{ hasNextPage endCursor } nodes{ number title state body } }
       }
     }
   }' -F o=rombolshak -F r=ahlcg -F n=$1
 ```
+
+The query above reads the first page. While `hasNextPage` is true, repeat with `-f cursor=<endCursor>` and accumulate children by issue number. Confirm the distinct count equals `totalCount` before assessing completeness or writing changes. A failed or incomplete page read stops restructuring; never interpret a truncated list as the whole subtree.
 
 For each child, read its body **and its comments** — `gh issue view <n> --comments`. Comments are where the real thinking usually lives on older issues, and losing it is the main risk of this command.
 
