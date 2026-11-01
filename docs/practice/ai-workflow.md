@@ -47,16 +47,16 @@ The project default in `.codex/config.toml` is the main orchestrator model. Each
 
 | Role | Model | Effort |
 | --- | --- | --- |
-| Main: groom, decompose, plan, coordinate | `gpt-6-astra` | `medium` |
+| Main: groom, decompose, plan, coordinate | `gpt-6.1-sol` | `high` |
 | figma-designer | `gpt-6.1-terra` | `medium` |
 | issue-auditor | `gpt-6-luna` | `high` |
-| wordsmith | `gpt-6-astra` | `medium` |
-| implementer | `gpt-6.1-sol` | `medium` |
-| reviewer | `gpt-6.1-sol` | `high` |
+| wordsmith | `gpt-6.1-sol` | `high` |
+| implementer | `gpt-6.1-terra` | `high` |
+| reviewer | `gpt-6.1-sol` | `medium` |
 | docs-sync | `gpt-6.1-sol` | `medium` |
-| shipper | `gpt-6-luna` | `low` |
+| shipper | `gpt-6-luna` | `medium` |
 
-Project config applies in trusted repositories; an explicit session/CLI model selection can override the main default. Applying a file does not change an already-running conversation's model. Start a new session or select Astra/medium for main orchestration when needed. Model-specific delegation uses fresh context and complete phase inputs; if a configured role/model is unavailable, report the blocker rather than silently falling back. Agent instructions limit their responsibilities; all inherit the parent's actual permissions and available tools.
+Project config applies in trusted repositories; an explicit session/CLI model selection can override the main default. Applying a file does not change an already-running conversation's model. Start a new session or select Sol/high for main orchestration when needed. Model-specific delegation uses fresh context and complete phase inputs; if a configured role/model is unavailable, report the blocker rather than silently falling back. Agent instructions limit their responsibilities; all inherit the parent's actual permissions and available tools.
 
 The agent definitions remain in the host's conventional flat discovery directory; the six-entry code-folder guideline does not reorganize this configuration registry.
 

@@ -1,5 +1,5 @@
 model = "gpt-6.1-sol"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 
 name = "reviewer"
 description = "Independently reviews requirements, approved design and plan, code quality, and security. Read-only."
