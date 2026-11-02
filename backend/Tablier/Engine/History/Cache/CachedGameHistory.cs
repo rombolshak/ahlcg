@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
+using Tablier.Engine.History.Rewind;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
@@ -85,6 +86,9 @@ public sealed partial class CachedGameHistory<TState>(
 
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         inner.LoadAt(gameId, version, ct);
+
+    public Task<RewindHistory?> GetRewindHistory(Guid gameId, int expectedHead, CancellationToken ct) =>
+        inner.GetRewindHistory(gameId, expectedHead, ct);
 
     public async Task<StoredState<TState>?> Restore(
         Guid gameId,

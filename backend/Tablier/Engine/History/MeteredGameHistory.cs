@@ -1,4 +1,5 @@
 using Tablier.Contract;
+using Tablier.Engine.History.Rewind;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History;
@@ -26,6 +27,13 @@ public sealed class MeteredGameHistory<TState>(
 
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         MeasureAsync("load_at", () => inner.LoadAt(gameId, version, ct), OkOr(OutcomeMissing));
+
+    public Task<RewindHistory?> GetRewindHistory(Guid gameId, int expectedHead, CancellationToken ct) =>
+        MeasureAsync(
+            "rewind_history",
+            () => inner.GetRewindHistory(gameId, expectedHead, ct),
+            result => result is null ? OutcomeRefused : OutcomeOk
+        );
 
     public Task<StoredState<TState>?> Restore(
         Guid gameId,
