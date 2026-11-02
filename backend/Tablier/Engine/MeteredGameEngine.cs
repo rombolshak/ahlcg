@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Tablier.Engine.History.Rewind;
 using Tablier.Games;
 using Tablier.Telemetry;
 
@@ -30,6 +31,22 @@ public sealed class MeteredGameEngine(IGameEngine inner, TablierMetrics metrics,
             () => inner.Execute(gameId, member, action, ct),
             version => version is null ? OutcomeRefused : OutcomeOk
         );
+
+    public Task<RewindTargets?> GetRewindTargets(Guid gameId, string member, CancellationToken ct) =>
+        MeasureAsync(
+            "get_rewind_targets",
+            () => inner.GetRewindTargets(gameId, member, ct),
+            result => result is null ? OutcomeRefused : OutcomeOk
+        );
+
+    public Task<RewindProposal?> GetRewindProposal(Guid gameId, string member, CancellationToken ct) =>
+        MeasureAsync("get_rewind_proposal", () => inner.GetRewindProposal(gameId, member, ct), _ => OutcomeOk);
+
+    public Task<bool> RequestRewind(Guid gameId, string member, int? target, CancellationToken ct) =>
+        MeasureAsync("request_rewind", () => inner.RequestRewind(gameId, member, target, ct), OkOrRefused);
+
+    public Task<bool> AnswerRewind(Guid gameId, string member, Guid proposalId, bool approve, CancellationToken ct) =>
+        MeasureAsync("answer_rewind", () => inner.AnswerRewind(gameId, member, proposalId, approve, ct), OkOrRefused);
 
     private static string OkOrRefused(bool accepted) => accepted ? OutcomeOk : OutcomeRefused;
 }

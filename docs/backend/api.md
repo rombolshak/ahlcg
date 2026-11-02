@@ -43,17 +43,27 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 | Client → server | `Ping()` | returns a UTC timestamp |
 | Client → server | `GetState()` | returns `MemberState` — the version, the member's view and, per offered action, the patch it would apply to that view — or `null` |
 | Client → server | `Execute(action)` | returns the version the caller's step was committed at, once it and any steps the server advanced after it were sent, or `null` if it was not applied |
+| Client → server | `GetRewindTargets()` | returns `{ head, checkpoints: [{ version, tag }], undoTarget }`, or `null` if refused; checkpoints are newest first, and `undoTarget` is nullable |
+| Client → server | `GetRewindProposal()` | returns `{ id, head, target, requester, required, approved }`, or `null` when no current proposal exists or the caller is not a current member; `required` and `approved` contain user ids |
+| Client → server | `RequestRewind(target)` | requests an offered checkpoint version; returns `true` if restored immediately or a proposal was opened, otherwise `false` |
+| Client → server | `Undo()` | requests the current undo target; returns `true` if restored immediately or a proposal was opened, otherwise `false` |
+| Client → server | `AnswerRewind(proposalId, approve)` | returns `true` for an accepted answer, including a repeated approval while the proposal remains current; `false` for a stale proposal, invalid voter or failed restore |
 | Server → client | `Exit` | to the caller only: an `ExitReason` — stop the connection and do not reconnect |
 | Server → client | `MemberConnected` | to every member of the game: the user id |
 | Server → client | `MemberDisconnected` | to every member of the game: the user id |
 | Server → client | `InviteCodeChanged` | to every member of the game: the session's invite code, or `null` while no seat is open. Sent after every sync or rotation of the code, connecting included, so a client gets the current code right after it connects. Unversioned: the code is session data, never part of the state |
 | Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version. A member who joins in that version does not get it: their first view comes from `GetState` |
+| Server → client | `RewindProposalChanged` | payload-free, unversioned hint to current database members: pull `GetRewindProposal()` for authoritative state. Concurrent hints can arrive out of order |
 
 **`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
 
 **`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `null`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
 
-These checks use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Cache failures can also surface after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
+`GetState` and `Execute` use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Cache failures can also surface after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
+
+**Rewind operations check current database membership on every call.** `RequestRewind` accepts only a checkpoint currently offered on the live path; `Undo` selects the undo target itself. The engine derives consent from live player steps after the target, excluding the requester. Empty consent restores immediately, even while another proposal is open. Otherwise, at most one proposal is open per game; a second request needing consent is refused. Only required members may answer. Any rejection closes the proposal without restoring; all required approvals attempt the restore through the persistence head check. Reads and answers revalidate the proposal's head against persisted history, and every committed player, automatic, membership or restore step invalidates an older proposal. Normal rules actions remain available throughout.
+
+**Proposals are session data outside the versioned state.** Pull `GetRewindProposal` after connecting or reconnecting and on `RewindProposalChanged`; neither `GetState` nor a proposal hint carries the proposal. A restore emits private `StateChanged` patches to current database members also present in the restored state. The restore row contains the exact target state, including journal and random generator; if it offers no actions, the engine then commits and sends separate automatic steps. The rules' action protocol is unchanged.
 
 **There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
 
@@ -61,7 +71,7 @@ These checks use persisted state, not a fresh membership query. Reloading state 
 
 **`ExitReason` crosses the wire as a string** (`"NotAMember"`), not a number. That is not SignalR's default — `AddSignalR()` in `AddTablier()` registers a `JsonStringEnumConverter` on the hub's payload serializer to get it. Drop that converter and every enum silently becomes an integer, which no client reading `"NotAMember"` will match.
 
-One group per game, named by the game id. Both presence broadcasts go to the whole group, so a member receives their own `MemberConnected` too. A second group per member, `{gameId}:{userId}`, carries `StateChanged`, since each member's diff is different.
+One group per game, named by the game id. Both presence broadcasts go to the whole group, so a member receives their own `MemberConnected` too. A second group per member, `{gameId}:{userId}`, carries `StateChanged`, since each member's diff is different, and `RewindProposalChanged` hints.
 
 **The broadcasts are per member, not per connection.** A member with two tabs open produces one `memberConnected` when the first arrives and one `memberDisconnected` when the last goes — closing one tab does not announce them offline while they are still present in the other.
 
