@@ -24,6 +24,9 @@ public interface IGameClient
 
     Task InviteCodeChanged(string? code);
 
+    // A hint to fetch the current proposal; concurrent changes can arrive out of order.
+    Task RewindProposalChanged();
+
     // The method name is the SignalR wire name the frontend listens on.
 #pragma warning disable CA1716
     Task Exit(ExitReason reason);

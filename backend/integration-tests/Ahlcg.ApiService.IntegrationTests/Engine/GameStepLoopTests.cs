@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -8,7 +9,16 @@ using Ahlcg.Rules.Fixture;
 using Json.Patch;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+using Tablier.Contract;
+using Tablier.Engine.History;
+using Tablier.Engine.History.Cache;
+using Tablier.Engine.History.Cleanup;
 using Tablier.Games;
+using Tablier.Telemetry;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine;
 
@@ -23,6 +33,276 @@ public class GameStepLoopTests(AppFixture fixture)
         "secret:dec",
         "reveal",
     ];
+    private static readonly string?[] RestoredTags = ["b", "a"];
+
+    [Fact]
+    public async Task Undo_OwnActionWhileProposalOpen_RestoresAndVoidsProposal()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var proposal = (await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        var id = proposal.GetProperty("id").GetGuid();
+
+        Assert.True(await member.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+
+        Assert.Null(await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        Assert.Equal(0, (await owner.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+        await using var db = fixture.CreateDbContext();
+        Assert.Single(
+            await db.GameSteps.Where(s => s.GameId == owner.GameId && s.RestoredVersion != null).ToListAsync()
+        );
+    }
+
+    [Fact]
+    public async Task Rewind_CheckpointsAcrossCleanup_RestoresExactStateAndPrivateViews()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await using var db = fixture.CreateDbContext();
+        await using var redis = await ConnectionMultiplexer.ConnectAsync(fixture.CacheConnectionString);
+        await using var services = new ServiceCollection().AddMetrics().BuildServiceProvider();
+        var store = new GameHistory<FixtureState>(db, NullLogger<GameHistory<FixtureState>>.Instance);
+        var cached = new CachedGameHistory<FixtureState>(
+            store,
+            redis,
+            Options.Create(new GameHistoryCacheOptions()),
+            new TablierMetrics(services.GetRequiredService<IMeterFactory>()),
+            NullLogger<CachedGameHistory<FixtureState>>.Instance
+        );
+        var (a, b) = await SeedCheckpointsAsync(owner, member, cached);
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "secret:inc");
+        await owner.NextChangeAsync();
+        await member.NextChangeAsync();
+        var ownerBefore = await owner.GetStateAsync();
+        var memberBefore = await member.GetStateAsync();
+        var targets = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindTargets)))!.Value;
+        Assert.Equal(
+            new[] { a.Version, b.Version },
+            targets.GetProperty("checkpoints").EnumerateArray().Select(c => c.GetProperty("version").GetInt32()).Order()
+        );
+
+        await ApproveCheckpointAsync(owner, member, b.Version);
+        await AssertPrivateRestoreAsync(owner, member, ownerBefore, memberBefore);
+        Assert.Equal(
+            JsonSerializer.Serialize(b.State),
+            JsonSerializer.Serialize((await store.LoadCurrent(owner.GameId, CancellationToken.None))!.State)
+        );
+
+        await using var cleanupDb = fixture.CreateDbContext();
+        await new GameHistoryCleanup(cleanupDb, NullLogger<GameHistoryCleanup>.Instance).Run(CancellationToken.None);
+        targets = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindTargets)))!.Value;
+        Assert.Equal(
+            a.Version,
+            targets.GetProperty("checkpoints").EnumerateArray().Single().GetProperty("version").GetInt32()
+        );
+        await ApproveCheckpointAsync(owner, member, a.Version);
+        Assert.Equal(
+            JsonSerializer.Serialize(a.State),
+            JsonSerializer.Serialize((await store.LoadCurrent(owner.GameId, CancellationToken.None))!.State)
+        );
+        Assert.Equal(
+            JsonSerializer.Serialize(a.State),
+            JsonSerializer.Serialize((await store.LoadAt(owner.GameId, a.Version, CancellationToken.None))!.State)
+        );
+        await AssertRestoresAsync(owner.GameId, a.Version, b.Version);
+        Assert.NotNull(await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc"));
+        Assert.Equal(11, (await owner.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+        Assert.Equal(
+            JsonSerializer.Serialize(a.State with { Shared = 11 }),
+            JsonSerializer.Serialize((await store.LoadCurrent(owner.GameId, CancellationToken.None))!.State)
+        );
+    }
+
+    [Fact]
+    public async Task Undo_MembershipSync_InvalidatesOpenProposal()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var id = (await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!
+            .Value.GetProperty("id")
+            .GetGuid();
+        await using var newcomer = await AddUnsyncedMemberAsync(owner);
+        await newcomer.GetStateAsync();
+        Assert.Null(await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+    }
+
+    [Fact]
+    public async Task Undo_RevealActionAndAutomaticAdvance_InvalidatesOpenProposal()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var id = (await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!
+            .Value.GetProperty("id")
+            .GetGuid();
+        Assert.NotNull(await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "reveal"));
+        Assert.Null(await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        var view = (await owner.GetStateAsync()).GetProperty("view");
+        Assert.Equal(JsonValueKind.Number, view.GetProperty("revealed").ValueKind);
+    }
+
+    [Fact]
+    public async Task Undo_ActionAndApprovalRace_NeverRestoresOverAnAction()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var proposal = (await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        var id = proposal.GetProperty("id").GetGuid();
+        var action = owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        var answer = member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true);
+        await Task.WhenAll(action, answer);
+
+        await using var db = fixture.CreateDbContext();
+        var steps = await db.GameSteps.Where(s => s.GameId == owner.GameId).OrderBy(s => s.Version).ToListAsync();
+        var restored = steps.SingleOrDefault(s => s.RestoredVersion is not null);
+        if (restored is not null)
+            Assert.True(restored.Version < await action);
+        else
+            Assert.False(await answer);
+    }
+
+    [Fact]
+    public async Task Rewind_RemovedMemberOnExistingConnection_CannotReadRequestOrVote()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var proposal = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        var id = proposal.GetProperty("id").GetGuid();
+        await using (var db = fixture.CreateDbContext())
+        {
+            var row = await db.GameMembers.SingleAsync(m => m.GameId == owner.GameId && m.UserId == member.UserId);
+            db.GameMembers.Remove(row);
+            await db.SaveChangesAsync();
+        }
+
+        Assert.Null(await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindTargets)));
+        Assert.Null(await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.RequestRewind), 0));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+    }
+
+    [Fact]
+    public async Task Rewind_ConcurrentApprovals_RestoresOnce()
+    {
+        var (owner, first) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = first;
+        await using var second = await AddUnsyncedMemberAsync(owner);
+        await second.GetStateAsync();
+        await owner.NextChangeAsync();
+        await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "reveal");
+        await first.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        await second.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        var targets = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindTargets)))!.Value;
+        var checkpoint = targets.GetProperty("checkpoints").EnumerateArray().Single().GetProperty("version").GetInt32();
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.RequestRewind), checkpoint));
+        var proposal = (await first.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        var id = proposal.GetProperty("id").GetGuid();
+        Assert.True(await first.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        Assert.True(await first.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        Assert.True(await first.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, false));
+        Assert.Null(await second.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.RequestRewind), checkpoint));
+        proposal = (await first.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        id = proposal.GetProperty("id").GetGuid();
+
+        var answers = await Task.WhenAll(
+            first.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true),
+            second.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true)
+        );
+
+        Assert.All(answers, Assert.True);
+        await using var db = fixture.CreateDbContext();
+        Assert.Equal(
+            1,
+            await db.GameSteps.CountAsync(s => s.GameId == owner.GameId && s.RestoredVersion == checkpoint)
+        );
+        Assert.Equal(0, (await owner.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+    }
+
+    [Fact]
+    public async Task Undo_OwnActions_RestoresRepeatedly()
+    {
+        await using var game = await StartGameAsync();
+        await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+
+        Assert.True(await game.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        Assert.Equal(1, (await game.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+        Assert.True(await game.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        Assert.Equal(0, (await game.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+        Assert.False(await game.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        await using var db = fixture.CreateDbContext();
+        var restores = await db
+            .GameSteps.Where(s => s.GameId == game.GameId && s.RestoredVersion != null)
+            .OrderBy(s => s.Version)
+            .ToListAsync();
+        Assert.Equal([1, 0], restores.Select(s => s.RestoredVersion));
+    }
+
+    [Fact]
+    public async Task Undo_OtherMembersAction_RequiresConsentAndRestores()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "secret:inc");
+
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var proposal = await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal));
+        Assert.NotNull(proposal);
+        await using var reconnected = await member.ConnectAgainAsync();
+        var recovered = await reconnected.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal));
+        Assert.Equal(proposal.Value.GetProperty("id").GetGuid(), recovered!.Value.GetProperty("id").GetGuid());
+        var id = proposal.Value.GetProperty("id").GetGuid();
+        Assert.False(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        Assert.True(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+        Assert.Null(await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.Equal(0, (await member.GetStateAsync()).GetProperty("view").GetProperty("ownSecret").GetInt32());
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), id, true));
+    }
+
+    [Fact]
+    public async Task Undo_ProposalRejectOrAction_ClosesWithoutRestore()
+    {
+        var (owner, member) = await StartSharedGameAsync();
+        await using var _ = owner;
+        await using var __ = member;
+        await member.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var first = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!
+            .Value.GetProperty("id")
+            .GetGuid();
+        Assert.True(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), first, false));
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.Undo)));
+        var second = (await owner.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!
+            .Value.GetProperty("id")
+            .GetGuid();
+        Assert.NotEqual(first, second);
+        Assert.NotNull(await owner.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc"));
+        Assert.Null(await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)));
+        Assert.False(await member.Connection.InvokeAsync<bool>(nameof(GameHub.AnswerRewind), second, true));
+        Assert.Equal(2, (await owner.GetStateAsync()).GetProperty("view").GetProperty("shared").GetInt32());
+    }
 
     [Fact]
     public async Task GetState_Member_ReturnsVersionViewAndEveryAction()
@@ -345,6 +625,93 @@ public class GameStepLoopTests(AppFixture fixture)
         joinerConnection.On<string?>(nameof(IGameClient.InviteCodeChanged), c => joinerCodes.Writer.TryWrite(c));
         await joinerConnection.StartAsync();
         Assert.Null(await HubTestSupport.WithTimeoutAsync(joinerCodes.Reader.ReadAsync().AsTask()));
+    }
+
+    private static async Task<(StoredState<FixtureState> A, StoredState<FixtureState> B)> SeedCheckpointsAsync(
+        GameRun owner,
+        GameRun member,
+        CachedGameHistory<FixtureState> cached
+    )
+    {
+        var initial = (await cached.LoadCurrent(owner.GameId, CancellationToken.None))!;
+        var stateA = initial.State with
+        {
+            Shared = 10,
+            Secrets = initial.State.Secrets.SetItem(owner.UserId, 1).SetItem(member.UserId, -1),
+            Journal = initial.State.Journal.Add(new FixtureJournalEntry("first", new Dictionary<string, object?>())),
+            Random = initial.State.Random.Next(1, 7).Random,
+        };
+        var a = (
+            await cached.Append(
+                owner.GameId,
+                initial,
+                new StepResult<FixtureState>(stateA, "a"),
+                new PlayerChoice(owner.UserId, "seed-a"),
+                CancellationToken.None
+            )
+        )!;
+        var stateB = stateA with
+        {
+            Shared = 20,
+            Secrets = stateA.Secrets.SetItem(owner.UserId, 2).SetItem(member.UserId, -2),
+            Journal = stateA.Journal.Add(new FixtureJournalEntry("second", new Dictionary<string, object?>())),
+            Random = stateA.Random.Next(1, 7).Random,
+        };
+        var b = (
+            await cached.Append(
+                owner.GameId,
+                a,
+                new StepResult<FixtureState>(stateB, "b"),
+                new PlayerChoice(member.UserId, "seed-b"),
+                CancellationToken.None
+            )
+        )!;
+        return (a, b);
+    }
+
+    private async Task AssertRestoresAsync(Guid gameId, int a, int b)
+    {
+        await using var db = fixture.CreateDbContext();
+        var restores = await db
+            .GameSteps.AsNoTracking()
+            .Where(s => s.GameId == gameId && s.RestoredVersion != null)
+            .OrderBy(s => s.Version)
+            .ToListAsync();
+        Assert.Equal(new int?[] { b, a }, restores.Select(s => s.RestoredVersion));
+        Assert.Equal(RestoredTags, restores.Select(s => s.Checkpoint));
+        Assert.All(restores, s => Assert.False(s.IsIrreversible));
+    }
+
+    private static async Task ApproveCheckpointAsync(GameRun owner, GameRun member, int version)
+    {
+        Assert.True(await owner.Connection.InvokeAsync<bool>(nameof(GameHub.RequestRewind), version));
+        var proposal = (await member.Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetRewindProposal)))!.Value;
+        Assert.True(
+            await member.Connection.InvokeAsync<bool>(
+                nameof(GameHub.AnswerRewind),
+                proposal.GetProperty("id").GetGuid(),
+                true
+            )
+        );
+    }
+
+    private static async Task AssertPrivateRestoreAsync(
+        GameRun owner,
+        GameRun member,
+        JsonElement ownerBefore,
+        JsonElement memberBefore
+    )
+    {
+        var ownerChange = await owner.NextChangeAsync();
+        var memberChange = await member.NextChangeAsync();
+        var ownerView = ApplyView(ownerBefore, ownerChange);
+        var memberView = ApplyView(memberBefore, memberChange);
+        Assert.Equal(2, ownerView["ownSecret"]!.GetValue<int>());
+        Assert.Equal(-2, memberView["ownSecret"]!.GetValue<int>());
+        Assert.Equal(nameof(SecretSign.Negative), ownerView["others"]![member.UserId]!.GetValue<string>());
+        Assert.Equal(nameof(SecretSign.Positive), memberView["others"]![owner.UserId]!.GetValue<string>());
+        AssertPatchHoldsOnlySigns(ownerChange.GetProperty("viewPatch"), member.UserId);
+        AssertPatchHoldsOnlySigns(memberChange.GetProperty("viewPatch"), owner.UserId);
     }
 
     private async Task<GameRun> StartGameAsync()

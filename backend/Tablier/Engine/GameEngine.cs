@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
+using Tablier.Engine.History.Rewind;
 using Tablier.Games;
 
 namespace Tablier.Engine;
@@ -16,6 +17,7 @@ namespace Tablier.Engine;
 public sealed partial class GameEngine<TConfiguration, TState, TView>(
     GameRules<TConfiguration, TState, TView> rules,
     IGameHistory<TState> history,
+    RewindProposals proposals,
     ApplicationDbContext db,
     IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
@@ -76,6 +78,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             }
 
             conflicts = 0;
+            await InvalidateProposal(gameId, committed.Version, ct);
             if (change.Value.Joined)
                 LogMemberAddedBySync(logger, gameId, change.Value.Member, committed.Version);
             else
@@ -135,6 +138,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             }
 
             LogStepCommitted(logger, gameId, member, committed.Version);
+            await InvalidateProposal(gameId, committed.Version, ct);
             await SendStateChanged(gameId, stored, committed);
             await AdvanceNonPlayerSteps(gameId, committed, ct);
             return committed.Version;
@@ -167,7 +171,12 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     private bool HoldsActions(TState state) =>
         rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
 
-    private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct)
+    private async Task AdvanceNonPlayerSteps(
+        Guid gameId,
+        StoredState<TState> committed,
+        CancellationToken ct,
+        bool checkMembership = false
+    )
     {
         var current = committed;
         while (!HoldsActions(current.State))
@@ -180,15 +189,31 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
             }
 
             LogAdvanced(logger, gameId, next.Version);
-            await SendStateChanged(gameId, current, next);
+            await InvalidateProposal(gameId, next.Version, ct);
+            await SendStateChanged(gameId, current, next, checkMembership);
             current = next;
         }
     }
 
-    private async Task SendStateChanged(Guid gameId, StoredState<TState> previous, StoredState<TState> next)
+    private async Task SendStateChanged(
+        Guid gameId,
+        StoredState<TState> previous,
+        StoredState<TState> next,
+        bool checkMembership = false
+    )
     {
         var previousMembers = rules.Processor.GetMembers(previous.State);
-        foreach (var member in rules.Processor.GetMembers(next.State))
+        var currentMembers = rules.Processor.GetMembers(next.State);
+        if (checkMembership)
+        {
+            var rows = await db
+                .GameMembers.AsNoTracking()
+                .Where(m => m.GameId == gameId)
+                .Select(m => m.UserId)
+                .ToListAsync();
+            currentMembers = currentMembers.Intersect(rows).ToHashSet(StringComparer.Ordinal);
+        }
+        foreach (var member in currentMembers)
         {
             if (!previousMembers.Contains(member))
             {
@@ -231,6 +256,212 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         {
             return default;
         }
+    }
+
+    public async Task<RewindTargets?> GetRewindTargets(Guid gameId, string member, CancellationToken ct)
+    {
+        if (!await IsCurrentMember(gameId, member, ct))
+            return null;
+        var current = await history.LoadCurrent(gameId, ct);
+        var path = current is null ? null : await history.GetRewindHistory(gameId, current.Version, ct);
+        if (path is null)
+        {
+            LogRewindRefused(logger, gameId, member, "history-unavailable");
+            return null;
+        }
+        LogRewindRead(logger, gameId, member, path.Head);
+        return new RewindTargets(path.Head, path.GetCheckpoints(), path.GetUndoTarget());
+    }
+
+    public async Task<RewindProposal?> GetRewindProposal(Guid gameId, string member, CancellationToken ct)
+    {
+        if (!await IsCurrentMember(gameId, member, ct))
+            return null;
+        var proposal = await GetCurrentProposal(gameId, ct);
+        LogProposalRead(logger, gameId, member, proposal?.Id);
+        return proposal;
+    }
+
+    public async Task<bool> RequestRewind(Guid gameId, string member, int? target, CancellationToken ct)
+    {
+        if (!await IsCurrentMember(gameId, member, ct))
+            return false;
+        var current = await history.LoadCurrent(gameId, ct);
+        var path = current is null ? null : await history.GetRewindHistory(gameId, current.Version, ct);
+        var selected = target ?? path?.GetUndoTarget();
+        if (current is null || path is null)
+        {
+            LogRewindRefused(logger, gameId, member, "history-unavailable-or-stale-head");
+            return false;
+        }
+        if (selected is null || (target is not null && !path.GetCheckpoints().Any(c => c.Version == target)))
+        {
+            LogRewindRefused(logger, gameId, member, "invalid-target");
+            return false;
+        }
+        var required = path.GetConsent(selected.Value, member);
+        if (required is null)
+        {
+            LogRewindRefused(logger, gameId, member, "invalid-consent-target");
+            return false;
+        }
+        if (required.Count == 0)
+            return await RestoreRewind(gameId, member, current, selected.Value, ct);
+        if (await GetCurrentProposal(gameId, ct) is not null)
+        {
+            LogRewindRefused(logger, gameId, member, "proposal-active");
+            return false;
+        }
+        var proposal = new RewindProposal(
+            Guid.NewGuid(),
+            current.Version,
+            selected.Value,
+            member,
+            required.Order(StringComparer.Ordinal).ToList(),
+            []
+        );
+        if (!await proposals.Exchange(gameId, expected: null, proposal))
+        {
+            LogRewindRefused(logger, gameId, member, "proposal-create-conflict");
+            return false;
+        }
+        if (await history.GetRewindHistory(gameId, current.Version, ct) is null)
+        {
+            await proposals.Exchange(gameId, proposal, replacement: null);
+            LogRewindRefused(logger, gameId, member, "stale-head");
+            return false;
+        }
+        LogProposalOpened(logger, gameId, proposal.Id, current.Version);
+        await SendProposalChanged(gameId, ct);
+        return true;
+    }
+
+    public async Task<bool> AnswerRewind(
+        Guid gameId,
+        string member,
+        Guid proposalId,
+        bool approve,
+        CancellationToken ct
+    )
+    {
+        if (!await IsCurrentMember(gameId, member, ct))
+            return false;
+        while (true)
+        {
+            var proposal = await GetCurrentProposal(gameId, ct);
+            if (proposal is null || proposal.Id != proposalId || !proposal.Required.Contains(member))
+            {
+                LogRewindRefused(logger, gameId, member, "proposal-or-voter-invalid");
+                return false;
+            }
+            if (approve && proposal.Approved.Contains(member))
+            {
+                LogAnswerRepeated(logger, gameId, member, proposalId);
+                return true;
+            }
+            var approved = proposal.Approved.Append(member).Order(StringComparer.Ordinal).ToList();
+            var complete = approve && approved.Count == proposal.Required.Count;
+            var replacement = !approve || complete ? null : proposal with { Approved = approved };
+            if (!await proposals.Exchange(gameId, proposal, replacement))
+                continue;
+            if (await history.GetRewindHistory(gameId, proposal.Head, ct) is null)
+            {
+                if (replacement is not null)
+                    await proposals.Exchange(gameId, replacement, replacement: null);
+                await SendProposalChanged(gameId, ct);
+                LogRewindRefused(logger, gameId, member, "stale-head");
+                return false;
+            }
+            LogAnswerRecorded(logger, gameId, member, proposalId, approve ? "approved" : "rejected");
+            if (!complete)
+            {
+                await SendProposalChanged(gameId, ct);
+                return true;
+            }
+            var current = await history.LoadCurrent(gameId, ct);
+            if (current is null || current.Version != proposal.Head)
+            {
+                await SendProposalChanged(gameId, ct);
+                LogRewindRefused(logger, gameId, member, "stale-head");
+                return false;
+            }
+            var restored = await RestoreRewind(gameId, member, current, proposal.Target, ct);
+            await SendProposalChanged(gameId, ct);
+            return restored;
+        }
+    }
+
+    private async Task<bool> IsCurrentMember(Guid gameId, string member, CancellationToken ct)
+    {
+        var exists = await db.GameMembers.AsNoTracking().AnyAsync(m => m.GameId == gameId && m.UserId == member, ct);
+        if (!exists)
+            LogRewindRefusedNotMember(logger, gameId, member);
+        return exists;
+    }
+
+    private async Task<RewindProposal?> GetCurrentProposal(Guid gameId, CancellationToken ct)
+    {
+        while (true)
+        {
+            var proposal = await proposals.Get(gameId);
+            if (proposal is null)
+                return null;
+            if (await history.GetRewindHistory(gameId, proposal.Head, ct) is not null)
+                return proposal;
+            if (await proposals.Exchange(gameId, proposal, replacement: null))
+            {
+                LogProposalVoided(logger, gameId, proposal.Id, proposal.Head);
+                await SendProposalChanged(gameId, ct);
+                return null;
+            }
+        }
+    }
+
+    private async Task InvalidateProposal(Guid gameId, int version, CancellationToken ct)
+    {
+        while (true)
+        {
+            var proposal = await proposals.Get(gameId);
+            if (proposal is null || proposal.Head >= version)
+                return;
+            if (!await proposals.Exchange(gameId, proposal, replacement: null))
+                continue;
+            LogProposalVoided(logger, gameId, proposal.Id, proposal.Head);
+            await SendProposalChanged(gameId, ct);
+            return;
+        }
+    }
+
+    private async Task<bool> RestoreRewind(
+        Guid gameId,
+        string member,
+        StoredState<TState> current,
+        int target,
+        CancellationToken ct
+    )
+    {
+        var restored = await history.Restore(gameId, current, target, ct);
+        if (restored is null)
+        {
+            LogRewindRefused(logger, gameId, member, "restore-conflict-or-target-unavailable");
+            return false;
+        }
+        LogRewindRestored(logger, gameId, member, restored.Version, target);
+        await InvalidateProposal(gameId, restored.Version, ct);
+        await SendStateChanged(gameId, current, restored, checkMembership: true);
+        await AdvanceNonPlayerSteps(gameId, restored, ct, checkMembership: true);
+        return true;
+    }
+
+    private async Task SendProposalChanged(Guid gameId, CancellationToken ct)
+    {
+        var members = await db
+            .GameMembers.AsNoTracking()
+            .Where(m => m.GameId == gameId)
+            .Select(m => m.UserId)
+            .ToListAsync(ct);
+        foreach (var member in members)
+            await hub.Clients.Group(GameHub.GetMemberGroupName(gameId, member)).RewindProposalChanged();
     }
 
     [LoggerMessage(LogLevel.Debug, "Game {GameId} membership already matches its state; nothing to sync")]
@@ -295,4 +526,43 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
     [LoggerMessage(LogLevel.Debug, "Game {GameId} advance after version {Version} was refused; another writer won")]
     private static partial void LogAdvanceConflict(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Information, "Rewind operation for user {UserId} in game {GameId} was refused: {Reason}")]
+    private static partial void LogRewindRefused(ILogger logger, Guid gameId, string userId, string reason);
+
+    [LoggerMessage(LogLevel.Warning, "Rewind operation for user {UserId} in game {GameId} was refused: not a member")]
+    private static partial void LogRewindRefusedNotMember(ILogger logger, Guid gameId, string userId);
+
+    [LoggerMessage(LogLevel.Debug, "Rewind targets at version {Version} of game {GameId} served to user {UserId}")]
+    private static partial void LogRewindRead(ILogger logger, Guid gameId, string userId, int version);
+
+    [LoggerMessage(LogLevel.Debug, "Rewind proposal {ProposalId} of game {GameId} served to user {UserId}")]
+    private static partial void LogProposalRead(ILogger logger, Guid gameId, string userId, Guid? proposalId);
+
+    [LoggerMessage(LogLevel.Information, "Rewind proposal {ProposalId} opened at version {Version} of game {GameId}")]
+    private static partial void LogProposalOpened(ILogger logger, Guid gameId, Guid proposalId, int version);
+
+    [LoggerMessage(LogLevel.Debug, "User {UserId} repeated an answer to proposal {ProposalId} of game {GameId}")]
+    private static partial void LogAnswerRepeated(ILogger logger, Guid gameId, string userId, Guid proposalId);
+
+    [LoggerMessage(LogLevel.Information, "User {UserId} {Answer} proposal {ProposalId} of game {GameId}")]
+    private static partial void LogAnswerRecorded(
+        ILogger logger,
+        Guid gameId,
+        string userId,
+        Guid proposalId,
+        string answer
+    );
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "Rewind proposal {ProposalId} at version {Version} of game {GameId} was voided"
+    )]
+    private static partial void LogProposalVoided(ILogger logger, Guid gameId, Guid proposalId, int version);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "User {UserId} restored version {Target} as version {Version} of game {GameId}"
+    )]
+    private static partial void LogRewindRestored(ILogger logger, Guid gameId, string userId, int version, int target);
 }

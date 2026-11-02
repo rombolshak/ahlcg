@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Engine.History.Rewind;
 
 namespace Tablier.Games;
 
@@ -36,6 +37,36 @@ public partial class GameHub(
         var (gameId, userId) = GetCaller();
 
         return engine.Execute(gameId, userId, action, Context.ConnectionAborted);
+    }
+
+    public Task<RewindTargets?> GetRewindTargets()
+    {
+        var (gameId, userId) = GetCaller();
+        return engine.GetRewindTargets(gameId, userId, Context.ConnectionAborted);
+    }
+
+    public Task<RewindProposal?> GetRewindProposal()
+    {
+        var (gameId, userId) = GetCaller();
+        return engine.GetRewindProposal(gameId, userId, Context.ConnectionAborted);
+    }
+
+    public Task<bool> RequestRewind(int target)
+    {
+        var (gameId, userId) = GetCaller();
+        return engine.RequestRewind(gameId, userId, target, Context.ConnectionAborted);
+    }
+
+    public Task<bool> Undo()
+    {
+        var (gameId, userId) = GetCaller();
+        return engine.RequestRewind(gameId, userId, target: null, Context.ConnectionAborted);
+    }
+
+    public Task<bool> AnswerRewind(Guid proposalId, bool approve)
+    {
+        var (gameId, userId) = GetCaller();
+        return engine.AnswerRewind(gameId, userId, proposalId, approve, Context.ConnectionAborted);
     }
 
     public static string GetMemberGroupName(Guid gameId, string userId) => $"{gameId}:{userId}";
