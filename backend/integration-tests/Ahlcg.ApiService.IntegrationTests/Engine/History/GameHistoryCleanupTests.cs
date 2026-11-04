@@ -14,6 +14,190 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
 [Collection(AppCollection.Name)]
 public class GameHistoryCleanupTests(AppFixture fixture)
 {
+    [Fact]
+    public async Task Restore_CheckpointsRemainReachableAfterCleanup()
+    {
+        var run = await BeginGameAsync();
+        await run.AppendAsync(CreateStep(1, checkpoint: "a"));
+        await run.AppendAsync(CreateStep(2, checkpoint: "b"));
+        await run.AppendAsync(CreateStep(3));
+        var first = await run.History.Restore(run.GameId, run.Current, 2, CancellationToken.None);
+        var cleanup = new GameHistoryCleanup(fixture.CreateDbContext(), NullLogger<GameHistoryCleanup>.Instance);
+        await cleanup.Run(CancellationToken.None);
+        var second = await run.History.Restore(run.GameId, first!, 1, CancellationToken.None);
+        await cleanup.Run(CancellationToken.None);
+
+        Assert.Equal(new StoredState<TestState>(5, CreateState(1)), second);
+        Assert.Equal(
+            new StoredState<TestState>(1, CreateState(1)),
+            await run.History.LoadAt(run.GameId, 1, CancellationToken.None)
+        );
+        await using var db = fixture.CreateDbContext();
+        var steps = await db
+            .GameSteps.AsNoTracking()
+            .Where(s => s.GameId == run.GameId && s.RestoredVersion != null)
+            .OrderBy(s => s.Version)
+            .ToListAsync();
+        Assert.Equal([2, 1], steps.Select(s => s.RestoredVersion));
+        Assert.Equal(["b", "a"], steps.Select(s => s.Checkpoint));
+        Assert.All(
+            steps,
+            s =>
+            {
+                Assert.False(s.IsIrreversible);
+                Assert.False(s.IsBaseline);
+            }
+        );
+        Assert.Equal(second, await run.History.LoadCurrent(run.GameId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task LoadAt_AfterIrreversibleSnapshotAndCleanup_ReconstructsFollowingStep()
+    {
+        var run = await BeginGameAsync();
+        await run.AppendAsync(CreateStep(1, checkpoint: "a"));
+        await run.AppendAsync(CreateStep(2, irreversible: true));
+        await run.AppendAsync(CreateStep(3));
+        await run.AppendAsync(CreateStep(4, checkpoint: "b"));
+        await new GameHistoryCleanup(fixture.CreateDbContext(), NullLogger<GameHistoryCleanup>.Instance).Run(
+            CancellationToken.None
+        );
+        Assert.Equal(
+            new StoredState<TestState>(3, CreateState(3)),
+            await run.History.LoadAt(run.GameId, 3, CancellationToken.None)
+        );
+        Assert.Null(await run.History.LoadAt(run.GameId, 1, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Run_BaselineThenCheckpointsThenIrreversibleWithoutCheckpoint_KeepsBaselineAndNewestSnapshots()
+    {
+        var game = await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync());
+
+        var result = await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal([3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
+        Assert.Equal([3, 6], await game.GetSnapshotVersionsAsync());
+    }
+
+    [Fact]
+    public async Task Run_BaselineThenIrreversibleWithCheckpoint_KeepsBaselineAndIrreversibleSnapshots()
+    {
+        var game = await PlayBaselineThenIrreversibleWithCheckpointAsync(await BeginGameAsync());
+
+        await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.Equal([2, 3, 4, 5, 6], await game.GetStepVersionsAsync());
+        Assert.Equal([2, 5], await game.GetSnapshotVersionsAsync());
+    }
+
+    [Fact]
+    public async Task Run_IrreversibleBeforeBaseline_KeepsOnlyBaselineSnapshot()
+    {
+        var game = await PlayIrreversibleThenBaselineAsync(await BeginGameAsync());
+
+        await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.Equal([5, 6], await game.GetStepVersionsAsync());
+        Assert.Equal([5], await game.GetSnapshotVersionsAsync());
+    }
+
+    [Fact]
+    public async Task Run_NoBaselineAndNoIrreversible_DeletesNothing()
+    {
+        var game = await BeginGameAsync();
+        await game.AppendAsync(CreateStep(1));
+        await game.AppendAsync(CreateStep(2, checkpoint: "a"));
+        await game.AppendAsync(CreateStep(3));
+
+        await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.Equal([1, 2, 3], await game.GetStepVersionsAsync());
+        Assert.Equal([0, 2], await game.GetSnapshotVersionsAsync());
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task Run_AnyOrdering_LeavesEveryLoadUnchanged(int ordering)
+    {
+        var game = ordering switch
+        {
+            1 => await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync()),
+            2 => await PlayBaselineThenIrreversibleWithCheckpointAsync(await BeginGameAsync()),
+            _ => await PlayIrreversibleThenBaselineAsync(await BeginGameAsync()),
+        };
+        var before = await game.LoadEverythingAsync();
+
+        await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.Equal(before, await game.LoadEverythingAsync());
+    }
+
+    [Fact]
+    public async Task Run_AnotherRunHoldsTheLock_SkipsAndDeletesNothing()
+    {
+        var game = await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync());
+        var logger = new FakeLogger<GameHistoryCleanup>();
+        await using var holder = fixture.CreateDbContext();
+        await using var transaction = await holder.Database.BeginTransactionAsync();
+        var held = await holder
+            .Database.SqlQuery<bool>($"""SELECT pg_try_advisory_xact_lock({GameHistoryCleanup.LockKey}) AS "Value" """)
+            .ToListAsync();
+        Assert.Equal([true], held);
+
+        var result = await CreateCleanup(logger).Run(CancellationToken.None);
+
+        Assert.Null(result);
+        Assert.Equal("LogCleanupSkippedLockHeld", logger.LatestRecord.Id.Name);
+        Assert.Equal([1, 2, 3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
+        Assert.Equal([0, 3, 4, 5, 6], await game.GetSnapshotVersionsAsync());
+    }
+
+    [Fact]
+    public async Task Run_WhileStepsAreAppended_KeepsEveryStepAboveTheLatestBaseline()
+    {
+        var game = await BeginGameAsync();
+        const int steps = 40;
+        using var done = new CancellationTokenSource();
+
+        var cleaners = Enumerable
+            .Range(0, 3)
+            .Select(_ =>
+                Task.Run(async () =>
+                {
+                    var cleanup = CreateCleanup();
+                    while (!done.IsCancellationRequested)
+                        await cleanup.Run(CancellationToken.None);
+                })
+            )
+            .ToList();
+        var latestBaseline = 0;
+        for (var n = 1; n <= steps; n++)
+        {
+            var isBaseline = n % 7 == 0;
+            await game.AppendAsync(CreateStep(n, checkpoint: n % 5 == 0 ? "c" : null, baseline: isBaseline));
+            if (isBaseline)
+                latestBaseline = n;
+        }
+
+        await done.CancelAsync();
+        await Task.WhenAll(cleaners);
+        await CreateCleanup().Run(CancellationToken.None);
+
+        Assert.Equal(Enumerable.Range(latestBaseline, steps - latestBaseline + 1), await game.GetStepVersionsAsync());
+        var history = new GameHistory<TestState>(
+            fixture.CreateDbContext(),
+            NullLogger<GameHistory<TestState>>.Instance
+        );
+        Assert.Equal(
+            new StoredState<TestState>(steps, CreateState(steps)),
+            await history.LoadCurrent(game.GameId, CancellationToken.None)
+        );
+    }
+
     private sealed record TestState(int Counter, string Label, bool Flag) : ISchemaVersioned
     {
         public int SchemaVersion => 1;
@@ -32,11 +216,12 @@ public class GameHistoryCleanupTests(AppFixture fixture)
     private sealed class Played(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
     {
         public Guid GameId { get; } = gameId;
+        public GameHistory<TestState> History { get; } = history;
         public StoredState<TestState> Current { get; private set; } = new(0, CreateState(0));
 
         public async Task AppendAsync(StepResult<TestState> step)
         {
-            var appended = await history.Append(GameId, Current, step, choice: null, CancellationToken.None);
+            var appended = await History.Append(GameId, Current, step, choice: null, CancellationToken.None);
             Current = Assert.IsType<StoredState<TestState>>(appended);
         }
 
@@ -44,10 +229,10 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         {
             var loaded = new List<StoredState<TestState>?>
             {
-                await history.LoadCurrent(GameId, CancellationToken.None),
+                await History.LoadCurrent(GameId, CancellationToken.None),
             };
             for (var v = 0; v <= Current.Version; v++)
-                loaded.Add(await history.LoadAt(GameId, v, CancellationToken.None));
+                loaded.Add(await History.LoadAt(GameId, v, CancellationToken.None));
             return loaded;
         }
 
@@ -140,134 +325,5 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         await game.AppendAsync(CreateStep(5, baseline: true));
         await game.AppendAsync(CreateStep(6));
         return game;
-    }
-
-    [Fact]
-    public async Task Run_BaselineThenCheckpointsThenIrreversibleWithoutCheckpoint_KeepsBaselineAndNewestSnapshots()
-    {
-        var game = await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync());
-
-        var result = await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.NotNull(result);
-        Assert.Equal([3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
-        Assert.Equal([3, 5], await game.GetSnapshotVersionsAsync());
-    }
-
-    [Fact]
-    public async Task Run_BaselineThenIrreversibleWithCheckpoint_KeepsBaselineAndIrreversibleSnapshots()
-    {
-        var game = await PlayBaselineThenIrreversibleWithCheckpointAsync(await BeginGameAsync());
-
-        await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.Equal([2, 3, 4, 5, 6], await game.GetStepVersionsAsync());
-        Assert.Equal([2, 5], await game.GetSnapshotVersionsAsync());
-    }
-
-    [Fact]
-    public async Task Run_IrreversibleBeforeBaseline_KeepsOnlyBaselineSnapshot()
-    {
-        var game = await PlayIrreversibleThenBaselineAsync(await BeginGameAsync());
-
-        await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.Equal([5, 6], await game.GetStepVersionsAsync());
-        Assert.Equal([5], await game.GetSnapshotVersionsAsync());
-    }
-
-    [Fact]
-    public async Task Run_NoBaselineAndNoIrreversible_DeletesNothing()
-    {
-        var game = await BeginGameAsync();
-        await game.AppendAsync(CreateStep(1));
-        await game.AppendAsync(CreateStep(2, checkpoint: "a"));
-        await game.AppendAsync(CreateStep(3));
-
-        await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.Equal([1, 2, 3], await game.GetStepVersionsAsync());
-        Assert.Equal([0, 2], await game.GetSnapshotVersionsAsync());
-    }
-
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    public async Task Run_AnyOrdering_LeavesEveryLoadUnchanged(int ordering)
-    {
-        var game = ordering switch
-        {
-            1 => await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync()),
-            2 => await PlayBaselineThenIrreversibleWithCheckpointAsync(await BeginGameAsync()),
-            _ => await PlayIrreversibleThenBaselineAsync(await BeginGameAsync()),
-        };
-        var before = await game.LoadEverythingAsync();
-
-        await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.Equal(before, await game.LoadEverythingAsync());
-    }
-
-    [Fact]
-    public async Task Run_AnotherRunHoldsTheLock_SkipsAndDeletesNothing()
-    {
-        var game = await PlayBaselineThenCheckpointsThenIrreversibleAsync(await BeginGameAsync());
-        var logger = new FakeLogger<GameHistoryCleanup>();
-        await using var holder = fixture.CreateDbContext();
-        await using var transaction = await holder.Database.BeginTransactionAsync();
-        var held = await holder
-            .Database.SqlQuery<bool>($"""SELECT pg_try_advisory_xact_lock({GameHistoryCleanup.LockKey}) AS "Value" """)
-            .ToListAsync();
-        Assert.Equal([true], held);
-
-        var result = await CreateCleanup(logger).Run(CancellationToken.None);
-
-        Assert.Null(result);
-        Assert.Equal("LogCleanupSkippedLockHeld", logger.LatestRecord.Id.Name);
-        Assert.Equal([1, 2, 3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
-        Assert.Equal([0, 3, 4, 5], await game.GetSnapshotVersionsAsync());
-    }
-
-    [Fact]
-    public async Task Run_WhileStepsAreAppended_KeepsEveryStepAboveTheLatestBaseline()
-    {
-        var game = await BeginGameAsync();
-        const int steps = 40;
-        using var done = new CancellationTokenSource();
-
-        var cleaners = Enumerable
-            .Range(0, 3)
-            .Select(_ =>
-                Task.Run(async () =>
-                {
-                    var cleanup = CreateCleanup();
-                    while (!done.IsCancellationRequested)
-                        await cleanup.Run(CancellationToken.None);
-                })
-            )
-            .ToList();
-        var latestBaseline = 0;
-        for (var n = 1; n <= steps; n++)
-        {
-            var isBaseline = n % 7 == 0;
-            await game.AppendAsync(CreateStep(n, checkpoint: n % 5 == 0 ? "c" : null, baseline: isBaseline));
-            if (isBaseline)
-                latestBaseline = n;
-        }
-
-        await done.CancelAsync();
-        await Task.WhenAll(cleaners);
-        await CreateCleanup().Run(CancellationToken.None);
-
-        Assert.Equal(Enumerable.Range(latestBaseline, steps - latestBaseline + 1), await game.GetStepVersionsAsync());
-        var history = new GameHistory<TestState>(
-            fixture.CreateDbContext(),
-            NullLogger<GameHistory<TestState>>.Instance
-        );
-        Assert.Equal(
-            new StoredState<TestState>(steps, CreateState(steps)),
-            await history.LoadCurrent(game.GameId, CancellationToken.None)
-        );
     }
 }

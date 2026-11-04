@@ -1,6 +1,6 @@
 # Ahlcg Documentation
 
-Reference docs for agents working in this repository. Every claim here is checked against the code; if a doc and the code disagree, the code wins — fix the doc.
+Reference docs for agents working in this repository. For descriptions of current behavior, code is the authority; correct a doc that describes it inaccurately. Prescriptive style rules apply to changed code even where existing code has an outlier; see [code style](practice/code-style.md).
 
 ## Read this first
 
@@ -10,6 +10,7 @@ Read [architecture.md — What exists](architecture.md#what-exists) for the curr
 
 | Task | Read |
 | --- | --- |
+| Any code change or code review | [code-style.md](practice/code-style.md) — local idioms, naming, ordering and review enforcement |
 | Any code change, any language | [comments.md](practice/comments.md) — when a comment is warranted, which is rarely |
 | Add a file or folder, any language | [code-layout.md](practice/code-layout.md) — at most six entries per folder |
 | Any frontend code change | [frontend-conventions.md](frontend/frontend-conventions.md) — mandatory, then the relevant file below |

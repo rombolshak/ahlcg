@@ -12,4 +12,5 @@ public class GameStep
     public string? Checkpoint { get; set; }
     public bool IsIrreversible { get; set; }
     public bool IsBaseline { get; set; }
+    public int? RestoredVersion { get; set; }
 }
