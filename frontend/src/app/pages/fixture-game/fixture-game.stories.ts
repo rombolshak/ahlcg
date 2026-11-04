@@ -1,8 +1,10 @@
 import { signal } from '@angular/core';
 import { GamesService } from '@features/games/games.service';
-import { GameConnectionService, MemberState, MemberStateEvent } from '@features/games/session/game-connection.service';
+import { GameConnectionService } from '@features/games/session/game-connection.service';
+import { MemberState, MemberStateEvent } from '@features/games/session/game-state.model';
+import { snapshot } from '@features/games/session/testing/session-fixtures';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
-import { NEVER, Observable, of } from 'rxjs';
+import { map, NEVER, Observable, of } from 'rxjs';
 import { FixtureGameComponent } from './fixture-game.component';
 import { FixtureView } from './state/fixture-view.model';
 
@@ -29,7 +31,13 @@ const withEvents = (events: Observable<MemberStateEvent>, inviteCode: string | n
           connect: () => undefined,
           disconnect: () => undefined,
           execute: () => NEVER,
-          memberStateEvents: events,
+          memberStateEvents: events.pipe(
+            map(event =>
+              event.kind === 'reset' && event.state !== null
+                ? { ...event, state: { ...event.state, state: { ...event.state.state, engine: { ...event.state.state.engine, inviteCode } } } }
+                : event,
+            ),
+          ),
         },
       },
       {
@@ -66,19 +74,19 @@ const offeredActions: MemberState['actions'] = {
 };
 
 export const Ready: Story = {
-  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: {} } }))],
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: snapshot(view, 1) }))],
 };
 
 export const WithClearanceCode: Story = {
-  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: {} } }), 'K7M2QX')],
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: snapshot(view, 1) }), 'K7M2QX')],
 };
 
 export const YourMove: Story = {
-  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view, actions: offeredActions } }))],
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: snapshot(view, 1, offeredActions) }))],
 };
 
 export const Waiting: Story = {
-  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: { version: 1, view: { ...view, actingPlayers: ['user-2', 'user-3'] }, actions: {} } }))],
+  decorators: [withEvents(of<MemberStateEvent>({ kind: 'reset', state: snapshot({ ...view, actingPlayers: ['user-2', 'user-3'] }, 1) }))],
 };
 
 export const Empty: Story = {

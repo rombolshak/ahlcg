@@ -6,11 +6,12 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Engine.History;
-using Tablier.Engine.History.Cache;
 using Tablier.Engine.History.Cleanup;
+using Tablier.Engine.History.Rewind;
 using Tablier.Games;
 using Tablier.Games.Sessions;
 using Tablier.Games.State.Cache;
+using Tablier.Games.State.Coordination;
 using Tablier.Telemetry;
 
 namespace Tablier;
@@ -43,7 +44,11 @@ public static class TablierExtensions
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
         builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "store", typeof(GameHistory<>));
-        builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "cached", typeof(CachedGameHistory<>));
+        builder.Services.AddScoped(typeof(IGameStateCache<>), typeof(GameStateCache<>));
+        builder.Services.AddScoped(typeof(IGameStateStore<>), typeof(GameStateStore<>));
+        builder.Services.AddScoped<IRewindQueries, RewindQueries>();
+        builder.Services.AddScoped<GameAdmission>();
+        builder.Services.AddSingleton<GameMutationRegistry>();
         builder.Services.AddScoped(typeof(IGameHistory<>), typeof(MeteredGameHistory<>));
         builder.Services.AddSingleton<TablierMetrics>();
         builder

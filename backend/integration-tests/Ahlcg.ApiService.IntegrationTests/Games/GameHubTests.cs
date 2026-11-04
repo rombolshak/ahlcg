@@ -25,13 +25,29 @@ public class GameHubTests(AppFixture fixture)
         var gameId = await HubTestSupport.CreateGameAsync(client);
 
         await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
-        var announced = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        connection.On<string>(nameof(IGameClient.MemberConnected), id => announced.TrySetResult(id));
-
+        var announced = new TaskCompletionSource<JsonElement>(TaskCreationOptions.RunContinuationsAsynchronously);
+        connection.On<JsonElement>(
+            nameof(IGameClient.StateChanged),
+            change =>
+            {
+                if (change.GetProperty("kind").GetString() == "Delta")
+                    announced.TrySetResult(change);
+            }
+        );
         await connection.StartAsync();
+        var presence = await HubTestSupport.WithTimeoutAsync(announced.Task);
+        var state = await connection.InvokeAsync<JsonElement>(nameof(GameHub.GetState), "initial");
 
         Assert.Equal(HubConnectionState.Connected, connection.State);
-        Assert.Equal(userId, await HubTestSupport.WithTimeoutAsync(announced.Task));
+        Assert.Equal(0, presence.GetProperty("sourceGameVersion").GetInt32());
+        Assert.Equal(0, presence.GetProperty("gameVersion").GetInt32());
+        Assert.Equal(JsonValueKind.Null, presence.GetProperty("actions").ValueKind);
+        Assert.Equal(1, presence.GetProperty("version").GetInt32());
+        await using var db = fixture.CreateDbContext();
+        Assert.Equal(0, await db.GameSteps.CountAsync(step => step.GameId == gameId));
+        Assert.True(
+            state.GetProperty("state").GetProperty("engine").GetProperty("members").GetProperty(userId).GetBoolean()
+        );
     }
 
     [Fact]

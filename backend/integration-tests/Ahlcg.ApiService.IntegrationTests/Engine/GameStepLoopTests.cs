@@ -34,11 +34,18 @@ public class GameStepLoopTests(AppFixture fixture)
         await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         await connection.StartAsync();
 
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState), "initial");
 
         Assert.NotNull(sync);
-        Assert.Equal(0, sync.Value.GetProperty("version").GetInt32());
-        var view = sync.Value.GetProperty("view");
+        Assert.Equal(0, sync.Value.GetProperty("state").GetProperty("engine").GetProperty("gameVersion").GetInt32());
+        var engine = sync.Value.GetProperty("state").GetProperty("engine");
+        Assert.All(
+            engine.GetProperty("members").EnumerateObject(),
+            member => Assert.True(member.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+        );
+        Assert.False(engine.GetProperty("rewind").TryGetProperty("boundary", out _));
+        Assert.False(engine.GetProperty("rewind").TryGetProperty("gameVersion", out _));
+        var view = sync.Value.GetProperty("state").GetProperty("game");
         Assert.Equal(0, view.GetProperty("shared").GetInt32());
         Assert.Equal(0, view.GetProperty("ownSecret").GetInt32());
         Assert.Equal(JsonValueKind.Null, view.GetProperty("revealed").ValueKind);
@@ -55,7 +62,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var gameId = await HubTestSupport.CreateGameAsync(client);
         await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         await connection.StartAsync();
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState), "initial");
         Assert.NotNull(sync);
 
         var shared = Apply(sync.Value, "shared:inc");
@@ -85,7 +92,7 @@ public class GameStepLoopTests(AppFixture fixture)
         await connection.StartAsync();
         await HubTestSupport.WithTimeoutAsync(exited.Task);
 
-        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
+        var sync = await connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState), "initial");
 
         Assert.Null(sync);
         Assert.Equal(HubConnectionState.Connected, connection.State);
@@ -100,8 +107,8 @@ public class GameStepLoopTests(AppFixture fixture)
         var executed = await game.Connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
 
         var change = await game.NextChangeAsync();
-        Assert.Equal(change.GetProperty("version").GetInt32(), executed);
-        Assert.Equal(1, change.GetProperty("version").GetInt32());
+        Assert.Equal(change.GetProperty("gameVersion").GetInt32(), executed);
+        Assert.Equal(1, change.GetProperty("gameVersion").GetInt32());
         Assert.Equal(1, ApplyView(sync, change)["shared"]!.GetValue<int>());
         var actions = change.GetProperty("actions").EnumerateObject().Select(a => a.Name);
         Assert.Equal(OfferedActions.Order(StringComparer.Ordinal), actions.Order(StringComparer.Ordinal));
@@ -125,7 +132,7 @@ public class GameStepLoopTests(AppFixture fixture)
         var actual =
             action == "reveal"
                 ? ApplyView(sync, firstChange)
-                : JsonNode.Parse((await game.GetStateAsync()).GetProperty("view").GetRawText())!;
+                : JsonNode.Parse((await game.GetStateAsync()).GetProperty("state").GetProperty("game").GetRawText())!;
         Assert.True(JsonNode.DeepEquals(promised, actual));
     }
 
@@ -153,9 +160,9 @@ public class GameStepLoopTests(AppFixture fixture)
         Assert.Equal(1, executed);
         var pending = await game.NextChangeAsync();
         var advanced = await game.NextChangeAsync();
-        Assert.Equal(1, pending.GetProperty("version").GetInt32());
+        Assert.Equal(1, pending.GetProperty("gameVersion").GetInt32());
         Assert.Empty(pending.GetProperty("actions").EnumerateObject());
-        Assert.Equal(2, advanced.GetProperty("version").GetInt32());
+        Assert.Equal(2, advanced.GetProperty("gameVersion").GetInt32());
         Assert.Empty(ApplyView(sync, pending)["actingPlayers"]!.AsArray());
         var advancedView = ApplyView(sync, pending, advanced);
         Assert.Equal([game.UserId], advancedView["actingPlayers"]!.AsArray().Select(p => p!.GetValue<string>()));
@@ -185,8 +192,8 @@ public class GameStepLoopTests(AppFixture fixture)
             .ToListAsync();
         Assert.Equal([1, 2], versions);
         var sync = await first.GetStateAsync();
-        Assert.Equal(2, sync.GetProperty("version").GetInt32());
-        Assert.Equal(2, sync.GetProperty("view").GetProperty("shared").GetInt32());
+        Assert.Equal(2, sync.GetProperty("state").GetProperty("engine").GetProperty("gameVersion").GetInt32());
+        Assert.Equal(2, sync.GetProperty("state").GetProperty("game").GetProperty("shared").GetInt32());
     }
 
     [Fact]
@@ -200,7 +207,7 @@ public class GameStepLoopTests(AppFixture fixture)
 
         await using var db = fixture.CreateDbContext();
         var latest = await db.GameSteps.Where(s => s.GameId == game.GameId).MaxAsync(s => s.Version);
-        Assert.Equal(latest, sync.GetProperty("version").GetInt32());
+        Assert.Equal(latest, sync.GetProperty("state").GetProperty("engine").GetProperty("gameVersion").GetInt32());
     }
 
     [Fact]
@@ -212,11 +219,11 @@ public class GameStepLoopTests(AppFixture fixture)
 
         var sync = await newcomer.GetStateAsync();
 
-        Assert.Equal(0, sync.GetProperty("view").GetProperty("ownSecret").GetInt32());
+        Assert.Equal(0, sync.GetProperty("state").GetProperty("game").GetProperty("ownSecret").GetInt32());
         var actions = sync.GetProperty("actions").EnumerateObject().Select(a => a.Name);
         Assert.Equal(OfferedActions.Order(StringComparer.Ordinal), actions.Order(StringComparer.Ordinal));
         var change = await owner.NextChangeAsync();
-        Assert.Equal(1, change.GetProperty("version").GetInt32());
+        Assert.Equal(1, change.GetProperty("gameVersion").GetInt32());
         var others = ApplyView(ownerSync, change)["others"]!.AsObject();
         Assert.Equal(nameof(SecretSign.Zero), others[newcomer.UserId]!.GetValue<string>());
         Assert.False(await newcomer.HasChangeWithinAsync(TimeSpan.FromMilliseconds(500)));
@@ -236,8 +243,8 @@ public class GameStepLoopTests(AppFixture fixture)
         Assert.Equal(2, executed);
         var ownerChange = await owner.NextChangeAsync();
         var memberChange = await member.NextChangeAsync();
-        Assert.Equal(2, ownerChange.GetProperty("version").GetInt32());
-        Assert.Equal(2, memberChange.GetProperty("version").GetInt32());
+        Assert.Equal(2, ownerChange.GetProperty("gameVersion").GetInt32());
+        Assert.Equal(2, memberChange.GetProperty("gameVersion").GetInt32());
         Assert.Equal(1, ApplyView(ownerSync, ownerChange)["shared"]!.GetValue<int>());
         Assert.Equal(1, ApplyView(memberSync, memberChange)["shared"]!.GetValue<int>());
     }
@@ -257,19 +264,19 @@ public class GameStepLoopTests(AppFixture fixture)
         var after = await member.GetStateAsync();
         foreach (var held in new[] { before, after })
         {
-            AssertOthersHoldOnlySigns(held.GetProperty("view"));
+            AssertOthersHoldOnlySigns(held.GetProperty("state").GetProperty("game"));
             foreach (var patch in held.GetProperty("actions").EnumerateObject())
                 AssertPatchHoldsOnlySigns(patch.Value, owner.UserId);
         }
 
         foreach (var change in changes)
         {
-            AssertPatchHoldsOnlySigns(change.GetProperty("viewPatch"), owner.UserId);
+            AssertPatchHoldsOnlySigns(change.GetProperty("patch"), owner.UserId);
             foreach (var patch in change.GetProperty("actions").EnumerateObject())
                 AssertPatchHoldsOnlySigns(patch.Value, owner.UserId);
         }
 
-        var view = after.GetProperty("view");
+        var view = after.GetProperty("state").GetProperty("game");
         Assert.Equal(0, view.GetProperty("ownSecret").GetInt32());
         Assert.Equal(nameof(SecretSign.Positive), view.GetProperty("others").GetProperty(owner.UserId).GetString());
     }
@@ -287,7 +294,7 @@ public class GameStepLoopTests(AppFixture fixture)
 
         response.EnsureSuccessStatusCode();
         var change = await owner.NextChangeAsync();
-        Assert.Equal(2, change.GetProperty("version").GetInt32());
+        Assert.Equal(2, change.GetProperty("gameVersion").GetInt32());
         var others = ApplyView(ownerSync, change)["others"]!.AsObject();
         Assert.False(others.ContainsKey(member.UserId));
         Assert.Equal("NotAMember", await HubTestSupport.WithTimeoutAsync(member.Exited));
@@ -307,44 +314,38 @@ public class GameStepLoopTests(AppFixture fixture)
         string[] expected = [.. new[] { owner.UserId, member.UserId }.Order(StringComparer.Ordinal)];
         foreach (var sync in new[] { ownerSync, memberSync })
         {
-            var acting = sync.GetProperty("view").GetProperty("actingPlayers").EnumerateArray();
+            var acting = sync.GetProperty("state").GetProperty("game").GetProperty("actingPlayers").EnumerateArray();
             Assert.Equal(expected, acting.Select(p => p.GetString()));
         }
     }
 
     [Fact]
-    public async Task InviteCode_JoinFillsTheTable_OwnerAndJoinerBothReceiveNoCode()
+    public async Task InviteCode_JoinFillsTheTable_EnvelopeClearsCodeForBothMembers()
     {
-        var ownerCookies = new CookieContainer();
-        using var owner = fixture.CreateClient(ownerCookies);
+        var cookies = new CookieContainer();
+        using var owner = fixture.CreateClient(cookies);
         await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
         var gameId = await HubTestSupport.CreateGameAsync(owner);
-        var membersCount = await owner.PutAsJsonAsync(
-            $"/games/{gameId}/membersCount",
-            new GameEndpoints.SetMembersCountRequest(2)
-        );
-        membersCount.EnsureSuccessStatusCode();
-        var ownerCodes = Channel.CreateUnbounded<string?>();
-        await using var ownerConnection = HubTestSupport.BuildConnection(fixture, ownerCookies, $"gameId={gameId}");
-        ownerConnection.On<string?>(nameof(IGameClient.InviteCodeChanged), code => ownerCodes.Writer.TryWrite(code));
+        (
+            await owner.PutAsJsonAsync($"/games/{gameId}/membersCount", new GameEndpoints.SetMembersCountRequest(2))
+        ).EnsureSuccessStatusCode();
+        await using var ownerConnection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
         await ownerConnection.StartAsync();
-        var code = await HubTestSupport.WithTimeoutAsync(ownerCodes.Reader.ReadAsync().AsTask());
+        var initial = await ownerConnection.InvokeAsync<JsonElement>(nameof(GameHub.GetState), "initial");
+        var code = initial.GetProperty("state").GetProperty("engine").GetProperty("inviteCode").GetString();
         Assert.NotNull(code);
-        Assert.Equal(6, code.Length);
-
-        var joinerCookies = new CookieContainer();
-        using var joiner = fixture.CreateClient(joinerCookies);
+        using var joiner = fixture.CreateClient();
         await HubTestSupport.LoginAnonymouslyAsync(fixture, joiner);
-        var join = await joiner.PostAsJsonAsync("/games/join", new GameEndpoints.JoinGameRequest(code));
-        join.EnsureSuccessStatusCode();
 
-        var closed = await HubTestSupport.WithTimeoutAsync(ownerCodes.Reader.ReadAsync().AsTask());
-        Assert.Null(closed);
-        var joinerCodes = Channel.CreateUnbounded<string?>();
-        await using var joinerConnection = HubTestSupport.BuildConnection(fixture, joinerCookies, $"gameId={gameId}");
-        joinerConnection.On<string?>(nameof(IGameClient.InviteCodeChanged), c => joinerCodes.Writer.TryWrite(c));
-        await joinerConnection.StartAsync();
-        Assert.Null(await HubTestSupport.WithTimeoutAsync(joinerCodes.Reader.ReadAsync().AsTask()));
+        (
+            await joiner.PostAsJsonAsync("/games/join", new GameEndpoints.JoinGameRequest(code))
+        ).EnsureSuccessStatusCode();
+
+        var full = await ownerConnection.InvokeAsync<JsonElement>(nameof(GameHub.GetState), "initial");
+        Assert.Equal(
+            JsonValueKind.Null,
+            full.GetProperty("state").GetProperty("engine").GetProperty("inviteCode").ValueKind
+        );
     }
 
     private async Task<GameRun> StartGameAsync()
@@ -393,7 +394,18 @@ public class GameStepLoopTests(AppFixture fixture)
             GameId = gameId;
             UserId = userId;
             Connection = connection;
-            connection.On<JsonElement>(nameof(IGameClient.StateChanged), change => _changes.Writer.TryWrite(change));
+            connection.On<JsonElement>(
+                nameof(IGameClient.StateChanged),
+                change =>
+                {
+                    if (
+                        change.GetProperty("kind").GetString() == "Delta"
+                        && change.GetProperty("sourceGameVersion").GetInt32()
+                            != change.GetProperty("gameVersion").GetInt32()
+                    )
+                        _changes.Writer.TryWrite(change);
+                }
+            );
             connection.On<string>(nameof(IGameClient.Exit), reason => _exited.TrySetResult(reason));
         }
 
@@ -424,7 +436,7 @@ public class GameStepLoopTests(AppFixture fixture)
 
         public async Task<JsonElement> GetStateAsync()
         {
-            var sync = await Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState));
+            var sync = await Connection.InvokeAsync<JsonElement?>(nameof(GameHub.GetState), "initial");
             Assert.NotNull(sync);
             return sync.Value;
         }
@@ -462,23 +474,23 @@ public class GameStepLoopTests(AppFixture fixture)
 
     private static JsonNode ApplyView(JsonElement sync, params JsonElement[] changes)
     {
-        var view = JsonNode.Parse(sync.GetProperty("view").GetRawText())!;
+        var view = JsonNode.Parse(sync.GetProperty("state").GetRawText())!;
         foreach (var change in changes)
         {
-            var result = change.GetProperty("viewPatch").Deserialize<JsonPatch>()!.Apply(view);
+            var result = change.GetProperty("patch").Deserialize<JsonPatch>()!.Apply(view);
             Assert.True(result.IsSuccess, result.Error);
             view = result.Result!;
         }
 
-        return view;
+        return view["game"]!;
     }
 
     private static JsonNode Apply(JsonElement sync, string action)
     {
-        var view = JsonNode.Parse(sync.GetProperty("view").GetRawText())!;
+        var view = JsonNode.Parse(sync.GetProperty("state").GetRawText())!;
         var patch = sync.GetProperty("actions").GetProperty(action).Deserialize<JsonPatch>()!;
         var result = patch.Apply(view);
         Assert.True(result.IsSuccess, result.Error);
-        return result.Result!;
+        return result.Result!["game"]!;
     }
 }

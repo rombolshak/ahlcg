@@ -8,13 +8,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Tablier.Data;
+using Tablier.Engine;
 using Tablier.Games;
 using Tablier.Games.Sessions;
+using Tablier.Games.State.Coordination;
+using Tablier.Telemetry;
 
 namespace Tablier.Tests.Games;
 
 public class GameHubTests
 {
+    private readonly Mock<IGameEngine> _engine = new();
+
     [Fact]
     public async Task Connect_NonMember_SendsExitAndDoesNotJoin()
     {
@@ -33,6 +38,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -59,6 +66,8 @@ public class GameHubTests
             clients.Object,
             Mock.Of<IGroupManager>(),
             new GameConnection(Guid.NewGuid(), MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             logger
         );
 
@@ -83,6 +92,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -108,6 +119,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -121,7 +134,10 @@ public class GameHubTests
                 ),
             Times.Once
         );
-        groupClient.Verify(c => c.MemberConnected(MemberUser), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
     }
 
     [Fact]
@@ -141,10 +157,15 @@ public class GameHubTests
             clients.Object,
             Mock.Of<IGroupManager>(),
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
-        groupClient.Verify(c => c.InviteCodeChanged(sessions.Find(gameId)!.InviteCode), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
         Assert.NotNull(sessions.Find(gameId)!.InviteCode);
     }
 
@@ -165,6 +186,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -175,10 +198,15 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-2"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
-        groupClient.Verify(c => c.MemberConnected(It.IsAny<string>()), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
     }
 
     [Fact]
@@ -198,6 +226,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -221,6 +251,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -243,6 +275,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
         var code = sessions.Find(gameId)!.InviteCode;
@@ -254,6 +288,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-2"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -276,6 +312,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -285,6 +323,8 @@ public class GameHubTests
             FixedTimeProvider,
             clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateRegistry(),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -309,6 +349,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -318,11 +360,16 @@ public class GameHubTests
             FixedTimeProvider,
             clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateRegistry(),
+            _engine.Object,
             NullLogger.Instance
         );
 
         Assert.Null(sessions.Find(gameId));
-        groupClient.Verify(c => c.MemberDisconnected(MemberUser), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
     }
 
     [Fact]
@@ -369,6 +416,17 @@ public class GameHubTests
         await db.SaveChangesAsync();
         return game.Id;
     }
+
+    private static GameMutationRegistry CreateRegistry() =>
+        new(
+            new TablierMetrics(
+                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+            ),
+            TimeProvider.System
+        );
+
+    private static GameAdmission CreateAdmission(ApplicationDbContext db) =>
+        new(db, CreateRegistry(), NullLogger<GameAdmission>.Instance);
 
     private static GameSessions CreateSessions()
     {

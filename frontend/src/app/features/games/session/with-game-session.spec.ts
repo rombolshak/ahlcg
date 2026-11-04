@@ -4,24 +4,19 @@ import { signalStore } from '@ngrx/signals';
 import { type } from 'arktype';
 import { config, Observable, of, Subject, throwError } from 'rxjs';
 import { type Mock, vi } from 'vitest';
-import { GameConnectionService, MemberState, MemberStateEvent, StateChange } from './game-connection.service';
+import { GameConnectionService } from './game-connection.service';
+import { MemberState, MemberStateEvent, StateDelta } from './game-state.model';
+import { delta, snapshot } from './testing/session-fixtures';
 import { withGameSession } from './with-game-session';
 
 const testView = type({ items: 'string[]' });
 const TestStore = signalStore(withGameSession(testView));
 
-const addItem = (value: string): StateChange['actions'] => ({ add: [{ op: 'add', path: '/items/-', value }] });
+const addItem = (value: string): MemberState['actions'] => ({ add: [{ op: 'add', path: '/items/-', value }] });
 
-const memberState = (version: number, items: string[], actions: MemberState['actions'] = addItem('x')): MemberState => ({
-  version,
-  view: { items },
-  actions,
-});
-const change = (version: number, items: string[], actions: StateChange['actions'] = addItem('x')): StateChange => ({
-  version,
-  viewPatch: [{ op: 'replace', path: '/items', value: items }],
-  actions,
-});
+const memberState = (version: number, items: string[], actions: MemberState['actions'] = addItem('x')): MemberState => snapshot({ items }, version, actions);
+const change = (version: number, items: string[], actions: MemberState['actions'] = addItem('x')): StateDelta =>
+  delta(version, [{ op: 'replace', path: '/items', value: items }], actions);
 
 describe('withGameSession', () => {
   let store: InstanceType<typeof TestStore>;
@@ -30,12 +25,13 @@ describe('withGameSession', () => {
   let execute: ReturnType<typeof vi.fn<(action: string) => Observable<number | null>>>;
   let connect: ReturnType<typeof vi.fn>;
   let disconnect: ReturnType<typeof vi.fn>;
+  let synchronize: ReturnType<typeof vi.fn>;
   let unhandled: Mock<(error: unknown) => void>;
 
   const reset = (state: MemberState | null) => {
     events.next({ kind: 'reset', state });
   };
-  const apply = (next: StateChange) => {
+  const apply = (next: StateDelta) => {
     events.next({ kind: 'change', change: next });
   };
   const flush = () =>
@@ -53,11 +49,15 @@ describe('withGameSession', () => {
     execute = vi.fn<(action: string) => Observable<number | null>>().mockReturnValue(new Subject<number | null>());
     connect = vi.fn();
     disconnect = vi.fn();
+    synchronize = vi.fn();
 
     TestBed.configureTestingModule({
       providers: [
         TestStore,
-        { provide: GameConnectionService, useValue: { memberStateEvents: events.asObservable(), inviteCode, connect, disconnect, execute } },
+        {
+          provide: GameConnectionService,
+          useValue: { memberStateEvents: events.asObservable(), inviteCode, connect, disconnect, execute, synchronize },
+        },
       ],
     });
     store = TestBed.inject(TestStore);
@@ -76,13 +76,13 @@ describe('withGameSession', () => {
   it('should expose the connection invite code', () => {
     expect(store.inviteCode()).toBeNull();
 
-    inviteCode.set('K7M2QX');
+    reset(snapshot({ items: [] }, 1, {}, 'K7M2QX'));
 
     expect(store.inviteCode()).toBe('K7M2QX');
   });
 
   it('should connect through the connection service', () => {
-    expect(connect).toHaveBeenCalledWith('game-1');
+    expect(connect).toHaveBeenCalledWith('game-1', expect.any(Function));
   });
 
   it('should become ready with the view on reset', () => {
@@ -103,7 +103,7 @@ describe('withGameSession', () => {
   });
 
   it('should fail on reset with an invalid view and stay loading', async () => {
-    reset({ version: 1, view: { items: 'x' }, actions: {} });
+    reset(snapshot({ items: 'x' }, 1));
     await flush();
 
     expect(unhandled).toHaveBeenCalledOnce();
@@ -121,7 +121,7 @@ describe('withGameSession', () => {
   it('should leave the view untouched when a patch fails', async () => {
     reset(memberState(2, ['a']));
 
-    apply({ version: 3, viewPatch: [{ op: 'remove', path: '/missing' }], actions: {} });
+    apply(delta(3, [{ op: 'remove', path: '/missing' }]));
     await flush();
 
     expect(unhandled).toHaveBeenCalledOnce();
@@ -132,7 +132,7 @@ describe('withGameSession', () => {
   it('should leave the view untouched when the patched view is invalid', async () => {
     reset(memberState(2, ['a']));
 
-    apply({ version: 3, viewPatch: [{ op: 'replace', path: '/items', value: 'x' }], actions: {} });
+    apply(delta(3, [{ op: 'replace', path: '/items', value: 'x' }]));
     await flush();
 
     expect(unhandled).toHaveBeenCalledOnce();
@@ -283,7 +283,7 @@ describe('withGameSession', () => {
 
     reset(memberState(3, ['y']));
 
-    expect(items()).toEqual(['y', 'x']);
+    expect(items()).toEqual(['y']);
 
     answer.next(3);
 
@@ -336,5 +336,81 @@ describe('withGameSession', () => {
     expect(disconnect).toHaveBeenCalled();
     expect(items()).toEqual([]);
     expect(store.availableActions()).toEqual(['add']);
+  });
+  it('should keep an optimistic game action through an engine-only revision', () => {
+    const answer = new Subject<number | null>();
+    execute.mockReturnValue(answer);
+    const initial = memberState(1, []);
+    reset(initial);
+    store.choose('add');
+    answer.next(2);
+
+    apply({
+      kind: 'Delta',
+      syncId: initial.state.syncId,
+      version: 2,
+      sourceGameVersion: 1,
+      gameVersion: 1,
+      patch: [
+        { op: 'replace', path: '/version', value: 2 },
+        { op: 'replace', path: '/engine/inviteCode', value: 'ABCDEF' },
+      ],
+      actions: null,
+      isRestore: false,
+    });
+
+    expect(items()).toEqual(['x']);
+    expect(store.availableActions()).toEqual([]);
+    expect(store.inviteCode()).toBe('ABCDEF');
+    expect(store.engine()?.gameVersion).toBe(1);
+  });
+
+  it('should cancel a prediction on a committed restore even when its action is still offered', () => {
+    reset(memberState(1, []));
+    store.choose('add');
+
+    apply({ ...change(2, ['restored']), isRestore: true });
+
+    expect(items()).toEqual(['restored']);
+    expect(store.availableActions()).toEqual(['add']);
+  });
+
+  it('should reject a candidate engine and game atomically when headers disagree', async () => {
+    reset(memberState(1, ['before']));
+    const next = change(2, ['after']);
+
+    apply({ ...next, gameVersion: 9 });
+    await flush();
+
+    expect(items()).toEqual(['before']);
+    expect(store.engine()?.gameVersion).toBe(1);
+    expect(unhandled).toHaveBeenCalledOnce();
+  });
+
+  it('should reject an optimistic action patch that writes engine state', async () => {
+    const initial = memberState(1, []);
+    reset(initial);
+    reset({ ...initial, actions: { add: [{ op: 'replace', path: '/engine/inviteCode', value: 'bad' }] } });
+
+    expect(items()).toEqual([]);
+    await flush();
+    expect(store.engine()?.inviteCode).toBeNull();
+    expect(unhandled).toHaveBeenCalledOnce();
+  });
+  it('should synchronize an acknowledged commit that was not delivered without resending the action', () => {
+    const answer = new Subject<number | null>();
+    execute.mockReturnValue(answer);
+    reset(memberState(1, []));
+    store.choose('add');
+
+    answer.next(2);
+
+    expect(synchronize).toHaveBeenCalledOnce();
+    expect(execute).toHaveBeenCalledOnce();
+    expect(store.availableActions()).toEqual([]);
+    reset(memberState(2, ['x']));
+    expect(items()).toEqual(['x']);
+    expect(store.availableActions()).toEqual(['add']);
+    expect(execute).toHaveBeenCalledOnce();
   });
 });

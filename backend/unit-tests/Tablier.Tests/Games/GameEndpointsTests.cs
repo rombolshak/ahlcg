@@ -15,6 +15,8 @@ using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Games;
 using Tablier.Games.Sessions;
+using Tablier.Games.State.Coordination;
+using Tablier.Telemetry;
 
 namespace Tablier.Tests.Games;
 
@@ -559,6 +561,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -587,6 +590,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -614,6 +618,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -640,6 +645,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -667,6 +673,7 @@ public class GameEndpointsTests
             game.Id,
             LoggedInUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -693,6 +700,7 @@ public class GameEndpointsTests
             game.Id,
             LoggedInUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -720,6 +728,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
         var result = await GameEndpoints.GetRecentGames(OtherPrincipal, userManager.Object, db);
@@ -754,6 +763,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -799,6 +809,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -829,6 +840,7 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -855,6 +867,8 @@ public class GameEndpointsTests
             CreateMockHub().Hub.Object,
             game.Id,
             new GameEndpoints.SetMembersCountRequest(2),
+            CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
@@ -882,6 +896,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -914,6 +929,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
         var second = await GameEndpoints.JoinGame(
@@ -925,6 +941,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -954,6 +971,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -981,6 +999,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -1009,6 +1028,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -1036,6 +1056,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code!),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -1064,6 +1085,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
@@ -1087,6 +1109,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest("UNKNOWN"),
             CreateEngine().Object,
+            CreateRegistry(),
             logger
         );
 
@@ -1115,6 +1138,7 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             CreateEngine().Object,
+            CreateRegistry(),
             logger
         );
 
@@ -1142,10 +1166,18 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(game.Id, It.IsAny<CancellationToken>()), Times.Once);
+        engine.Verify(
+            e =>
+                e.SyncMembers(
+                    It.Is<GameMutationLease>(lease => lease.GameId == game.Id),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -1170,10 +1202,11 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        engine.Verify(e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1198,10 +1231,11 @@ public class GameEndpointsTests
             FixedTimeProvider,
             new GameEndpoints.JoinGameRequest(code),
             engine.Object,
+            CreateRegistry(),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        engine.Verify(e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1224,10 +1258,18 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             engine.Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(game.Id, It.IsAny<CancellationToken>()), Times.Once);
+        engine.Verify(
+            e =>
+                e.SyncMembers(
+                    It.Is<GameMutationLease>(lease => lease.GameId == game.Id),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -1249,10 +1291,11 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             engine.Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        engine.Verify(e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1274,10 +1317,11 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             engine.Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        engine.Verify(e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1299,10 +1343,11 @@ public class GameEndpointsTests
             game.Id,
             LoggedInUser,
             engine.Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        engine.Verify(e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -1316,8 +1361,8 @@ public class GameEndpointsTests
         var order = new List<string>();
         var groupClient = new Mock<IGameClient>();
         groupClient
-            .Setup(c => c.InviteCodeChanged(It.IsAny<string?>()))
-            .Callback<string?>(code => order.Add($"code:{code}"))
+            .Setup(c => c.StateChanged(It.IsAny<StateChange>()))
+            .Callback<StateChange>(_ => order.Add("state"))
             .Returns(Task.CompletedTask);
         clients.Setup(c => c.Group(It.IsAny<string>())).Returns(groupClient.Object);
         var targetClient = new Mock<IGameClient>();
@@ -1344,11 +1389,243 @@ public class GameEndpointsTests
             game.Id,
             OtherUser,
             CreateEngine().Object,
+            CreateAdmission(db),
             NullLogger<Game>.Instance
         );
 
-        Assert.Equal(["removed", "removed", "code:NEWCOD"], order);
+        Assert.Equal(["removed", "removed"], order);
+        Assert.Equal("NEWCOD", sessions.Find(game.Id)!.InviteCode);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RemoveMember_NotificationFails_RevokesOldCodeAndRetryFinishesRevocation(bool failGroupRemoval)
+    {
+        await using var db = CreateInMemoryDb();
+        var run = await CreateRemovalFailure(db, failGroupRemoval);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            GameEndpoints.RemoveMember(
+                LoggedInPrincipal,
+                run.Users.Object,
+                db,
+                run.Sessions,
+                run.Hub.Object,
+                run.GameId,
+                OtherUser,
+                run.Engine.Object,
+                run.Admission,
+                NullLogger<Game>.Instance
+            )
+        );
+
+        Assert.False(
+            await db.GameMembers.AnyAsync(member => member.GameId == run.GameId && member.UserId == OtherUser)
+        );
+        Assert.Null(run.Sessions.FindByInviteCode("OLDCOD"));
+        Assert.Null(run.Sessions.Find(run.GameId)!.InviteCode);
+        run.Engine.Verify(
+            engine => engine.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+        await AssertRemovedMemberCannotRedeemOldCode(db, run);
+        var order = new List<string>();
+        AllowRemovalNotifications(run, order);
+        if (!failGroupRemoval)
+            run.Sessions.Leave(run.GameId, OtherUser, "target-conn", FixedNow);
+
+        var retried = await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            run.Users.Object,
+            db,
+            run.Sessions,
+            run.Hub.Object,
+            run.GameId,
+            OtherUser,
+            run.Engine.Object,
+            run.Admission,
+            NullLogger<Game>.Instance
+        );
+
+        Assert.IsType<NoContent>(retried.Result);
+        string[] expectedOrder = failGroupRemoval ? ["removed", "removed", "exit", "sync"] : ["sync"];
+        Assert.Equal(expectedOrder, order);
+        Assert.Equal(2, (await db.Games.SingleAsync(game => game.Id == run.GameId)).IntendedPlayersCount);
+        Assert.Equal(1, await db.GameMembers.CountAsync(member => member.GameId == run.GameId));
+        Assert.Null(run.Sessions.FindByInviteCode("OLDCOD"));
+        run.Engine.Verify(
+            engine => engine.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task RemoveMember_SaveReportsErrorBeforeReturning_FailsClosedForOfflineTargetAndRetry()
+    {
+        var failure = new FailAfterMembershipSave();
+        await using var db = CreateInMemoryDb(failure);
+        var run = await CreateRemovalFailure(db, failGroupRemoval: false);
+        AllowRemovalNotifications(run, []);
+        run.Sessions.Leave(run.GameId, OtherUser, "target-conn", FixedNow);
+        failure.Armed = true;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            GameEndpoints.RemoveMember(
+                LoggedInPrincipal,
+                run.Users.Object,
+                db,
+                run.Sessions,
+                run.Hub.Object,
+                run.GameId,
+                OtherUser,
+                run.Engine.Object,
+                run.Admission,
+                NullLogger<Game>.Instance
+            )
+        );
+
+        Assert.Null(run.Sessions.FindByInviteCode("OLDCOD"));
+        Assert.Null(run.Sessions.Find(run.GameId)!.InviteCode);
+        await AssertRemovedMemberCannotRedeemOldCode(db, run);
+        using (var lease = await run.Registry.Acquire(run.GameId))
+            Assert.True(lease.IsDirty);
+        var retried = await GameEndpoints.RemoveMember(
+            LoggedInPrincipal,
+            run.Users.Object,
+            db,
+            run.Sessions,
+            run.Hub.Object,
+            run.GameId,
+            OtherUser,
+            run.Engine.Object,
+            run.Admission,
+            NullLogger<Game>.Instance
+        );
+        Assert.IsType<NoContent>(retried.Result);
+        Assert.Equal(2, (await db.Games.SingleAsync(game => game.Id == run.GameId)).IntendedPlayersCount);
+        run.Engine.Verify(
+            engine => engine.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+    }
+
+    private sealed class FailAfterMembershipSave : SaveChangesInterceptor
+    {
+        public bool Armed { get; set; }
+
+        public override ValueTask<int> SavedChangesAsync(
+            SaveChangesCompletedEventData eventData,
+            int result,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (!Armed)
+                return ValueTask.FromResult(result);
+            Armed = false;
+            throw new InvalidOperationException("membership write outcome unavailable");
+        }
+    }
+
+    private static async Task<RemovalFailure> CreateRemovalFailure(ApplicationDbContext db, bool failGroupRemoval)
+    {
+        var codes = new Queue<string>(["OLDCOD", "NEWCOD", "RETRY1"]);
+        var sessions = CreateSessions(codes.Dequeue);
+        var (hub, groups, clients) = CreateMockHub();
+        var target = new Mock<IGameClient>();
+        clients.Setup(value => value.Clients(It.IsAny<IReadOnlyList<string>>())).Returns(target.Object);
+        groups
+            .Setup(value =>
+                value.RemoveFromGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .Returns(Task.CompletedTask);
+        target.Setup(value => value.Exit(ExitReason.NotAMember)).Returns(Task.CompletedTask);
+        if (failGroupRemoval)
+            groups
+                .Setup(value =>
+                    value.RemoveFromGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
+                )
+                .ThrowsAsync(new InvalidOperationException("group delivery unavailable"));
+        else
+            target
+                .Setup(value => value.Exit(ExitReason.NotAMember))
+                .ThrowsAsync(new InvalidOperationException("exit delivery unavailable"));
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow, intendedPlayersCount: 3);
+        await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
+        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        sessions.Join(game.Id, LoggedInUser, "caller-conn", FixedNow);
+        sessions.Join(game.Id, OtherUser, "target-conn", FixedNow);
+        sessions.SyncInviteCode(game.Id, memberCount: 2, intendedPlayersCount: 3);
+        var registry = CreateRegistry();
+        return new RemovalFailure(
+            game.Id,
+            sessions,
+            hub,
+            groups,
+            target,
+            CreateEngine(),
+            GetMockUserManager(LoggedInUser, OtherUser),
+            registry,
+            new GameAdmission(db, registry, NullLogger<GameAdmission>.Instance)
+        );
+    }
+
+    private static void AllowRemovalNotifications(RemovalFailure run, List<string> order)
+    {
+        run.Groups.Setup(value =>
+                value.RemoveFromGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .Callback(() => order.Add("removed"))
+            .Returns(Task.CompletedTask);
+        run.Target.Setup(value => value.Exit(ExitReason.NotAMember))
+            .Callback(() => order.Add("exit"))
+            .Returns(Task.CompletedTask);
+        run.Engine.Setup(value => value.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()))
+            .Callback(() => order.Add("sync"))
+            .Returns(Task.CompletedTask);
+    }
+
+    private static async Task AssertRemovedMemberCannotRedeemOldCode(ApplicationDbContext db, RemovalFailure run)
+    {
+        var joined = await GameEndpoints.JoinGame(
+            OtherPrincipal,
+            run.Users.Object,
+            db,
+            run.Sessions,
+            run.Hub.Object,
+            FixedTimeProvider,
+            new GameEndpoints.JoinGameRequest("OLDCOD"),
+            run.Engine.Object,
+            run.Registry,
+            NullLogger<Game>.Instance
+        );
+
+        var problem = Assert.IsType<ProblemHttpResult>(joined.Result);
+        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+    }
+
+    private sealed record RemovalFailure(
+        Guid GameId,
+        GameSessions Sessions,
+        Mock<IHubContext<GameHub, IGameClient>> Hub,
+        Mock<IGroupManager> Groups,
+        Mock<IGameClient> Target,
+        Mock<IGameEngine> Engine,
+        Mock<UserManager<AppUser>> Users,
+        GameMutationRegistry Registry,
+        GameAdmission Admission
+    );
+
+    private static GameMutationRegistry CreateRegistry() =>
+        new(
+            new TablierMetrics(
+                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+            ),
+            TimeProvider.System
+        );
+
+    private static GameAdmission CreateAdmission(ApplicationDbContext db) =>
+        new(db, CreateRegistry(), NullLogger<GameAdmission>.Instance);
 
     private static Mock<IGameEngine> CreateEngine(bool readable = true)
     {
@@ -1411,11 +1688,12 @@ public class GameEndpointsTests
         await db.SaveChangesAsync();
     }
 
-    private static ApplicationDbContext CreateInMemoryDb()
+    private static ApplicationDbContext CreateInMemoryDb(params IInterceptor[] interceptors)
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .AddInterceptors(interceptors)
             .Options;
         return new ApplicationDbContext(options);
     }
