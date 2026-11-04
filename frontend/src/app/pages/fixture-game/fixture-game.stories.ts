@@ -1,10 +1,10 @@
 import { signal } from '@angular/core';
-import { GameConnectionService, MemberState, MemberStateEvent } from '@features/games/game-connection.service';
 import { GamesService } from '@features/games/games.service';
+import { GameConnectionService, MemberState, MemberStateEvent } from '@features/games/session/game-connection.service';
 import { Meta, moduleMetadata, StoryObj } from '@storybook/angular-vite';
 import { NEVER, Observable, of } from 'rxjs';
 import { FixtureGameComponent } from './fixture-game.component';
-import { FixtureView } from './fixture-view.model';
+import { FixtureView } from './state/fixture-view.model';
 
 const view: FixtureView = {
   shared: 3,

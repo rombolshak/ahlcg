@@ -3,9 +3,9 @@ using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
-using Tablier.Games;
+using Tablier.Games.Sessions;
 
-namespace Tablier.Tests.Games;
+namespace Tablier.Tests.Games.Sessions;
 
 public class GameSessionsTests
 {

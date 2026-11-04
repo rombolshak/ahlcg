@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Games.Sessions;
 
 namespace Tablier.Games;
 

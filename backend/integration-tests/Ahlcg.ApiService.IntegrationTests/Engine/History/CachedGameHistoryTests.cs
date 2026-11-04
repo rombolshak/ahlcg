@@ -11,6 +11,7 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
+using Tablier.Games.State.Cache;
 using Tablier.Telemetry;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
@@ -249,7 +250,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
         new(
             inner,
             redis,
-            Options.Create(new GameHistoryCacheOptions()),
+            Options.Create(new GameStateCacheOptions()),
             new TablierMetrics(
                 new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
             ),

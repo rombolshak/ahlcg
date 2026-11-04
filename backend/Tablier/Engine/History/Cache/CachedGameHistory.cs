@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
+using Tablier.Games.State.Cache;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
@@ -10,7 +11,7 @@ namespace Tablier.Engine.History.Cache;
 public sealed partial class CachedGameHistory<TState>(
     [FromKeyedServices("store")] IGameHistory<TState> inner,
     IConnectionMultiplexer redis,
-    IOptions<GameHistoryCacheOptions> options,
+    IOptions<GameStateCacheOptions> options,
     TablierMetrics metrics,
     ILogger<CachedGameHistory<TState>> logger
 ) : IGameHistory<TState>

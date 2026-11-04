@@ -1,6 +1,6 @@
-namespace Tablier.Engine.History.Cache;
+namespace Tablier.Games.State.Cache;
 
-public sealed class GameHistoryCacheOptions
+public sealed class GameStateCacheOptions
 {
     public const string SectionName = "Tablier:GameHistoryCache";
 

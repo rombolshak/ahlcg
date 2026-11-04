@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Tablier.Auth;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Games.Sessions;
 
 namespace Tablier.Games;
 
