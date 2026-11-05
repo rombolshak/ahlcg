@@ -1,13 +1,15 @@
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InputManagerService } from '@core/input-manager.service';
-import { GameConnectionService, GameConnectionState, MemberState, MemberStateEvent } from '@features/games/game-connection.service';
 import { GameMember, GamesService } from '@features/games/games.service';
+import { GameConnectionService, GameConnectionState } from '@features/games/session/game-connection.service';
+import { MemberState, MemberStateEvent } from '@features/games/session/game-state.model';
+import { delta, snapshot } from '@features/games/session/testing/session-fixtures';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { NEVER, of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { FixtureGameComponent } from './fixture-game.component';
-import { FixtureView } from './fixture-view.model';
+import { FixtureView } from './state/fixture-view.model';
 
 const view: FixtureView = {
   shared: 3,
@@ -26,7 +28,7 @@ const offered: MemberState['actions'] = {
   reveal: [{ op: 'replace', path: '/revealed', value: 1 }],
 };
 
-const memberState = (memberView: FixtureView, actions: MemberState['actions'] = {}): MemberState => ({ version: 1, view: memberView, actions });
+const memberState = (memberView: FixtureView, actions: MemberState['actions'] = {}): MemberState => snapshot(memberView, 1, actions);
 
 describe('FixtureGameComponent', () => {
   let fixture: ComponentFixture<FixtureGameComponent>;
@@ -64,7 +66,10 @@ describe('FixtureGameComponent', () => {
       imports: [FixtureGameComponent, getTranslocoModule()],
       providers: [
         provideZonelessChangeDetection(),
-        { provide: GameConnectionService, useValue: { state, inviteCode, connect, disconnect, execute, memberStateEvents: events.asObservable() } },
+        {
+          provide: GameConnectionService,
+          useValue: { state, inviteCode, connect, disconnect, execute, synchronize: vi.fn(), memberStateEvents: events.asObservable() },
+        },
         { provide: GamesService, useValue: { members, setMembersCount } },
         { provide: InputManagerService, useValue: { registerGlobal } },
       ],
@@ -76,7 +81,7 @@ describe('FixtureGameComponent', () => {
   });
 
   it('should connect to the game and register the cancel handler', () => {
-    expect(connect).toHaveBeenCalledWith('game-1');
+    expect(connect).toHaveBeenCalledWith('game-1', expect.any(Function));
     expect(registerGlobal).toHaveBeenCalledWith(expect.objectContaining({ cancel: expect.any(Function) as unknown }));
   });
 
@@ -144,7 +149,7 @@ describe('FixtureGameComponent', () => {
   it('should refetch the names when a member joins', async () => {
     await emit({ kind: 'reset', state: memberState(view) });
 
-    await emit({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'add', path: '/others/user-3', value: 'Zero' }], actions: {} } });
+    await emit({ kind: 'change', change: delta(2, [{ op: 'add', path: '/others/user-3', value: 'Zero' }], {}) });
 
     expect(members).toHaveBeenCalledTimes(2);
   });
@@ -153,7 +158,7 @@ describe('FixtureGameComponent', () => {
     await emit({ kind: 'reset', state: memberState(view) });
     members.mockReturnValue(NEVER);
 
-    events.next({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'add', path: '/others/user-3', value: 'Zero' }], actions: {} } });
+    events.next({ kind: 'change', change: delta(2, [{ op: 'add', path: '/others/user-3', value: 'Zero' }], {}) });
     TestBed.tick();
 
     const labels = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('[data-testId=other-label]')).map(label => label.textContent.trim());
@@ -182,15 +187,14 @@ describe('FixtureGameComponent', () => {
   it('should update the view when a change arrives', async () => {
     await emit({ kind: 'reset', state: memberState(view) });
 
-    await emit({ kind: 'change', change: { version: 2, viewPatch: [{ op: 'replace', path: '/shared', value: 9 }], actions: {} } });
+    await emit({ kind: 'change', change: delta(2, [{ op: 'replace', path: '/shared', value: 9 }], {}) });
 
     expect(text('shared')).toBe('9');
   });
 
   describe('clearance code', () => {
     it('should show the code when the connection holds one', async () => {
-      inviteCode.set('K7M2QX');
-      await emit({ kind: 'reset', state: memberState(view) });
+      await emit({ kind: 'reset', state: snapshot(view, 1, {}, 'K7M2QX') });
 
       expect(text('invite-code')).toBe('Clearance code K7M2QX');
     });
@@ -216,8 +220,7 @@ describe('FixtureGameComponent', () => {
 
     it('should close the open seats down to the current members', async () => {
       // given
-      inviteCode.set('K7M2QX');
-      await emit({ kind: 'reset', state: memberState(view) });
+      await emit({ kind: 'reset', state: snapshot(view, 1, {}, 'K7M2QX') });
 
       // when
       (element('close-seats') as HTMLButtonElement).click();

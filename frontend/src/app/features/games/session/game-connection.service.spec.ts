@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { HubConnection } from '@microsoft/signalr';
 import { config } from 'rxjs';
 import { type Mock, vi } from 'vitest';
-import { GAME_HUB_CONNECTION_FACTORY, GameConnectionService, MemberState, MemberStateEvent, StateChange } from './game-connection.service';
+import { GAME_HUB_CONNECTION_FACTORY, GameConnectionService } from './game-connection.service';
+import { MemberState, MemberStateEvent, StateChange } from './game-state.model';
+import { delta, snapshot } from './testing/session-fixtures';
 
 interface FakeHubConnection {
   onreconnecting: ReturnType<typeof vi.fn>;
@@ -16,11 +18,11 @@ interface FakeHubConnection {
 }
 
 function memberState(version: number): MemberState {
-  return { version, view: {}, actions: {} };
+  return snapshot({ shared: version }, version);
 }
 
 function stateChange(version: number): StateChange {
-  return { version, viewPatch: [{ op: 'replace', path: '/shared', value: version }], actions: {} };
+  return delta(version, [{ op: 'replace', path: '/shared', value: version }]);
 }
 
 function deferred<T>() {
@@ -45,7 +47,6 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
   let closeCallback: ((error?: Error) => void) | undefined;
   let exitHandler: ((reason: unknown) => void) | undefined;
   let stateChangedHandler: ((payload: unknown) => void) | undefined;
-  let inviteCodeHandler: ((payload: unknown) => void) | undefined;
   const answers: Record<string, unknown> = { Ping: '2026-01-01T00:00:00Z', GetState: null };
 
   const connection: FakeHubConnection = {
@@ -61,7 +62,6 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
     on: vi.fn((method: string, handler: (arg: never) => void) => {
       if (method === 'Exit') exitHandler = handler as (reason: unknown) => void;
       if (method === 'StateChanged') stateChangedHandler = handler as (payload: unknown) => void;
-      if (method === 'InviteCodeChanged') inviteCodeHandler = handler as (payload: unknown) => void;
     }),
     off: vi.fn(),
     start: vi.fn(() => startResult),
@@ -76,7 +76,6 @@ function createFakeConnection(startResult: Promise<void> = Promise.resolve()) {
     triggerClose: (error?: Error) => closeCallback?.(error),
     triggerExit: (reason: unknown) => exitHandler?.(reason),
     triggerStateChanged: (payload: unknown) => stateChangedHandler?.(payload),
-    triggerInviteCodeChanged: (payload: unknown) => inviteCodeHandler?.(payload),
     answer: (method: string, value: unknown) => {
       answers[method] = value;
     },
@@ -146,42 +145,6 @@ describe('GameConnectionService', () => {
 
     expect(service.state()).toEqual({ status: 'disconnected', reason: 'server_rejected' });
     expect(fake.connection.stop).toHaveBeenCalledOnce();
-  });
-
-  it('should follow the invite code the server sends', () => {
-    service.connect('game-1');
-
-    fake.triggerInviteCodeChanged('K7M2QX');
-    expect(service.inviteCode()).toBe('K7M2QX');
-
-    fake.triggerInviteCodeChanged(null);
-    expect(service.inviteCode()).toBeNull();
-  });
-
-  it('should reject an invite code that is not a string or null and keep the previous one', () => {
-    service.connect('game-1');
-    fake.triggerInviteCodeChanged('K7M2QX');
-
-    expect(() => fake.triggerInviteCodeChanged(42)).toThrow();
-    expect(service.inviteCode()).toBe('K7M2QX');
-  });
-
-  it('should forget the invite code on disconnect', () => {
-    service.connect('game-1');
-    fake.triggerInviteCodeChanged('K7M2QX');
-
-    service.disconnect();
-
-    expect(service.inviteCode()).toBeNull();
-  });
-
-  it('should forget the invite code when connecting to another game', () => {
-    service.connect('game-1');
-    fake.triggerInviteCodeChanged('K7M2QX');
-
-    service.connect('game-2');
-
-    expect(service.inviteCode()).toBeNull();
   });
 
   it('should fail validation rather than accept an unrecognised exit reason', () => {
@@ -296,6 +259,60 @@ describe('GameConnectionService', () => {
     const error = await new Promise<unknown>(resolve => service.execute('shared:inc').subscribe({ error: resolve }));
 
     expect(error).toBeInstanceOf(Error);
+  });
+
+  it('should adopt a full new generation and discard late packets from its retired generation', async () => {
+    service.connect('game-1');
+    fake.answer('GetState', memberState(7));
+    await flush();
+    const previous = memberState(7);
+    const next = { ...memberState(7), state: { ...memberState(7).state, syncId: '019a5100-0000-7000-8000-000000000002', version: 0 } };
+    fake.answer('GetState', next);
+
+    fake.triggerStateChanged({ kind: 'ResetRequired', syncId: next.state.syncId });
+    await flush();
+    fake.triggerStateChanged(stateChange(8));
+    fake.triggerStateChanged({ kind: 'ResetRequired', syncId: previous.state.syncId });
+
+    expect(events.at(-1)).toEqual({ kind: 'reset', state: next });
+    expect(fake.invocations('GetState')).toBe(2);
+  });
+
+  it('should coalesce reset notices during a full synchronization', async () => {
+    service.connect('game-1');
+    const answer = deferred<MemberState>();
+    fake.connection.invoke.mockReturnValue(answer.promise);
+    await Promise.resolve();
+    const next = memberState(4);
+
+    fake.triggerStateChanged({ kind: 'ResetRequired', syncId: next.state.syncId });
+    fake.triggerStateChanged({ kind: 'ResetRequired', syncId: next.state.syncId });
+    answer.resolve(next);
+    await flush();
+
+    expect(events).toEqual([{ kind: 'reset', state: next }]);
+    expect(fake.invocations('GetState')).toBe(1);
+  });
+
+  it('should fence a snapshot prepared before a new generation reset arrived', async () => {
+    service.connect('game-1');
+    fake.answer('GetState', memberState(7));
+    await flush();
+    const older = deferred<MemberState>();
+    fake.connection.invoke.mockReturnValueOnce(older.promise);
+    fake.triggerReconnected();
+    const next = { ...memberState(7), state: { ...memberState(7).state, syncId: '019a5100-0000-7000-8000-000000000002', version: 0 } };
+    fake.answer('GetState', next);
+
+    fake.triggerStateChanged({ kind: 'ResetRequired', syncId: next.state.syncId });
+    older.resolve(memberState(8));
+    await flush();
+
+    expect(events).toEqual([
+      { kind: 'reset', state: memberState(7) },
+      { kind: 'reset', state: next },
+    ]);
+    expect(fake.invocations('GetState')).toBe(3);
   });
 
   describe('state sync', () => {
@@ -555,6 +572,35 @@ describe('GameConnectionService', () => {
         expect(events).toEqual([]);
         expect(unhandled).toHaveBeenCalledOnce();
         expect(fake.invocations('GetState')).toBe(2);
+      });
+
+      it('should stay paused after a failed generation sync until an authoritative snapshot arrives', async () => {
+        service.connect('game-1');
+        fake.answer('GetState', memberState(1));
+        await flush();
+        const failed = deferred<MemberState>();
+        fake.connection.invoke.mockReturnValueOnce(failed.promise);
+        const snapshot = { ...memberState(2), state: { ...memberState(2).state, syncId: '019a5100-0000-7000-8000-000000000002', version: 0 } };
+        fake.triggerStateChanged({ kind: 'ResetRequired', syncId: snapshot.state.syncId });
+        failed.reject(new Error('snapshot unavailable'));
+        await flush();
+        await flush();
+        const recovered = deferred<MemberState>();
+        fake.connection.invoke.mockReturnValueOnce(recovered.promise);
+
+        fake.triggerStateChanged(stateChange(2));
+
+        expect(events).toEqual([{ kind: 'reset', state: memberState(1) }]);
+        expect(fake.invocations('GetState')).toBe(3);
+        recovered.resolve(snapshot);
+        await flush();
+        fake.triggerStateChanged(stateChange(3));
+        expect(events).toEqual([
+          { kind: 'reset', state: memberState(1) },
+          { kind: 'reset', state: snapshot },
+        ]);
+        expect(unhandled).toHaveBeenCalledOnce();
+        expect(fake.invocations('Execute')).toBe(0);
       });
 
       it('should emit nothing when GetState answers an invalid payload', async () => {

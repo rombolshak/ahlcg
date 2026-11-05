@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 
-namespace Tablier.Games;
+namespace Tablier.Games.Sessions;
 
 #pragma warning disable MA0048
 public readonly record struct SessionChange(GameSession? Session, bool MemberPresenceChanged);
@@ -35,8 +35,6 @@ public sealed partial class GameSessions
         meter.CreateObservableGauge("ahlcg.game_sessions.active", () => _sessions.Count, unit: "{session}");
         _generateInviteCode = generateInviteCode ?? GenerateInviteCode;
     }
-
-    private static string GenerateInviteCode() => RandomNumberGenerator.GetString(InviteCodeAlphabet, 6);
 
     public GameSession? Find(Guid gameId) => _sessions.GetValueOrDefault(gameId);
 
@@ -87,6 +85,60 @@ public sealed partial class GameSessions
                 return change;
         }
     }
+
+    public Guid? FindByInviteCode(string code)
+    {
+        foreach (var (gameId, session) in _sessions)
+        {
+            if (session.InviteCode == code)
+                return gameId;
+        }
+
+        return null;
+    }
+
+    public GameSession? SyncInviteCode(Guid gameId, int memberCount, int intendedPlayersCount)
+    {
+        while (true)
+        {
+            if (TrySyncInviteCode(gameId, memberCount, intendedPlayersCount, out var result))
+                return result;
+        }
+    }
+
+    public GameSession? RotateInviteCode(Guid gameId, int memberCount, int intendedPlayersCount)
+    {
+        while (true)
+        {
+            if (!_sessions.TryGetValue(gameId, out var observed))
+                return null;
+            if (TryClearInviteCode(gameId, observed, out _))
+                break;
+        }
+
+        return SyncInviteCode(gameId, memberCount, intendedPlayersCount);
+    }
+
+    public GameSession? RevokeInviteCode(Guid gameId)
+    {
+        while (true)
+        {
+            if (!_sessions.TryGetValue(gameId, out var observed))
+            {
+                LogInviteRevocationSkipped(_logger, gameId, "no_session");
+                return null;
+            }
+            if (observed.InviteCode is null)
+            {
+                LogInviteRevocationSkipped(_logger, gameId, "no_code");
+                return observed;
+            }
+            if (TryClearInviteCode(gameId, observed, out var result))
+                return result;
+        }
+    }
+
+    private static string GenerateInviteCode() => RandomNumberGenerator.GetString(InviteCodeAlphabet, 6);
 
     private bool TryLeave(Guid gameId, string userId, string connectionId, DateTimeOffset now, out SessionChange change)
     {
@@ -139,26 +191,6 @@ public sealed partial class GameSessions
         LogSessionEnded(_logger, gameId, observed.PeakMemberCount, duration);
         change = new SessionChange(Session: null, memberLeft);
         return true;
-    }
-
-    public Guid? FindByInviteCode(string code)
-    {
-        foreach (var (gameId, session) in _sessions)
-        {
-            if (session.InviteCode == code)
-                return gameId;
-        }
-
-        return null;
-    }
-
-    public GameSession? SyncInviteCode(Guid gameId, int memberCount, int intendedPlayersCount)
-    {
-        while (true)
-        {
-            if (TrySyncInviteCode(gameId, memberCount, intendedPlayersCount, out var result))
-                return result;
-        }
     }
 
     private bool TrySyncInviteCode(Guid gameId, int memberCount, int intendedPlayersCount, out GameSession? result)
@@ -217,18 +249,8 @@ public sealed partial class GameSessions
         return true;
     }
 
-    public GameSession? RotateInviteCode(Guid gameId, int memberCount, int intendedPlayersCount)
-    {
-        while (true)
-        {
-            if (!_sessions.TryGetValue(gameId, out var observed))
-                return null;
-            if (TryClearInviteCode(gameId, observed, out _))
-                break;
-        }
-
-        return SyncInviteCode(gameId, memberCount, intendedPlayersCount);
-    }
+    [LoggerMessage(LogLevel.Debug, "Invite revocation for game {GameId} skipped: {Reason}")]
+    private static partial void LogInviteRevocationSkipped(ILogger logger, Guid gameId, string reason);
 
     [LoggerMessage(LogLevel.Information, "Session for game {GameId} started")]
     private static partial void LogSessionStarted(ILogger logger, Guid gameId);

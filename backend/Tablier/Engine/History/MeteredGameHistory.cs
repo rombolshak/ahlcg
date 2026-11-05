@@ -4,7 +4,7 @@ using Tablier.Telemetry;
 namespace Tablier.Engine.History;
 
 public sealed class MeteredGameHistory<TState>(
-    [FromKeyedServices("cached")] IGameHistory<TState> inner,
+    [FromKeyedServices("store")] IGameHistory<TState> inner,
     TablierMetrics metrics,
     TimeProvider time
 ) : MeteredDecorator(metrics.HistoryDuration, time), IGameHistory<TState>

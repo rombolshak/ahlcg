@@ -6,11 +6,11 @@
 | --- | --- |
 | Auth (anonymous login, sign-in and anonymous upgrade, logout, session info) | Implemented, backend + frontend |
 | Game view UI (board, investigator panel, cards, animations) | Implemented, driven by a local fixture, and not routed: `/game/:id` renders the fixture game view below |
-| Game state store with RFC6902 patching and arktype validation | Implemented, frontend only |
+| Game state stores with RFC6902 patching and arktype validation | Shared server-envelope session store for the routed fixture; separate local store for the unrouted Arkham board |
 | Fixture game view (`/game/:id`: shared counter, own secret, other members by name, journal) | Implemented, renders the server's fixture view. Scaffolding until the Arkham board takes server state (#151) |
 | Game records: create, list recent and completed, fetch the latest (`/games`) | Implemented, backend + frontend. The main menu creates and continues games; Case files lists them. Nothing sets a game completed yet |
-| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `GetState` and `Execute` on the hub, a `StateChanged` per committed version. Internal history supports snapshot-plus-patch reconstruction of physical versions and append-only exact restoration with checkpoint and restored-version metadata; restoration is not exposed through the engine, hub or UI. No Arkham rules; the only frontend consumer is the fixture game view, which also calls `Execute` |
-| SignalR | Server hub with in-memory game sessions, one group per game and one per member, connect/disconnect broadcasts, and the step loop above; the client connects from the game view, pulls state with `GetState` on connect and reconnect, and emits version-ordered state events. It does not interpret the view |
+| Persistence and step loop of game *state* within a game | Implemented, backend only, against the fixture rules module: history begins on game creation, `GetState` and `Execute` on the hub, a `StateChanged` delta per committed game version and engine-only envelope revision. Internal history supports snapshot-plus-patch reconstruction of physical versions and append-only exact restoration with checkpoint and restored-version metadata; compact checkpoint/undo metadata is maintained incrementally and rebuilt from live-history SQL. Restoration is not exposed through the engine, hub or UI. No Arkham rules; the only frontend consumer is the fixture game view, which also calls `Execute` |
+| SignalR | Server hub with in-memory game sessions, one group per game and one per member, versioned presence/invite data inside the session envelope, and the step loop above; the client pulls complete member-private envelopes on connect, reconnect, gaps and generation resets, validates them, and emits ordered state events |
 | Deployment | **Does not exist**. Aspire is local-dev orchestration only |
 
 `GameViewComponent.ngOnInit` calls `this.gameState.setState(testGameState)` — the board is populated from `@domain/testing/test-game-state`. Patches are replayed locally by `DebugTimelineService`, not received from a server. No route reaches it today.
@@ -25,7 +25,7 @@ frontend/  Angular 22 SPA          →  /api/*  →  backend/Ahlcg.ApiService  �
 Local orchestration (`backend/Ahlcg.AppHost`, .NET Aspire), in dependency order:
 
 1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`
-2. `cache` (Valkey container) — the game-history cache
+2. `cache` (Valkey container) — the reconstructible session-envelope cache
 3. `migrator` — applies EF migrations, then exits (`WaitForCompletion`)
 4. `apiservice` — the API, health-checked on `/health`
 5. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`
@@ -34,7 +34,7 @@ Aspire injects `services__apiservice__http__0` into the frontend process. `front
 
 ## API instance boundary
 
-Only one API instance is supported. `GameSessions` keeps connection presence and invite codes in process, invite-code uniqueness uses a local lock, and SignalR has no backplane. The #639 redesign retains this boundary: a process-local per-game mutation gate is an agreed design decision, not yet implemented.
+Only one API instance is supported. `GameSessions` keeps connection presence and invite codes in process, invite-code uniqueness uses a local lock, and SignalR has no backplane. `GameMutationRegistry` provides a process-local per-game mutation gate; envelope cache writes compare synchronization identity and revision. Neither supplies cross-instance coordination.
 
 Before adding another API replica, address these areas together:
 
@@ -77,4 +77,4 @@ There is no auth guard and no token handling: the session is the `AspNetCore.Ide
 
 ## Data flow: game state
 
-See [state-store.md](frontend/state-store.md). The routed fixture page uses `withGameSession` for confirmed server views and optimistic actions. The separate Arkham board uses `GameStateStore`: `setState` installs its local fixture without runtime validation; `updateState(Operation[])` applies patches, validates the result, and animates it with GSAP Flip.
+See [state-store.md](frontend/state-store.md). The routed fixture page uses `withGameSession` for confirmed server envelopes, engine metadata and optimistic game actions. The separate Arkham board uses `GameStateStore`: `setState` installs its local fixture without runtime validation; `updateState(Operation[])` applies patches, validates the result, and animates it with GSAP Flip.

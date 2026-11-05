@@ -1,4 +1,4 @@
-namespace Tablier.Engine.History.Cache;
+namespace Tablier.Games.State.Cache;
 
 public static class CacheKeys
 {

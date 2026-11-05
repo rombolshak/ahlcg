@@ -57,10 +57,9 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    IsolationLevel.RepeatableRead,
-                    ct
-                );
+                await using var transaction = db.Database.CurrentTransaction is null
+                    ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+                    : null;
                 var snapshot = await db
                     .GameSnapshots.AsNoTracking()
                     .Where(s => s.GameId == gameId)
