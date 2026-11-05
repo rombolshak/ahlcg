@@ -55,7 +55,7 @@ The project default in `.codex/config.toml` is the main orchestrator model. Each
 | figma-designer | `gpt-6.1-terra` | `medium` |
 | issue-auditor | `gpt-6-luna` | `high` |
 | wordsmith | `gpt-6.1-sol` | `high` |
-| implementer | `gpt-6.1-terra` | `high` |
+| implementer | `gpt-6.1-sol` | `medium` |
 | reviewer | `gpt-6.1-sol` | `medium` |
 | docs-sync | `gpt-6.1-sol` | `medium` |
 | shipper | `gpt-6-luna` | `medium` |

@@ -50,7 +50,7 @@ Read whichever apply to the diff:
 
 | The diff touches | Read |
 | --- | --- |
-| Any code at all | `docs/practice/comments.md` |
+| Any code at all | `docs/practice/code-style.md` and `docs/practice/comments.md` |
 | Any frontend file | `docs/frontend/frontend-conventions.md` — mandatory, in full |
 | Components, services, routes, translations, styles | `docs/frontend/frontend.md` |
 | Any new or changed string a user reads | `docs/practice/copy/voice-and-tone.md` — and flag any `en.json` value the user did not choose through `/wording` |
@@ -63,7 +63,11 @@ Work through each doc's rules against the changed files, and cite `file:line` fo
 Two things that no doc will tell you, and which you should judge yourself:
 
 - **New code with no test alongside it**, when comparable existing code has one.
-- **Divergence from the neighbouring code.** Where the docs and the code disagree, `docs/README.md` says the code wins. Read a sibling implementation of the same kind before calling something a violation.
+- **Divergence from the neighbouring code.** Independently read two comparable implementations and their tests; do not rely on the implementer's selections or summary. Follow the style guide's precedence when an explicit convention conflicts with an existing outlier. For an unwritten local idiom, cite the comparable code as well as the changed line; do not invent personal preferences.
+
+Apply the style check to changed declarations and blocks, including how new members affect their containing type's order. Name the guides and comparable files actually read. Report each violation with changed `file:line` and its rule/example. Untouched legacy violations do not authorize unrelated cleanup.
+
+Conventions violations are actionable quality findings even when compilation, formatting and behavioral tests pass. They require a fix pass unless an explicit user-approved exception covers them. Do not issue a ready verdict with unresolved style defects, silently downgrade them to optional nits, or change the guide to excuse the implementation.
 
 ### 4. Security
 
