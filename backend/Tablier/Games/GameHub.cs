@@ -80,7 +80,7 @@ public partial class GameHub(
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
         if (exception is not null)
             LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
-        await Disconnect(sessions, db, timeProvider, Clients, connection, registry, engine, logger);
+        await Disconnect(sessions, db, timeProvider, connection, registry, engine, logger);
         await base.OnDisconnectedAsync(exception);
     }
 
@@ -134,7 +134,6 @@ public partial class GameHub(
         GameSessions sessions,
         ApplicationDbContext db,
         TimeProvider timeProvider,
-        IHubCallerClients<IGameClient> clients,
         GameConnection connection,
         GameMutationRegistry registry,
         IGameEngine engine,

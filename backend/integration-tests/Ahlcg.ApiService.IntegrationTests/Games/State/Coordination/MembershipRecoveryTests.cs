@@ -88,7 +88,6 @@ public class MembershipRecoveryTests(AppFixture fixture)
             run.Users,
             run.Db,
             run.Sessions,
-            run.Hub,
             TimeProvider.System,
             new GameEndpoints.JoinGameRequest("OLDCOD"),
             run.Engine,

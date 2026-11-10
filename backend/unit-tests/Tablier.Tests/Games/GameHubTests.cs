@@ -170,14 +170,13 @@ public class GameHubTests
     }
 
     [Fact]
-    public async Task Connect_SameMemberSecondConnection_DoesNotBroadcastAgain()
+    public async Task Connect_SameMemberSecondConnection_ReconcilesMembersAndJoinsGroups()
     {
+        // given
         var sessions = CreateSessions();
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
-        var groupClient = new Mock<IGameClient>();
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -190,7 +189,9 @@ public class GameHubTests
             _engine.Object,
             NullLogger.Instance
         );
+        _engine.Invocations.Clear();
 
+        // when
         await GameHub.Connect(
             sessions,
             db,
@@ -203,10 +204,23 @@ public class GameHubTests
             NullLogger.Instance
         );
 
+        // then
         _engine.Verify(
-            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
-            Times.AtLeastOnce
+            e =>
+                e.SyncMembers(It.Is<GameMutationLease>(lease => lease.GameId == gameId), It.IsAny<CancellationToken>()),
+            Times.Once
         );
+        groups.Verify(g => g.AddToGroupAsync("conn-2", gameId.ToString(), It.IsAny<CancellationToken>()), Times.Once);
+        groups.Verify(
+            g =>
+                g.AddToGroupAsync(
+                    "conn-2",
+                    GameHub.GetMemberGroupName(gameId, MemberUser),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        Assert.Equal(2, sessions.Find(gameId)!.Connections[MemberUser].Count);
     }
 
     [Fact]
@@ -303,7 +317,6 @@ public class GameHubTests
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -321,7 +334,6 @@ public class GameHubTests
             sessions,
             db,
             FixedTimeProvider,
-            clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
             CreateRegistry(),
             _engine.Object,
@@ -333,14 +345,13 @@ public class GameHubTests
     }
 
     [Fact]
-    public async Task Disconnect_LastConnection_DropsSessionAndTellsGroup()
+    public async Task Disconnect_LastConnection_DropsSessionAndReconcilesMembers()
     {
+        // given
         var sessions = CreateSessions();
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
-        var groupClient = new Mock<IGameClient>();
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -353,22 +364,25 @@ public class GameHubTests
             _engine.Object,
             NullLogger.Instance
         );
+        _engine.Invocations.Clear();
 
+        // when
         await GameHub.Disconnect(
             sessions,
             db,
             FixedTimeProvider,
-            clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
             CreateRegistry(),
             _engine.Object,
             NullLogger.Instance
         );
 
+        // then
         Assert.Null(sessions.Find(gameId));
         _engine.Verify(
-            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
-            Times.AtLeastOnce
+            e =>
+                e.SyncMembers(It.Is<GameMutationLease>(lease => lease.GameId == gameId), It.IsAny<CancellationToken>()),
+            Times.Once
         );
     }
 
