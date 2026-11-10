@@ -2,15 +2,18 @@
 
 ## Routed game session
 
-`frontend/src/app/features/games/with-game-session.ts` owns the active `/game/:id` fixture page's state through `FixtureGameStore`. It is separate from the Arkham board store below.
+`frontend/src/app/features/games/session/with-game-session.ts` owns the active `/game/:id` fixture page's state through `frontend/src/app/pages/fixture-game/state/fixture-game.store.ts`. It is separate from the Arkham board store below.
 
-- `GameConnectionService` owns transport, state resets and version ordering. The feature subscribes to `memberStateEvents` before connecting and validates every full view and applied patch through the supplied schema.
-- `_confirmedView` and `_confirmedVersion` track server truth. `viewModel` is the displayed view, possibly with one optimistic action patch applied. `status` starts as `loading`; a null reset makes it `empty`, and a non-null reset makes it `ready`.
-- `choose` accepts only an offered action and permits one pending action. It applies the offered patch optimistically and invokes `Execute`; while pending, `availableActions` is empty, although `holdsActions` still describes the confirmed offers.
-- A successful execute response records the committed version. Reconciliation drops the pending action once the confirmed version reaches it. Until then, incoming confirmed changes reapply the pending action's latest offered patch. Missing offers or invalid optimistic patches drop it and restore confirmed truth. A null execute response or error also drops it; errors are rethrown.
-- A null reset clears confirmed state, offers and pending work. `disconnect` unsubscribes from state events, disconnects the transport and drops pending work; it does not clear the retained confirmed view or reset the status to `loading`.
+- `GameConnectionService` owns transport, runtime envelope validation, full synchronization and ordering. The feature subscribes to `memberStateEvents` before connecting and supplies the game schema. Both layers prepare and validate a complete candidate before exposing it.
+- `_confirmedState` holds the complete server envelope: `syncId`, envelope `version`, `engine` and member-private `game`. `engine.gameVersion` is the independent persisted game version. `engine`, `confirmedGame` and `inviteCode` expose confirmed truth; `viewModel` may show one optimistic game patch. Status starts as `loading`; a null snapshot makes it `empty`, otherwise `ready`.
+- Same-generation deltas require the next envelope revision. Duplicates/older revisions are ignored; gaps and unfamiliar generations trigger full synchronization. Header and patched-envelope IDs/revisions/game versions must agree. A game change requires the next game version and refreshed actions; an engine-only delta keeps the game version, supplies no new actions and cannot touch `/game`.
+- `ResetRequired` starts a pull without clearing visible state or adopting its ID. Synchronization coalesces requests, buffers updates, fences replies by connection/request identity and adopts only a complete validated snapshot. Retired generations and superseded replies cannot roll state back. Only matching-generation buffered deltas are replayed. A failed pull retains the need to synchronize; the next update triggers another pull before applying a patch.
+- `choose` accepts only an offered action and permits one pending action. Prediction paths and move/copy sources must stay under `/game`. While pending, `availableActions` is empty; `holdsActions` still describes confirmed offers. Engine-only deltas retain the pending prediction and never acknowledge it through the envelope revision.
+- An execute acknowledgement identifies a persisted game version. Reconciliation drops the prediction when confirmed `engine.gameVersion` reaches it. An acknowledgement ahead of confirmed state requests synchronization without resending `Execute`. Ordinary changes reapply the latest offered prediction until acknowledgement; missing offers, invalid predictions, null replies or errors drop it. Errors are rethrown.
+- A restore-marked delta cancels predictions even when the action remains offered. Full snapshots, including null, cancel pending work and obsolete callbacks; no command is automatically resent. The current server has no restore command yet, but the client handles the marker.
+- `disconnect` unsubscribes, fences callbacks and drops pending work; the feature retains its confirmed view/status. Transport state is cleared separately.
 
-Tracked in [#749](https://github.com/rombolshak/ahlcg/issues/749). Connection replacement currently guards stale state messages, but not every lifecycle callback or delayed `start()` completion. The page connects in `ngOnInit`, so a reused component does not react to a changed route id. Do not assume those lifecycle cases are handled.
+Connection callbacks and delayed start/snapshot responses are fenced against connection replacement. The fixture page still connects in `ngOnInit`, so a reused component does not react to a changed route id; [#749](https://github.com/rombolshak/ahlcg/issues/749) remains relevant to that lifecycle limitation.
 
 ## Unrouted Arkham board
 
@@ -51,7 +54,7 @@ protected readonly cards = computed(() =>
 **`updateState(changes: Operation[])`** — applies RFC6902 patches. The sequence matters:
 
 1. `Flip.getState('ah-investigator-avatar')` captures DOM geometry **before** the state changes.
-2. `applyStatePatches` delegates to `applyJsonPatch` (`core/apply-json-patch.ts`, shared with `withGameSession` in `features/games/with-game-session.ts`), which mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
+2. `applyStatePatches` delegates to `applyJsonPatch` (`core/apply-json-patch.ts`, shared with `withGameSession` in `features/games/session/with-game-session.ts`), which mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
 3. `applyPatch` results are checked; any non-null result throws with the collected messages.
 4. `validateState` runs the full arktype schema on the result and calls `ArkErrors.throw()` on failure — an invalid patch aborts the update rather than corrupting the store.
 5. A `requestAnimationFrame` callback runs `Flip.from(...)` after Angular has rendered.

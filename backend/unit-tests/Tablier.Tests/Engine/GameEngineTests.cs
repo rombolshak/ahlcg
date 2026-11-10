@@ -1,6 +1,10 @@
+using System.Diagnostics.Metrics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -8,7 +12,11 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Engine.History;
+using Tablier.Engine.History.Rewind;
 using Tablier.Games;
+using Tablier.Games.State.Coordination;
+using Tablier.Games.State.Models;
+using Tablier.Telemetry;
 
 namespace Tablier.Tests.Engine;
 
@@ -26,28 +34,13 @@ public class GameEngineTests
     private static readonly IReadOnlySet<string> Pair = new HashSet<string>(StringComparer.Ordinal) { Member, Leaver };
 
     private static readonly TestState Open = new(Counter: 0, IsOpen: true, Members: Alone);
-    private static readonly TestState Closed = new(Counter: 0, IsOpen: false, Members: Alone);
     private static readonly TestState OpenPair = new(Counter: 0, IsOpen: true, Members: Pair);
 
     [Fact]
-    public async Task Execute_AppendRefusedOnce_RetriesAndSendsStateChangedOnce()
+    public async Task Execute_AppendRefused_RepairsWithoutReplaying()
     {
         // given
-        var run = CreateRun(loads: [Open], appends: [false, true]);
-
-        // when
-        var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
-
-        // then
-        Assert.Equal(1, executed);
-        run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Execute_AppendRefusedOnEveryAttempt_ReturnsNullAndSendsNothing()
-    {
-        // given
-        var run = CreateRun(loads: [Open], appends: [false, false, false]);
+        var run = CreateRun(loads: [Open], appends: [false]);
 
         // when
         var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
@@ -61,10 +54,10 @@ public class GameEngineTests
     public async Task Execute_StateDoesNotOfferAction_ReturnsNullWithoutAppending()
     {
         // given
-        var run = CreateRun(loads: [Closed], appends: []);
+        var run = CreateRun(loads: [Open], appends: []);
 
         // when
-        var executed = await run.Engine.Execute(GameId, Member, Increment, CancellationToken.None);
+        var executed = await run.Engine.Execute(GameId, Member, "missing", CancellationToken.None);
 
         // then
         Assert.Null(executed);
@@ -110,10 +103,10 @@ public class GameEngineTests
     }
 
     [Fact]
-    public async Task SyncMembers_AppendRefusedOnce_CommitsOneMembershipStep()
+    public async Task SyncMembers_AppendRefused_DoesNotRepeatTheTransition()
     {
         // given
-        var run = CreateRun(loads: [OpenPair, OpenPair, Open], appends: [false, true]);
+        var run = CreateRun(loads: [OpenPair], appends: [false, true]);
         await run.AddMemberRowAsync(Member);
 
         // when
@@ -129,19 +122,299 @@ public class GameEngineTests
                     choice: null,
                     It.IsAny<CancellationToken>()
                 ),
-            Times.Exactly(2)
+            Times.Once
         );
-        run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Once);
+        run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Never);
     }
+
+    [Fact]
+    public async Task SyncMembers_UnchangedPresence_RetainsCachedEnvelopeWithoutPublishing()
+    {
+        // given
+        var run = CreateRun(loads: [Open], appends: []);
+        run.States.IsOnline = true;
+        await run.Engine.SyncMembers(GameId);
+        var before = run.States.State;
+        var installs = run.States.InstallCount;
+        run.Client.Invocations.Clear();
+
+        // when
+        await run.Engine.SyncMembers(GameId);
+
+        // then
+        Assert.Same(before, run.States.State);
+        Assert.Equal(installs, run.States.InstallCount);
+        run.Client.Verify(client => client.StateChanged(It.IsAny<StateChange>()), Times.Never);
+        run.History.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SyncMembers_ChangedPresence_PublishesOnlyAnEngineRevision(bool isOnline)
+    {
+        // given
+        var run = CreateRun(loads: [Open], appends: []);
+        run.States.IsOnline = !isOnline;
+        var before = await run.Engine.GetMemberState(GameId, Member);
+        Assert.NotNull(before);
+        var cachedBefore = run.States.State;
+        var installs = run.States.InstallCount;
+        run.Client.Invocations.Clear();
+        run.States.IsOnline = isOnline;
+
+        // when
+        await run.Engine.SyncMembers(GameId);
+
+        // then
+        Assert.Equal(installs + 1, run.States.InstallCount);
+        Assert.Same(cachedBefore.Game, run.States.State.Game);
+        Assert.Equal(cachedBefore.SyncId, run.States.State.SyncId);
+        Assert.Equal(cachedBefore.Version + 1, run.States.State.Version);
+        Assert.Equal(cachedBefore.Engine.GameVersion, run.States.State.Engine.GameVersion);
+        var delta = Assert.IsType<StateDelta>(Assert.Single(run.Client.Invocations).Arguments[0]);
+        Assert.Equal(before.State.SyncId, delta.SyncId);
+        Assert.Equal(before.State.Version + 1, delta.Version);
+        Assert.Equal(before.State.Engine.GameVersion, delta.SourceGameVersion);
+        Assert.Equal(delta.SourceGameVersion, delta.GameVersion);
+        Assert.Null(delta.Actions);
+        Assert.False(delta.IsRestore);
+        var wireOptions = new JsonHubProtocolOptions().PayloadSerializerOptions;
+        var patched = delta.Patch.Apply(JsonSerializer.SerializeToNode(before.State, wireOptions)!);
+        Assert.True(patched.IsSuccess);
+        var expected = JsonSerializer.SerializeToNode(before.State, wireOptions)!;
+        expected["version"] = delta.Version;
+        expected["engine"]!["members"]![Member] = isOnline;
+        Assert.True(JsonNode.DeepEquals(expected, patched.Result));
+        var after = await run.Engine.GetMemberState(GameId, Member);
+        Assert.NotNull(after);
+        Assert.True(JsonNode.DeepEquals(patched.Result, JsonSerializer.SerializeToNode(after.State, wireOptions)));
+        Assert.True(
+            JsonNode.DeepEquals(
+                JsonSerializer.SerializeToNode(before.Actions, wireOptions),
+                JsonSerializer.SerializeToNode(after.Actions, wireOptions)
+            )
+        );
+        Assert.Equal(installs + 1, run.States.InstallCount);
+        run.Client.Verify(client => client.StateChanged(It.IsAny<StateChange>()), Times.Once);
+        run.History.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Execute_CacheRefusesCommittedStep_ReturnsCommittedVersionWithoutReplaying()
+    {
+        var run = CreateRun(loads: [Open], appends: [true]);
+        run.States.AcceptWrites = false;
+
+        var version = await run.Engine.Execute(GameId, Member, Increment);
+
+        Assert.Equal(1, version);
+        run.Client.Verify(client => client.StateChanged(It.IsAny<StateChange>()), Times.Never);
+        run.History.Verify(
+            history =>
+                history.Append(
+                    GameId,
+                    It.IsAny<StoredState<TestState>>(),
+                    It.IsAny<StepResult<TestState>>(),
+                    It.IsAny<PlayerChoice?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Execute_PublicationFails_ReturnsCommittedVersionWithoutReplaying()
+    {
+        var run = CreateRun(loads: [Open], appends: [true]);
+        run.Client.Setup(client => client.StateChanged(It.IsAny<StateChange>()))
+            .ThrowsAsync(new InvalidOperationException("delivery failed"));
+
+        var version = await run.Engine.Execute(GameId, Member, Increment);
+
+        Assert.Equal(1, version);
+        run.History.Verify(
+            history =>
+                history.Append(
+                    GameId,
+                    It.IsAny<StoredState<TestState>>(),
+                    It.IsAny<StepResult<TestState>>(),
+                    It.IsAny<PlayerChoice?>(),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task Execute_AppendOutcomeUnknown_AttributesMatchingNextRowAndReturnsCommittedVersion()
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        ConfigureUnknownCommit(run, mismatch: null);
+
+        var acknowledged = await run.Engine.Execute(GameId, Member, Increment);
+
+        Assert.Equal(1, acknowledged);
+        AssertOnePlayerAttempt(run);
+    }
+
+    [Theory]
+    [InlineData("actor")]
+    [InlineData("action")]
+    [InlineData("version")]
+    [InlineData("checkpoint")]
+    [InlineData("irreversible")]
+    [InlineData("baseline")]
+    [InlineData("restore")]
+    [InlineData("state")]
+    [InlineData("non_commit")]
+    public async Task Execute_AppendOutcomeUnknown_DoesNotAttributeMismatchedOrMissingCommit(string mismatch)
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        ConfigureUnknownCommit(run, mismatch);
+
+        var acknowledged = await run.Engine.Execute(GameId, Member, Increment);
+
+        Assert.Null(acknowledged);
+        AssertOnePlayerAttempt(run);
+    }
+
+    [Fact]
+    public async Task Execute_AppendOutcomeUnknownAndRecoveryFails_LeavesRecoveryPendingWithoutReplay()
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        ConfigureUnknownCommit(run, mismatch: null);
+        var failure = new InvalidOperationException("recovery unavailable");
+        run.States.RecoveryFailure = failure;
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            run.Engine.Execute(GameId, Member, Increment)
+        );
+
+        Assert.Same(failure, error);
+        using var lease = await run.Registry.Acquire(GameId);
+        Assert.True(lease.IsDirty);
+        AssertOnePlayerAttempt(run);
+    }
+
+    private static void ConfigureUnknownCommit(Run run, string? mismatch)
+    {
+        var row = new GameStep
+        {
+            GameId = GameId,
+            Version = 1,
+            Actor = Member,
+            Action = Increment,
+            Patch = System.Text.Json.JsonDocument.Parse("[]"),
+        };
+        switch (mismatch)
+        {
+            case "actor":
+                row.Actor = Leaver;
+                break;
+            case "action":
+                row.Action = Close;
+                break;
+            case "checkpoint":
+                row.Checkpoint = "different";
+                break;
+            case "irreversible":
+                row.IsIrreversible = true;
+                break;
+            case "baseline":
+                row.IsBaseline = true;
+                break;
+            case "restore":
+                row.RestoredVersion = 0;
+                break;
+        }
+        if (mismatch != "non_commit")
+        {
+            run.Db.GameSteps.Add(row);
+            run.Db.SaveChanges();
+        }
+        var version =
+            mismatch == "non_commit" ? 0
+            : mismatch == "version" ? 2
+            : 1;
+        var state = mismatch == "non_commit" ? Open : Open with { Counter = mismatch == "state" ? 2 : 1 };
+        run.States.RecoverAt(version, state);
+        run.History.Setup(history =>
+                history.Append(
+                    GameId,
+                    It.IsAny<StoredState<TestState>>(),
+                    It.IsAny<StepResult<TestState>>(),
+                    It.IsAny<PlayerChoice?>(),
+                    It.IsAny<CancellationToken>()
+                )
+            )
+            .ThrowsAsync(new InvalidOperationException("commit acknowledgement unavailable"));
+    }
+
+    private static void AssertOnePlayerAttempt(Run run) =>
+        run.History.Verify(
+            history =>
+                history.Append(
+                    GameId,
+                    It.IsAny<StoredState<TestState>>(),
+                    It.IsAny<StepResult<TestState>>(),
+                    new PlayerChoice(Member, Increment),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
 
     private static Run CreateRun(TestState[] loads, bool[] appends)
     {
-        var history = new Mock<IGameHistory<TestState>>();
-        var reads = 0;
-        history
-            .Setup(h => h.LoadCurrent(GameId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => new StoredState<TestState>(0, loads[Math.Min(reads++, loads.Length - 1)]));
+        var history = CreateHistory(appends);
+        var client = new Mock<IGameClient>();
+        var clients = new Mock<IHubClients<IGameClient>>();
+        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(client.Object);
+        var hub = new Mock<IHubContext<GameHub, IGameClient>>();
+        hub.Setup(h => h.Clients).Returns(clients.Object);
 
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options;
+        var db = new ApplicationDbContext(options);
+
+        var game = new Game
+        {
+            Id = GameId,
+            OwnerId = Member,
+            IdempotencyKey = Guid.NewGuid().ToString(),
+            Configuration = System.Text.Json.JsonDocument.Parse("{}"),
+        };
+        db.Games.Add(game);
+        db.GameMembers.Add(new GameMember { GameId = GameId, UserId = Member });
+        db.SaveChanges();
+        var metrics = new TablierMetrics(
+            new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+        );
+        var registry = new GameMutationRegistry(metrics, TimeProvider.System);
+        var admission = new GameAdmission(db, registry, NullLogger<GameAdmission>.Instance);
+        var states = new ControlledStates(loads[0]);
+        var rules = new TestRules();
+        var engine = new GameEngine<TestConfiguration, TestState, TestView>(
+            new GameRules<TestConfiguration, TestState, TestView>(rules, rules, rules),
+            history.Object,
+            db,
+            hub.Object,
+            Options.Create(new JsonHubProtocolOptions()),
+            admission,
+            registry,
+            states,
+            metrics,
+            TimeProvider.System,
+            NullLogger<GameEngine<TestConfiguration, TestState, TestView>>.Instance
+        );
+        return new Run(engine, history, client, db, states, registry);
+    }
+
+    private static Mock<IGameHistory<TestState>> CreateHistory(bool[] appends)
+    {
+        var history = new Mock<IGameHistory<TestState>>();
         var outcomes = new Queue<bool>(appends);
         history
             .Setup(h =>
@@ -163,39 +436,104 @@ public class GameEngineTests
                 ) => outcomes.Dequeue() ? new StoredState<TestState>(previous.Version + 1, result.State) : null
             );
 
-        var client = new Mock<IGameClient>();
-        var clients = new Mock<IHubClients<IGameClient>>();
-        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(client.Object);
-        var hub = new Mock<IHubContext<GameHub, IGameClient>>();
-        hub.Setup(h => h.Clients).Returns(clients.Object);
+        return history;
+    }
 
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options;
-        var db = new ApplicationDbContext(options);
-
-        var rules = new TestRules();
-        var engine = new GameEngine<TestConfiguration, TestState, TestView>(
-            new GameRules<TestConfiguration, TestState, TestView>(rules, rules, rules),
-            history.Object,
-            db,
-            hub.Object,
-            Options.Create(new JsonHubProtocolOptions()),
-            NullLogger<GameEngine<TestConfiguration, TestState, TestView>>.Instance
+    private sealed class ControlledStates(TestState initial) : IGameStateStore<TestState>
+    {
+        private GameState<TestState> _state = new(
+            Guid.CreateVersion7(),
+            0,
+            new EngineState(
+                0,
+                initial.Members.ToDictionary(member => member, _ => false, StringComparer.Ordinal),
+                MemberId: null,
+                InviteCode: null,
+                RewindMetadata.Empty
+            ),
+            initial
         );
-        return new Run(engine, history, client, db);
+        private GameState<TestState>? _recoveryState;
+        public GameState<TestState> State => _state;
+        public int InstallCount { get; private set; }
+        public bool IsOnline { get; set; }
+        public bool AcceptWrites { get; set; } = true;
+        public Exception? RecoveryFailure { get; set; }
+
+        public void RecoverAt(int gameVersion, TestState state) =>
+            _recoveryState = _state with
+            {
+                SyncId = Guid.CreateVersion7(),
+                Version = 0,
+                Game = state,
+                Engine = _state.Engine with
+                {
+                    GameVersion = gameVersion,
+                    Rewind = RewindMetadata.Empty with { GameVersion = gameVersion },
+                },
+            };
+
+        public Task<GameState<TestState>?> Load(GameMutationLease lease, CancellationToken ct = default)
+        {
+            if (lease.IsDirty && _recoveryState is not null)
+            {
+                if (RecoveryFailure is not null)
+                    throw RecoveryFailure;
+                _state = _recoveryState;
+                lease.IsDirty = false;
+            }
+            return Task.FromResult<GameState<TestState>?>(_state);
+        }
+
+        public Task<EngineState> ReadEngine(
+            Guid gameId,
+            int gameVersion,
+            RewindMetadata metadata,
+            CancellationToken ct = default
+        ) =>
+            Task.FromResult(
+                _state.Engine with
+                {
+                    GameVersion = gameVersion,
+                    Rewind = metadata,
+                    Members = _state.Engine.Members.ToDictionary(
+                        pair => pair.Key,
+                        _ => IsOnline,
+                        StringComparer.Ordinal
+                    ),
+                }
+            );
+
+        public Task<bool> Install(
+            GameMutationLease lease,
+            GameState<TestState> previous,
+            GameState<TestState> replacement,
+            CancellationToken ct = default
+        )
+        {
+            InstallCount++;
+            if (AcceptWrites)
+            {
+                _state = replacement;
+                lease.IsDirty = false;
+            }
+            return Task.FromResult(AcceptWrites);
+        }
     }
 
     private sealed record Run(
         GameEngine<TestConfiguration, TestState, TestView> Engine,
         Mock<IGameHistory<TestState>> History,
         Mock<IGameClient> Client,
-        ApplicationDbContext Db
+        ApplicationDbContext Db,
+        ControlledStates States,
+        GameMutationRegistry Registry
     )
     {
         public async Task AddMemberRowAsync(string userId)
         {
+            if (await Db.GameMembers.AnyAsync(member => member.GameId == GameId && member.UserId == userId))
+                return;
             Db.GameMembers.Add(
                 new GameMember
                 {

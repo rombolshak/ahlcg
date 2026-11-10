@@ -2,11 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
-import { GameConnectionService } from '@features/games/game-connection.service';
 import { GameMember, GamesService } from '@features/games/games.service';
+import { GameConnectionService } from '@features/games/session/game-connection.service';
 import { SettingsComponent } from '@features/settings/settings.component';
 import { finalize } from 'rxjs';
-import { FixtureGameStore } from './fixture-game.store';
+import { FixtureGameStore } from './state/fixture-game.store';
 
 type NoticeId = 'rejected' | 'network-error' | 'empty';
 type Screen = 'loading' | 'ready' | NoticeId;

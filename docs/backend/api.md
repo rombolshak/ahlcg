@@ -28,7 +28,7 @@ Authenticated with the same session cookie as the endpoints; anonymous accounts 
 
 **Membership is the only gate.** A caller with no `GameMember` row for that game is sent `Exit(NotAMember)` and joins neither the session nor the group. A game that does not exist takes the same path, so the answer leaks nothing about whether it does.
 
-**`Exit(NotAMember)` is also sent mid-session.** The successful removal path sends it to the removed member's live connections and drops them from groups. Cleanup can be skipped if state reconciliation fails after the membership row is deleted; see [revocation limitations](backend.md#the-step-loop).
+**`Exit(NotAMember)` is also sent mid-session.** Removal drops the target's groups before private reconciliation and sends `Exit`. Failed cleanup leaves recovery pending; subsequent commands and synchronization still check current DB membership. See [revocation boundaries](backend.md#the-step-loop).
 
 **A turned-away caller is asked to leave, not cut off.** SignalR has already completed the handshake by the time `OnConnectedAsync` runs, so `start()` *succeeds* whatever the server decides — a client cannot read "start resolved" as "I am a member". Rather than force-closing, the hub sends `Exit` and leaves the connection open; **stopping it is the client's job.** A client that ignores `Exit` stays connected to nothing: it is in no group and no session, so no game traffic reaches it.
 
@@ -41,37 +41,36 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 | Direction | Message | Payload |
 | --- | --- | --- |
 | Client → server | `Ping()` | returns a UTC timestamp |
-| Client → server | `GetState()` | returns `MemberState` — the version, the member's view and, per offered action, the patch it would apply to that view — or `null` |
-| Client → server | `Execute(action)` | returns the version the caller's step was committed at, once it and any steps the server advanced after it were sent, or `null` if it was not applied |
-| Server → client | `Exit` | to the caller only: an `ExitReason` — stop the connection and do not reconnect |
-| Server → client | `MemberConnected` | to every member of the game: the user id |
-| Server → client | `MemberDisconnected` | to every member of the game: the user id |
-| Server → client | `InviteCodeChanged` | to every member of the game: the session's invite code, or `null` while no seat is open. Sent after every sync or rotation of the code, connecting included, so a client gets the current code right after it connects. Unversioned: the code is session data, never part of the state |
-| Server → client | `StateChanged` | to each member separately: a `StateChange` — the version, the member's `ViewPatch` and their new action patches, either possibly empty; one per committed version. A member who joins in that version does not get it: their first view comes from `GetState` |
+| Client → server | `GetState(trigger = "initial")` | returns `MemberState { state, actions }`, or `null`. `state` is the complete member-private envelope; `actions` is the offered action-patch sidecar. The optional trigger is bounded for telemetry. |
+| Client → server | `Execute(action)` | returns the persisted game version of the caller's committed step, or `null` if refused; later cache/delivery failure never causes automatic action replay |
+| Server → client | `Exit` | to the caller or removed member's connections: an `ExitReason` — stop the connection and do not reconnect |
+| Server → client | `StateChanged` | discriminated `StateChange`: `kind: "Delta"` or `kind: "ResetRequired"` |
 
-**`GetState` is the pull that resumes a game.** A client calls it after connecting and again whenever it sees a version skip in `StateChanged`; nothing is pushed on connect. It reconciles the game's `GameMembers` rows into its state before answering, and returns `null` for a game with no history or a caller who is not in the state. Patches are RFC 6902 against the member's own view, and views are serialised with the hub's payload options, so enums are strings.
+**The envelope separates session revisions from game history.** `state` contains `syncId`, `version`, `engine` and `game`. `engine.gameVersion` is the persisted history version; `engine` also projects member IDs/presence, recipient `memberId`, invite code and checkpoint/undo destinations. No member names, anonymous flags, connection IDs or internal recovery bookkeeping are projected. Nullable proposal/outcome fields are contract data; no voting commands are exposed. Only `game` is projected by the rules for this member. Action predictions patch `/game` only, never engine metadata.
 
-**`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `null`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
+**`Delta` patches a complete same-generation envelope.** It carries `syncId`, envelope `version`, `sourceGameVersion`, destination `gameVersion`, RFC6902 `patch`, nullable `actions`, and `isRestore`. Game changes require the next history version and refreshed action patches. Engine-only changes keep the history version and use `actions: null` to retain predictions. `isRestore` allows a client to cancel pending predictions; the current server has no restore command that emits it yet. Presence and invite changes use this pipeline; there are no separate presence/invite notifications.
 
-These checks use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Cache failures can also surface after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
+**`ResetRequired` carries only a generation identity.** After a complete recovery baseline is installed, it tells existing clients to pull `GetState`. It supplies no patch and does not itself install a generation. `GetState` reconciles membership and automatic advancement under the gate before returning the complete snapshot, or `null` when unavailable. A joining member without a previous projection gets its initial state here, never a delta against an empty view.
 
-**There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
+**`Execute` validates the currently offered action ID.** It does not require equality with a client's old game version. Current DB membership is checked inside the per-game gate on every command and full synchronization. Each automatic step commits/publishes separately. A refused history head check repairs authoritative state and refuses the command without retrying the action. Cache or delivery failure after commit is repaired without replay; see [failure boundaries](backend.md#the-step-loop).
+
+**Publication is ordered under the per-game gate on the supported single API instance.** Clients still ignore duplicate/older revisions and pull a full snapshot on gaps or unfamiliar generations. Synchronization IDs are identities, never ordered UUIDs.
 
 **A hub method that answers the caller returns its answer; it does not push one.** `Ping()` is `Task<DateTime>`, so the client gets it as the result of `invoke('Ping')`. Pushing the answer through `IGameClient` instead would look equivalent and is not: a push carries no correlation id, so a client with two calls in flight cannot tell which reply belongs to which, and every caller has to register and tear down a handler. Keep request/response on the return value and reserve `IGameClient` for messages the server sends unprompted.
 
 **`ExitReason` crosses the wire as a string** (`"NotAMember"`), not a number. That is not SignalR's default — `AddSignalR()` in `AddTablier()` registers a `JsonStringEnumConverter` on the hub's payload serializer to get it. Drop that converter and every enum silently becomes an integer, which no client reading `"NotAMember"` will match.
 
-One group per game, named by the game id. Both presence broadcasts go to the whole group, so a member receives their own `MemberConnected` too. A second group per member, `{gameId}:{userId}`, carries `StateChanged`, since each member's diff is different.
+One group per game, named by the game id, carries `ResetRequired`. A second group per member, `{gameId}:{userId}`, carries member-private deltas.
 
-**The broadcasts are per member, not per connection.** A member with two tabs open produces one `memberConnected` when the first arrives and one `memberDisconnected` when the last goes — closing one tab does not announce them offline while they are still present in the other.
+**Presence changes are per member, not per connection.** A member with two tabs becomes online when the first arrives and offline when the last leaves; closing one tab does not change envelope presence while the other remains.
 
 **Disconnecting writes that member's `GameMember.LastPlayedAt`**, and nothing else in the backend writes it after creation. That is what makes it the last moment you were at the table rather than the moment you opened the app, and it is what orders the active games in `GET /games/recent` and picks the one `GET /games/latest` returns. Completed games are ordered by `Game.CompletedAt` instead.
 
 **Sessions are in-memory and are not persisted** — see [backend.md](backend.md#signalr) for why, and for the single-replica ceiling that follows.
 
-The frontend client is `GameConnectionService` (`features/games/game-connection.service.ts`). It connects through **`/api/game?gameId=…`**, not `/game`: the hub path collides with the SPA's own `/game/:id` route, and the dev proxy already rewrites `^/api` → `` . That entry carries `ws: true`, without which the websocket upgrade is not proxied and SignalR quietly falls back to long polling.
+The frontend client is `GameConnectionService` (`frontend/src/app/features/games/session/game-connection.service.ts`). It connects through **`/api/game?gameId=…`**, not `/game`: the hub path collides with the SPA's own `/game/:id` route, and the dev proxy already rewrites `^/api` → `` . That entry carries `ws: true`, without which the websocket upgrade is not proxied and SignalR quietly falls back to long polling.
 
-It carries game state without knowing its shape: `memberStateEvents` emits `reset` (the `GetState` answer, possibly `null`, after the start and after every automatic reconnect) and `change` (a `StateChanged`). A `StateChanged` is held while a `GetState` is in flight, dropped when its version is at or below the last known, emitted when it is the next one, and otherwise triggers another `GetState`. The view stays `unknown` and the patches are RFC 6902 operations; the consumer interprets them.
+It validates envelope/wire schemas and the supplied game schema before emission. `memberStateEvents` emits `reset` for an authoritative snapshot (possibly `null`) and `change` for a validated consecutive delta. Requests are fenced by connection and request identity; buffered packets are replayed only for the adopted generation. Retired generations and superseded replies are ignored. See [state-store.md](../frontend/state-store.md#routed-game-session) for atomic application and optimistic reconciliation.
 
 ## Development endpoints
 

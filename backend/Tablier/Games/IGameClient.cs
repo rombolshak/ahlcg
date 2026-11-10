@@ -1,5 +1,7 @@
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Json.Patch;
+using Tablier.Games.State.Models;
 
 namespace Tablier.Games;
 
@@ -9,20 +11,29 @@ public enum ExitReason
     NotAMember,
 }
 
-public sealed record MemberState(int Version, JsonNode View, IReadOnlyDictionary<string, JsonPatch> Actions);
+public sealed record MemberState(MemberGameState<JsonNode> State, IReadOnlyDictionary<string, JsonPatch> Actions);
 
-public sealed record StateChange(int Version, JsonPatch ViewPatch, IReadOnlyDictionary<string, JsonPatch> Actions);
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
+[JsonDerivedType(typeof(StateDelta), "Delta")]
+[JsonDerivedType(typeof(ResetRequired), "ResetRequired")]
+public abstract record StateChange(Guid SyncId);
+
+public sealed record ResetRequired(Guid SyncId) : StateChange(SyncId);
+
+public sealed record StateDelta(
+    Guid SyncId,
+    int Version,
+    int SourceGameVersion,
+    int GameVersion,
+    JsonPatch Patch,
+    IReadOnlyDictionary<string, JsonPatch>? Actions,
+    bool IsRestore = false
+) : StateChange(SyncId);
 #pragma warning restore MA0048
 
 public interface IGameClient
 {
-    Task MemberConnected(string userId);
-
-    Task MemberDisconnected(string userId);
-
     Task StateChanged(StateChange change);
-
-    Task InviteCodeChanged(string? code);
 
     // The method name is the SignalR wire name the frontend listens on.
 #pragma warning disable CA1716

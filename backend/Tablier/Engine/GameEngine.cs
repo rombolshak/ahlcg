@@ -8,7 +8,11 @@ using Microsoft.Extensions.Options;
 using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
+using Tablier.Engine.History.Rewind;
 using Tablier.Games;
+using Tablier.Games.State.Coordination;
+using Tablier.Games.State.Models;
+using Tablier.Telemetry;
 
 namespace Tablier.Engine;
 
@@ -19,200 +23,338 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     ApplicationDbContext db,
     IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
+    GameAdmission admission,
+    GameMutationRegistry registry,
+    IGameStateStore<TState> states,
+    TablierMetrics metrics,
+    TimeProvider time,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
 ) : IGameEngine
 #pragma warning restore S2436
     where TState : ISchemaVersioned
 {
-    private const int MaxAttempts = 3;
-
-    private readonly record struct MembershipChange(string Member, bool Joined);
-
     private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
-    public bool IsConfigurationValid(JsonElement configuration) => TryRead(configuration) is not null;
-
-    public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct)
+    public bool IsConfigurationValid(JsonElement configuration)
     {
+        var readable = TryRead(configuration) is not null;
+        if (!readable)
+            LogConfigurationRefused(logger);
+        return readable;
+    }
+
+    public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default)
+    {
+        using var lease = await admission.EnterMember(gameId, owner, ct);
+        if (lease is null)
+            return;
         var read =
             TryRead(configuration)
             ?? throw new ArgumentException("Configuration is not readable.", nameof(configuration));
-
         var seed = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong)));
-        var initial = rules.Configurator.InitializeGame(read, [owner], seed);
-
-        var begun = await history.Begin(gameId, initial, ct);
-        if (begun is null)
-            LogBeginRefusedHistoryExists(logger, gameId);
-        else
-            LogHistoryBegun(logger, gameId);
+        var begun = await history.Begin(gameId, rules.Configurator.InitializeGame(read, [owner], seed), ct);
+        LogBegin(logger, gameId, begun is not null);
+        var state = await states.Load(lease, ct);
+        if (state is not null)
+            await Advance(lease, state, ct);
     }
 
-    public async Task SyncMembers(Guid gameId, CancellationToken ct)
+    public async Task SyncMembers(Guid gameId, CancellationToken ct = default)
     {
-        var conflicts = 0;
-        while (conflicts < MaxAttempts)
+        if (!await db.Games.AnyAsync(g => g.Id == gameId, ct))
         {
-            var stored = await history.LoadCurrent(gameId, ct);
-            if (stored is null)
-                return;
-
-            var change = await FindNextMembershipChange(gameId, stored.State, ct);
-            if (change is null)
-            {
-                LogNothingToSync(logger, gameId);
-                return;
-            }
-
-            var result = change.Value.Joined
-                ? rules.Processor.AddMember(stored.State, change.Value.Member)
-                : rules.Processor.RemoveMember(stored.State, change.Value.Member);
-            var committed = await history.Append(gameId, stored, result, choice: null, ct);
-            if (committed is null)
-            {
-                conflicts++;
-                LogAppendConflict(logger, gameId, stored.Version, conflicts);
-                continue;
-            }
-
-            conflicts = 0;
-            if (change.Value.Joined)
-                LogMemberAddedBySync(logger, gameId, change.Value.Member, committed.Version);
-            else
-                LogMemberRemovedBySync(logger, gameId, change.Value.Member, committed.Version);
-            await SendStateChanged(gameId, stored, committed);
-            await AdvanceNonPlayerSteps(gameId, committed, ct);
+            LogRefused(logger, gameId, "missing_game");
+            return;
         }
-
-        LogSyncAbandoned(logger, gameId, MaxAttempts);
+        using var lease = await registry.Acquire(gameId, ct);
+        await SyncMembers(lease, ct);
     }
 
-    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct)
+    public async Task SyncMembers(GameMutationLease lease, CancellationToken ct = default)
     {
-        await SyncMembers(gameId, ct);
-
-        var stored = await history.LoadCurrent(gameId, ct);
-        if (stored is null)
+        var state = await states.Load(lease, ct);
+        if (state is null)
+            return;
+        var members = await db
+            .GameMembers.AsNoTracking()
+            .Where(m => m.GameId == lease.GameId)
+            .Select(m => m.UserId)
+            .ToListAsync(ct);
+        while (true)
         {
-            LogStateRefusedNoHistory(logger, gameId);
+            var inGame = rules.Processor.GetMembers(state.Game);
+            var joiner = members.Except(inGame, StringComparer.Ordinal).Order(StringComparer.Ordinal).FirstOrDefault();
+            var leaver = inGame.Except(members, StringComparer.Ordinal).Order(StringComparer.Ordinal).FirstOrDefault();
+            if (joiner is null && leaver is null)
+                break;
+            var result = joiner is not null
+                ? rules.Processor.AddMember(state.Game, joiner)
+                : rules.Processor.RemoveMember(state.Game, leaver!);
+            var committed = await Commit(lease, state, result, choice: null, ct);
+            if (committed is null || lease.IsDirty)
+                return;
+            state = await Advance(lease, committed, ct);
+            if (lease.IsDirty)
+                return;
+        }
+        state = await Advance(lease, state, ct);
+        if (!lease.IsDirty)
+            await RefreshEngine(lease, state, ct);
+        LogSynced(logger, lease.GameId);
+    }
+
+    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct = default)
+    {
+        using var lease = await admission.EnterMember(gameId, member, ct);
+        if (lease is null)
+            return null;
+        await SyncMembers(lease, ct);
+        var state = await states.Load(lease, ct);
+        if (state is null || !state.Engine.Members.ContainsKey(member))
+        {
+            LogRefused(logger, gameId, "missing_state");
             return null;
         }
-
-        var state = stored.State;
-        if (!rules.Processor.GetMembers(state).Contains(member))
-        {
-            LogStateRefusedNotAMember(logger, gameId, member);
-            return null;
-        }
-
-        var view = ProjectView(state, member);
-        var actions = ComputeActionPatches(state, member, view);
-
-        LogStateServed(logger, gameId, member, stored.Version, actions.Count);
-        return new MemberState(stored.Version, view, actions);
+        LogServed(logger, gameId, member, state.Version);
+        return new MemberState(Project(state, member), ComputeActionPatches(state.Game, member));
     }
 
-    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct)
+    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct = default)
     {
-        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        using var lease = await admission.EnterMember(gameId, member, ct);
+        if (lease is null)
+            return null;
+        await SyncMembers(lease, ct);
+        var state = await states.Load(lease, ct);
+        if (state is null || !IsOffered(state.Game, member, action))
         {
-            var stored = await history.LoadCurrent(gameId, ct);
-            if (stored is null)
-                return null;
-
-            if (!IsOffered(stored.State, member, action))
-            {
-                LogActionRejectedNotOffered(logger, gameId, member, action);
-                return null;
-            }
-
-            var result = rules.Processor.Execute(stored.State, member, action);
-            var committed = await history.Append(gameId, stored, result, new PlayerChoice(member, action), ct);
-            if (committed is null)
-            {
-                LogAppendConflict(logger, gameId, stored.Version, attempt);
-                continue;
-            }
-
-            LogStepCommitted(logger, gameId, member, committed.Version);
-            await SendStateChanged(gameId, stored, committed);
-            await AdvanceNonPlayerSteps(gameId, committed, ct);
-            return committed.Version;
+            LogRefused(logger, gameId, "not_offered");
+            return null;
         }
+        var committed = await Commit(
+            lease,
+            state,
+            rules.Processor.Execute(state.Game, member, action),
+            new PlayerChoice(member, action),
+            ct
+        );
+        if (committed is null)
+            return null;
+        var version = committed.Engine.GameVersion;
+        if (!lease.IsDirty)
+            await Advance(lease, committed, ct);
+        return version;
+    }
 
-        LogActionAbandoned(logger, gameId, member, MaxAttempts);
+    private async Task<GameState<TState>?> Commit(
+        GameMutationLease lease,
+        GameState<TState> previous,
+        StepResult<TState> result,
+        PlayerChoice? choice,
+        CancellationToken ct = default
+    )
+    {
+        StoredState<TState>? committed;
+        try
+        {
+            committed = await history.Append(
+                lease.GameId,
+                new StoredState<TState>(previous.Engine.GameVersion, previous.Game),
+                result,
+                choice,
+                ct
+            );
+        }
+        catch (Exception exception)
+        {
+            return await RecoverUnknownCommit(lease, previous, result, choice, exception);
+        }
+        if (committed is null)
+        {
+            lease.IsDirty = true;
+            await states.Load(lease, ct);
+            LogRefused(logger, lease.GameId, "head_conflict");
+            return null;
+        }
+        lease.IsDirty = true;
+        var metadata = previous.Engine.Rewind.Apply(
+            new HistoryMetadata(
+                committed.Version,
+                choice?.Member,
+                result.Checkpoint,
+                result.IsBaseline || result.IsIrreversible,
+                RestoredVersion: null
+            )
+        );
+        var engine = await states.ReadEngine(lease.GameId, committed.Version, metadata, ct);
+        var next = previous with { Version = previous.Version + 1, Engine = engine, Game = committed.State };
+        if (await states.Install(lease, previous, next, ct))
+            await Publish(lease.GameId, previous, next);
+        LogCommitted(logger, lease.GameId, committed.Version);
+        return next;
+    }
+
+    private async Task<GameState<TState>?> RecoverUnknownCommit(
+        GameMutationLease lease,
+        GameState<TState> previous,
+        StepResult<TState> result,
+        PlayerChoice? choice,
+        Exception exception
+    )
+    {
+        lease.IsDirty = true;
+        LogUnknownCommit(logger, lease.GameId, previous.Engine.GameVersion + 1, exception);
+        var recovered = await states.Load(lease, CancellationToken.None);
+        var step = await db
+            .GameSteps.AsNoTracking()
+            .SingleOrDefaultAsync(
+                s => s.GameId == lease.GameId && s.Version == previous.Engine.GameVersion + 1,
+                CancellationToken.None
+            );
+        if (
+            recovered is not null
+            && recovered.Engine.GameVersion == previous.Engine.GameVersion + 1
+            && step is not null
+            && step.Actor == choice?.Member
+            && step.Action == choice?.Action
+            && step.RestoredVersion is null
+            && step.Checkpoint == result.Checkpoint
+            && step.IsBaseline == result.IsBaseline
+            && step.IsIrreversible == result.IsIrreversible
+            && JsonNode.DeepEquals(
+                JsonSerializer.SerializeToNode(result.State),
+                JsonSerializer.SerializeToNode(recovered.Game)
+            )
+        )
+            return recovered;
+        LogRefused(logger, lease.GameId, "uncertain_commit");
         return null;
     }
 
-    private async Task<MembershipChange?> FindNextMembershipChange(Guid gameId, TState state, CancellationToken ct)
+    private async Task<GameState<TState>> Advance(
+        GameMutationLease lease,
+        GameState<TState> state,
+        CancellationToken ct = default
+    )
     {
-        var rows = await db
-            .GameMembers.AsNoTracking()
-            .Where(m => m.GameId == gameId)
-            .Select(m => m.UserId)
-            .ToListAsync(ct);
-        var inState = rules.Processor.GetMembers(state);
+        while (!rules.Processor.GetMembersActions(state.Game).Values.Any(actions => actions.Count > 0))
+        {
+            var next = await Commit(lease, state, rules.Processor.Advance(state.Game), choice: null, ct);
+            if (next is null || lease.IsDirty)
+                break;
+            state = next;
+        }
+        return state;
+    }
 
-        var joiner = rows.Where(row => !inState.Contains(row)).Order(StringComparer.Ordinal).FirstOrDefault();
-        if (joiner is not null)
-            return new MembershipChange(joiner, Joined: true);
+    private async Task RefreshEngine(GameMutationLease lease, GameState<TState> state, CancellationToken ct = default)
+    {
+        var engine = await states.ReadEngine(lease.GameId, state.Engine.GameVersion, state.Engine.Rewind, ct);
+        engine = engine with { Proposal = state.Engine.Proposal, Outcome = state.Engine.Outcome };
+        if (JsonNode.DeepEquals(JsonSerializer.SerializeToNode(state.Engine), JsonSerializer.SerializeToNode(engine)))
+        {
+            LogEngineUnchanged(logger, lease.GameId, state.Version);
+            return;
+        }
+        var next = state with { Version = state.Version + 1, Engine = engine };
+        if (await states.Install(lease, state, next, ct))
+        {
+            LogEngineChanged(logger, lease.GameId, next.Version);
+            await Publish(lease.GameId, state, next);
+        }
+    }
 
-        var leaver = inState.Except(rows).Order(StringComparer.Ordinal).FirstOrDefault();
-        return leaver is null ? null : new MembershipChange(leaver, Joined: false);
+    private async Task Publish(Guid gameId, GameState<TState> previous, GameState<TState> next)
+    {
+        var started = time.GetTimestamp();
+        var outcome = "error";
+        try
+        {
+            var gameChanged = previous.Engine.GameVersion != next.Engine.GameVersion;
+            foreach (var member in next.Engine.Members.Keys)
+            {
+                if (
+                    !previous.Engine.Members.ContainsKey(member)
+                    || !rules.Processor.GetMembers(previous.Game).Contains(member)
+                )
+                {
+                    LogChangeSkippedForJoiner(logger, gameId, member, next.Version);
+                    continue;
+                }
+                var before = JsonSerializer.SerializeToNode(Project(previous, member), _wireOptions)!;
+                var after = JsonSerializer.SerializeToNode(Project(next, member), _wireOptions)!;
+                await hub
+                    .Clients.Group(GameHub.GetMemberGroupName(gameId, member))
+                    .StateChanged(
+                        new StateDelta(
+                            next.SyncId,
+                            next.Version,
+                            previous.Engine.GameVersion,
+                            next.Engine.GameVersion,
+                            before.CreatePatch(after),
+                            gameChanged ? ComputeActionPatches(next.Game, member) : null
+                        )
+                    );
+            }
+            outcome = "ok";
+        }
+        catch (Exception exception)
+        {
+            LogDeliveryFailed(logger, gameId, next.Version, exception);
+        }
+        finally
+        {
+            metrics.PublicationDuration.Record(
+                time.GetElapsedTime(started).TotalSeconds,
+                new KeyValuePair<string, object?>("kind", "delta"),
+                new KeyValuePair<string, object?>("outcome", outcome)
+            );
+        }
+    }
+
+    private MemberGameState<JsonNode> Project(GameState<TState> state, string member)
+    {
+        var checkpoints = state
+            .Engine.Rewind.Checkpoints.Where(pair => pair.Value < state.Engine.GameVersion && pair.Value > 0)
+            .ToDictionary(StringComparer.Ordinal);
+        var proposal = state.Engine.Proposal;
+        var engine = new MemberEngineState(
+            state.Engine.GameVersion,
+            state.Engine.Members,
+            member,
+            state.Engine.InviteCode,
+            new MemberEngineState.Targets(checkpoints, state.Engine.Rewind.Undo),
+            proposal is null
+                ? null
+                : new MemberEngineState.PendingProposal(
+                    proposal.Id,
+                    proposal.SourceGameVersion,
+                    proposal.RequesterId,
+                    proposal.Destination,
+                    proposal.RequiredVoterIds,
+                    proposal.ApprovedVoterIds
+                ),
+            state.Engine.Outcome
+        );
+        return new MemberGameState<JsonNode>(state.SyncId, state.Version, engine, ProjectView(state.Game, member));
     }
 
     private bool IsOffered(TState state, string member, string action) =>
         rules.Processor.GetMembersActions(state).TryGetValue(member, out var offered) && offered.Contains(action);
 
-    private bool HoldsActions(TState state) =>
-        rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
-
-    private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct)
+    private Dictionary<string, JsonPatch> ComputeActionPatches(TState state, string member)
     {
-        var current = committed;
-        while (!HoldsActions(current.State))
-        {
-            var next = await history.Append(gameId, current, rules.Processor.Advance(current.State), choice: null, ct);
-            if (next is null)
-            {
-                LogAdvanceConflict(logger, gameId, current.Version);
-                return;
-            }
-
-            LogAdvanced(logger, gameId, next.Version);
-            await SendStateChanged(gameId, current, next);
-            current = next;
-        }
-    }
-
-    private async Task SendStateChanged(Guid gameId, StoredState<TState> previous, StoredState<TState> next)
-    {
-        var previousMembers = rules.Processor.GetMembers(previous.State);
-        foreach (var member in rules.Processor.GetMembers(next.State))
-        {
-            if (!previousMembers.Contains(member))
-            {
-                LogChangeSkippedForJoiner(logger, gameId, member, next.Version);
-                continue;
-            }
-
-            var before = ProjectView(previous.State, member);
-            var after = ProjectView(next.State, member);
-            var change = new StateChange(
-                next.Version,
-                before.CreatePatch(after),
-                ComputeActionPatches(next.State, member, after)
-            );
-            await hub.Clients.Group(GameHub.GetMemberGroupName(gameId, member)).StateChanged(change);
-        }
-    }
-
-    private Dictionary<string, JsonPatch> ComputeActionPatches(TState state, string member, JsonNode view)
-    {
+        var before = new JsonObject { ["game"] = ProjectView(state, member) };
         var offered = rules.Processor.GetMembersActions(state).GetValueOrDefault(member) ?? new HashSet<string>();
         return offered.ToDictionary(
             action => action,
-            action => view.CreatePatch(ProjectView(rules.Processor.Execute(state, member, action).State, member)),
+            action =>
+                before.CreatePatch(
+                    new JsonObject
+                    {
+                        ["game"] = ProjectView(rules.Processor.Execute(state, member, action).State, member),
+                    }
+                ),
             StringComparer.Ordinal
         );
     }
@@ -233,66 +375,39 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         }
     }
 
-    [LoggerMessage(LogLevel.Debug, "Game {GameId} membership already matches its state; nothing to sync")]
-    private static partial void LogNothingToSync(ILogger logger, Guid gameId);
+    [LoggerMessage(LogLevel.Information, "Game configuration refused: unreadable_configuration")]
+    private static partial void LogConfigurationRefused(ILogger logger);
 
-    [LoggerMessage(LogLevel.Information, "User {UserId} was added to game {GameId} by sync at version {Version}")]
-    private static partial void LogMemberAddedBySync(ILogger logger, Guid gameId, string userId, int version);
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} envelope revision {Version} unchanged")]
+    private static partial void LogEngineUnchanged(ILogger logger, Guid gameId, int version);
 
-    [LoggerMessage(LogLevel.Information, "User {UserId} was removed from game {GameId} by sync at version {Version}")]
-    private static partial void LogMemberRemovedBySync(ILogger logger, Guid gameId, string userId, int version);
-
-    [LoggerMessage(LogLevel.Warning, "Membership sync of game {GameId} was abandoned after {Attempts} conflicts")]
-    private static partial void LogSyncAbandoned(ILogger logger, Guid gameId, int attempts);
-
-    [LoggerMessage(LogLevel.Information, "Game {GameId} began its history")]
-    private static partial void LogHistoryBegun(ILogger logger, Guid gameId);
-
-    [LoggerMessage(LogLevel.Debug, "Game {GameId} was not begun: its history already exists")]
-    private static partial void LogBeginRefusedHistoryExists(ILogger logger, Guid gameId);
-
-    [LoggerMessage(LogLevel.Warning, "Game {GameId} has no history")]
-    private static partial void LogStateRefusedNoHistory(ILogger logger, Guid gameId);
-
-    [LoggerMessage(LogLevel.Information, "State of game {GameId} was not served to user {UserId}: they are not in it")]
-    private static partial void LogStateRefusedNotAMember(ILogger logger, Guid gameId, string userId);
+    [LoggerMessage(LogLevel.Information, "Game {GameId} engine changed at envelope revision {Version}")]
+    private static partial void LogEngineChanged(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,
-        "Version {Version} of game {GameId} was served to user {UserId} with {ActionCount} actions"
-    )]
-    private static partial void LogStateServed(
-        ILogger logger,
-        Guid gameId,
-        string userId,
-        int version,
-        int actionCount
-    );
-
-    [LoggerMessage(LogLevel.Information, "User {UserId} action {Action} was rejected in game {GameId}: not offered")]
-    private static partial void LogActionRejectedNotOffered(ILogger logger, Guid gameId, string userId, string action);
-
-    [LoggerMessage(
-        LogLevel.Debug,
-        "Append after version {Version} of game {GameId} conflicted on attempt {Attempt}; retrying"
-    )]
-    private static partial void LogAppendConflict(ILogger logger, Guid gameId, int version, int attempt);
-
-    [LoggerMessage(LogLevel.Warning, "User {UserId} action in game {GameId} was abandoned after {Attempts} attempts")]
-    private static partial void LogActionAbandoned(ILogger logger, Guid gameId, string userId, int attempts);
-
-    [LoggerMessage(LogLevel.Information, "User {UserId} committed version {Version} of game {GameId}")]
-    private static partial void LogStepCommitted(ILogger logger, Guid gameId, string userId, int version);
-
-    [LoggerMessage(LogLevel.Information, "Game {GameId} advanced to version {Version}")]
-    private static partial void LogAdvanced(ILogger logger, Guid gameId, int version);
-
-    [LoggerMessage(
-        LogLevel.Debug,
-        "Version {Version} of game {GameId} was not pushed to user {UserId}: they just joined"
+        "Game {GameId} envelope revision {Version} skipped for member {UserId}: initial_snapshot_required"
     )]
     private static partial void LogChangeSkippedForJoiner(ILogger logger, Guid gameId, string userId, int version);
 
-    [LoggerMessage(LogLevel.Debug, "Game {GameId} advance after version {Version} was refused; another writer won")]
-    private static partial void LogAdvanceConflict(ILogger logger, Guid gameId, int version);
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} begin: created {Created}")]
+    private static partial void LogBegin(ILogger logger, Guid gameId, bool created);
+
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} membership synchronized")]
+    private static partial void LogSynced(ILogger logger, Guid gameId);
+
+    [LoggerMessage(LogLevel.Information, "Game {GameId} operation refused: {Reason}")]
+    private static partial void LogRefused(ILogger logger, Guid gameId, string reason);
+
+    [LoggerMessage(LogLevel.Debug, "Game {GameId} envelope revision {Version} served to {UserId}")]
+    private static partial void LogServed(ILogger logger, Guid gameId, string userId, int version);
+
+    [LoggerMessage(LogLevel.Information, "Game {GameId} committed game version {Version}")]
+    private static partial void LogCommitted(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Error, "Game {GameId} commit at expected version {Version} has an unknown outcome")]
+    private static partial void LogUnknownCommit(ILogger logger, Guid gameId, int version, Exception exception);
+
+    [LoggerMessage(LogLevel.Error, "Game {GameId} revision {Version} dispatch failed")]
+    private static partial void LogDeliveryFailed(ILogger logger, Guid gameId, int version, Exception exception);
 }

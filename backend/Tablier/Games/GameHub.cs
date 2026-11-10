@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Games.Sessions;
+using Tablier.Games.State.Coordination;
+using Tablier.Telemetry;
 
 namespace Tablier.Games;
 
@@ -16,6 +19,9 @@ public partial class GameHub(
     ApplicationDbContext db,
     TimeProvider timeProvider,
     IGameEngine engine,
+    GameAdmission admission,
+    GameMutationRegistry registry,
+    TablierMetrics metrics,
     ILogger<GameHub> logger
 ) : Hub<IGameClient>
 {
@@ -24,11 +30,29 @@ public partial class GameHub(
 
     public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
 
-    public Task<MemberState?> GetState()
+    public async Task<MemberState?> GetState(string trigger = "initial")
     {
         var (gameId, userId) = GetCaller();
 
-        return engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
+        var started = timeProvider.GetTimestamp();
+        var outcome = "error";
+        try
+        {
+            var state = await engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
+            outcome = state is null ? "refused" : "ok";
+            return state;
+        }
+        finally
+        {
+            var boundedTrigger = trigger is "initial" or "reconnect" or "version_gap" or "generation_change"
+                ? trigger
+                : "initial";
+            metrics.SynchronizationDuration.Record(
+                timeProvider.GetElapsedTime(started).TotalSeconds,
+                new KeyValuePair<string, object?>("trigger", boundedTrigger),
+                new KeyValuePair<string, object?>("outcome", outcome)
+            );
+        }
     }
 
     public Task<int?> Execute(string action)
@@ -45,7 +69,7 @@ public partial class GameHub(
         var (gameId, userId) = GetCaller();
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
-        await Connect(sessions, db, timeProvider, Clients, Groups, connection, logger);
+        await Connect(sessions, db, timeProvider, Clients, Groups, connection, admission, engine, logger);
         await base.OnConnectedAsync();
     }
 
@@ -56,15 +80,8 @@ public partial class GameHub(
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
         if (exception is not null)
             LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
-        await Disconnect(sessions, db, timeProvider, Clients, connection, logger);
+        await Disconnect(sessions, db, timeProvider, connection, registry, engine, logger);
         await base.OnDisconnectedAsync(exception);
-    }
-
-    private (Guid GameId, string UserId) GetCaller()
-    {
-        var gameId = ParseGameId(Context.GetHttpContext()) ?? throw new HubException(MissingGameIdMessage);
-        var userId = Context.UserIdentifier ?? throw new HubException(MissingUserIdMessage);
-        return (gameId, userId);
     }
 
     public static Guid? ParseGameId(HttpContext? httpContext)
@@ -80,11 +97,20 @@ public partial class GameHub(
         IHubCallerClients<IGameClient> clients,
         IGroupManager groups,
         GameConnection connection,
+        GameAdmission admission,
+        IGameEngine engine,
         ILogger logger
     )
     {
         var (gameId, userId, connectionId) = connection;
 
+        using var lease = await admission.EnterMember(gameId, userId);
+        if (lease is null)
+        {
+            LogNotAMember(logger, gameId, userId, connectionId);
+            await clients.Caller.Exit(ExitReason.NotAMember);
+            return;
+        }
         var game = await db
             .Games.Where(g => g.Id == gameId && g.Members.Any(m => m.UserId == userId))
             .Select(g => new { g.IntendedPlayersCount, MemberCount = g.Members.Count })
@@ -96,36 +122,34 @@ public partial class GameHub(
             return;
         }
 
-        var change = sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         await groups.AddToGroupAsync(connectionId, gameId.ToString());
         await groups.AddToGroupAsync(connectionId, GetMemberGroupName(gameId, userId));
+        sessions.Join(gameId, userId, connectionId, timeProvider.GetUtcNow());
         LogConnected(logger, gameId, userId, connectionId);
-        var session = sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
-        await SendInviteCode(clients, gameId, session);
-
-        if (change.MemberPresenceChanged)
-            await clients.Group(gameId.ToString()).MemberConnected(userId);
-    }
-
-    public static async Task SendInviteCode(IHubClients<IGameClient> clients, Guid gameId, GameSession? session)
-    {
-        if (session is not null)
-            await clients.Group(gameId.ToString()).InviteCodeChanged(session.InviteCode);
+        sessions.SyncInviteCode(gameId, game.MemberCount, game.IntendedPlayersCount);
+        await engine.SyncMembers(lease);
     }
 
     public static async Task Disconnect(
         GameSessions sessions,
         ApplicationDbContext db,
         TimeProvider timeProvider,
-        IHubCallerClients<IGameClient> clients,
         GameConnection connection,
+        GameMutationRegistry registry,
+        IGameEngine engine,
         ILogger logger
     )
     {
         var (gameId, userId, connectionId) = connection;
 
+        if (sessions.Find(gameId) is null)
+        {
+            LogDisconnectSkipped(logger, gameId, userId, connectionId);
+            return;
+        }
+        using var lease = await registry.Acquire(gameId);
         var now = timeProvider.GetUtcNow();
-        var change = sessions.Leave(gameId, userId, connectionId, now);
+        sessions.Leave(gameId, userId, connectionId, now);
         LogDisconnected(logger, gameId, userId, connectionId);
 
         var member = await db.GameMembers.FirstOrDefaultAsync(m => m.GameId == gameId && m.UserId == userId);
@@ -135,9 +159,21 @@ public partial class GameHub(
             await db.SaveChangesAsync();
         }
 
-        if (change.MemberPresenceChanged)
-            await clients.Group(gameId.ToString()).MemberDisconnected(userId);
+        await engine.SyncMembers(lease);
     }
+
+    private (Guid GameId, string UserId) GetCaller()
+    {
+        var gameId = ParseGameId(Context.GetHttpContext()) ?? throw new HubException(MissingGameIdMessage);
+        var userId = Context.UserIdentifier ?? throw new HubException(MissingUserIdMessage);
+        return (gameId, userId);
+    }
+
+    [LoggerMessage(
+        LogLevel.Debug,
+        "Connection {ConnectionId} for member {UserId} of game {GameId} needs no disconnect work: no_session"
+    )]
+    private static partial void LogDisconnectSkipped(ILogger logger, Guid gameId, string userId, string connectionId);
 
     [LoggerMessage(
         LogLevel.Warning,

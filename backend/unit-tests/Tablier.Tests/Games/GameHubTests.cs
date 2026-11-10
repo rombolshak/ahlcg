@@ -8,12 +8,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Tablier.Data;
+using Tablier.Engine;
 using Tablier.Games;
+using Tablier.Games.Sessions;
+using Tablier.Games.State.Coordination;
+using Tablier.Telemetry;
 
 namespace Tablier.Tests.Games;
 
 public class GameHubTests
 {
+    private readonly Mock<IGameEngine> _engine = new();
+
     [Fact]
     public async Task Connect_NonMember_SendsExitAndDoesNotJoin()
     {
@@ -32,6 +38,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -58,6 +66,8 @@ public class GameHubTests
             clients.Object,
             Mock.Of<IGroupManager>(),
             new GameConnection(Guid.NewGuid(), MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             logger
         );
 
@@ -82,6 +92,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -107,6 +119,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -120,7 +134,10 @@ public class GameHubTests
                 ),
             Times.Once
         );
-        groupClient.Verify(c => c.MemberConnected(MemberUser), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
     }
 
     [Fact]
@@ -140,22 +157,26 @@ public class GameHubTests
             clients.Object,
             Mock.Of<IGroupManager>(),
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
-        groupClient.Verify(c => c.InviteCodeChanged(sessions.Find(gameId)!.InviteCode), Times.Once);
+        _engine.Verify(
+            e => e.SyncMembers(It.IsAny<GameMutationLease>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce
+        );
         Assert.NotNull(sessions.Find(gameId)!.InviteCode);
     }
 
     [Fact]
-    public async Task Connect_SameMemberSecondConnection_DoesNotBroadcastAgain()
+    public async Task Connect_SameMemberSecondConnection_ReconcilesMembersAndJoinsGroups()
     {
+        // given
         var sessions = CreateSessions();
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
-        var groupClient = new Mock<IGameClient>();
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -164,9 +185,13 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
+        _engine.Invocations.Clear();
 
+        // when
         await GameHub.Connect(
             sessions,
             db,
@@ -174,10 +199,28 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-2"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
-        groupClient.Verify(c => c.MemberConnected(It.IsAny<string>()), Times.Once);
+        // then
+        _engine.Verify(
+            e =>
+                e.SyncMembers(It.Is<GameMutationLease>(lease => lease.GameId == gameId), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
+        groups.Verify(g => g.AddToGroupAsync("conn-2", gameId.ToString(), It.IsAny<CancellationToken>()), Times.Once);
+        groups.Verify(
+            g =>
+                g.AddToGroupAsync(
+                    "conn-2",
+                    GameHub.GetMemberGroupName(gameId, MemberUser),
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
+        Assert.Equal(2, sessions.Find(gameId)!.Connections[MemberUser].Count);
     }
 
     [Fact]
@@ -197,6 +240,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -220,6 +265,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -242,6 +289,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
         var code = sessions.Find(gameId)!.InviteCode;
@@ -253,6 +302,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-2"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -266,7 +317,6 @@ public class GameHubTests
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(It.IsAny<string>())).Returns(Mock.Of<IGameClient>());
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -275,6 +325,8 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -282,8 +334,9 @@ public class GameHubTests
             sessions,
             db,
             FixedTimeProvider,
-            clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateRegistry(),
+            _engine.Object,
             NullLogger.Instance
         );
 
@@ -292,14 +345,13 @@ public class GameHubTests
     }
 
     [Fact]
-    public async Task Disconnect_LastConnection_DropsSessionAndTellsGroup()
+    public async Task Disconnect_LastConnection_DropsSessionAndReconcilesMembers()
     {
+        // given
         var sessions = CreateSessions();
         await using var db = CreateInMemoryDb();
         var gameId = await SeedMembershipAsync(db, MemberUser);
-        var groupClient = new Mock<IGameClient>();
         var clients = new Mock<IHubCallerClients<IGameClient>>();
-        clients.Setup(c => c.Group(gameId.ToString())).Returns(groupClient.Object);
         var groups = new Mock<IGroupManager>();
         await GameHub.Connect(
             sessions,
@@ -308,20 +360,30 @@ public class GameHubTests
             clients.Object,
             groups.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateAdmission(db),
+            _engine.Object,
             NullLogger.Instance
         );
+        _engine.Invocations.Clear();
 
+        // when
         await GameHub.Disconnect(
             sessions,
             db,
             FixedTimeProvider,
-            clients.Object,
             new GameConnection(gameId, MemberUser, "conn-1"),
+            CreateRegistry(),
+            _engine.Object,
             NullLogger.Instance
         );
 
+        // then
         Assert.Null(sessions.Find(gameId));
-        groupClient.Verify(c => c.MemberDisconnected(MemberUser), Times.Once);
+        _engine.Verify(
+            e =>
+                e.SyncMembers(It.Is<GameMutationLease>(lease => lease.GameId == gameId), It.IsAny<CancellationToken>()),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -368,6 +430,17 @@ public class GameHubTests
         await db.SaveChangesAsync();
         return game.Id;
     }
+
+    private static GameMutationRegistry CreateRegistry() =>
+        new(
+            new TablierMetrics(
+                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+            ),
+            TimeProvider.System
+        );
+
+    private static GameAdmission CreateAdmission(ApplicationDbContext db) =>
+        new(db, CreateRegistry(), NullLogger<GameAdmission>.Instance);
 
     private static GameSessions CreateSessions()
     {
