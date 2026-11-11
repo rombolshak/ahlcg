@@ -45,11 +45,11 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     public Task<StoredState<TState>?> Append(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct = default
-    ) => AppendCore(gameId, previous, result, choice, restoredVersion: null, ct);
+    ) => AppendCore(gameId, current, result, choice, restoredVersion: null, ct);
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
     {
@@ -94,14 +94,14 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     public async Task<StoredState<TState>?> Restore(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         int targetVersion,
         CancellationToken ct = default
     )
     {
-        if (targetVersion >= previous.Version)
+        if (targetVersion >= current.Version)
         {
-            LogRestoreRefusedTargetNotBeforeHead(logger, gameId, targetVersion, previous.Version);
+            LogRestoreRefusedTargetNotBeforeHead(logger, gameId, targetVersion, current.Version);
             return null;
         }
 
@@ -112,7 +112,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         var target = Reconstruct(gameId, loaded.Value.History);
         var restored = await AppendCore(
             gameId,
-            previous,
+            current,
             new StepResult<TState>(target.State, loaded.Value.Checkpoint),
             choice: null,
             restoredVersion: targetVersion,
@@ -125,14 +125,14 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     private async Task<StoredState<TState>?> AppendCore(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         StepResult<TState> result,
         PlayerChoice? choice,
         int? restoredVersion,
         CancellationToken ct = default
     )
     {
-        var version = previous.Version + 1;
+        var version = current.Version + 1;
         var writesSnapshot = result.Checkpoint is not null || result.IsBaseline || result.IsIrreversible;
         var appended = await db
             .Database.CreateExecutionStrategy()
@@ -140,10 +140,10 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             {
                 db.ChangeTracker.Clear();
                 var head = await FindHead(gameId, ct);
-                if (head != previous.Version)
+                if (head != current.Version)
                     return new AppendAttempt(Saved: false, head);
 
-                var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(result.State));
+                var patch = SerializeToJson(current.State).CreatePatch(SerializeToJson(result.State));
                 db.GameSteps.Add(
                     new GameStep
                     {
@@ -167,7 +167,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             });
         if (!appended.Saved)
         {
-            LogAppendRefusal(gameId, previous.Version, appended.Head);
+            LogAppendRefusal(gameId, current.Version, appended.Head);
             return null;
         }
 
@@ -180,14 +180,14 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         return new StoredState<TState>(version, result.State);
     }
 
-    private void LogAppendRefusal(Guid gameId, int previousVersion, int? head)
+    private void LogAppendRefusal(Guid gameId, int currentVersion, int? head)
     {
         if (head is null)
-            LogAppendRefusedNotBegun(logger, gameId, previousVersion);
-        else if (head != previousVersion)
-            LogAppendRefusedStale(logger, gameId, previousVersion, head.Value);
+            LogAppendRefusedNotBegun(logger, gameId, currentVersion);
+        else if (head != currentVersion)
+            LogAppendRefusedStale(logger, gameId, currentVersion, head.Value);
         else
-            LogAppendRefusedConcurrent(logger, gameId, previousVersion);
+            LogAppendRefusedConcurrent(logger, gameId, currentVersion);
     }
 
     private async Task<(LoadedHistory History, string? Checkpoint)?> LoadHistoryAt(
@@ -234,9 +234,8 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             return new HistoryRead(History: null, Checkpoint: null, barrier, LoadRefusal.None);
         var snapshot = await db
             .GameSnapshots.AsNoTracking()
-            .Where(s => s.GameId == gameId && s.Version <= version)
             .OrderByDescending(s => s.Version)
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(s => s.GameId == gameId && s.Version <= version, ct);
         if (snapshot is null)
             return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.NoSnapshot);
         var steps = await db

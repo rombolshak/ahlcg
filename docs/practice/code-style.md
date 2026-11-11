@@ -15,6 +15,7 @@ The statement that code wins over docs concerns descriptions of current behavior
 - Explicit private fields use `_camelCase`. Constructor parameters, including primary-constructor parameters, are parameters and do not acquire a field prefix.
 - Avoid unnecessary `this.` qualification. Use distinct field and parameter names instead of introducing shadowing.
 - Public API methods precede protected methods; private helpers follow them. Keep generated `[LoggerMessage]` declarations at the bottom, as specified in the [logging guide](../backend/backend.md#logging). Follow the existing ordering of other member categories.
+- For new or changed code, asynchronous methods whose signatures are under project control omit the `Async` suffix. Preserve names required by framework overrides or external interfaces; this rule does not require a repository-wide rename.
 - Methods start with a verb; predicates use `Is`, `Has`, `Holds` or another clear predicate form. Variables identify what they contain: a stored state, destination version or required voters, rather than an unexplained `current`, `selected` or `required`.
 - When a passed variable's name differs from its parameter name, name the argument explicitly where that distinction matters: `restoredVersion: targetVersion`. Boolean and null arguments must also make their role clear.
 - When the signature is under our control, `CancellationToken ct = default` is the last parameter. Preserve signatures required by framework overrides or delegates. An endpoint's logger is its last service parameter, before the cancellation token when one is present.
@@ -29,7 +30,7 @@ The statement that code wins over docs concerns descriptions of current behavior
 
 ## Tests
 
-Use the lowest capable [test tier](testing.md#test-tiers), and avoid repeating an assertion at a higher tier unless it proves something newly observable there. Follow the Given/When/Then structure described in that guide. Assert behavior; routine log wording and log levels are not behavioral substitutes. The narrow logging exceptions are documented in the [backend guide](../backend/backend.md#logging).
+Use the lowest capable [test tier](testing.md#test-tiers), and avoid repeating an assertion at a higher tier unless it proves something newly observable there. Backend test methods retain the `Method_Scenario_Expected` naming convention. Follow the Given/When/Then structure described in that guide. Assert behavior; routine log wording and log levels are not behavioral substitutes. The narrow logging exceptions are documented in the [backend guide](../backend/backend.md#logging).
 
 ## Implementation and review evidence
 

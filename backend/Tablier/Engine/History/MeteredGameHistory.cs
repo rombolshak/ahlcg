@@ -15,11 +15,11 @@ public sealed class MeteredGameHistory<TState>(
 
     public Task<StoredState<TState>?> Append(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct = default
-    ) => MeasureAsync("append", () => inner.Append(gameId, previous, result, choice, ct), OkOr(OutcomeRefused));
+    ) => MeasureAsync("append", () => inner.Append(gameId, current, result, choice, ct), OkOr(OutcomeRefused));
 
     public Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default) =>
         MeasureAsync("load_current", () => inner.LoadCurrent(gameId, ct), OkOr(OutcomeMissing));
@@ -29,10 +29,10 @@ public sealed class MeteredGameHistory<TState>(
 
     public Task<StoredState<TState>?> Restore(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         int targetVersion,
         CancellationToken ct = default
-    ) => MeasureAsync("restore", () => inner.Restore(gameId, previous, targetVersion, ct), OkOr(OutcomeRefused));
+    ) => MeasureAsync("restore", () => inner.Restore(gameId, current, targetVersion, ct), OkOr(OutcomeRefused));
 
     private static Func<StoredState<TState>?, string> OkOr(string nullOutcome) =>
         stored => stored is null ? nullOutcome : OutcomeOk;

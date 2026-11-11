@@ -40,22 +40,22 @@ public sealed partial class CachedGameHistory<TState>(
 
     public async Task<StoredState<TState>?> Append(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct = default
     )
     {
-        var appended = await inner.Append(gameId, previous, result, choice, ct);
+        var appended = await inner.Append(gameId, current, result, choice, ct);
         if (appended is not null)
         {
             await WriteGuarded(gameId, appended);
             return appended;
         }
 
-        var current = await inner.LoadCurrent(gameId, ct);
-        if (current is not null && await WriteGuarded(gameId, current))
-            LogRefreshedAfterRefusedAppend(logger, gameId, current.Version);
+        var storedHead = await inner.LoadCurrent(gameId, ct);
+        if (storedHead is not null && await WriteGuarded(gameId, storedHead))
+            LogRefreshedAfterRefusedAppend(logger, gameId, storedHead.Version);
 
         return null;
     }
@@ -88,19 +88,19 @@ public sealed partial class CachedGameHistory<TState>(
 
     public async Task<StoredState<TState>?> Restore(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         int targetVersion,
         CancellationToken ct = default
     )
     {
-        var restored = await inner.Restore(gameId, previous, targetVersion, ct);
+        var restored = await inner.Restore(gameId, current, targetVersion, ct);
         if (restored is not null)
             await WriteGuarded(gameId, restored);
         else
         {
-            var current = await inner.LoadCurrent(gameId, ct);
-            if (current is not null && await WriteGuarded(gameId, current))
-                LogRefreshedAfterRefusedRestore(logger, gameId, current.Version);
+            var storedHead = await inner.LoadCurrent(gameId, ct);
+            if (storedHead is not null && await WriteGuarded(gameId, storedHead))
+                LogRefreshedAfterRefusedRestore(logger, gameId, storedHead.Version);
         }
 
         return restored;

@@ -26,7 +26,7 @@ public class GameHistoryTests
         var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
         var storedState = new StoredState<TestState>(3, new TestState(1));
 
-        var restored = await history.Restore(Guid.NewGuid(), previous: storedState, targetVersion: -1);
+        var restored = await history.Restore(Guid.NewGuid(), current: storedState, targetVersion: -1);
 
         Assert.Null(restored);
     }
@@ -40,7 +40,7 @@ public class GameHistoryTests
         var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
         var storedState = new StoredState<TestState>(3, new TestState(1));
 
-        var restored = await history.Restore(Guid.NewGuid(), previous: storedState, targetVersion: destinationVersion);
+        var restored = await history.Restore(Guid.NewGuid(), current: storedState, targetVersion: destinationVersion);
 
         Assert.Null(restored);
     }

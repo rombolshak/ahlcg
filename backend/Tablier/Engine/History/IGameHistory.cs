@@ -9,7 +9,7 @@ public interface IGameHistory<TState>
 
     Task<StoredState<TState>?> Append(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         StepResult<TState> result,
         PlayerChoice? choice,
         CancellationToken ct = default
@@ -21,7 +21,7 @@ public interface IGameHistory<TState>
 
     Task<StoredState<TState>?> Restore(
         Guid gameId,
-        StoredState<TState> previous,
+        StoredState<TState> current,
         int targetVersion,
         CancellationToken ct = default
     );
