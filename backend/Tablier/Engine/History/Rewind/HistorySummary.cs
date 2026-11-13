@@ -36,10 +36,11 @@ public sealed record HistorySummary
             : Checkpoints.ToDictionary(StringComparer.Ordinal);
         foreach (var checkpointId in step.Checkpoints)
             checkpoints[checkpointId] = step.Version;
-        var lastAction =
-            step.Actor is not null ? new HistoryAction(step.Version, step.Actor)
-            : step.IsBarrier ? null
-            : LastAction;
+        var lastAction = LastAction;
+        if (step.Actor is not null)
+            lastAction = new HistoryAction(step.Version, step.Actor);
+        else if (step.IsBarrier)
+            lastAction = null;
         return new HistorySummary(
             step.Version,
             step.IsBarrier ? step.Version : BarrierVersion,
