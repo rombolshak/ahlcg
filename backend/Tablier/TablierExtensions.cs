@@ -49,8 +49,8 @@ public static class TablierExtensions
             .WithMetrics(metrics => metrics.AddMeter(GameSessions.MeterName, TablierMetrics.MeterName));
         builder.Services.TryAddSingleton(TimeProvider.System);
 
-        var rateLimits =
-            builder.Configuration.GetSection("RateLimits").Get<RateLimits.Options>() ?? new RateLimits.Options();
+        var rateLimits = builder.Configuration.GetSection("RateLimits").Get<RateLimits.Options>()
+            ?? new RateLimits.Options();
         builder.Services.AddSingleton(new AccountCreationLimiter(rateLimits.AccountCreation));
         builder.Services.AddRateLimiter(options =>
         {
