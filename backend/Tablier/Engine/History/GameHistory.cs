@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Tablier.Contract;
 using Tablier.Data;
+using Tablier.Engine.History.Rewind;
 
 namespace Tablier.Engine.History;
 
@@ -92,7 +93,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         return loaded is null ? null : Reconstruct(gameId, loaded.Value.History);
     }
 
-    public async Task<StoredState<TState>?> Restore(
+    public async Task<StoredState<TState>?> Rewind(
         Guid gameId,
         StoredState<TState> current,
         int targetVersion,
@@ -105,6 +106,16 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             return null;
         }
 
+        if (targetVersion == 0)
+        {
+            LogRewindRefusedZero(logger, gameId);
+            return null;
+        }
+        if (targetVersion > 0 && !await HistoryFacts.IsLiveVersion(db, gameId, current.Version, targetVersion, ct))
+        {
+            LogRewindRefusedNotLive(logger, gameId, targetVersion, current.Version);
+            return null;
+        }
         var loaded = await LoadHistoryAt(gameId, targetVersion, ct);
         if (loaded is null)
             return null;
@@ -113,7 +124,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         var restored = await AppendCore(
             gameId,
             current,
-            new StepResult<TState>(target.State, loaded.Value.Checkpoint),
+            new StepResult<TState>(target.State, loaded.Value.Checkpoints),
             choice: null,
             restoredVersion: targetVersion,
             ct
@@ -121,6 +132,47 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         if (restored is not null)
             LogStateRestored(logger, gameId, targetVersion, restored.Version);
         return restored;
+    }
+
+    public async Task<HistorySummary?> GetHistorySummary(Guid gameId, int headVersion, CancellationToken ct = default)
+    {
+        if (headVersion < 0)
+        {
+            LogSummaryRefused(logger, gameId, headVersion, "negative_version");
+            return null;
+        }
+        var (summary, refusalReason) = await HistoryFacts.ReadSummary(db, gameId, headVersion, ct);
+        if (summary is null)
+            LogSummaryRefused(logger, gameId, headVersion, refusalReason!);
+        else
+            LogSummaryLoaded(logger, gameId, headVersion, summary.Checkpoints.Count);
+        return summary;
+    }
+
+    public async Task<IReadOnlySet<string>?> GetActorsForRange(
+        Guid gameId,
+        int fromVersionExclusive,
+        int toVersionInclusive,
+        CancellationToken ct = default
+    )
+    {
+        if (fromVersionExclusive < 0 || toVersionInclusive < fromVersionExclusive)
+        {
+            LogActorsRangeRefused(logger, gameId, fromVersionExclusive, toVersionInclusive, "invalid_range");
+            return null;
+        }
+        var (actors, refusalReason) = await HistoryFacts.ReadActors(
+            db,
+            gameId,
+            fromVersionExclusive,
+            toVersionInclusive,
+            ct
+        );
+        if (actors is null)
+            LogActorsRangeRefused(logger, gameId, fromVersionExclusive, toVersionInclusive, refusalReason!);
+        else
+            LogActorsLoaded(logger, gameId, fromVersionExclusive, toVersionInclusive, actors.Count);
+        return actors;
     }
 
     private async Task<StoredState<TState>?> AppendCore(
@@ -132,8 +184,10 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         CancellationToken ct = default
     )
     {
+        if (result.Checkpoints.Contains("undo", StringComparer.Ordinal))
+            throw new InvalidOperationException("The undo checkpoint is reserved for the engine.");
         var version = current.Version + 1;
-        var writesSnapshot = result.Checkpoint is not null || result.IsBaseline || result.IsIrreversible;
+        var writesSnapshot = result.Checkpoints.Count > 0 || result.IsBaseline || result.IsIrreversible;
         var appended = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
@@ -152,7 +206,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
                         Actor = choice?.Member,
                         Action = choice?.Action,
                         Patch = JsonSerializer.SerializeToDocument(patch),
-                        Checkpoint = result.Checkpoint,
+                        Checkpoints = result.Checkpoints.ToArray(),
                         IsIrreversible = result.IsIrreversible,
                         IsBaseline = result.IsBaseline,
                         RestoredVersion = restoredVersion,
@@ -190,7 +244,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             LogAppendRefusedConcurrent(logger, gameId, currentVersion);
     }
 
-    private async Task<(LoadedHistory History, string? Checkpoint)?> LoadHistoryAt(
+    private async Task<(LoadedHistory History, IReadOnlyList<string> Checkpoints)?> LoadHistoryAt(
         Guid gameId,
         int version,
         CancellationToken ct = default
@@ -222,7 +276,7 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             LogLoadAtRefusal(gameId, version, loaded.Reason);
             return null;
         }
-        return (loaded.History, loaded.Checkpoint);
+        return (loaded.History, loaded.Checkpoints);
     }
 
     private async Task<HistoryRead> ReadHistoryAt(Guid gameId, int version, CancellationToken ct = default)
@@ -231,13 +285,13 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
             .GameSteps.Where(s => s.GameId == gameId && s.Version > version && (s.IsIrreversible || s.IsBaseline))
             .MinAsync(s => (int?)s.Version, ct);
         if (barrier is not null)
-            return new HistoryRead(History: null, Checkpoint: null, barrier, LoadRefusal.None);
+            return new HistoryRead(History: null, Checkpoints: [], barrier, LoadRefusal.None);
         var snapshot = await db
             .GameSnapshots.AsNoTracking()
             .OrderByDescending(s => s.Version)
             .FirstOrDefaultAsync(s => s.GameId == gameId && s.Version <= version, ct);
         if (snapshot is null)
-            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.NoSnapshot);
+            return new HistoryRead(History: null, Checkpoints: [], Barrier: null, LoadRefusal.NoSnapshot);
         var steps = await db
             .GameSteps.AsNoTracking()
             .Where(s => s.GameId == gameId && s.Version > snapshot.Version && s.Version <= version)
@@ -251,13 +305,18 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
                 .SingleOrDefaultAsync(s => s.GameId == gameId && s.Version == version, ct);
         }
         if (version != 0 && target is null)
-            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.MissingVersion);
+            return new HistoryRead(History: null, Checkpoints: [], Barrier: null, LoadRefusal.MissingVersion);
         if (
             steps.Count != version - snapshot.Version
             || steps.Where((s, i) => s.Version != snapshot.Version + i + 1).Any()
         )
-            return new HistoryRead(History: null, Checkpoint: null, Barrier: null, LoadRefusal.Gap);
-        return new HistoryRead(new LoadedHistory(snapshot, steps), target?.Checkpoint, Barrier: null, LoadRefusal.None);
+            return new HistoryRead(History: null, Checkpoints: [], Barrier: null, LoadRefusal.Gap);
+        return new HistoryRead(
+            new LoadedHistory(snapshot, steps),
+            target?.Checkpoints ?? [],
+            Barrier: null,
+            LoadRefusal.None
+        );
     }
 
     private void LogLoadAtRefusal(Guid gameId, int version, LoadRefusal reason)
@@ -340,7 +399,12 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
 
     private sealed record LoadedHistory(GameSnapshot Snapshot, List<GameStep> Steps);
 
-    private sealed record HistoryRead(LoadedHistory? History, string? Checkpoint, int? Barrier, LoadRefusal Reason);
+    private sealed record HistoryRead(
+        LoadedHistory? History,
+        IReadOnlyList<string> Checkpoints,
+        int? Barrier,
+        LoadRefusal Reason
+    );
 
     private enum LoadRefusal
     {
@@ -349,6 +413,39 @@ public sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger
         MissingVersion,
         Gap,
     }
+
+    [LoggerMessage(LogLevel.Information, "Rewind refused for game {GameId}: version zero is not a target")]
+    private static partial void LogRewindRefusedZero(ILogger logger, Guid gameId);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "Rewind refused for game {GameId}: target {Version} is not live at head {Head}"
+    )]
+    private static partial void LogRewindRefusedNotLive(ILogger logger, Guid gameId, int version, int head);
+
+    [LoggerMessage(LogLevel.Information, "History summary refused for game {GameId} at version {Version}: {Reason}")]
+    private static partial void LogSummaryRefused(ILogger logger, Guid gameId, int version, string reason);
+
+    [LoggerMessage(
+        LogLevel.Debug,
+        "History summary loaded for game {GameId} at version {Version} with {Count} checkpoints"
+    )]
+    private static partial void LogSummaryLoaded(ILogger logger, Guid gameId, int version, int count);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "Actor range refused for game {GameId}: ({FromVersion}, {ToVersion}], {Reason}"
+    )]
+    private static partial void LogActorsRangeRefused(
+        ILogger logger,
+        Guid gameId,
+        int fromVersion,
+        int toVersion,
+        string reason
+    );
+
+    [LoggerMessage(LogLevel.Debug, "Loaded {Count} actors for game {GameId} in ({FromVersion}, {ToVersion}]")]
+    private static partial void LogActorsLoaded(ILogger logger, Guid gameId, int fromVersion, int toVersion, int count);
 
     [LoggerMessage(LogLevel.Information, "Game {GameId} restored from version {RestoredVersion} at version {Version}")]
     private static partial void LogStateRestored(ILogger logger, Guid gameId, int restoredVersion, int version);

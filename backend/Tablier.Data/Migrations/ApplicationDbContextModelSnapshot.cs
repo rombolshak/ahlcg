@@ -316,8 +316,9 @@ namespace Tablier.Data.Migrations
                     b.Property<string>("Actor")
                         .HasColumnType("text");
 
-                    b.Property<string>("Checkpoint")
-                        .HasColumnType("text");
+                    b.PrimitiveCollection<string[]>("Checkpoints")
+                        .IsRequired()
+                        .HasColumnType("text[]");
 
                     b.Property<bool>("IsBaseline")
                         .HasColumnType("boolean");

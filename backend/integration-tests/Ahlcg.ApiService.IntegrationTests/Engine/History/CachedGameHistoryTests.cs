@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using Tablier.Contract;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
+using Tablier.Engine.History.Rewind;
 using Tablier.Telemetry;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
@@ -127,7 +128,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Restore_CommittedState_IsAvailableFromCache()
+    public async Task Rewind_CommittedState_IsAvailableFromCache()
     {
         var gameId = await HistoryTestData.SeedGame(fixture);
         var context = CreateCachedHistoryTestContext(gameId);
@@ -135,7 +136,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
         var one = await context.Cached.Append(gameId, begun!, CreateStep(1), choice: null);
         var two = await context.Cached.Append(gameId, one!, CreateStep(2), choice: null);
 
-        var restored = await context.Cached.Restore(gameId, two!, 1);
+        var restored = await context.Cached.Rewind(gameId, two!, 1);
         await DeletePersistedGame(gameId);
 
         Assert.Equal(new StoredState<TestState>(3, CreateState(1)), restored);
@@ -143,7 +144,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Restore_StaleSource_RefreshesCacheWhenStoreIsGone()
+    public async Task Rewind_StaleSource_RefreshesCacheWhenStoreIsGone()
     {
         var gameId = await HistoryTestData.SeedGame(fixture);
         var context = CreateCachedHistoryTestContext(gameId);
@@ -153,7 +154,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
         var three = await context.Store.Append(gameId, two!, CreateStep(3), choice: null);
         Assert.Equal(new StoredState<TestState>(3, CreateState(3)), three);
 
-        var refused = await context.Cached.Restore(gameId, two!, 1);
+        var refused = await context.Cached.Rewind(gameId, two!, 1);
         await DeletePersistedGame(gameId);
 
         Assert.Null(refused);
@@ -161,7 +162,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Restore_SuccessfulWithNewerCachedVersion_PreservesCachedHead()
+    public async Task Rewind_SuccessfulWithNewerCachedVersion_PreservesCachedHead()
     {
         var gameId = await HistoryTestData.SeedGame(fixture);
         var context = CreateCachedHistoryTestContext(gameId);
@@ -175,7 +176,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
                 [new HashEntry("version", "5"), new HashEntry("state", JsonSerializer.Serialize(CreateState(5)))]
             );
 
-        var restored = await context.Cached.Restore(gameId, two!, 1);
+        var restored = await context.Cached.Rewind(gameId, two!, 1);
         await DeletePersistedGame(gameId);
 
         Assert.Equal(new StoredState<TestState>(3, CreateState(1)), restored);
@@ -226,12 +227,22 @@ public class CachedGameHistoryTests(AppFixture fixture)
         public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
             inner.LoadAt(gameId, version, ct);
 
-        public Task<StoredState<TestState>?> Restore(
+        public Task<HistorySummary?> GetHistorySummary(Guid gameId, int headVersion, CancellationToken ct = default) =>
+            inner.GetHistorySummary(gameId, headVersion, ct);
+
+        public Task<IReadOnlySet<string>?> GetActorsForRange(
+            Guid gameId,
+            int fromVersionExclusive,
+            int toVersionInclusive,
+            CancellationToken ct = default
+        ) => inner.GetActorsForRange(gameId, fromVersionExclusive, toVersionInclusive, ct);
+
+        public Task<StoredState<TestState>?> Rewind(
             Guid gameId,
             StoredState<TestState> current,
             int targetVersion,
             CancellationToken ct = default
-        ) => inner.Restore(gameId, current, targetVersion, ct);
+        ) => inner.Rewind(gameId, current, targetVersion, ct);
     }
 
     private CachedHistoryTestContext CreateCachedHistoryTestContext(Guid gameId)

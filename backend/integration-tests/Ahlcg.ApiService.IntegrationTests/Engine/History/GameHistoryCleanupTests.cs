@@ -14,16 +14,16 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
 public class GameHistoryCleanupTests(AppFixture fixture)
 {
     [Fact]
-    public async Task Restore_CheckpointsRemainReachableAfterCleanup()
+    public async Task Rewind_CheckpointsRemainReachableAfterCleanup()
     {
         var run = await BeginGame();
         await run.Append(CreateStep(1, checkpoint: "a"));
         await run.Append(CreateStep(2, checkpoint: "b"));
         await run.Append(CreateStep(3));
-        var first = await run.History.Restore(run.GameId, run.Current, 2, CancellationToken.None);
+        var first = await run.History.Rewind(run.GameId, run.Current, 2, CancellationToken.None);
         var cleanup = new GameHistoryCleanup(fixture.CreateDbContext(), NullLogger<GameHistoryCleanup>.Instance);
         await cleanup.Run(CancellationToken.None);
-        var second = await run.History.Restore(run.GameId, first!, 1, CancellationToken.None);
+        var second = await run.History.Rewind(run.GameId, first!, 1, CancellationToken.None);
         await cleanup.Run(CancellationToken.None);
 
         Assert.Equal(new StoredState<TestState>(5, CreateState(1)), second);
@@ -38,7 +38,7 @@ public class GameHistoryCleanupTests(AppFixture fixture)
             .OrderBy(s => s.Version)
             .ToListAsync();
         Assert.Equal([2, 1], steps.Select(s => s.RestoredVersion));
-        Assert.Equal(["b", "a"], steps.Select(s => s.Checkpoint));
+        Assert.Equal(["b", "a"], steps.SelectMany(s => s.Checkpoints));
         Assert.All(steps, s =>
         {
             Assert.False(s.IsIrreversible);
@@ -207,7 +207,7 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         string? checkpoint = null,
         bool irreversible = false,
         bool baseline = false
-    ) => new(CreateState(n), checkpoint, irreversible, baseline);
+    ) => new(CreateState(n), checkpoint is null ? [] : [checkpoint], irreversible, baseline);
 
     private sealed class HistoryTestContext(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
     {
