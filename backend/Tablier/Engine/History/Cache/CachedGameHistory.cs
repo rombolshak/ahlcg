@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
+using Tablier.Engine.History.Rewind;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
@@ -86,25 +87,35 @@ public sealed partial class CachedGameHistory<TState>(
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
         inner.LoadAt(gameId, version, ct);
 
-    public async Task<StoredState<TState>?> Restore(
+    public async Task<StoredState<TState>?> Rewind(
         Guid gameId,
         StoredState<TState> current,
         int targetVersion,
         CancellationToken ct = default
     )
     {
-        var restored = await inner.Restore(gameId, current, targetVersion, ct);
+        var restored = await inner.Rewind(gameId, current, targetVersion, ct);
         if (restored is not null)
             await WriteGuarded(gameId, restored);
         else
         {
             var storedHead = await inner.LoadCurrent(gameId, ct);
             if (storedHead is not null && await WriteGuarded(gameId, storedHead))
-                LogRefreshedAfterRefusedRestore(logger, gameId, storedHead.Version);
+                LogRefreshedAfterRefusedRewind(logger, gameId, storedHead.Version);
         }
 
         return restored;
     }
+
+    public Task<HistorySummary?> GetHistorySummary(Guid gameId, int headVersion, CancellationToken ct = default) =>
+        inner.GetHistorySummary(gameId, headVersion, ct);
+
+    public Task<IReadOnlySet<string>?> GetActorsForRange(
+        Guid gameId,
+        int fromVersionExclusive,
+        int toVersionInclusive,
+        CancellationToken ct = default
+    ) => inner.GetActorsForRange(gameId, fromVersionExclusive, toVersionInclusive, ct);
 
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
@@ -136,7 +147,7 @@ public sealed partial class CachedGameHistory<TState>(
         LogLevel.Debug,
         "Restore for game {GameId} refused; cached state refreshed from the store to version {Version}"
     )]
-    private static partial void LogRefreshedAfterRefusedRestore(ILogger logger, Guid gameId, int version);
+    private static partial void LogRefreshedAfterRefusedRewind(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,

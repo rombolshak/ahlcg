@@ -57,7 +57,7 @@ public class GameHistoryTests(AppFixture fixture)
         Assert.Equal(CreateState(1), snapshot.State.RootElement.Deserialize<TestState>());
         Assert.Equal(1, snapshot.SchemaVersion);
         var step = await db.GameSteps.AsNoTracking().SingleAsync(s => s.GameId == run.GameId && s.Version == 1);
-        Assert.Equal("mid", step.Checkpoint);
+        Assert.Equal(["mid"], step.Checkpoints);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public class GameHistoryTests(AppFixture fixture)
         await run.AppendPlain(2, 3);
         var target = await run.History.LoadAt(run.GameId, 1, CancellationToken.None);
 
-        await run.Append(new StepResult<TestState>(target!.State, "turn", IsIrreversible: true));
+        await run.Append(new StepResult<TestState>(target!.State, ["turn"], IsIrreversible: true));
 
         Assert.Equal(new StoredState<TestState>(4, CreateState(1)), await run.LoadCurrent());
         Assert.Equal(
@@ -266,12 +266,12 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Restore_DestinationWithoutSnapshot_AppendsExactStateAndMetadata()
+    public async Task Rewind_DestinationWithoutSnapshot_AppendsExactStateAndMetadata()
     {
         var run = await BeginRun();
         await run.AppendPlain(1, 3);
 
-        var restored = await run.History.Restore(run.GameId, run.Current, 1);
+        var restored = await run.History.Rewind(run.GameId, run.Current, 1);
 
         Assert.Equal(new StoredState<TestState>(4, CreateState(1)), restored);
         Assert.Equal(restored, await run.LoadCurrent());
@@ -279,7 +279,7 @@ public class GameHistoryTests(AppFixture fixture)
         await using var db = fixture.CreateDbContext();
         var step = await db.GameSteps.AsNoTracking().SingleAsync(s => s.GameId == run.GameId && s.Version == 4);
         Assert.Equal(1, step.RestoredVersion);
-        Assert.Null(step.Checkpoint);
+        Assert.Empty(step.Checkpoints);
         Assert.Null(step.Actor);
         Assert.Null(step.Action);
         Assert.False(step.IsIrreversible);
@@ -287,20 +287,20 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Restore_ConcurrentWithAppend_AcceptsExactlyOneAndRefusesStaleWrites()
+    public async Task Rewind_ConcurrentWithAppend_AcceptsExactlyOneAndRefusesStaleWrites()
     {
         var run = await BeginRun();
         await run.AppendPlain(1, 3);
         var results = await Task.WhenAll(
-            CreateHistory().Restore(run.GameId, run.Current, 1, CancellationToken.None),
+            CreateHistory().Rewind(run.GameId, run.Current, 1, CancellationToken.None),
             CreateHistory().Append(run.GameId, run.Current, CreateStep(9), choice: null, CancellationToken.None)
         );
         Assert.Single(results, r => r is not null);
-        Assert.Null(await run.History.Restore(run.GameId, run.Current, 1, CancellationToken.None));
+        Assert.Null(await run.History.Rewind(run.GameId, run.Current, 1, CancellationToken.None));
     }
 
     [Fact]
-    public async Task Restore_FixtureState_RestoresJournalAndRandomExactly()
+    public async Task Rewind_FixtureState_RestoresJournalAndRandomExactly()
     {
         var gameId = await HistoryTestData.SeedGame(fixture);
         var history = new GameHistory<FixtureState>(
@@ -342,7 +342,7 @@ public class GameHistoryTests(AppFixture fixture)
             choice: null,
             CancellationToken.None
         );
-        var restored = await history.Restore(gameId, two!, 1, CancellationToken.None);
+        var restored = await history.Rewind(gameId, two!, 1, CancellationToken.None);
         var loaded = await history.LoadCurrent(gameId, CancellationToken.None);
         Assert.Equal(target.Random, restored!.State.Random);
         Assert.Equal(target.Random, loaded!.State.Random);
@@ -354,7 +354,7 @@ public class GameHistoryTests(AppFixture fixture)
     {
         var run = await BeginRun();
         await run.AppendPlain(1, 3);
-        var restored = await run.History.Restore(run.GameId, run.Current, 1, CancellationToken.None);
+        var restored = await run.History.Rewind(run.GameId, run.Current, 1, CancellationToken.None);
         Assert.Equal(new StoredState<TestState>(4, CreateState(1)), restored);
 
         Assert.Equal(new StoredState<TestState>(2, CreateState(2)), await run.History.LoadAt(run.GameId, 2));
@@ -374,13 +374,13 @@ public class GameHistoryTests(AppFixture fixture)
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, true)]
-    public async Task Restore_BehindBarrier_IsRefused(bool irreversible, bool baseline)
+    public async Task Rewind_BehindBarrier_IsRefused(bool irreversible, bool baseline)
     {
         var run = await BeginRun();
         await run.Append(CreateStep(1, checkpoint: "turn"));
         await run.Append(CreateStep(2, irreversible: irreversible, baseline: baseline));
 
-        Assert.Null(await run.History.Restore(run.GameId, run.Current, 1));
+        Assert.Null(await run.History.Rewind(run.GameId, run.Current, 1));
         Assert.Equal([1, 2], await run.GetStepVersions());
     }
 
@@ -547,7 +547,7 @@ public class GameHistoryTests(AppFixture fixture)
         string? checkpoint = null,
         bool irreversible = false,
         bool baseline = false
-    ) => new(CreateState(n), checkpoint, irreversible, baseline);
+    ) => new(CreateState(n), checkpoint is null ? [] : [checkpoint], irreversible, baseline);
 
     private sealed class Run(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
     {

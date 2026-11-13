@@ -9,7 +9,7 @@ public class GameStep
     public string? Actor { get; set; }
     public string? Action { get; set; }
     public required JsonDocument Patch { get; set; }
-    public string? Checkpoint { get; set; }
+    public string[] Checkpoints { get; set; } = [];
     public bool IsIrreversible { get; set; }
     public bool IsBaseline { get; set; }
     public int? RestoredVersion { get; set; }
