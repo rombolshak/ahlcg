@@ -16,6 +16,14 @@
 | **B1** Backend integration | **real Postgres, and the HTTP pipeline in front of it** | `AppFixture` | routing, middleware, DB constraints, transactions and bulk SQL |
 | **E** End-to-end | **the browser↔API contract** | Aspire + Playwright | that the two halves agree |
 
+### Scenario structure and suite balance
+
+Use Given/When/Then: prepare the relevant state, perform the operation being tested, then assert its observable result. Blank lines often make the stages clear without comments. Split scenarios that combine unrelated operations and assertions into separate tests. Keep the operation under test visible rather than hiding it in a helper.
+
+Do not set a fixed unit/integration/E2E percentage. Assign each assertion by the two rules above: most pure transitions, command branching and client reconciliation belong in B0/F0; use B1 for database, cache and real protocol guarantees. Add F1 only for geometry, real focus or native semantics, and E only for agreement between the actual browser and API. Test counts follow that allocation rather than a quota.
+
+A Storybook state or a test driven by Playwright is not automatically an E2E test. Name the actual tier and the capability that earns it. An E2E flow should establish a connected contract, not re-run every scoring, voting and error-path permutation already covered below it.
+
 ### What happy-dom cannot observe
 
 Rule 1 only works if you know what capability each tier actually adds. happy-dom implements the DOM API surface without a real layout engine or a real display: events dispatch and the tree mutates correctly, but anything that depends on actual rendering reads back as zero or as a no-op. A geometry assertion written against it does not fail — it **passes vacuously**, which is worse than having no test at all, because it looks like coverage.
@@ -184,7 +192,9 @@ This is why handlers return `Results<...>` rather than `IResult` — keep new ha
 
 `backend/integration-tests/Ahlcg.ApiService.IntegrationTests` exists because EF's InMemory provider does not enforce unique indexes, so it cannot prove the `POST /games` idempotency behaviour (same key + same user → one row; same key + different users → two rows). Everything InMemory *can't* cover goes here instead, driven over real HTTP against the real app and real Postgres — not by calling handlers with mocks.
 
-**Persistence contracts also need direct tests.** `GameHistory<TState>` is reached through game creation and hub methods, but its unique violations, repeatable-read transactions, rewind boundaries and cache interleavings are tested directly with `AppFixture.CreateDbContext()`. InMemory cannot prove these behaviors. The cache decorator is tested against real Valkey from the AppHost: deleting the game's rows after a write proves a read came from the cache, and a store double that pauses `LoadCurrent` reproduces a slow miss interleaved with other writers.
+**Persistence contracts also need direct tests.** `GameHistory<TState>` is reached through game creation and hub methods, but its unique violations, repeatable-read reconstruction, missing/gapped history, restore head checks and barriers are tested directly with `AppFixture.CreateDbContext()`. These B1 tests also prove exact journal/random restoration and restore metadata. `GameHistoryCleanupTests` owns successive restores across cleanup and reconstruction after an irreversible snapshot survives cleanup. InMemory cannot prove these behaviors. Negative history versions and restore destinations at or after the supplied head belong to B0: `backend/unit-tests/Tablier.Tests/Engine/History/GameHistoryTests.cs` uses a provider-free context to prove refusal without database access.
+
+The cache decorator is tested against real Valkey from the AppHost: deleting the game's rows after a write proves a read came from the cache, and a store double that pauses `LoadCurrent` reproduces a slow miss interleaved with other writers. Restore cases prove the committed state is cached, stale-source refusals refresh the head, and an existing newer cached version is preserved.
 
 **The step loop is driven end to end here** — real SignalR connections calling `GetState` and `Execute`, collecting `StateChanged`, against the fixture rules module. Its refusal paths (refused append, retries exhausted) have no HTTP trigger, so `GameEngine` is unit-tested with a mocked `IGameHistory` for those.
 
