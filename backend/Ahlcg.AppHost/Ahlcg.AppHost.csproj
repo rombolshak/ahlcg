@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.5.3">
+<Project Sdk="Aspire.AppHost.Sdk/13.6.5">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
@@ -13,12 +13,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.Javascript" Version="13.6.4" />
-        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.6.4" />
-        <PackageReference Include="Aspire.Hosting.Valkey" Version="13.6.4" />
+        <PackageReference Include="Aspire.Hosting.Javascript" Version="13.6.5" />
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.6.5" />
+        <PackageReference Include="Aspire.Hosting.Valkey" Version="13.6.5" />
         <!-- GHSA-qhrr-8q5h-9q3h: Aspire.Hosting 13.6.1 still pulls 2.5.302 through StreamJsonRpc -->
         <PackageReference Include="MessagePack" Version="2.5.307" />
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.1" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.21.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.21.0" />
     </ItemGroup>
 </Project>

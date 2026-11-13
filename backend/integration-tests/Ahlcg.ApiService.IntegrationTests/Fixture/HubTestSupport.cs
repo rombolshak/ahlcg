@@ -14,21 +14,18 @@ internal static class HubTestSupport
     {
         var url = new Uri(fixture.ApiBaseAddress, query is null ? "game" : $"game?{query}");
         return new HubConnectionBuilder()
-            .WithUrl(
-                url,
-                options =>
+            .WithUrl(url, options =>
+            {
+                options.Cookies = cookies;
+                options.HttpMessageHandlerFactory = _ => new HttpClientHandler
                 {
-                    options.Cookies = cookies;
-                    options.HttpMessageHandlerFactory = _ => new HttpClientHandler
-                    {
-                        CookieContainer = cookies,
-                        ServerCertificateCustomValidationCallback =
-                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
-                    };
-                    options.WebSocketConfiguration = socket =>
-                        socket.RemoteCertificateValidationCallback = (_, _, _, _) => true;
-                }
-            )
+                    CookieContainer = cookies,
+                    ServerCertificateCustomValidationCallback =
+                        HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+                };
+                options.WebSocketConfiguration = socket =>
+                    socket.RemoteCertificateValidationCallback = (_, _, _, _) => true;
+            })
             .Build();
     }
 

@@ -21,17 +21,15 @@ public static partial class RateLimits
     }
 
     public static void AddJoinPolicy(this RateLimiterOptions options, LimitOptions limits) =>
-        options.AddPolicy(
-            JoinPolicy,
-            httpContext =>
+        options.AddPolicy(JoinPolicy, httpContext =>
+        {
+            var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? httpContext.Connection.Id;
+            return RateLimitPartition.GetFixedWindowLimiter(userId, _ => new FixedWindowRateLimiterOptions
             {
-                var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? httpContext.Connection.Id;
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    userId,
-                    _ => new FixedWindowRateLimiterOptions { PermitLimit = limits.PermitLimit, Window = limits.Window }
-                );
-            }
-        );
+                PermitLimit = limits.PermitLimit,
+                Window = limits.Window,
+            });
+        });
 
     public static void LogRejections(this RateLimiterOptions options) =>
         options.OnRejected = (context, _) =>

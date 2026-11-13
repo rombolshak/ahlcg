@@ -61,11 +61,9 @@ public abstract class AppFixtureBase : IAsyncLifetime
         await _app.ResourceNotifications.WaitForResourceHealthyAsync("apiservice");
 
         _apiBaseAddress = _app.GetEndpoint("apiservice", "https");
-        ConnectionString =
-            await _app.GetConnectionStringAsync("ahlcg")
+        ConnectionString = await _app.GetConnectionStringAsync("ahlcg")
             ?? throw new InvalidOperationException("No connection string for 'ahlcg'.");
-        CacheConnectionString =
-            await _app.GetConnectionStringAsync("cache")
+        CacheConnectionString = await _app.GetConnectionStringAsync("cache")
             ?? throw new InvalidOperationException("No connection string for 'cache'.");
     }
 
