@@ -34,8 +34,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
     public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct)
     {
-        var read =
-            TryRead(configuration)
+        var read = TryRead(configuration)
             ?? throw new ArgumentException("Configuration is not readable.", nameof(configuration));
 
         var seed = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong)));

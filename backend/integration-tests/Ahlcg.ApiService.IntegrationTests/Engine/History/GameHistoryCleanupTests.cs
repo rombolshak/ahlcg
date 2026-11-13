@@ -39,14 +39,11 @@ public class GameHistoryCleanupTests(AppFixture fixture)
             .ToListAsync();
         Assert.Equal([2, 1], steps.Select(s => s.RestoredVersion));
         Assert.Equal(["b", "a"], steps.Select(s => s.Checkpoint));
-        Assert.All(
-            steps,
-            s =>
-            {
-                Assert.False(s.IsIrreversible);
-                Assert.False(s.IsBaseline);
-            }
-        );
+        Assert.All(steps, s =>
+        {
+            Assert.False(s.IsIrreversible);
+            Assert.False(s.IsBaseline);
+        });
         Assert.Equal(second, await run.History.LoadCurrent(run.GameId, CancellationToken.None));
     }
 
