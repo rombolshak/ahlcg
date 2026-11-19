@@ -27,9 +27,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'e2e/package-lock.json'
       # apiservice binds its https launch profile, so Kestrel needs a developer certificate.
-      # Version tracks the Aspire.Hosting.* packages and the AppHost SDK.
+      # The AppHost uses the orchestration bundle from the matching Aspire CLI.
       - name: Install Aspire CLI
-        run: dotnet tool install --global Aspire.Cli --version 13.4.6
+        run: dotnet tool install --global Aspire.Cli --version 17.0.0
       - name: Trust HTTPS developer certificate
         run: aspire certs trust --non-interactive
 
