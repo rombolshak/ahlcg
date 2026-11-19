@@ -30,6 +30,38 @@ public class GameEngineTests
     private static readonly TestState OpenPair = new(Counter: 0, IsOpen: true, Members: Pair);
 
     [Fact]
+    public async Task Execute_MissingHistory_ThrowsWithoutAppending()
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        run.History.Setup(h => h.LoadCurrent(GameId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((StoredState<TestState>?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.Engine.Execute(GameId, Member, Increment));
+
+        run.Client.Verify(c => c.StateChanged(It.IsAny<StateChange>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SyncMembers_MissingHistory_Throws()
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        run.History.Setup(h => h.LoadCurrent(GameId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((StoredState<TestState>?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.Engine.SyncMembers(GameId));
+    }
+
+    [Fact]
+    public async Task GetMemberState_MissingHistory_Throws()
+    {
+        var run = CreateRun(loads: [Open], appends: []);
+        run.History.Setup(h => h.LoadCurrent(GameId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((StoredState<TestState>?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.Engine.GetMemberState(GameId, Member));
+    }
+
+    [Fact]
     public async Task Execute_AppendRefusedOnce_RetriesAndSendsStateChangedOnce()
     {
         // given

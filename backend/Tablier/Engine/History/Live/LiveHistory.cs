@@ -76,16 +76,15 @@ internal static class LiveHistory
             )
             .ToListAsync(ct);
 
-    internal static HistorySummary? GetSummary(int version, List<LiveFact> facts)
-    {
-        var anchor = facts.Single(fact => string.Equals(fact.Kind, "anchor", StringComparison.Ordinal));
-        if (!anchor.Valid)
-            return null;
+    internal static LiveFact GetAnchor(List<LiveFact> facts) =>
+        facts.Single(fact => string.Equals(fact.Kind, "anchor", StringComparison.Ordinal));
 
+    internal static HistorySummary GetSummary(int version, int barrierVersion, List<LiveFact> facts)
+    {
         var action = facts.FirstOrDefault(fact => string.Equals(fact.Kind, "action", StringComparison.Ordinal));
         return new HistorySummary(
             version,
-            anchor.BarrierVersion,
+            barrierVersion,
             facts
                 .Where(fact => string.Equals(fact.Kind, "checkpoint", StringComparison.Ordinal))
                 .ToDictionary(fact => fact.Tag!, fact => fact.Version),

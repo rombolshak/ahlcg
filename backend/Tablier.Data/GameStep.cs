@@ -13,4 +13,6 @@ public class GameStep
     public string[] Checkpoints { get; set; } = [];
     public bool IsIrreversible { get; set; }
     public bool IsBaseline { get; set; }
+    public bool IsBarrier => IsBaseline || IsIrreversible;
+    public bool NeedsSnapshot => IsBarrier || Checkpoints.Length > 0;
 }

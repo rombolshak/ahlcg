@@ -1,6 +1,7 @@
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Text.Json;
+using Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers;
 using Ahlcg.ApiService.IntegrationTests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
-using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
 using Tablier.Engine.History.Live;
@@ -19,15 +19,37 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
 [Collection(AppCollection.Name)]
 public class CachedGameHistoryTests(AppFixture fixture)
 {
-    private sealed record TestState(int Counter, string Label) : ISchemaVersioned
+    [Fact]
+    public async Task Rewind_StaleCachedHeadAfterCommittedStoreRewind_RefreshesCacheAndPreservesConflict()
     {
-        public int SchemaVersion => 1;
+        var gameId = await SeedGame();
+        var run = CreateRun(gameId);
+        var head = await run.Cached.Begin(gameId, CreateState(0));
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Cached.Append(gameId, head, CreateStep(1), choice: null)
+        );
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Cached.Append(gameId, head, CreateStep(2), choice: null)
+        );
+        var restored = await run.Store.Rewind(gameId, head.Version, 1);
+        Assert.Equal(head, await run.Cached.LoadCurrent(gameId));
+
+        var error = await Assert.ThrowsAsync<GameHistoryRewindConflictException>(() =>
+            run.Cached.Rewind(gameId, head.Version, 1)
+        );
+        await DeleteGameAsync(gameId);
+        var cached = await run.Cached.LoadCurrent(gameId);
+
+        Assert.Equal(gameId, error.GameId);
+        Assert.Equal(head.Version, error.ExpectedVersion);
+        Assert.Contains("Reload current history", error.Message, StringComparison.Ordinal);
+        Assert.Equal(restored, cached);
     }
 
     [Fact]
     public async Task Rewind_CommittedState_WritesRestoredStateAtNewVersionToCache()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         var head = Assert.IsType<StoredState<TestState>>(
             await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None)
@@ -45,14 +67,14 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
         Assert.Equal(new StoredState<TestState>(3, CreateState(1)), restored);
         Assert.Equal(restored, cached);
-        Assert.Null(await run.Cached.GetHistorySummary(gameId, 3));
-        Assert.Null(await run.Cached.GetActorsForRange(gameId, 0, 3));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.Cached.GetHistorySummary(gameId, 3));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.Cached.GetActorsForRange(gameId, 0, 3));
     }
 
     [Fact]
     public async Task Rewind_CacheAlreadyHoldsNewerState_DoesNotRegressCachedVersion()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         var head = Assert.IsType<StoredState<TestState>>(
             await run.Store.Begin(gameId, CreateState(0), CancellationToken.None)
@@ -77,90 +99,29 @@ public class CachedGameHistoryTests(AppFixture fixture)
         Assert.Equal(new StoredState<TestState>(5, CreateState(5)), cached);
     }
 
-    private static TestState CreateState(int n) => new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"));
-
-    private static StepResult<TestState> CreateStep(int n) => new(CreateState(n));
-
-    private sealed record Run(
-        Guid GameId,
-        GameHistory<TestState> Store,
-        CachedGameHistory<TestState> Cached,
-        IConnectionMultiplexer Redis
-    );
-
-    private sealed class PausingLoads(IGameHistory<TestState> inner) : IGameHistory<TestState>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Begin_VersionZeroReplay_ReturnsStoredStateAndRepopulatesLostCache(bool loseCache)
     {
-        public TaskCompletionSource Loaded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        var gameId = await SeedGame();
+        var run = CreateRun(gameId);
+        await run.Cached.Begin(gameId, CreateState(0));
+        if (loseCache)
+            await run.Redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
 
-        public TaskCompletionSource Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replayed = await run.Cached.Begin(gameId, CreateState(9));
+        await DeleteGameAsync(gameId);
+        var cached = await run.Cached.LoadCurrent(gameId);
 
-        public Task<StoredState<TestState>?> Begin(Guid gameId, TestState initial, CancellationToken ct) =>
-            inner.Begin(gameId, initial, ct);
-
-        public Task<StoredState<TestState>?> Append(
-            Guid gameId,
-            StoredState<TestState> previous,
-            StepResult<TestState> result,
-            PlayerChoice? choice,
-            CancellationToken ct
-        ) => inner.Append(gameId, previous, result, choice, ct);
-
-        public Task<StoredState<TestState>?> Rewind(
-            Guid gameId,
-            int expectedVersion,
-            int targetVersion,
-            CancellationToken ct = default
-        ) => inner.Rewind(gameId, expectedVersion, targetVersion, ct);
-
-        public Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
-            inner.GetHistorySummary(gameId, version, ct);
-
-        public Task<IReadOnlySet<string>?> GetActorsForRange(
-            Guid gameId,
-            int lowerExclusiveVersion,
-            int upperInclusiveVersion,
-            CancellationToken ct = default
-        ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
-
-        public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct)
-        {
-            var loaded = await inner.LoadCurrent(gameId, ct);
-            Loaded.SetResult();
-            await Resume.Task;
-            return loaded;
-        }
-
-        public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
-            inner.LoadAt(gameId, version, ct);
+        Assert.Equal(new StoredState<TestState>(0, CreateState(0)), replayed);
+        Assert.Equal(replayed, cached);
     }
-
-    private Run CreateRun(Guid gameId)
-    {
-        var redis = ConnectionMultiplexer.Connect(fixture.CacheConnectionString);
-        return new Run(gameId, CreateStore(), CreateCached(CreateStore(), redis), redis);
-    }
-
-    private GameHistory<TestState> CreateStore() =>
-        new(fixture.CreateDbContext(), NullLogger<GameHistory<TestState>>.Instance);
-
-    private static CachedGameHistory<TestState> CreateCached(
-        IGameHistory<TestState> inner,
-        IConnectionMultiplexer redis
-    ) =>
-        new(
-            inner,
-            redis,
-            Options.Create(new GameHistoryCacheOptions()),
-            new TablierMetrics(
-                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
-            ),
-            NullLogger<CachedGameHistory<TestState>>.Instance
-        );
 
     [Fact]
     public async Task Begin_WhenCacheHoldsNewerVersion_LeavesTheNewerOne()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         await run
             .Redis.GetDatabase()
@@ -176,41 +137,10 @@ public class CachedGameHistoryTests(AppFixture fixture)
         Assert.Equal(new StoredState<TestState>(5, CreateState(5)), loaded);
     }
 
-    private async Task<Guid> SeedGameAsync()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var user = new AppUser
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserName = Guid.NewGuid().ToString(),
-            IsAnonymous = true,
-        };
-        var game = new Game
-        {
-            OwnerId = user.Id,
-            IdempotencyKey = Guid.NewGuid().ToString(),
-            Configuration = JsonDocument.Parse("{}"),
-            CreatedAt = now,
-            LastPlayedAt = now,
-        };
-
-        await using var db = fixture.CreateDbContext();
-        db.Users.Add(user);
-        db.Games.Add(game);
-        await db.SaveChangesAsync();
-        return game.Id;
-    }
-
-    private async Task DeleteGameAsync(Guid gameId)
-    {
-        await using var db = fixture.CreateDbContext();
-        await db.Games.Where(g => g.Id == gameId).ExecuteDeleteAsync();
-    }
-
     [Fact]
     public async Task LoadCurrent_AfterAppend_ReturnsNewHeadFromCacheWhenStoreIsGone()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
         await run.Cached.Append(gameId, begun!, CreateStep(1), choice: null, CancellationToken.None);
@@ -224,7 +154,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadCurrent_AfterBegin_ReturnsInitialStateFromCacheWhenStoreIsGone()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
         await DeleteGameAsync(gameId);
@@ -237,7 +167,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Append_Refused_RefreshesCacheFromStore()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
         await run.Store.Append(gameId, begun!, CreateStep(1), choice: null, CancellationToken.None);
@@ -253,7 +183,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadCurrent_MissFinishingAfterRefusedAppend_DoesNotRegressCachedHead()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         var begun = await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
         await run.Redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
@@ -274,7 +204,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadCurrent_GameNotBegun_ReturnsNullAndDoesNotCacheIt()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
 
         var beforeBegin = await run.Cached.LoadCurrent(gameId, CancellationToken.None);
@@ -288,12 +218,99 @@ public class CachedGameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadAt_PassesThroughToStore()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var run = CreateRun(gameId);
         await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None);
 
         var loaded = await run.Cached.LoadAt(gameId, 0, CancellationToken.None);
 
         Assert.Equal(new StoredState<TestState>(0, CreateState(0)), loaded);
+    }
+
+    private static TestState CreateState(int n) => new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"));
+
+    private static StepResult<TestState> CreateStep(int n) => new(CreateState(n));
+
+    private sealed record Run(
+        Guid GameId,
+        GameHistory<TestState> Store,
+        CachedGameHistory<TestState> Cached,
+        IConnectionMultiplexer Redis
+    );
+
+    private sealed class PausingLoads(IGameHistory<TestState> inner) : IGameHistory<TestState>
+    {
+        public TaskCompletionSource Loaded { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<StoredState<TestState>> Begin(Guid gameId, TestState initial, CancellationToken ct = default) =>
+            inner.Begin(gameId, initial, ct);
+
+        public Task<StoredState<TestState>?> Append(
+            Guid gameId,
+            StoredState<TestState> previous,
+            StepResult<TestState> result,
+            PlayerChoice? choice,
+            CancellationToken ct = default
+        ) => inner.Append(gameId, previous, result, choice, ct);
+
+        public Task<StoredState<TestState>> Rewind(
+            Guid gameId,
+            int expectedVersion,
+            int targetVersion,
+            CancellationToken ct = default
+        ) => inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+
+        public Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+            inner.GetHistorySummary(gameId, version, ct);
+
+        public Task<IReadOnlySet<string>> GetActorsForRange(
+            Guid gameId,
+            int lowerExclusiveVersion,
+            int upperInclusiveVersion,
+            CancellationToken ct = default
+        ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
+
+        public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
+        {
+            var loaded = await inner.LoadCurrent(gameId, ct);
+            Loaded.SetResult();
+            await Resume.Task;
+            return loaded;
+        }
+
+        public Task<StoredState<TestState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
+            inner.LoadAt(gameId, version, ct);
+    }
+
+    private Run CreateRun(Guid gameId)
+    {
+        var redis = ConnectionMultiplexer.Connect(fixture.CacheConnectionString);
+        return new Run(gameId, CreateStore(), CreateCached(CreateStore(), redis), redis);
+    }
+
+    private GameHistory<TestState> CreateStore() => HistoryTestSetup.CreateHistory<TestState>(fixture);
+
+    private static CachedGameHistory<TestState> CreateCached(
+        IGameHistory<TestState> inner,
+        IConnectionMultiplexer redis
+    ) =>
+        new(
+            inner,
+            redis,
+            Options.Create(new GameHistoryCacheOptions()),
+            new TablierMetrics(
+                new ServiceCollection().AddMetrics().BuildServiceProvider().GetRequiredService<IMeterFactory>()
+            ),
+            NullLogger<CachedGameHistory<TestState>>.Instance
+        );
+
+    private Task<Guid> SeedGame() => HistoryTestSetup.SeedGame(fixture);
+
+    private async Task DeleteGameAsync(Guid gameId)
+    {
+        await using var db = fixture.CreateDbContext();
+        await db.Games.Where(g => g.Id == gameId).ExecuteDeleteAsync();
     }
 }

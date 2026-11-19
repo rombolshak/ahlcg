@@ -8,15 +8,30 @@ using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
 
-public sealed partial class CachedGameHistory<TState>(
-    [FromKeyedServices("store")] IGameHistory<TState> inner,
-    IConnectionMultiplexer redis,
-    IOptions<GameHistoryCacheOptions> options,
-    TablierMetrics metrics,
-    ILogger<CachedGameHistory<TState>> logger
-) : IGameHistory<TState>
+internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
     where TState : ISchemaVersioned
 {
+    private readonly IGameHistory<TState> _inner;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly IOptions<GameHistoryCacheOptions> _options;
+    private readonly TablierMetrics _metrics;
+    private readonly ILogger<CachedGameHistory<TState>> _logger;
+
+    public CachedGameHistory(
+        [FromKeyedServices("store")] IGameHistory<TState> inner,
+        IConnectionMultiplexer redis,
+        IOptions<GameHistoryCacheOptions> options,
+        TablierMetrics metrics,
+        ILogger<CachedGameHistory<TState>> logger
+    )
+    {
+        _inner = inner;
+        _redis = redis;
+        _options = options;
+        _metrics = metrics;
+        _logger = logger;
+    }
+
     private const string VersionField = "version";
     private const string StateField = "state";
 
@@ -30,11 +45,10 @@ public sealed partial class CachedGameHistory<TState>(
         return 1
         """;
 
-    public async Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct)
+    public async Task<StoredState<TState>> Begin(Guid gameId, TState initial, CancellationToken ct = default)
     {
-        var begun = await inner.Begin(gameId, initial, ct);
-        if (begun is not null)
-            await WriteGuarded(gameId, begun);
+        var begun = await _inner.Begin(gameId, initial, ct);
+        await WriteGuarded(gameId, begun);
 
         return begun;
     }
@@ -44,77 +58,94 @@ public sealed partial class CachedGameHistory<TState>(
         StoredState<TState> previous,
         StepResult<TState> result,
         PlayerChoice? choice,
-        CancellationToken ct
+        CancellationToken ct = default
     )
     {
-        var appended = await inner.Append(gameId, previous, result, choice, ct);
+        var appended = await _inner.Append(gameId, previous, result, choice, ct);
         if (appended is not null)
         {
             await WriteGuarded(gameId, appended);
             return appended;
         }
 
-        var current = await inner.LoadCurrent(gameId, ct);
+        var current = await _inner.LoadCurrent(gameId, ct);
         if (current is not null && await WriteGuarded(gameId, current))
-            LogRefreshedAfterRefusedAppend(logger, gameId, current.Version);
+            LogRefreshedAfterRefusedAppend(_logger, gameId, current.Version);
 
         return null;
     }
 
-    public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)
+    public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
     {
-        var fields = await redis
+        var fields = await _redis
             .GetDatabase()
             .HashGetAsync(CacheKeys.GetGameStateKey(gameId), [VersionField, StateField]);
         if (fields[0].HasValue && fields[1].HasValue)
         {
-            var state = JsonSerializer.Deserialize<TState>((string)fields[1]!);
+            var state = JsonSerializer.Deserialize<TState>(fields[1].ToString());
             if (state is not null)
             {
-                metrics.RecordCacheLookup(hit: true);
+                _metrics.RecordCacheLookup(hit: true);
                 return new StoredState<TState>((int)fields[0], state);
             }
         }
 
-        metrics.RecordCacheLookup(hit: false);
-        var loaded = await inner.LoadCurrent(gameId, ct);
+        _metrics.RecordCacheLookup(hit: false);
+        var loaded = await _inner.LoadCurrent(gameId, ct);
         if (loaded is not null)
             await WriteGuarded(gameId, loaded);
 
         return loaded;
     }
 
-    public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
-        inner.LoadAt(gameId, version, ct);
+    public Task<StoredState<TState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
+        _inner.LoadAt(gameId, version, ct);
 
-    public async Task<StoredState<TState>?> Rewind(
+    public async Task<StoredState<TState>> Rewind(
         Guid gameId,
         int expectedVersion,
         int targetVersion,
         CancellationToken ct = default
     )
     {
-        var restored = await inner.Rewind(gameId, expectedVersion, targetVersion, ct);
-        if (restored is not null)
-            await WriteGuarded(gameId, restored);
-
+        StoredState<TState> restored;
+        try
+        {
+            restored = await _inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+        }
+        catch (GameHistoryRewindConflictException conflict)
+        {
+            var current = await _inner.LoadCurrent(gameId, ct)
+                ?? throw new InvalidOperationException("History is missing after a refused rewind.", conflict);
+            try
+            {
+                if (await WriteGuarded(gameId, current))
+                    LogRefreshedAfterRefusedRewind(_logger, gameId, current.Version);
+            }
+            catch (RedisException)
+            {
+                LogRefreshFailedAfterRefusedRewind(_logger, gameId, current.Version);
+            }
+            throw;
+        }
+        await WriteGuarded(gameId, restored);
         return restored;
     }
 
-    public Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
-        inner.GetHistorySummary(gameId, version, ct);
+    public Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+        _inner.GetHistorySummary(gameId, version, ct);
 
-    public Task<IReadOnlySet<string>?> GetActorsForRange(
+    public Task<IReadOnlySet<string>> GetActorsForRange(
         Guid gameId,
         int lowerExclusiveVersion,
         int upperInclusiveVersion,
         CancellationToken ct = default
-    ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
+    ) => _inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
 
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)
-            await redis
+            await _redis
                 .GetDatabase()
                 .ScriptEvaluateAsync(
                     GuardedWriteScript,
@@ -122,14 +153,20 @@ public sealed partial class CachedGameHistory<TState>(
                     [
                         stored.Version.ToString(CultureInfo.InvariantCulture),
                         JsonSerializer.Serialize(stored.State),
-                        (long)options.Value.Expiration.TotalMilliseconds,
+                        (long)_options.Value.Expiration.TotalMilliseconds,
                     ]
                 );
         if (written == 0)
-            LogWriteSkippedNewerCached(logger, gameId, stored.Version);
+            LogWriteSkippedNewerCached(_logger, gameId, stored.Version);
 
         return written == 1;
     }
+
+    [LoggerMessage(LogLevel.Debug, "Rewind for game {GameId} refused; cached state refreshed to version {Version}")]
+    private static partial void LogRefreshedAfterRefusedRewind(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Rewind for game {GameId} refused; cache refresh failed at version {Version}")]
+    private static partial void LogRefreshFailedAfterRefusedRewind(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,
