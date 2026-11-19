@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Tablier.Auth;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Engine.History;
 
 namespace Tablier.Games;
 
@@ -201,7 +202,7 @@ public static partial class GameEndpoints
 
     // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
 #pragma warning disable S107
-    public static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(
+    internal static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(
 #pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
@@ -253,7 +254,14 @@ public static partial class GameEndpoints
 
         game = await SaveOrFindReplayed(db, game, member, logger, ct);
 
-        await engine.Begin(game.Id, game.Configuration.RootElement, user.Id, ct);
+        try
+        {
+            await engine.Begin(game.Id, game.Configuration.RootElement, user.Id, ct);
+        }
+        catch (GameHistoryConflictException e) when (e.GameId == game.Id)
+        {
+            LogHistoryAlreadyAdvanced(logger, game.Id, e.Version);
+        }
 
         return TypedResults.Ok(
             new GameDto(
@@ -298,7 +306,7 @@ public static partial class GameEndpoints
         }
     }
 
-    public static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
+    internal static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
@@ -506,7 +514,7 @@ public static partial class GameEndpoints
 
     // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
 #pragma warning disable S107
-    public static async Task<
+    internal static async Task<
         Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
     > RemoveMember(
 #pragma warning restore S107
@@ -607,7 +615,7 @@ public static partial class GameEndpoints
         await hub.Clients.Clients([.. connectionIds]).Exit(ExitReason.NotAMember);
     }
 
-    public static async Task<
+    internal static async Task<
         Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
     > SetMembersCount(
         ClaimsPrincipal principal,
@@ -659,6 +667,9 @@ public static partial class GameEndpoints
             membership.Game.CompletedAt,
             membership.Game.Configuration.RootElement.Clone()
         );
+
+    [LoggerMessage(LogLevel.Debug, "Creation replay for game {GameId} preserved history at version {Version}")]
+    private static partial void LogHistoryAlreadyAdvanced(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(LogLevel.Information, "User {UserId} created game {GameId}")]
     private static partial void LogGameCreated(ILogger logger, Guid gameId, string userId);

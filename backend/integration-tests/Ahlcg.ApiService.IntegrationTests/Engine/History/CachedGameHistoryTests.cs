@@ -40,7 +40,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
 
         public TaskCompletionSource Resume { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public Task<StoredState<TestState>?> Begin(Guid gameId, TestState initial, CancellationToken ct) =>
+        public Task<StoredState<TestState>> Begin(Guid gameId, TestState initial, CancellationToken ct = default) =>
             inner.Begin(gameId, initial, ct);
 
         public Task<StoredState<TestState>?> Append(
@@ -48,10 +48,10 @@ public class CachedGameHistoryTests(AppFixture fixture)
             StoredState<TestState> previous,
             StepResult<TestState> result,
             PlayerChoice? choice,
-            CancellationToken ct
+            CancellationToken ct = default
         ) => inner.Append(gameId, previous, result, choice, ct);
 
-        public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct)
+        public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
         {
             var loaded = await inner.LoadCurrent(gameId, ct);
             Loaded.SetResult();
@@ -59,7 +59,7 @@ public class CachedGameHistoryTests(AppFixture fixture)
             return loaded;
         }
 
-        public Task<StoredState<TestState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
+        public Task<StoredState<TestState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
             inner.LoadAt(gameId, version, ct);
     }
 
@@ -85,6 +85,25 @@ public class CachedGameHistoryTests(AppFixture fixture)
             ),
             NullLogger<CachedGameHistory<TestState>>.Instance
         );
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Begin_VersionZeroReplay_ReturnsStoredStateAndRepopulatesLostCache(bool loseCache)
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        await run.Cached.Begin(gameId, CreateState(0));
+        if (loseCache)
+            await run.Redis.GetDatabase().KeyDeleteAsync(CacheKeys.GetGameStateKey(gameId));
+
+        var replayed = await run.Cached.Begin(gameId, CreateState(9));
+        await DeleteGameAsync(gameId);
+        var cached = await run.Cached.LoadCurrent(gameId);
+
+        Assert.Equal(new StoredState<TestState>(0, CreateState(0)), replayed);
+        Assert.Equal(replayed, cached);
+    }
 
     [Fact]
     public async Task Begin_WhenCacheHoldsNewerVersion_LeavesTheNewerOne()

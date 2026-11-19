@@ -11,31 +11,46 @@ public readonly record struct GameConnection(Guid GameId, string UserId, string 
 #pragma warning restore MA0048
 
 [Authorize]
-public partial class GameHub(
-    GameSessions sessions,
-    ApplicationDbContext db,
-    TimeProvider timeProvider,
-    IGameEngine engine,
-    ILogger<GameHub> logger
-) : Hub<IGameClient>
+internal partial class GameHub : Hub<IGameClient>
 {
+    private readonly GameSessions _sessions;
+    private readonly ApplicationDbContext _db;
+    private readonly TimeProvider _timeProvider;
+    private readonly IGameEngine _engine;
+    private readonly ILogger<GameHub> _logger;
+
+    public GameHub(
+        GameSessions sessions,
+        ApplicationDbContext db,
+        TimeProvider timeProvider,
+        IGameEngine engine,
+        ILogger<GameHub> logger
+    )
+    {
+        _sessions = sessions;
+        _db = db;
+        _timeProvider = timeProvider;
+        _engine = engine;
+        _logger = logger;
+    }
+
     private const string MissingGameIdMessage = "A gameId query parameter is required.";
     private const string MissingUserIdMessage = "The connection has no user id.";
 
-    public Task<DateTime> Ping() => Task.FromResult(timeProvider.GetUtcNow().UtcDateTime);
+    public Task<DateTime> Ping() => Task.FromResult(_timeProvider.GetUtcNow().UtcDateTime);
 
     public Task<MemberState?> GetState()
     {
         var (gameId, userId) = GetCaller();
 
-        return engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
+        return _engine.GetMemberState(gameId, userId, Context.ConnectionAborted);
     }
 
     public Task<int?> Execute(string action)
     {
         var (gameId, userId) = GetCaller();
 
-        return engine.Execute(gameId, userId, action, Context.ConnectionAborted);
+        return _engine.Execute(gameId, userId, action, Context.ConnectionAborted);
     }
 
     public static string GetMemberGroupName(Guid gameId, string userId) => $"{gameId}:{userId}";
@@ -45,7 +60,7 @@ public partial class GameHub(
         var (gameId, userId) = GetCaller();
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
-        await Connect(sessions, db, timeProvider, Clients, Groups, connection, logger);
+        await Connect(_sessions, _db, _timeProvider, Clients, Groups, connection, _logger);
         await base.OnConnectedAsync();
     }
 
@@ -55,8 +70,8 @@ public partial class GameHub(
 
         var connection = new GameConnection(gameId, userId, Context.ConnectionId);
         if (exception is not null)
-            LogConnectionLost(logger, gameId, userId, Context.ConnectionId, exception);
-        await Disconnect(sessions, db, timeProvider, Clients, connection, logger);
+            LogConnectionLost(_logger, gameId, userId, Context.ConnectionId, exception);
+        await Disconnect(_sessions, _db, _timeProvider, Clients, connection, _logger);
         await base.OnDisconnectedAsync(exception);
     }
 

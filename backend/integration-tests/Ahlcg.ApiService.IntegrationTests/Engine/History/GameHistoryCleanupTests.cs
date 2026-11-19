@@ -47,8 +47,22 @@ public class GameHistoryCleanupTests(AppFixture fixture)
             {
                 await history.LoadCurrent(GameId, CancellationToken.None),
             };
+            var barrier = await reader
+                .GameSteps.Where(s => s.GameId == GameId && (s.IsBaseline || s.IsIrreversible))
+                .MaxAsync(s => (int?)s.Version)
+                ?? 0;
             for (var v = 0; v <= Current.Version; v++)
-                loaded.Add(await history.LoadAt(GameId, v, CancellationToken.None));
+            {
+                if (v < barrier)
+                {
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => history.LoadAt(GameId, v));
+                    loaded.Add(null);
+                }
+                else
+                {
+                    loaded.Add(await history.LoadAt(GameId, v));
+                }
+            }
             return loaded;
         }
 

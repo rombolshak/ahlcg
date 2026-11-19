@@ -4,7 +4,6 @@ using Ahlcg.ApiService.IntegrationTests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Testing;
 using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
@@ -106,6 +105,124 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
+    public async Task Begin_AtVersionZeroWithDifferentInput_ReturnsExactStoredStateWithoutWriting()
+    {
+        var run = await BeginRunAsync();
+
+        var replayed = await run.History.Begin(run.GameId, CreateState(7));
+
+        Assert.Equal(new StoredState<TestState>(0, CreateState(0)), replayed);
+        Assert.Equal([0], await run.GetSnapshotVersionsAsync());
+        Assert.Empty(await run.GetStepVersionsAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Load_NullStoredPatch_ThrowsDescriptiveException(bool historical)
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 1);
+        await using var db = fixture.CreateDbContext();
+        var step = await db.GameSteps.SingleAsync(s => s.GameId == run.GameId && s.Version == 1);
+        step.Patch = JsonDocument.Parse("null");
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            if (historical)
+                await run.History.LoadAt(run.GameId, 1);
+            else
+                await run.History.LoadCurrent(run.GameId);
+        });
+
+        Assert.Equal("A stored step patch cannot be null.", error.Message);
+    }
+
+    [Fact]
+    public async Task LoadCurrent_MalformedStoredPatch_ThrowsWithPatchContextAndInnerException()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 1);
+        await using var db = fixture.CreateDbContext();
+        var step = await db.GameSteps.SingleAsync(s => s.GameId == run.GameId && s.Version == 1);
+        step.Patch = JsonDocument.Parse("{}");
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
+
+        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.Equal($"Patch at version 1 of game {run.GameId} is malformed.", error.Message);
+    }
+
+    [Fact]
+    public async Task LoadAt_MalformedSnapshot_ThrowsWithSnapshotContextAndInnerException()
+    {
+        var run = await BeginRunAsync();
+        await using var db = fixture.CreateDbContext();
+        var snapshot = await db.GameSnapshots.SingleAsync(s => s.GameId == run.GameId && s.Version == 0);
+        snapshot.State = JsonDocument.Parse("""{"Counter":"invalid"}""");
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 0));
+
+        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.Equal($"Snapshot state at version 0 of game {run.GameId} is malformed.", error.Message);
+    }
+
+    [Fact]
+    public async Task LoadCurrent_MalformedReconstructedState_ThrowsWithStateContextAndInnerException()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 1);
+        await using var db = fixture.CreateDbContext();
+        var step = await db.GameSteps.SingleAsync(s => s.GameId == run.GameId && s.Version == 1);
+        step.Patch = JsonDocument.Parse("""[{"op":"replace","path":"/Counter","value":"invalid"}]""");
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
+
+        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.Equal($"Reconstructed state at version 1 of game {run.GameId} is malformed.", error.Message);
+    }
+
+    [Fact]
+    public async Task LoadCurrent_PatchGap_Throws()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 3);
+        await using var db = fixture.CreateDbContext();
+        await db.GameSteps.Where(s => s.GameId == run.GameId && s.Version == 2).ExecuteDeleteAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
+    }
+
+    [Fact]
+    public async Task LoadCurrent_StepsWithoutSnapshot_Throws()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 2);
+        await using var db = fixture.CreateDbContext();
+        await db.GameSnapshots.Where(s => s.GameId == run.GameId).ExecuteDeleteAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
+    }
+
+    [Fact]
+    public async Task LoadAt_LatestSnapshotWithoutMatchingStep_ReturnsExactStoredState()
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 1);
+        await run.AppendAsync(CreateStep(2, checkpoint: "latest"));
+        await using var db = fixture.CreateDbContext();
+        await db.GameSteps.Where(s => s.GameId == run.GameId && s.Version == 2).ExecuteDeleteAsync();
+
+        var loaded = await run.History.LoadAt(run.GameId, 2);
+
+        Assert.Equal(new StoredState<TestState>(2, CreateState(2)), loaded);
+    }
+
+    [Fact]
     public async Task LoadAt_ExactSnapshotWithoutStep_ReturnsStoredState()
     {
         var run = await BeginRunAsync();
@@ -131,52 +248,52 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task LoadAt_PatchGap_IsRefused()
+    public async Task LoadAt_PatchGap_Throws()
     {
         var run = await BeginRunAsync();
         await run.AppendPlainAsync(1, 3);
         await using var db = fixture.CreateDbContext();
         await db.GameSteps.Where(s => s.GameId == run.GameId && s.Version == 2).ExecuteDeleteAsync();
 
-        var loaded = await run.History.LoadAt(run.GameId, 3, CancellationToken.None);
-
-        Assert.Null(loaded);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            run.History.LoadAt(run.GameId, 3, CancellationToken.None)
+        );
     }
 
     [Fact]
-    public async Task LoadAt_MissingEarlierSnapshot_IsRefused()
+    public async Task LoadAt_MissingEarlierSnapshot_Throws()
     {
         var run = await BeginRunAsync();
         await run.AppendPlainAsync(1, 2);
         await using var db = fixture.CreateDbContext();
         await db.GameSnapshots.Where(s => s.GameId == run.GameId).ExecuteDeleteAsync();
 
-        var loaded = await run.History.LoadAt(run.GameId, 2, CancellationToken.None);
-
-        Assert.Null(loaded);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            run.History.LoadAt(run.GameId, 2, CancellationToken.None)
+        );
     }
 
     [Theory]
     [InlineData(-1)]
     [InlineData(3)]
-    public async Task LoadAt_VersionOutsideStoredRange_IsRefused(int version)
+    public async Task LoadAt_VersionOutsideStoredRange_Throws(int version)
     {
         var run = await BeginRunAsync();
         await run.AppendPlainAsync(1, 2);
 
-        var loaded = await run.History.LoadAt(run.GameId, version, CancellationToken.None);
-
-        Assert.Null(loaded);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            run.History.LoadAt(run.GameId, version, CancellationToken.None)
+        );
     }
 
     [Fact]
-    public async Task LoadAt_UnbegunGame_IsRefused()
+    public async Task LoadAt_UnbegunGame_Throws()
     {
         var gameId = await SeedGameAsync();
 
-        var loaded = await CreateHistory().LoadAt(gameId, 0, CancellationToken.None);
-
-        Assert.Null(loaded);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            CreateHistory().LoadAt(gameId, 0, CancellationToken.None)
+        );
     }
 
     [Fact]
@@ -193,19 +310,19 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Append_ReservedUndoCheckpoint_IsRefusedAndStoresNothing()
+    public async Task Append_ReservedUndoCheckpoint_ThrowsAndStoresNothing()
     {
         var run = await BeginRunAsync();
 
-        var appended = await run.History.Append(
-            run.GameId,
-            run.Current,
-            new StepResult<TestState>(CreateState(1), ["undo"]),
-            choice: null,
-            CancellationToken.None
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            run.History.Append(
+                run.GameId,
+                run.Current,
+                new StepResult<TestState>(CreateState(1), ["undo"]),
+                choice: null,
+                CancellationToken.None
+            )
         );
-
-        Assert.Null(appended);
         Assert.Empty(await run.GetStepVersionsAsync());
         Assert.Equal([0], await run.GetSnapshotVersionsAsync());
     }
@@ -299,7 +416,7 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Append_GameNotBegun_IsRefused()
+    public async Task Append_GameNotBegun_Throws()
     {
         var gameId = await SeedGameAsync();
         var history = new GameHistory<TestState>(
@@ -307,28 +424,31 @@ public class GameHistoryTests(AppFixture fixture)
             NullLogger<GameHistory<TestState>>.Instance
         );
 
-        var refused = await history.Append(
-            gameId,
-            new StoredState<TestState>(0, CreateState(0)),
-            CreateStep(1),
-            choice: null,
-            CancellationToken.None
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            history.Append(
+                gameId,
+                new StoredState<TestState>(0, CreateState(0)),
+                CreateStep(1),
+                choice: null,
+                CancellationToken.None
+            )
         );
-
-        Assert.Null(refused);
         await using var db = fixture.CreateDbContext();
         Assert.False(await db.GameSteps.AnyAsync(s => s.GameId == gameId));
     }
 
     [Fact]
-    public async Task Begin_GameAlreadyBegun_IsRefusedAndKeepsHistory()
+    public async Task Begin_GameAlreadyAdvanced_ThrowsConflictAndKeepsHistory()
     {
         var run = await BeginRunAsync();
         await run.AppendPlainAsync(1, 2);
 
-        var refused = await run.History.Begin(run.GameId, CreateState(7), CancellationToken.None);
+        var conflict = await Assert.ThrowsAsync<GameHistoryConflictException>(() =>
+            run.History.Begin(run.GameId, CreateState(7))
+        );
 
-        Assert.Null(refused);
+        Assert.Equal(run.GameId, conflict.GameId);
+        Assert.Equal(2, conflict.Version);
         Assert.Equal(new StoredState<TestState>(2, CreateState(2)), await run.LoadCurrentAsync());
     }
 
@@ -377,7 +497,7 @@ public class GameHistoryTests(AppFixture fixture)
             new StoredState<TestState>(4, CreateState(1)),
             await run.History.LoadAt(run.GameId, 4, CancellationToken.None)
         );
-        Assert.Null(await run.History.LoadAt(run.GameId, 1, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 1));
     }
 
     [Fact]
@@ -387,8 +507,8 @@ public class GameHistoryTests(AppFixture fixture)
         await run.AppendAsync(CreateStep(1, checkpoint: "a"));
         await run.AppendAsync(CreateStep(2, irreversible: true));
 
-        Assert.Null(await run.History.LoadAt(run.GameId, 0, CancellationToken.None));
-        Assert.Null(await run.History.LoadAt(run.GameId, 1, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 0));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 1));
     }
 
     [Fact]
@@ -411,7 +531,7 @@ public class GameHistoryTests(AppFixture fixture)
         await run.AppendAsync(CreateStep(1, checkpoint: "a"));
         await run.AppendAsync(CreateStep(2, baseline: true));
 
-        Assert.Null(await run.History.LoadAt(run.GameId, 1, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 1));
         Assert.Equal(
             new StoredState<TestState>(2, CreateState(2)),
             await run.History.LoadAt(run.GameId, 2, CancellationToken.None)
@@ -444,7 +564,7 @@ public class GameHistoryTests(AppFixture fixture)
             new StoredState<TestState>(3, CreateState(3)),
             await run.History.LoadAt(run.GameId, 3, CancellationToken.None)
         );
-        Assert.Null(await run.History.LoadAt(run.GameId, 99, CancellationToken.None));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => run.History.LoadAt(run.GameId, 99));
     }
 
     [Fact]
@@ -518,15 +638,18 @@ public class GameHistoryTests(AppFixture fixture)
     }
 
     [Fact]
-    public async Task Begin_ConcurrentlyOnSameGame_AcceptsExactlyOne()
+    public async Task Begin_ConcurrentlyOnSameGame_ReturnsTheWinningStateToEveryCaller()
     {
         var gameId = await SeedGameAsync();
 
         var results = await Task.WhenAll(
-            Enumerable.Range(1, 8).Select(_ => CreateHistory().Begin(gameId, CreateState(0), CancellationToken.None))
+            Enumerable.Range(1, 8).Select(n => CreateHistory().Begin(gameId, CreateState(n), CancellationToken.None))
         );
 
-        Assert.Single(results, r => r is not null);
+        Assert.All(results, stored => Assert.Equal(results[0], stored));
+        await using var db = fixture.CreateDbContext();
+        Assert.Single(await db.GameSnapshots.Where(s => s.GameId == gameId).ToListAsync());
+        Assert.False(await db.GameSteps.AnyAsync(s => s.GameId == gameId));
     }
 
     [Fact]
@@ -550,52 +673,5 @@ public class GameHistoryTests(AppFixture fixture)
         await history.Append(gameId, begun!, CreateStep(1, checkpoint: "a"), choice: null, CancellationToken.None);
 
         Assert.Empty(db.ChangeTracker.Entries());
-    }
-
-    [Fact]
-    public async Task Begin_Twice_LogsAlreadyBegun()
-    {
-        var logger = new FakeLogger<GameHistory<TestState>>();
-        var run = await BeginRunAsync(logger);
-
-        await run.History.Begin(run.GameId, CreateState(0), CancellationToken.None);
-
-        Assert.Equal("LogBeginRefusedAlreadyBegun", logger.LatestRecord.Id.Name);
-    }
-
-    [Fact]
-    public async Task Append_StalePreviousVersion_LogsStale()
-    {
-        var logger = new FakeLogger<GameHistory<TestState>>();
-        var run = await BeginRunAsync(logger);
-        var stale = run.Current;
-        await run.AppendPlainAsync(1, 1);
-
-        await run.History.Append(run.GameId, stale, CreateStep(2), choice: null, CancellationToken.None);
-
-        Assert.Equal("LogAppendRefusedStale", logger.LatestRecord.Id.Name);
-    }
-
-    [Fact]
-    public async Task LoadAt_VersionBeyondHead_LogsGap()
-    {
-        var logger = new FakeLogger<GameHistory<TestState>>();
-        var run = await BeginRunAsync(logger);
-
-        await run.History.LoadAt(run.GameId, 5, CancellationToken.None);
-
-        Assert.Equal("LogLoadAtRefusedGap", logger.LatestRecord.Id.Name);
-    }
-
-    [Fact]
-    public async Task LoadAt_BehindIrreversibleStep_LogsBehindBarrier()
-    {
-        var logger = new FakeLogger<GameHistory<TestState>>();
-        var run = await BeginRunAsync(logger);
-        await run.AppendAsync(CreateStep(1, irreversible: true));
-
-        await run.History.LoadAt(run.GameId, 0, CancellationToken.None);
-
-        Assert.Equal("LogLoadAtRefusedBehindBarrier", logger.LatestRecord.Id.Name);
     }
 }

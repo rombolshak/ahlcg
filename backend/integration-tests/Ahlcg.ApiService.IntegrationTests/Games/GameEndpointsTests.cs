@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Ahlcg.ApiService.IntegrationTests.Fixture;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Data;
 using Tablier.Games;
@@ -85,6 +86,36 @@ public class GameEndpointsTests(AppFixture fixture)
 
         var memberCount = await db.GameMembers.CountAsync(m => m.GameId == firstDto.Id);
         Assert.Equal(1, memberCount);
+    }
+
+    [Fact]
+    public async Task PostGames_SameKeyAfterHistoryAdvanced_ReturnsOriginalGameWithoutWritingHistory()
+    {
+        var cookies = new CookieContainer();
+        using var client = fixture.CreateClient(cookies);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, client);
+        var key = $"advanced-replay-{Guid.NewGuid()}";
+        var first = await PostGameAsync(client, key, "{}");
+        first.EnsureSuccessStatusCode();
+        var original = await ReadGameAsync(first);
+        await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={original.Id}");
+        await connection.StartAsync();
+        var committed = await connection.InvokeAsync<int?>(nameof(GameHub.Execute), "shared:inc");
+        Assert.NotNull(committed);
+        await using var db = fixture.CreateDbContext();
+        var stepsBefore = await db.GameSteps.CountAsync(s => s.GameId == original.Id);
+        var snapshotsBefore = await db.GameSnapshots.CountAsync(s => s.GameId == original.Id);
+        Assert.True(stepsBefore > 0);
+
+        var replay = await PostGameAsync(client, key, "{\"different\":true}");
+
+        Assert.Equal(HttpStatusCode.OK, replay.StatusCode);
+        var replayed = await ReadGameAsync(replay);
+        Assert.Equal(original.Id, replayed.Id);
+        Assert.True(JsonElement.DeepEquals(original.Configuration, replayed.Configuration));
+        Assert.Equal(stepsBefore, await db.GameSteps.CountAsync(s => s.GameId == original.Id));
+        Assert.Equal(snapshotsBefore, await db.GameSnapshots.CountAsync(s => s.GameId == original.Id));
+        Assert.Equal(1, await db.Games.CountAsync(g => g.IdempotencyKey == key));
     }
 
     [Fact]
