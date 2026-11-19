@@ -330,6 +330,9 @@ namespace Tablier.Data.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
+                    b.Property<int?>("RestoredVersion")
+                        .HasColumnType("integer");
+
                     b.HasKey("GameId", "Version");
 
                     b.ToTable("GameSteps");

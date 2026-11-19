@@ -1,4 +1,5 @@
 using Tablier.Contract;
+using Tablier.Engine.History.Live;
 
 namespace Tablier.Engine.History;
 
@@ -18,4 +19,20 @@ public interface IGameHistory<TState>
     Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct);
 
     Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct);
+
+    Task<StoredState<TState>?> Rewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    );
+
+    Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default);
+
+    Task<IReadOnlySet<string>?> GetActorsForRange(
+        Guid gameId,
+        int lowerExclusiveVersion,
+        int upperInclusiveVersion,
+        CancellationToken ct = default
+    );
 }

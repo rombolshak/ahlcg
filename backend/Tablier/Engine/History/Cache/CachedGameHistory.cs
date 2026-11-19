@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
+using Tablier.Engine.History.Live;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
@@ -85,6 +86,30 @@ public sealed partial class CachedGameHistory<TState>(
 
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         inner.LoadAt(gameId, version, ct);
+
+    public async Task<StoredState<TState>?> Rewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    )
+    {
+        var restored = await inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+        if (restored is not null)
+            await WriteGuarded(gameId, restored);
+
+        return restored;
+    }
+
+    public Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+        inner.GetHistorySummary(gameId, version, ct);
+
+    public Task<IReadOnlySet<string>?> GetActorsForRange(
+        Guid gameId,
+        int lowerExclusiveVersion,
+        int upperInclusiveVersion,
+        CancellationToken ct = default
+    ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
 
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {

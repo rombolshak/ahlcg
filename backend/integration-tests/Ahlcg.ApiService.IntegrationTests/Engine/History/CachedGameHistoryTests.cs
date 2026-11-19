@@ -11,6 +11,7 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cache;
+using Tablier.Engine.History.Live;
 using Tablier.Telemetry;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
@@ -21,6 +22,59 @@ public class CachedGameHistoryTests(AppFixture fixture)
     private sealed record TestState(int Counter, string Label) : ISchemaVersioned
     {
         public int SchemaVersion => 1;
+    }
+
+    [Fact]
+    public async Task Rewind_CommittedState_WritesRestoredStateAtNewVersionToCache()
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        var head = Assert.IsType<StoredState<TestState>>(
+            await run.Cached.Begin(gameId, CreateState(0), CancellationToken.None)
+        );
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Cached.Append(gameId, head, CreateStep(1), choice: null, CancellationToken.None)
+        );
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Cached.Append(gameId, head, CreateStep(2), choice: null, CancellationToken.None)
+        );
+
+        var restored = await run.Cached.Rewind(gameId, head.Version, 1);
+        await DeleteGameAsync(gameId);
+        var cached = await run.Cached.LoadCurrent(gameId, CancellationToken.None);
+
+        Assert.Equal(new StoredState<TestState>(3, CreateState(1)), restored);
+        Assert.Equal(restored, cached);
+        Assert.Null(await run.Cached.GetHistorySummary(gameId, 3));
+        Assert.Null(await run.Cached.GetActorsForRange(gameId, 0, 3));
+    }
+
+    [Fact]
+    public async Task Rewind_CacheAlreadyHoldsNewerState_DoesNotRegressCachedVersion()
+    {
+        var gameId = await SeedGameAsync();
+        var run = CreateRun(gameId);
+        var head = Assert.IsType<StoredState<TestState>>(
+            await run.Store.Begin(gameId, CreateState(0), CancellationToken.None)
+        );
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Store.Append(gameId, head, CreateStep(1), choice: null, CancellationToken.None)
+        );
+        head = Assert.IsType<StoredState<TestState>>(
+            await run.Store.Append(gameId, head, CreateStep(2), choice: null, CancellationToken.None)
+        );
+        await run
+            .Redis.GetDatabase()
+            .HashSetAsync(
+                CacheKeys.GetGameStateKey(gameId),
+                [new HashEntry("version", "5"), new HashEntry("state", JsonSerializer.Serialize(CreateState(5)))]
+            );
+
+        var restored = await run.Cached.Rewind(gameId, head.Version, 1);
+        var cached = await run.Cached.LoadCurrent(gameId, CancellationToken.None);
+
+        Assert.Equal(new StoredState<TestState>(3, CreateState(1)), restored);
+        Assert.Equal(new StoredState<TestState>(5, CreateState(5)), cached);
     }
 
     private static TestState CreateState(int n) => new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"));
@@ -50,6 +104,23 @@ public class CachedGameHistoryTests(AppFixture fixture)
             PlayerChoice? choice,
             CancellationToken ct
         ) => inner.Append(gameId, previous, result, choice, ct);
+
+        public Task<StoredState<TestState>?> Rewind(
+            Guid gameId,
+            int expectedVersion,
+            int targetVersion,
+            CancellationToken ct = default
+        ) => inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+
+        public Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+            inner.GetHistorySummary(gameId, version, ct);
+
+        public Task<IReadOnlySet<string>?> GetActorsForRange(
+            Guid gameId,
+            int lowerExclusiveVersion,
+            int upperInclusiveVersion,
+            CancellationToken ct = default
+        ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
 
         public async Task<StoredState<TestState>?> LoadCurrent(Guid gameId, CancellationToken ct)
         {

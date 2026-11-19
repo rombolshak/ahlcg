@@ -1,4 +1,5 @@
 using Tablier.Contract;
+using Tablier.Engine.History.Live;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History;
@@ -26,6 +27,32 @@ public sealed class MeteredGameHistory<TState>(
 
     public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
         MeasureAsync("load_at", () => inner.LoadAt(gameId, version, ct), OkOr(OutcomeMissing));
+
+    public Task<StoredState<TState>?> Rewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    ) => MeasureAsync("rewind", () => inner.Rewind(gameId, expectedVersion, targetVersion, ct), OkOr(OutcomeRefused));
+
+    public Task<HistorySummary?> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+        MeasureAsync(
+            "get_history_summary",
+            () => inner.GetHistorySummary(gameId, version, ct),
+            summary => summary is null ? OutcomeMissing : OutcomeOk
+        );
+
+    public Task<IReadOnlySet<string>?> GetActorsForRange(
+        Guid gameId,
+        int lowerExclusiveVersion,
+        int upperInclusiveVersion,
+        CancellationToken ct = default
+    ) =>
+        MeasureAsync(
+            "get_actors_for_range",
+            () => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct),
+            actors => actors is null ? OutcomeMissing : OutcomeOk
+        );
 
     private static Func<StoredState<TState>?, string> OkOr(string nullOutcome) =>
         stored => stored is null ? nullOutcome : OutcomeOk;

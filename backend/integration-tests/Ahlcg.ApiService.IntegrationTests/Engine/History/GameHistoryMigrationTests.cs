@@ -75,8 +75,8 @@ public class GameHistoryMigrationTests(AppFixture fixture)
         );
 
         Assert.Equal(PostgresErrorCodes.RaiseException, exception.SqlState);
-        var retained = await db.GameSteps.AsNoTracking().SingleAsync(s => s.Version == 1);
-        Assert.Equal(["turn", "phase"], retained.Checkpoints);
+        var retained = await db.GameSteps.Where(s => s.Version == 1).Select(s => s.Checkpoints).SingleAsync();
+        Assert.Equal(["turn", "phase"], retained);
         await db.Database.ExecuteSqlRawAsync(
             """UPDATE "GameSteps" SET "Checkpoints" = ARRAY[]::text[] WHERE "Version" = 1"""
         );
