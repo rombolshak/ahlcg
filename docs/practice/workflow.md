@@ -19,7 +19,7 @@ From the repository root, prepare a clone with PowerShell:
 
 ```powershell
 dotnet tool restore
-dotnet tool install --global Aspire.Cli --version 13.4.6
+dotnet tool install --global Aspire.Cli --version 17.0.0
 aspire certs trust --non-interactive
 npm --prefix frontend ci
 npm --prefix e2e ci

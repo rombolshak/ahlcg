@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Dotnet;
 using Aspire.Hosting.Postgres;
 using Aspire.Hosting.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +47,9 @@ public abstract class AppFixtureBase : IAsyncLifetime
         }
 
         var apiService = builder
-            .CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(r => r.Name == "apiservice"))
+            .CreateResourceBuilder(
+                builder.Resources.OfType<DotnetProjectResource>().Single(r => r.Name == "apiservice")
+            )
             .WithEnvironment("Tablier__GameHistoryCleanup__Interval", "30.00:00:00");
         if (AccountCreationPermitLimit is { } permitLimit)
         {
