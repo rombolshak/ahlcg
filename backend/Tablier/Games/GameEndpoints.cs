@@ -306,7 +306,10 @@ public static partial class GameEndpoints
         }
     }
 
+    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
+#pragma warning disable S107
     internal static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
+#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db,
@@ -615,9 +618,12 @@ public static partial class GameEndpoints
         await hub.Clients.Clients([.. connectionIds]).Exit(ExitReason.NotAMember);
     }
 
+    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
+#pragma warning disable S107
     internal static async Task<
         Results<NoContent, ValidationProblem, ProblemHttpResult, UnauthorizedHttpResult>
     > SetMembersCount(
+#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         ApplicationDbContext db,

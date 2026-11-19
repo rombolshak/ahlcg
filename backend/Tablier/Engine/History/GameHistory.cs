@@ -387,11 +387,11 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     {
         var stepVersion = await _db.GameSteps.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
         var snapshotVersion = await _db.GameSnapshots.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
-        var head =
-            stepVersion is null ? snapshotVersion
-            : snapshotVersion is null ? stepVersion
-            : Math.Max(stepVersion.Value, snapshotVersion.Value);
-        return (head, snapshotVersion);
+        if (stepVersion is null)
+            return (snapshotVersion, snapshotVersion);
+        if (snapshotVersion is null)
+            return (stepVersion, snapshotVersion);
+        return (Math.Max(stepVersion.Value, snapshotVersion.Value), snapshotVersion);
     }
 
     private static GameSnapshot CreateSnapshot(Guid gameId, int version, TState state) =>

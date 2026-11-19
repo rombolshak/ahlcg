@@ -11,7 +11,7 @@ public readonly record struct GameConnection(Guid GameId, string UserId, string 
 #pragma warning restore MA0048
 
 [Authorize]
-internal partial class GameHub : Hub<IGameClient>
+internal sealed partial class GameHub : Hub<IGameClient>
 {
     private readonly GameSessions _sessions;
     private readonly ApplicationDbContext _db;

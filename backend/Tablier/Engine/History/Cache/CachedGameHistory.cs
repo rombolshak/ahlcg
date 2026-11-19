@@ -81,7 +81,7 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
             .HashGetAsync(CacheKeys.GetGameStateKey(gameId), [VersionField, StateField]);
         if (fields[0].HasValue && fields[1].HasValue)
         {
-            var state = JsonSerializer.Deserialize<TState>((string)fields[1]!);
+            var state = JsonSerializer.Deserialize<TState>(fields[1].ToString());
             if (state is not null)
             {
                 _metrics.RecordCacheLookup(hit: true);

@@ -151,7 +151,7 @@ public class GameHistoryTests(AppFixture fixture)
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
 
-        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.IsType<JsonException>(error.InnerException, exactMatch: false);
         Assert.Equal($"Patch at version 1 of game {run.GameId} is malformed.", error.Message);
     }
 
@@ -166,7 +166,7 @@ public class GameHistoryTests(AppFixture fixture)
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadAt(run.GameId, 0));
 
-        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.IsType<JsonException>(error.InnerException, exactMatch: false);
         Assert.Equal($"Snapshot state at version 0 of game {run.GameId} is malformed.", error.Message);
     }
 
@@ -182,7 +182,7 @@ public class GameHistoryTests(AppFixture fixture)
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.LoadCurrent(run.GameId));
 
-        Assert.IsAssignableFrom<JsonException>(error.InnerException);
+        Assert.IsType<JsonException>(error.InnerException, exactMatch: false);
         Assert.Equal($"Reconstructed state at version 1 of game {run.GameId} is malformed.", error.Message);
     }
 
