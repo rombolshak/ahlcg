@@ -132,9 +132,8 @@ public class LiveHistoryTests(AppFixture fixture)
         Assert.Empty(summary.GetTargets());
         Assert.Null(await run.History.LoadAt(run.GameId, 4, CancellationToken.None));
         Assert.Null(await run.History.Rewind(run.GameId, 6, 2));
-        var actors = Assert.IsAssignableFrom<IReadOnlySet<string>>(
-            await run.History.GetActorsForRange(run.GameId, 0, 6)
-        );
+        var actors = await run.History.GetActorsForRange(run.GameId, 0, 6);
+        Assert.NotNull(actors);
         Assert.Equal("a", Assert.Single(actors));
         if (clean && baseline)
             Assert.False(await db.GameSteps.AnyAsync(s => s.GameId == run.GameId && s.Version == 2));
@@ -154,9 +153,12 @@ public class LiveHistoryTests(AppFixture fixture)
         var afterAbandoned = await run.History.GetActorsForRange(run.GameId, 3, 5);
         var equal = await run.History.GetActorsForRange(run.GameId, 5, 5);
 
-        Assert.True(Assert.IsAssignableFrom<IReadOnlySet<string>>(all).SetEquals(["a", "b"]));
-        Assert.True(Assert.IsAssignableFrom<IReadOnlySet<string>>(afterAbandoned).SetEquals(["a", "b"]));
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlySet<string>>(equal));
+        Assert.NotNull(all);
+        Assert.True(all.SetEquals(["a", "b"]));
+        Assert.NotNull(afterAbandoned);
+        Assert.True(afterAbandoned.SetEquals(["a", "b"]));
+        Assert.NotNull(equal);
+        Assert.Empty(equal);
         Assert.Null(await run.History.GetActorsForRange(run.GameId, -1, 5));
         Assert.Null(await run.History.GetActorsForRange(run.GameId, 5, 4));
     }
@@ -194,9 +196,9 @@ public class LiveHistoryTests(AppFixture fixture)
         Assert.Equal(0, summary.BarrierVersion);
         Assert.Empty(summary.Checkpoints);
         Assert.Null(summary.LastAction);
-        Assert.Empty(
-            Assert.IsAssignableFrom<IReadOnlySet<string>>(await run.History.GetActorsForRange(run.GameId, 0, 0))
-        );
+        var actors = await run.History.GetActorsForRange(run.GameId, 0, 0);
+        Assert.NotNull(actors);
+        Assert.Empty(actors);
         Assert.Null(await run.History.GetHistorySummary(run.GameId, 1));
         Assert.Null(await run.History.GetHistorySummary(Guid.NewGuid(), 0));
     }
@@ -209,7 +211,8 @@ public class LiveHistoryTests(AppFixture fixture)
 
         var actors = await run.History.GetActorsForRange(run.GameId, 0, 1);
 
-        Assert.Empty(Assert.IsAssignableFrom<IReadOnlySet<string>>(actors));
+        Assert.NotNull(actors);
+        Assert.Empty(actors);
         await using var db = fixture.CreateDbContext();
         await db.GameSnapshots.Where(s => s.GameId == run.GameId).ExecuteDeleteAsync();
         Assert.Null(await run.History.GetHistorySummary(run.GameId, 1));

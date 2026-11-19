@@ -17,7 +17,7 @@ public class HistorySummaryTests
 
         Assert.Equal(1, summary.Checkpoints["turn"]);
         Assert.Equal(2, summary.Checkpoints["Turn"]);
-        var exposed = Assert.IsAssignableFrom<IDictionary<string, int>>(summary.Checkpoints);
+        var exposed = Assert.IsType<IDictionary<string, int>>(summary.Checkpoints, exactMatch: false);
         Assert.Throws<NotSupportedException>(() => exposed["turn"] = 3);
         Assert.Equal(1, summary.ApplyStep(new StepResult<int>(4)).Checkpoints["turn"]);
     }
@@ -25,7 +25,7 @@ public class HistorySummaryTests
     [Fact]
     public void Empty_CheckpointMutationAttempt_LeavesSharedSummaryEmpty()
     {
-        var checkpoints = Assert.IsAssignableFrom<IDictionary<string, int>>(HistorySummary.Empty.Checkpoints);
+        var checkpoints = Assert.IsType<IDictionary<string, int>>(HistorySummary.Empty.Checkpoints, exactMatch: false);
 
         Assert.Throws<NotSupportedException>(() => checkpoints["turn"] = 1);
 

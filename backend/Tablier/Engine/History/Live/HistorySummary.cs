@@ -24,16 +24,12 @@ public sealed record HistorySummary(
         var version = GameVersion + 1;
         var isBarrier = step.IsBaseline || step.IsIrreversible;
         var checkpoints = isBarrier ? [] : new Dictionary<string, int>(Checkpoints);
-        foreach (var tag in step.Checkpoints)
-        {
-            if (!string.Equals(tag, "undo", StringComparison.Ordinal))
-                checkpoints[tag] = version;
-        }
+        foreach (var tag in step.Checkpoints.Where(tag => !string.Equals(tag, "undo", StringComparison.Ordinal)))
+            checkpoints[tag] = version;
 
-        var action =
-            choice is { } playerChoice ? new HistoryAction(version, version, playerChoice.Member, playerChoice.Action)
-            : isBarrier ? null
-            : LastAction;
+        var action = isBarrier ? null : LastAction;
+        if (choice is { } playerChoice)
+            action = new HistoryAction(version, version, playerChoice.Member, playerChoice.Action);
         return new HistorySummary(version, isBarrier ? version : BarrierVersion, checkpoints, action);
     }
 
@@ -64,8 +60,12 @@ public sealed record HistorySummary(
     public IReadOnlyDictionary<string, int> GetTargets()
     {
         var targets = Checkpoints
-            .Where(pair => pair.Value > 0 && pair.Value < GameVersion && pair.Value >= BarrierVersion)
-            .Where(pair => !string.Equals(pair.Key, "undo", StringComparison.Ordinal))
+            .Where(pair =>
+                pair.Value > 0
+                && pair.Value < GameVersion
+                && pair.Value >= BarrierVersion
+                && !string.Equals(pair.Key, "undo", StringComparison.Ordinal)
+            )
             .ToDictionary();
         if (LastAction is { SourceVersion: > 1 } action && action.SourceVersion - 1 >= BarrierVersion)
             targets["undo"] = action.SourceVersion - 1;
