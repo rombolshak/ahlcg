@@ -27,7 +27,8 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         string? checkpoint = null,
         bool irreversible = false,
         bool baseline = false
-    ) => new(CreateState(n), checkpoint, irreversible, baseline);
+    ) =>
+        new(CreateState(n), checkpoint is null ? [] : [checkpoint], IsIrreversible: irreversible, IsBaseline: baseline);
 
     private sealed class Played(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
     {
@@ -151,7 +152,7 @@ public class GameHistoryCleanupTests(AppFixture fixture)
 
         Assert.NotNull(result);
         Assert.Equal([3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
-        Assert.Equal([3, 5], await game.GetSnapshotVersionsAsync());
+        Assert.Equal([3, 6], await game.GetSnapshotVersionsAsync());
     }
 
     [Fact]
@@ -226,7 +227,7 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         Assert.Null(result);
         Assert.Equal("LogCleanupSkippedLockHeld", logger.LatestRecord.Id.Name);
         Assert.Equal([1, 2, 3, 4, 5, 6, 7], await game.GetStepVersionsAsync());
-        Assert.Equal([0, 3, 4, 5], await game.GetSnapshotVersionsAsync());
+        Assert.Equal([0, 3, 4, 5, 6], await game.GetSnapshotVersionsAsync());
     }
 
     [Fact]

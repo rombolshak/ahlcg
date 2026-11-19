@@ -56,7 +56,7 @@ public sealed class FixtureStateProcessor : IGameStateProcessor<FixtureState>
             Random = random,
         };
 
-        return new StepResult<FixtureState>(next, "reveal", IsIrreversible: true);
+        return new StepResult<FixtureState>(next, ["reveal"], IsIrreversible: true);
     }
 
     public StepResult<FixtureState> AddMember(FixtureState state, string member)
