@@ -11,6 +11,6 @@
 
     <ItemGroup>
         <PackageReference Include="CSharpier.MSBuild" Version="1.4.0" PrivateAssets="all" />
-        <PackageReference Include="Meziantou.Analyzer" Version="3.0.325" PrivateAssets="all" />
+        <PackageReference Include="Meziantou.Analyzer" Version="3.0.341" PrivateAssets="all" />
     </ItemGroup>
 </Project>
