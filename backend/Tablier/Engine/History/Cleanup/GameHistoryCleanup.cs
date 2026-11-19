@@ -8,9 +8,17 @@ namespace Tablier.Engine.History.Cleanup;
 public sealed record GameHistoryCleanupResult(int Games, long Steps, long Snapshots);
 #pragma warning restore MA0048
 
-public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<GameHistoryCleanup> logger)
-    : IGameHistoryCleanup
+internal sealed partial class GameHistoryCleanup : IGameHistoryCleanup
 {
+    private readonly ApplicationDbContext _db;
+    private readonly ILogger<GameHistoryCleanup> _logger;
+
+    public GameHistoryCleanup(ApplicationDbContext db, ILogger<GameHistoryCleanup> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
+
     public const long LockKey = 6770001;
 
     private const string DeleteUnreachableSql = """
@@ -35,15 +43,18 @@ public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<
                (SELECT COUNT(*) FROM deleted_snapshots) AS "Snapshots"
         """;
 
-    public async Task<GameHistoryCleanupResult?> Run(CancellationToken ct)
+    public async Task<GameHistoryCleanupResult?> Run(CancellationToken ct = default)
     {
-        var result = await db
+        var result = await _db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+                await using var transaction = await _db.Database.BeginTransactionAsync(
+                    IsolationLevel.ReadCommitted,
+                    ct
+                );
                 var locked = (
-                    await db
+                    await _db
                         .Database.SqlQuery<bool>($"""SELECT pg_try_advisory_xact_lock({LockKey}) AS "Value" """)
                         .ToListAsync(ct)
                 ).Single();
@@ -54,7 +65,7 @@ public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<
                 }
 
                 var deleted = (
-                    await db.Database.SqlQueryRaw<GameHistoryCleanupResult>(DeleteUnreachableSql).ToListAsync(ct)
+                    await _db.Database.SqlQueryRaw<GameHistoryCleanupResult>(DeleteUnreachableSql).ToListAsync(ct)
                 ).Single();
                 await transaction.CommitAsync(ct);
                 return deleted;
@@ -62,15 +73,15 @@ public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<
 
         if (result is null)
         {
-            LogCleanupSkippedLockHeld(logger);
+            LogCleanupSkippedLockHeld(_logger);
         }
         else if (result.Steps == 0 && result.Snapshots == 0)
         {
-            LogCleanupFoundNothing(logger);
+            LogCleanupFoundNothing(_logger);
         }
         else
         {
-            LogCleanupDeleted(logger, result.Games, result.Steps, result.Snapshots);
+            LogCleanupDeleted(_logger, result.Games, result.Steps, result.Snapshots);
         }
 
         return result;

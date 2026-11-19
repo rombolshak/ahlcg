@@ -1,6 +1,7 @@
 namespace Tablier.Engine.History.Cleanup;
 
-public interface IGameHistoryCleanup
+internal interface IGameHistoryCleanup
 {
-    Task<GameHistoryCleanupResult?> Run(CancellationToken ct);
+    /// <summary>Returns null when another cleanup holds the advisory lock; the next tick may retry.</summary>
+    Task<GameHistoryCleanupResult?> Run(CancellationToken ct = default);
 }

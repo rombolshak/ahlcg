@@ -3,29 +3,37 @@ using Tablier.Telemetry;
 
 namespace Tablier.Engine.History;
 
-public sealed class MeteredGameHistory<TState>(
-    [FromKeyedServices("cached")] IGameHistory<TState> inner,
-    TablierMetrics metrics,
-    TimeProvider time
-) : MeteredDecorator(metrics.HistoryDuration, time), IGameHistory<TState>
+internal sealed class MeteredGameHistory<TState> : MeteredDecorator, IGameHistory<TState>
     where TState : ISchemaVersioned
 {
-    public Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct) =>
-        MeasureAsync("begin", () => inner.Begin(gameId, initial, ct), OkOr(OutcomeRefused));
+    private readonly IGameHistory<TState> _inner;
+
+    public MeteredGameHistory(
+        [FromKeyedServices("cached")] IGameHistory<TState> inner,
+        TablierMetrics metrics,
+        TimeProvider time
+    )
+        : base(metrics.HistoryDuration, time)
+    {
+        _inner = inner;
+    }
+
+    public Task<StoredState<TState>> Begin(Guid gameId, TState initial, CancellationToken ct = default) =>
+        MeasureAsync("begin", () => _inner.Begin(gameId, initial, ct), _ => OutcomeOk);
 
     public Task<StoredState<TState>?> Append(
         Guid gameId,
         StoredState<TState> previous,
         StepResult<TState> result,
         PlayerChoice? choice,
-        CancellationToken ct
-    ) => MeasureAsync("append", () => inner.Append(gameId, previous, result, choice, ct), OkOr(OutcomeRefused));
+        CancellationToken ct = default
+    ) => MeasureAsync("append", () => _inner.Append(gameId, previous, result, choice, ct), OkOr(OutcomeRefused));
 
-    public Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct) =>
-        MeasureAsync("load_current", () => inner.LoadCurrent(gameId, ct), OkOr(OutcomeMissing));
+    public Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default) =>
+        MeasureAsync("load_current", () => _inner.LoadCurrent(gameId, ct), OkOr(OutcomeMissing));
 
-    public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
-        MeasureAsync("load_at", () => inner.LoadAt(gameId, version, ct), OkOr(OutcomeMissing));
+    public Task<StoredState<TState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
+        MeasureAsync("load_at", () => _inner.LoadAt(gameId, version, ct), _ => OutcomeOk);
 
     private static Func<StoredState<TState>?, string> OkOr(string nullOutcome) =>
         stored => stored is null ? nullOutcome : OutcomeOk;
