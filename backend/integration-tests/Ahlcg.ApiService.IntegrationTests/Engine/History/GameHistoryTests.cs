@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers;
 using Ahlcg.ApiService.IntegrationTests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -13,95 +14,19 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
 [Collection(AppCollection.Name)]
 public class GameHistoryTests(AppFixture fixture)
 {
-    private sealed record TestState(int Counter, string Label, bool Flag) : ISchemaVersioned
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MaxValue)]
+    public async Task Append_PreviousVersionCannotBeIncremented_ThrowsArgumentOutOfRange(int version)
     {
-        public int SchemaVersion => 1;
-    }
+        var history = CreateHistory();
+        var previous = new StoredState<TestState>(version, CreateState(0));
 
-    private static TestState CreateState(int n) =>
-        new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"), n % 2 == 0);
+        var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            history.Append(Guid.NewGuid(), previous, CreateStep(1), choice: null)
+        );
 
-    private static StepResult<TestState> CreateStep(
-        int n,
-        string? checkpoint = null,
-        bool irreversible = false,
-        bool baseline = false
-    ) =>
-        new(CreateState(n), checkpoint is null ? [] : [checkpoint], IsIrreversible: irreversible, IsBaseline: baseline);
-
-    private sealed class Run(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
-    {
-        public Guid GameId { get; } = gameId;
-        public GameHistory<TestState> History { get; } = history;
-        public StoredState<TestState> Current { get; private set; } = new(0, CreateState(0));
-
-        public async Task AppendAsync(StepResult<TestState> step, PlayerChoice? choice = null)
-        {
-            var appended = await History.Append(GameId, Current, step, choice, CancellationToken.None);
-            Current = Assert.IsType<StoredState<TestState>>(appended);
-        }
-
-        public async Task AppendPlainAsync(int from, int to)
-        {
-            for (var n = from; n <= to; n++)
-                await AppendAsync(CreateStep(n));
-        }
-
-        public async Task<StoredState<TestState>?> LoadCurrentAsync() =>
-            await History.LoadCurrent(GameId, CancellationToken.None);
-
-        public Task<List<int>> GetStepVersionsAsync() =>
-            reader
-                .GameSteps.AsNoTracking()
-                .Where(s => s.GameId == GameId)
-                .OrderBy(s => s.Version)
-                .Select(s => s.Version)
-                .ToListAsync();
-
-        public Task<List<int>> GetSnapshotVersionsAsync() =>
-            reader
-                .GameSnapshots.AsNoTracking()
-                .Where(s => s.GameId == GameId)
-                .OrderBy(s => s.Version)
-                .Select(s => s.Version)
-                .ToListAsync();
-    }
-
-    private GameHistory<TestState> CreateHistory(ILogger<GameHistory<TestState>>? logger = null) =>
-        new(fixture.CreateDbContext(), logger ?? NullLogger<GameHistory<TestState>>.Instance);
-
-    private async Task<Run> BeginRunAsync(ILogger<GameHistory<TestState>>? logger = null)
-    {
-        var gameId = await SeedGameAsync();
-        var history = CreateHistory(logger);
-        var begun = await history.Begin(gameId, CreateState(0), CancellationToken.None);
-        Assert.Equal(new StoredState<TestState>(0, CreateState(0)), begun);
-        return new Run(history, gameId, fixture.CreateDbContext());
-    }
-
-    private async Task<Guid> SeedGameAsync()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var user = new AppUser
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserName = Guid.NewGuid().ToString(),
-            IsAnonymous = true,
-        };
-        var game = new Game
-        {
-            OwnerId = user.Id,
-            IdempotencyKey = Guid.NewGuid().ToString(),
-            Configuration = JsonDocument.Parse("{}"),
-            CreatedAt = now,
-            LastPlayedAt = now,
-        };
-
-        await using var db = fixture.CreateDbContext();
-        db.Users.Add(user);
-        db.Games.Add(game);
-        await db.SaveChangesAsync();
-        return game.Id;
+        Assert.Equal("previous", error.ParamName);
     }
 
     [Fact]
@@ -289,7 +214,7 @@ public class GameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadAt_UnbegunGame_Throws()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             CreateHistory().LoadAt(gameId, 0, CancellationToken.None)
@@ -418,7 +343,7 @@ public class GameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Append_GameNotBegun_Throws()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var history = new GameHistory<TestState>(
             fixture.CreateDbContext(),
             NullLogger<GameHistory<TestState>>.Instance
@@ -570,7 +495,7 @@ public class GameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task LoadCurrent_GameNotBegun_IsRefused()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         var history = new GameHistory<TestState>(
             fixture.CreateDbContext(),
             NullLogger<GameHistory<TestState>>.Instance
@@ -640,7 +565,7 @@ public class GameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Begin_ConcurrentlyOnSameGame_ReturnsTheWinningStateToEveryCaller()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
 
         var results = await Task.WhenAll(
             Enumerable.Range(1, 8).Select(n => CreateHistory().Begin(gameId, CreateState(n), CancellationToken.None))
@@ -665,7 +590,7 @@ public class GameHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Append_AfterWrite_LeavesContextTrackingNothing()
     {
-        var gameId = await SeedGameAsync();
+        var gameId = await SeedGame();
         await using var db = fixture.CreateDbContext();
         var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
         var begun = await history.Begin(gameId, CreateState(0), CancellationToken.None);
@@ -674,4 +599,67 @@ public class GameHistoryTests(AppFixture fixture)
 
         Assert.Empty(db.ChangeTracker.Entries());
     }
+
+    private static TestState CreateState(int n) =>
+        new(n, string.Create(CultureInfo.InvariantCulture, $"state {n}"), n % 2 == 0);
+
+    private static StepResult<TestState> CreateStep(
+        int n,
+        string? checkpoint = null,
+        bool irreversible = false,
+        bool baseline = false
+    ) =>
+        new(CreateState(n), checkpoint is null ? [] : [checkpoint], IsIrreversible: irreversible, IsBaseline: baseline);
+
+    private sealed class Run(GameHistory<TestState> history, Guid gameId, ApplicationDbContext reader)
+    {
+        public Guid GameId { get; } = gameId;
+        public GameHistory<TestState> History { get; } = history;
+        public StoredState<TestState> Current { get; private set; } = new(0, CreateState(0));
+
+        public async Task AppendAsync(StepResult<TestState> step, PlayerChoice? choice = null)
+        {
+            var appended = await History.Append(GameId, Current, step, choice, CancellationToken.None);
+            Current = Assert.IsType<StoredState<TestState>>(appended);
+        }
+
+        public async Task AppendPlainAsync(int from, int to)
+        {
+            for (var n = from; n <= to; n++)
+                await AppendAsync(CreateStep(n));
+        }
+
+        public async Task<StoredState<TestState>?> LoadCurrentAsync() =>
+            await History.LoadCurrent(GameId, CancellationToken.None);
+
+        public Task<List<int>> GetStepVersionsAsync() =>
+            reader
+                .GameSteps.AsNoTracking()
+                .Where(s => s.GameId == GameId)
+                .OrderBy(s => s.Version)
+                .Select(s => s.Version)
+                .ToListAsync();
+
+        public Task<List<int>> GetSnapshotVersionsAsync() =>
+            reader
+                .GameSnapshots.AsNoTracking()
+                .Where(s => s.GameId == GameId)
+                .OrderBy(s => s.Version)
+                .Select(s => s.Version)
+                .ToListAsync();
+    }
+
+    private GameHistory<TestState> CreateHistory(ILogger<GameHistory<TestState>>? logger = null) =>
+        HistoryTestSetup.CreateHistory(fixture, logger);
+
+    private async Task<Run> BeginRunAsync(ILogger<GameHistory<TestState>>? logger = null)
+    {
+        var gameId = await SeedGame();
+        var history = CreateHistory(logger);
+        var begun = await history.Begin(gameId, CreateState(0), CancellationToken.None);
+        Assert.Equal(new StoredState<TestState>(0, CreateState(0)), begun);
+        return new Run(history, gameId, fixture.CreateDbContext());
+    }
+
+    private Task<Guid> SeedGame() => HistoryTestSetup.SeedGame(fixture);
 }
