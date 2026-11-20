@@ -284,10 +284,10 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
 
     public async Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default)
     {
-        (List<LiveFact> Facts, int BarrierVersion) liveFacts;
+        LiveHistory liveHistory;
         try
         {
-            liveFacts = await ReadLiveFacts(gameId, version, lower: version, versionParameterName: nameof(version), ct);
+            liveHistory = await ReadLiveHistory(gameId, version, versionParameterName: nameof(version), ct);
         }
         catch (Exception e) when (e is ArgumentOutOfRangeException or InvalidOperationException)
         {
@@ -299,7 +299,7 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
             );
             throw;
         }
-        var summary = LiveHistory.GetSummary(version, liveFacts.BarrierVersion, liveFacts.Facts);
+        var summary = liveHistory.GetSummary(version);
         LogSummaryRead(_logger, gameId, version, "loaded");
         return summary;
     }
@@ -329,13 +329,12 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
                 "The lower cutoff must be nonnegative and cannot exceed the upper version."
             );
         }
-        (List<LiveFact> Facts, int BarrierVersion) liveFacts;
+        LiveHistory liveHistory;
         try
         {
-            liveFacts = await ReadLiveFacts(
+            liveHistory = await ReadLiveHistory(
                 gameId,
                 version: upperInclusiveVersion,
-                lower: lowerExclusiveVersion,
                 versionParameterName: nameof(upperInclusiveVersion),
                 ct
             );
@@ -351,18 +350,17 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
             );
             throw;
         }
-        var actors = liveFacts
-            .Facts.Where(fact => string.Equals(fact.Kind, "actor", StringComparison.Ordinal))
-            .Select(fact => fact.Actor!)
-            .ToHashSet();
+        var actors = liveHistory
+            .Steps.Where(step => step.Version > lowerExclusiveVersion && step.Actor is not null)
+            .Select(step => step.Actor!)
+            .ToHashSet(StringComparer.Ordinal);
         LogActorsRead(_logger, gameId, lowerExclusiveVersion, upperInclusiveVersion, "loaded");
         return actors;
     }
 
-    private async Task<(List<LiveFact> Facts, int BarrierVersion)> ReadLiveFacts(
+    private async Task<LiveHistory> ReadLiveHistory(
         Guid gameId,
         int version,
-        int lower,
         string versionParameterName,
         CancellationToken ct = default
     )
@@ -383,13 +381,12 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
                     IsolationLevel.RepeatableRead,
                     ct
                 );
-                var facts = await LiveHistory.Read(_db, gameId, head: version, lower, target: -1, ct);
-                var anchor = LiveHistory.GetAnchor(facts);
-                if (anchor.Valid)
-                    return (Facts: facts, Anchor: anchor, Head: (int?)version);
-                return (Facts: facts, Anchor: anchor, Head: (await FindHistoryVersions(gameId, ct)).Head);
+                var liveHistory = await LiveHistory.Read(_db, gameId, head: version, ct);
+                if (liveHistory.IsValid)
+                    return (History: liveHistory, Head: (int?)version);
+                return (History: liveHistory, Head: (await FindHistoryVersions(gameId, ct)).Head);
             });
-        if (!result.Anchor.Valid)
+        if (!result.History.IsValid)
         {
             if (result.Head is not null && version > result.Head)
                 throw new ArgumentOutOfRangeException(
@@ -401,7 +398,7 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
                 "Live facts require initialized history, a required snapshot, and complete physical and live chains at the requested version."
             );
         }
-        return (result.Facts, result.Anchor.BarrierVersion);
+        return result.History;
     }
 
     private async Task<string?> CheckRewind(
@@ -416,19 +413,10 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
             return "not_begun";
         if (head != expectedVersion)
             return "stale_head";
-        var facts = await LiveHistory.Read(
-            _db,
-            gameId,
-            head: expectedVersion,
-            lower: expectedVersion,
-            target: targetVersion,
-            ct
-        );
-        if (!LiveHistory.GetAnchor(facts).Valid)
+        var liveHistory = await LiveHistory.Read(_db, gameId, head: expectedVersion, ct);
+        if (!liveHistory.IsValid)
             return "invalid_history";
-        return facts.Exists(fact => string.Equals(fact.Kind, "target", StringComparison.Ordinal))
-            ? null
-            : "target_not_live";
+        return liveHistory.Steps.Any(step => step.Version == targetVersion) ? null : "target_not_live";
     }
 
     private async Task<StoredState<TState>?> WriteRewind(

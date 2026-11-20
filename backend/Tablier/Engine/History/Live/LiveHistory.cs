@@ -1,96 +1,111 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using Tablier.Data;
 
 namespace Tablier.Engine.History.Live;
 
-internal static class LiveHistory
+internal sealed record LiveHistory(bool IsValid, int BarrierVersion, IReadOnlyList<LiveStep> Steps)
 {
-    internal const string ReadSql = """
-        WITH RECURSIVE bounds AS (
-          SELECT COALESCE(MAX("Version") FILTER (WHERE "IsBaseline" OR "IsIrreversible"), 0) AS barrier
-          FROM "GameSteps" WHERE "GameId" = @gameId),
-        snapshot AS (
-          SELECT MAX("Version") AS version FROM "GameSnapshots"
-          WHERE "GameId" = @gameId AND "Version" <= @head),
-        walk AS (
-          SELECT "Version", "RestoredVersion", "Actor", "Action", "Checkpoints", "IsBaseline", "IsIrreversible"
-          FROM "GameSteps" WHERE "GameId" = @gameId AND "Version" = @head
-          UNION ALL
-          SELECT s."Version", s."RestoredVersion", s."Actor", s."Action", s."Checkpoints", s."IsBaseline", s."IsIrreversible"
-          FROM walk w JOIN "GameSteps" s ON s."GameId" = @gameId
-            AND s."Version" = COALESCE(w."RestoredVersion", w."Version") - 1
-          WHERE NOT w."IsBaseline" AND NOT w."IsIrreversible"
-            AND COALESCE(w."RestoredVersion", w."Version") > 0
-            AND COALESCE(w."RestoredVersion", w."Version") <= w."Version"),
-        validity AS (
-          SELECT @head >= 0 AND b.barrier <= @head AND p.version IS NOT NULL
-            AND (SELECT COUNT(*) FROM "GameSteps" WHERE "GameId" = @gameId
-                 AND "Version" > p.version AND "Version" <= @head) = @head - p.version
-            AND (@head = 0 OR EXISTS (SELECT FROM walk))
-            AND (@head = 0 OR EXISTS (
-              SELECT FROM walk terminal WHERE terminal."Version" = b.barrier
-                OR (b.barrier = 0 AND COALESCE(terminal."RestoredVersion", terminal."Version") = 1)))
-            AND NOT EXISTS (
-              SELECT FROM walk w WHERE COALESCE(w."RestoredVersion", w."Version") <= 0
-                OR COALESCE(w."RestoredVersion", w."Version") > w."Version"
-                OR w."Version" < b.barrier) AS valid,
-            b.barrier
-          FROM bounds b CROSS JOIN snapshot p),
-        checkpoints AS (
-          SELECT DISTINCT ON (tag) tag, w."Version" FROM walk w
-          CROSS JOIN LATERAL unnest(w."Checkpoints") AS tag
-          WHERE tag <> 'undo' ORDER BY tag, w."Version" DESC),
-        last_action AS (
-          SELECT * FROM walk WHERE "Actor" IS NOT NULL AND "Action" IS NOT NULL
-          ORDER BY "Version" DESC LIMIT 1)
-        SELECT 'anchor' AS "Kind", v.valid AS "Valid", v.barrier AS "BarrierVersion",
-          0 AS "Version", 0 AS "SourceVersion", NULL::text AS "Actor", NULL::text AS "Action", NULL::text AS "Tag"
-        FROM validity v
-        UNION ALL
-        SELECT 'checkpoint', true, 0, "Version", 0, NULL, NULL, tag FROM checkpoints
-        UNION ALL
-        SELECT 'action', true, 0, "Version", COALESCE("RestoredVersion", "Version"), "Actor", "Action", NULL FROM last_action
-        UNION ALL
-        SELECT DISTINCT 'actor', true, 0, 0, 0, "Actor", NULL, NULL FROM walk
-        WHERE "Version" > @lower AND "Version" <= @head AND "Actor" IS NOT NULL
-        UNION ALL
-        SELECT 'target', true, 0, "Version", 0, NULL, NULL, NULL FROM walk WHERE "Version" = @target
+    private const string ReadBoundsSql = """
+        SELECT COALESCE((SELECT MAX("Version") FROM "GameSteps"
+          WHERE "GameId" = @gameId AND ("IsBaseline" OR "IsIrreversible")), 0),
+          (SELECT MAX("Version") FROM "GameSnapshots" WHERE "GameId" = @gameId AND "Version" <= @head)
         """;
 
-    internal static async Task<List<LiveFact>> Read(
+    private const string ReadStepsSql = """
+        SELECT "Version", "RestoredVersion", "Actor", "Action", "Checkpoints", "IsBaseline", "IsIrreversible"
+        FROM "GameSteps"
+        WHERE "GameId" = @gameId AND "Version" <= @head
+          AND "Version" >= LEAST(
+            COALESCE((SELECT MAX("Version") FROM "GameSteps"
+              WHERE "GameId" = @gameId AND ("IsBaseline" OR "IsIrreversible")), 0),
+            (SELECT MAX("Version") FROM "GameSnapshots" WHERE "GameId" = @gameId AND "Version" <= @head))
+        """;
+
+    internal static async Task<LiveHistory> Read(
         ApplicationDbContext db,
         Guid gameId,
         int head,
-        int lower,
-        int target,
         CancellationToken ct = default
-    ) =>
-        await db
-            .Database.SqlQueryRaw<LiveFact>(
-                ReadSql,
-                new NpgsqlParameter("gameId", gameId),
-                new NpgsqlParameter("head", head),
-                new NpgsqlParameter("lower", lower),
-                new NpgsqlParameter("target", target)
-            )
-            .ToListAsync(ct);
-
-    internal static LiveFact GetAnchor(List<LiveFact> facts) =>
-        facts.Single(fact => string.Equals(fact.Kind, "anchor", StringComparison.Ordinal));
-
-    internal static HistorySummary GetSummary(int version, int barrierVersion, List<LiveFact> facts)
+    )
     {
-        var action = facts.FirstOrDefault(fact => string.Equals(fact.Kind, "action", StringComparison.Ordinal));
-        return new HistorySummary(
-            version,
-            barrierVersion,
-            facts
-                .Where(fact => string.Equals(fact.Kind, "checkpoint", StringComparison.Ordinal))
-                .ToDictionary(fact => fact.Tag!, fact => fact.Version),
-            action is null
-                ? null
-                : new HistoryAction(action.Version, action.SourceVersion, action.Actor!, action.Action!)
-        );
+        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
+        var transaction = db.Database.CurrentTransaction
+            ?? throw new InvalidOperationException("Live history reads require an active transaction.");
+        await using var batch = new NpgsqlBatch(connection, (NpgsqlTransaction)transaction.GetDbTransaction())
+        {
+            Timeout = db.Database.GetCommandTimeout() ?? connection.CommandTimeout,
+        };
+        foreach (var sql in new[] { ReadBoundsSql, ReadStepsSql })
+        {
+            var command = new NpgsqlBatchCommand(sql);
+            command.Parameters.Add(new NpgsqlParameter("gameId", gameId));
+            command.Parameters.Add(new NpgsqlParameter("head", head));
+            batch.BatchCommands.Add(command);
+        }
+
+        await using var reader = await batch.ExecuteReaderAsync(ct);
+        await reader.ReadAsync(ct);
+        var barrier = reader.GetInt32(0);
+        var snapshot = await reader.IsDBNullAsync(1, ct) ? (int?)null : reader.GetInt32(1);
+        await reader.NextResultAsync(ct);
+        var steps = new Dictionary<int, LiveStep>();
+        var physicalSteps = 0;
+        while (await reader.ReadAsync(ct))
+        {
+            var step = new LiveStep(
+                reader.GetInt32(0),
+                await reader.IsDBNullAsync(1, ct) ? null : reader.GetInt32(1),
+                await reader.IsDBNullAsync(2, ct) ? null : reader.GetString(2),
+                await reader.IsDBNullAsync(3, ct) ? null : reader.GetString(3),
+                await reader.GetFieldValueAsync<string[]>(4, ct),
+                reader.GetBoolean(5),
+                reader.GetBoolean(6)
+            );
+            steps.Add(step.Version, step);
+            if (step.Version > snapshot)
+                physicalSteps++;
+        }
+
+        if (head < 0 || barrier > head || snapshot is null || physicalSteps != head - snapshot)
+            return new LiveHistory(IsValid: false, barrier, Steps: []);
+        return Walk(head, barrier, steps);
+    }
+
+    internal HistorySummary GetSummary(int version)
+    {
+        var checkpoints = new Dictionary<string, int>(StringComparer.Ordinal);
+        HistoryAction? action = null;
+        foreach (var step in Steps)
+        {
+            foreach (var tag in step.Checkpoints)
+                if (!string.Equals(tag, "undo", StringComparison.Ordinal))
+                    checkpoints.TryAdd(tag, step.Version);
+            if (action is null && step.Actor is not null && step.Action is not null)
+                action = new HistoryAction(step.Version, step.RestoredVersion ?? step.Version, step.Actor, step.Action);
+        }
+        return new HistorySummary(version, BarrierVersion, checkpoints, action);
+    }
+
+    private static LiveHistory Walk(int head, int barrier, Dictionary<int, LiveStep> steps)
+    {
+        var liveSteps = new List<LiveStep>();
+        var version = head;
+        while (version > 0 && steps.TryGetValue(version, out var step))
+        {
+            var sourceVersion = step.RestoredVersion ?? step.Version;
+            if (sourceVersion <= 0 || sourceVersion > step.Version || step.Version < barrier)
+                break;
+            liveSteps.Add(step);
+            if (step.Version == barrier)
+                return new LiveHistory(IsValid: true, barrier, liveSteps);
+            if (barrier == 0 && sourceVersion == 1)
+                return new LiveHistory(IsValid: !steps.ContainsKey(0), barrier, liveSteps);
+            if (step.IsBaseline || step.IsIrreversible)
+                break;
+            version = sourceVersion - 1;
+        }
+        return new LiveHistory(IsValid: head == 0 && !steps.ContainsKey(0), barrier, liveSteps);
     }
 }

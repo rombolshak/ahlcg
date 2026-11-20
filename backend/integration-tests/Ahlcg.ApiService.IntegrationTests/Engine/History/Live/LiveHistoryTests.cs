@@ -1,8 +1,10 @@
+using System.Text.Json;
 using Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers;
 using Ahlcg.ApiService.IntegrationTests.Fixture;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Tablier.Contract;
+using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cleanup;
 using Tablier.Engine.History.Live;
@@ -164,6 +166,55 @@ public class LiveHistoryTests(AppFixture fixture)
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => run.History.GetActorsForRange(run.GameId, 5, 4));
     }
 
+    [Fact]
+    public async Task GetHistorySummary_LivePredecessorsBeforeLatestSnapshot_RemainAvailableForFactsAndRewind()
+    {
+        var run = await Begin();
+        await run.Append(1, actor: "early", checkpoints: ["early"]);
+        await run.Append(2, actor: "latest");
+        await run.Append(3, checkpoints: ["saved"]);
+        await run.Append(4);
+
+        var summary = await run.GetSummary();
+
+        Assert.Equal(1, summary.Checkpoints["early"]);
+        Assert.Equal(3, summary.Checkpoints["saved"]);
+        Assert.Equal(new HistoryAction(2, 2, "latest", "move"), summary.LastAction);
+        Assert.True((await run.History.GetActorsForRange(run.GameId, 0, 4)).SetEquals(["early", "latest"]));
+        await run.Rewind(1);
+        AssertState(CreateState(1), run.Head.State);
+        Assert.Equal(new HistoryAction(5, 1, "early", "move"), (await run.GetSummary()).LastAction);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetHistorySummary_SnapshotBeforeBarrier_RequiresPhysicalCoverageBelowBarrier(bool removePatch)
+    {
+        var run = await Begin();
+        await run.Append(1);
+        await run.Append(2, irreversible: true);
+        await run.Append(3);
+        await using var db = fixture.CreateDbContext();
+        await db.GameSnapshots.Where(s => s.GameId == run.GameId && s.Version == 2).ExecuteDeleteAsync();
+        if (removePatch)
+            await db.GameSteps.Where(s => s.GameId == run.GameId && s.Version == 1).ExecuteDeleteAsync();
+
+        if (removePatch)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.GetHistorySummary(run.GameId, 3));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.GetActorsForRange(run.GameId, 0, 3));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.Rewind(run.GameId, 3, 2));
+        }
+        else
+        {
+            Assert.Equal(2, (await run.GetSummary()).BarrierVersion);
+            Assert.Empty(await run.History.GetActorsForRange(run.GameId, 0, 3));
+            await run.Rewind(2);
+            AssertState(CreateState(2), run.Head.State);
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -203,6 +254,38 @@ public class LiveHistoryTests(AppFixture fixture)
         Assert.Empty(actors);
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => run.History.GetHistorySummary(run.GameId, 1));
         await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.GetHistorySummary(Guid.NewGuid(), 0));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public async Task GetHistorySummary_ReachableVersionZeroStep_IsRefused(int version)
+    {
+        var run = await Begin();
+        if (version > 0)
+        {
+            await run.Append(1);
+            await run.Append(2);
+        }
+        await using var db = fixture.CreateDbContext();
+        db.GameSteps.Add(
+            new GameStep
+            {
+                GameId = run.GameId,
+                Version = 0,
+                Patch = JsonDocument.Parse("[]"),
+            }
+        );
+        await db.SaveChangesAsync();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.GetHistorySummary(run.GameId, version));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            run.History.GetActorsForRange(run.GameId, 0, version)
+        );
+        AssertState(CreateState(version), (await run.History.LoadAt(run.GameId, version)).State);
+        if (version > 0)
+            await Assert.ThrowsAsync<InvalidOperationException>(() => run.History.Rewind(run.GameId, version, 1));
     }
 
     [Fact]
