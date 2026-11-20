@@ -79,9 +79,8 @@ internal sealed record LiveHistory(bool IsValid, int BarrierVersion, IReadOnlyLi
         HistoryAction? action = null;
         foreach (var step in Steps)
         {
-            foreach (var tag in step.Checkpoints)
-                if (!string.Equals(tag, "undo", StringComparison.Ordinal))
-                    checkpoints.TryAdd(tag, step.Version);
+            foreach (var tag in step.Checkpoints.Where(tag => !string.Equals(tag, "undo", StringComparison.Ordinal)))
+                checkpoints.TryAdd(tag, step.Version);
             if (action is null && step.Actor is not null && step.Action is not null)
                 action = new HistoryAction(step.Version, step.RestoredVersion ?? step.Version, step.Actor, step.Action);
         }
