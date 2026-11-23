@@ -19,7 +19,7 @@ public sealed record HistorySummary(
 
     public static HistorySummary Empty { get; } = new(0, 0, ImmutableDictionary<string, int>.Empty, LastAction: null);
 
-    public HistorySummary ApplyStep<TState>(StepResult<TState> step, PlayerChoice? choice = null)
+    internal HistorySummary ApplyStep<TState>(StepResult<TState> step, PlayerChoice? choice = null)
     {
         var version = GameVersion + 1;
         var isBarrier = step.IsBaseline || step.IsIrreversible;

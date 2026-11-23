@@ -64,6 +64,34 @@ public class GameHistoryTests(AppFixture fixture)
         Assert.Equal("A stored step patch cannot be null.", error.Message);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Load_PatchCannotApply_ThrowsWithPackageError(bool historical)
+    {
+        var run = await BeginRunAsync();
+        await run.AppendPlainAsync(1, 1);
+        await using var db = fixture.CreateDbContext();
+        var step = await db.GameSteps.SingleAsync(s => s.GameId == run.GameId && s.Version == 1);
+        step.Patch = JsonDocument.Parse("""[{"op":"replace","path":"/missing-diagnostic-path","value":1}]""");
+        await db.SaveChangesAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            if (historical)
+                await run.History.LoadAt(run.GameId, 1);
+            else
+                await run.History.LoadCurrent(run.GameId);
+        });
+
+        Assert.Contains(
+            $"Step 1 of game {run.GameId} does not apply to the state before it:",
+            error.Message,
+            StringComparison.Ordinal
+        );
+        Assert.Contains("/missing-diagnostic-path", error.Message, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task LoadCurrent_MalformedStoredPatch_ThrowsWithPatchContextAndInnerException()
     {

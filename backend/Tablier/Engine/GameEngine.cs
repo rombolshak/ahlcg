@@ -13,44 +13,28 @@ using Tablier.Games;
 namespace Tablier.Engine;
 
 #pragma warning disable S2436
-internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameEngine
+internal sealed partial class GameEngine<TConfiguration, TState, TView>(
+    GameRules<TConfiguration, TState, TView> rules,
+    IGameHistory<TState> history,
+    ApplicationDbContext db,
+    IHubContext<GameHub, IGameClient> hub,
+    IOptions<JsonHubProtocolOptions> hubOptions,
+    ILogger<GameEngine<TConfiguration, TState, TView>> logger
+) : IGameEngine
 #pragma warning restore S2436
     where TState : ISchemaVersioned
 {
-    private readonly GameRules<TConfiguration, TState, TView> _rules;
-    private readonly IGameHistory<TState> _history;
-    private readonly ApplicationDbContext _db;
-    private readonly IHubContext<GameHub, IGameClient> _hub;
-    private readonly ILogger<GameEngine<TConfiguration, TState, TView>> _logger;
-
-    public GameEngine(
-        GameRules<TConfiguration, TState, TView> rules,
-        IGameHistory<TState> history,
-        ApplicationDbContext db,
-        IHubContext<GameHub, IGameClient> hub,
-        IOptions<JsonHubProtocolOptions> hubOptions,
-        ILogger<GameEngine<TConfiguration, TState, TView>> logger
-    )
-    {
-        _rules = rules;
-        _history = history;
-        _db = db;
-        _hub = hub;
-        _logger = logger;
-        _wireOptions = hubOptions.Value.PayloadSerializerOptions;
-    }
-
     private const int MaxAttempts = 3;
 
     private readonly record struct MembershipChange(string Member, bool Joined);
 
-    private readonly JsonSerializerOptions _wireOptions;
+    private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
     public bool IsConfigurationValid(JsonElement configuration)
     {
         var isValid = TryRead(configuration) is not null;
         if (!isValid)
-            LogConfigurationRefusedUnreadable(_logger);
+            LogConfigurationRefusedUnreadable(logger);
         return isValid;
     }
 
@@ -59,14 +43,14 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
         var read = TryRead(configuration);
         if (read is null)
         {
-            LogBeginRefusedUnreadableConfiguration(_logger, gameId);
+            LogBeginRefusedUnreadableConfiguration(logger, gameId);
             throw new ArgumentException("Configuration is not readable.", nameof(configuration));
         }
 
         var seed = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong)));
-        var initial = _rules.Configurator.InitializeGame(read, [owner], seed);
+        var initial = rules.Configurator.InitializeGame(read, [owner], seed);
 
-        await _history.Begin(gameId, initial, ct);
+        await history.Begin(gameId, initial, ct);
     }
 
     public async Task SyncMembers(Guid gameId, CancellationToken ct = default)
@@ -79,31 +63,31 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
             var change = await FindNextMembershipChange(gameId, stored.State, ct);
             if (change is null)
             {
-                LogNothingToSync(_logger, gameId);
+                LogNothingToSync(logger, gameId);
                 return;
             }
 
             var result = change.Value.Joined
-                ? _rules.Processor.AddMember(stored.State, change.Value.Member)
-                : _rules.Processor.RemoveMember(stored.State, change.Value.Member);
-            var committed = await _history.Append(gameId, stored, result, choice: null, ct);
+                ? rules.Processor.AddMember(stored.State, change.Value.Member)
+                : rules.Processor.RemoveMember(stored.State, change.Value.Member);
+            var committed = await history.Append(gameId, stored, result, choice: null, ct);
             if (committed is null)
             {
                 conflicts++;
-                LogAppendConflict(_logger, gameId, stored.Version, conflicts);
+                LogAppendConflict(logger, gameId, stored.Version, conflicts);
                 continue;
             }
 
             conflicts = 0;
             if (change.Value.Joined)
-                LogMemberAddedBySync(_logger, gameId, change.Value.Member, committed.Version);
+                LogMemberAddedBySync(logger, gameId, change.Value.Member, committed.Version);
             else
-                LogMemberRemovedBySync(_logger, gameId, change.Value.Member, committed.Version);
+                LogMemberRemovedBySync(logger, gameId, change.Value.Member, committed.Version);
             await SendStateChanged(gameId, stored, committed);
             await AdvanceNonPlayerSteps(gameId, committed, ct);
         }
 
-        LogSyncAbandoned(_logger, gameId, MaxAttempts);
+        LogSyncAbandoned(logger, gameId, MaxAttempts);
     }
 
     public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct = default)
@@ -113,16 +97,16 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
         var stored = await LoadRequiredHistory(gameId, ct);
 
         var state = stored.State;
-        if (!_rules.Processor.GetMembers(state).Contains(member))
+        if (!rules.Processor.GetMembers(state).Contains(member))
         {
-            LogStateRefusedNotAMember(_logger, gameId, member);
+            LogStateRefusedNotAMember(logger, gameId, member);
             return null;
         }
 
         var view = ProjectView(state, member);
         var actions = ComputeActionPatches(state, member, view);
 
-        LogStateServed(_logger, gameId, member, stored.Version, actions.Count);
+        LogStateServed(logger, gameId, member, stored.Version, actions.Count);
         return new MemberState(stored.Version, view, actions);
     }
 
@@ -134,34 +118,34 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
 
             if (!IsOffered(stored.State, member, action))
             {
-                LogActionRejectedNotOffered(_logger, gameId, member, action);
+                LogActionRejectedNotOffered(logger, gameId, member, action);
                 return null;
             }
 
-            var result = _rules.Processor.Execute(stored.State, member, action);
-            var committed = await _history.Append(gameId, stored, result, new PlayerChoice(member, action), ct);
+            var result = rules.Processor.Execute(stored.State, member, action);
+            var committed = await history.Append(gameId, stored, result, new PlayerChoice(member, action), ct);
             if (committed is null)
             {
-                LogAppendConflict(_logger, gameId, stored.Version, attempt);
+                LogAppendConflict(logger, gameId, stored.Version, attempt);
                 continue;
             }
 
-            LogStepCommitted(_logger, gameId, member, committed.Version);
+            LogStepCommitted(logger, gameId, member, committed.Version);
             await SendStateChanged(gameId, stored, committed);
             await AdvanceNonPlayerSteps(gameId, committed, ct);
             return committed.Version;
         }
 
-        LogActionAbandoned(_logger, gameId, member, MaxAttempts);
+        LogActionAbandoned(logger, gameId, member, MaxAttempts);
         return null;
     }
 
     private async Task<StoredState<TState>> LoadRequiredHistory(Guid gameId, CancellationToken ct = default)
     {
-        var stored = await _history.LoadCurrent(gameId, ct);
+        var stored = await history.LoadCurrent(gameId, ct);
         if (stored is null)
         {
-            LogStateRefusedNoHistory(_logger, gameId);
+            LogStateRefusedNoHistory(logger, gameId);
             throw new InvalidOperationException("The game engine requires initialized history.");
         }
 
@@ -174,12 +158,12 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
         CancellationToken ct = default
     )
     {
-        var rows = await _db
+        var rows = await db
             .GameMembers.AsNoTracking()
             .Where(m => m.GameId == gameId)
             .Select(m => m.UserId)
             .ToListAsync(ct);
-        var inState = _rules.Processor.GetMembers(state);
+        var inState = rules.Processor.GetMembers(state);
 
         var joiner = rows.Where(row => !inState.Contains(row)).Order(StringComparer.Ordinal).FirstOrDefault();
         if (joiner is not null)
@@ -190,30 +174,24 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
     }
 
     private bool IsOffered(TState state, string member, string action) =>
-        _rules.Processor.GetMembersActions(state).TryGetValue(member, out var offered) && offered.Contains(action);
+        rules.Processor.GetMembersActions(state).TryGetValue(member, out var offered) && offered.Contains(action);
 
     private bool HoldsActions(TState state) =>
-        _rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
+        rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
 
     private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct = default)
     {
         var current = committed;
         while (!HoldsActions(current.State))
         {
-            var next = await _history.Append(
-                gameId,
-                current,
-                _rules.Processor.Advance(current.State),
-                choice: null,
-                ct
-            );
+            var next = await history.Append(gameId, current, rules.Processor.Advance(current.State), choice: null, ct);
             if (next is null)
             {
-                LogAdvanceConflict(_logger, gameId, current.Version);
+                LogAdvanceConflict(logger, gameId, current.Version);
                 return;
             }
 
-            LogAdvanced(_logger, gameId, next.Version);
+            LogAdvanced(logger, gameId, next.Version);
             await SendStateChanged(gameId, current, next);
             current = next;
         }
@@ -221,12 +199,12 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
 
     private async Task SendStateChanged(Guid gameId, StoredState<TState> previous, StoredState<TState> next)
     {
-        var previousMembers = _rules.Processor.GetMembers(previous.State);
-        foreach (var member in _rules.Processor.GetMembers(next.State))
+        var previousMembers = rules.Processor.GetMembers(previous.State);
+        foreach (var member in rules.Processor.GetMembers(next.State))
         {
             if (!previousMembers.Contains(member))
             {
-                LogChangeSkippedForJoiner(_logger, gameId, member, next.Version);
+                LogChangeSkippedForJoiner(logger, gameId, member, next.Version);
                 continue;
             }
 
@@ -237,22 +215,22 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView> : IGameE
                 before.CreatePatch(after),
                 ComputeActionPatches(next.State, member, after)
             );
-            await _hub.Clients.Group(GameHub.GetMemberGroupName(gameId, member)).StateChanged(change);
+            await hub.Clients.Group(GameHub.GetMemberGroupName(gameId, member)).StateChanged(change);
         }
     }
 
     private Dictionary<string, JsonPatch> ComputeActionPatches(TState state, string member, JsonNode view)
     {
-        var offered = _rules.Processor.GetMembersActions(state).GetValueOrDefault(member) ?? new HashSet<string>();
+        var offered = rules.Processor.GetMembersActions(state).GetValueOrDefault(member) ?? new HashSet<string>();
         return offered.ToDictionary(
             action => action,
-            action => view.CreatePatch(ProjectView(_rules.Processor.Execute(state, member, action).State, member)),
+            action => view.CreatePatch(ProjectView(rules.Processor.Execute(state, member, action).State, member)),
             StringComparer.Ordinal
         );
     }
 
     private JsonNode ProjectView(TState state, string member) =>
-        JsonSerializer.SerializeToNode(_rules.Projector.GetMemberView(state, member), _wireOptions)
+        JsonSerializer.SerializeToNode(rules.Projector.GetMemberView(state, member), _wireOptions)
         ?? throw new InvalidOperationException("A view cannot be null.");
 
     private static TConfiguration? TryRead(JsonElement configuration)
