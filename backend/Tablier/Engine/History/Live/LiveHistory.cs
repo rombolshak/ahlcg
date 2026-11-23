@@ -44,8 +44,11 @@ internal sealed record LiveHistory(bool IsValid, int BarrierVersion, IReadOnlyLi
                 step.IsBaseline || step.IsIrreversible
             ))
             .ToDictionaryAsync(step => step.Version, ct);
-        if (steps.Values.Count(step => step.Version > snapshot.Value) != head - snapshot.Value)
-            return new LiveHistory(IsValid: false, barrier, Steps: []);
+        for (var version = snapshot.Value; version < head; version++)
+        {
+            if (!steps.ContainsKey(version + 1))
+                return new LiveHistory(IsValid: false, barrier, Steps: []);
+        }
         return Walk(head, barrier, steps);
     }
 

@@ -125,7 +125,10 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         for (var n = 1; n <= steps; n++)
         {
             var isBaseline = n % 7 == 0;
-            await game.Append(CreateStep(n, checkpoint: n % 5 == 0 ? "c" : null, baseline: isBaseline));
+            await game.Append(
+                CreateStep(n, checkpoint: n % 5 == 0 ? "c" : null, baseline: isBaseline),
+                ct: CancellationToken.None
+            );
             if (isBaseline)
                 latestBaseline = n;
         }
@@ -134,7 +137,10 @@ public class GameHistoryCleanupTests(AppFixture fixture)
         await Task.WhenAll(cleaners);
         await CreateCleanup().Run(CancellationToken.None);
 
-        Assert.Equal(Enumerable.Range(latestBaseline, steps - latestBaseline + 1), await game.GetStepVersions());
+        Assert.Equal(
+            Enumerable.Range(latestBaseline, steps - latestBaseline + 1),
+            await game.GetStepVersions(CancellationToken.None)
+        );
         var history = new GameHistory<TestState>(
             fixture.CreateDbContext(),
             NullLogger<GameHistory<TestState>>.Instance
