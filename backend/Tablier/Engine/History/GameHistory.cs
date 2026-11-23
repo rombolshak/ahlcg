@@ -11,9 +11,9 @@ using Tablier.Data;
 namespace Tablier.Engine.History;
 
 #pragma warning disable MA0048
-public sealed record StoredState<TState>(int Version, TState State);
+internal sealed record StoredState<TState>(int Version, TState State);
 
-public readonly record struct PlayerChoice(string Member, string Action);
+internal readonly record struct PlayerChoice(string Member, string Action);
 
 internal sealed class GameHistoryConflictException(Guid gameId, int version)
     : InvalidOperationException("Begin requires game history at version zero.")
@@ -23,30 +23,22 @@ internal sealed class GameHistoryConflictException(Guid gameId, int version)
 }
 #pragma warning restore MA0048
 
-internal sealed partial class GameHistory<TState> : IGameHistory<TState>
+internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
+    : IGameHistory<TState>
     where TState : ISchemaVersioned
 {
-    private readonly ApplicationDbContext _db;
-    private readonly ILogger<GameHistory<TState>> _logger;
-
-    public GameHistory(ApplicationDbContext db, ILogger<GameHistory<TState>> logger)
-    {
-        _db = db;
-        _logger = logger;
-    }
-
     public async Task<StoredState<TState>> Begin(Guid gameId, TState initial, CancellationToken ct = default)
     {
-        var outcome = await _db
+        var outcome = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                _db.ChangeTracker.Clear();
+                db.ChangeTracker.Clear();
                 var existing = await ReadBeginning(gameId, ct);
                 if (existing.Head is not null)
                     return (existing.Stored, existing.Head, Created: false);
 
-                _db.GameSnapshots.Add(CreateSnapshot(gameId, 0, initial));
+                db.GameSnapshots.Add(CreateSnapshot(gameId, 0, initial));
                 if (await TrySave(ct))
                     return (
                         Stored: (StoredState<TState>?)new StoredState<TState>(0, initial),
@@ -61,14 +53,14 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
             });
         if (outcome.Head != 0)
         {
-            LogBeginRefusedAdvanced(_logger, gameId, outcome.Head!.Value);
+            LogBeginRefusedAdvanced(logger, gameId, outcome.Head!.Value);
             throw new GameHistoryConflictException(gameId, outcome.Head.Value);
         }
 
         if (outcome.Created)
-            LogHistoryBegun(_logger, gameId);
+            LogHistoryBegun(logger, gameId);
         else
-            LogBeginReplayed(_logger, gameId);
+            LogBeginReplayed(logger, gameId);
         return outcome.Stored!;
     }
 
@@ -82,60 +74,42 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     {
         if (result.Checkpoints.Contains("undo", StringComparer.Ordinal))
         {
-            LogAppendRefusedReservedCheckpoint(_logger, gameId, previous.Version);
+            LogAppendRefusedReservedCheckpoint(logger, gameId, previous.Version);
             throw new InvalidOperationException("Rules cannot append the reserved undo checkpoint.");
         }
 
         var writesSnapshot = result.Checkpoints.Count > 0 || result.IsBaseline || result.IsIrreversible;
-        var appended = await _db
+        var appended = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(() => TryAppend(gameId, previous, result, choice, writesSnapshot, ct));
-        if (appended.MissingHistory)
-        {
-            LogAppendRefusedNotBegun(_logger, gameId, previous.Version);
-            throw new InvalidOperationException("Appending requires initialized game history.");
-        }
-
-        if (!appended.Appended)
-        {
-            if (appended.Concurrent)
-                LogAppendRefusedConcurrent(_logger, gameId, previous.Version);
-            else
-                LogAppendRefusedStale(_logger, gameId, previous.Version, appended.Head!.Value);
+        if (!appended)
             return null;
-        }
-
-        LogStepAppended(_logger, gameId, previous.Version + 1);
-        if (writesSnapshot)
-        {
-            LogSnapshotWritten(_logger, gameId, previous.Version + 1);
-        }
 
         return new StoredState<TState>(previous.Version + 1, result.State);
     }
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
     {
-        var history = await _db
+        var history = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await _db.Database.BeginTransactionAsync(
+                await using var transaction = await db.Database.BeginTransactionAsync(
                     IsolationLevel.RepeatableRead,
                     ct
                 );
-                var snapshot = await _db
+                var snapshot = await db
                     .GameSnapshots.AsNoTracking()
                     .Where(s => s.GameId == gameId)
                     .OrderByDescending(s => s.Version)
                     .FirstOrDefaultAsync(ct);
                 if (snapshot is null)
                 {
-                    var hasSteps = await _db.GameSteps.AnyAsync(s => s.GameId == gameId, ct);
+                    var hasSteps = await db.GameSteps.AnyAsync(s => s.GameId == gameId, ct);
                     return (History: (LoadedHistory?)null, HasOrphanSteps: hasSteps);
                 }
 
-                var steps = await _db
+                var steps = await db
                     .GameSteps.AsNoTracking()
                     .Where(s => s.GameId == gameId && s.Version > snapshot.Version)
                     .OrderBy(s => s.Version)
@@ -145,13 +119,13 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
 
         if (history.HasOrphanSteps)
         {
-            LogLoadRefusedNoSnapshot(_logger, gameId);
+            LogLoadRefusedNoSnapshot(logger, gameId);
             throw new InvalidOperationException("Persisted game steps have no required snapshot.");
         }
 
         if (history.History is null)
         {
-            LogLoadRefusedNotBegun(_logger, gameId);
+            LogLoadRefusedNotBegun(logger, gameId);
             return null;
         }
 
@@ -162,50 +136,25 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     {
         if (version < 0)
         {
-            LogLoadAtRefusedInvalidVersion(_logger, gameId, version);
+            LogLoadAtRefusedInvalidVersion(logger, gameId, version);
             throw new ArgumentOutOfRangeException(nameof(version), version, "The version cannot be negative.");
         }
-        var history = await _db
+        var history = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await _db.Database.BeginTransactionAsync(
+                await using var transaction = await db.Database.BeginTransactionAsync(
                     IsolationLevel.RepeatableRead,
                     ct
                 );
                 return await ReadHistoryAt(gameId, version, ct);
             });
-        switch (history.Refusal)
-        {
-            case LoadRefusal.NoHistory:
-                LogLoadRefusedNotBegun(_logger, gameId);
-                throw new InvalidOperationException("Historical reads require initialized game history.");
-            case LoadRefusal.InvalidVersion:
-                LogLoadAtRefusedInvalidVersion(_logger, gameId, version);
-                throw new ArgumentOutOfRangeException(
-                    nameof(version),
-                    version,
-                    "The version is beyond the stored head."
-                );
-            case LoadRefusal.BehindBarrier:
-                LogLoadAtRefusedBehindBarrier(_logger, gameId, version, history.Barrier!.Value);
-                throw new InvalidOperationException(
-                    "The requested version is behind the irreversible or baseline barrier."
-                );
-            case LoadRefusal.NoSnapshot:
-                LogLoadAtRefusedNoSnapshot(_logger, gameId, version);
-                throw new InvalidOperationException("The requested version has no required snapshot.");
-            case LoadRefusal.Gap:
-                LogLoadAtRefusedGap(_logger, gameId, version);
-                throw new InvalidOperationException("The patch chain to the requested version has a gap.");
-        }
-
-        var storedState = Reconstruct(gameId, history.History!);
-        LogStateLoadedAt(_logger, gameId, version);
+        var storedState = Reconstruct(gameId, history);
+        LogStateLoadedAt(logger, gameId, version);
         return storedState;
     }
 
-    private async Task<(bool Appended, int? Head, bool Concurrent, bool MissingHistory)> TryAppend(
+    private async Task<bool> TryAppend(
         Guid gameId,
         StoredState<TState> previous,
         StepResult<TState> result,
@@ -215,21 +164,23 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     )
     {
         var version = previous.Version + 1;
-        _db.ChangeTracker.Clear();
+        db.ChangeTracker.Clear();
         var versions = await FindHistoryVersions(gameId, ct);
         var head = versions.Head;
         if (head is null || versions.Snapshot is null)
         {
-            return (Appended: false, Head: head, Concurrent: false, MissingHistory: true);
+            LogAppendRefusedNotBegun(logger, gameId, previous.Version);
+            throw new InvalidOperationException("Appending requires initialized game history.");
         }
 
         if (head != previous.Version)
         {
-            return (Appended: false, Head: head, Concurrent: false, MissingHistory: false);
+            LogAppendRefusedStale(logger, gameId, previous.Version, head.Value);
+            return false;
         }
 
         var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(result.State));
-        _db.GameSteps.Add(
+        db.GameSteps.Add(
             new GameStep
             {
                 GameId = gameId,
@@ -243,10 +194,18 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
             }
         );
         if (writesSnapshot)
-            _db.GameSnapshots.Add(CreateSnapshot(gameId, version, result.State));
+            db.GameSnapshots.Add(CreateSnapshot(gameId, version, result.State));
 
-        var saved = await TrySave(ct);
-        return (Appended: saved, Head: head, Concurrent: !saved, MissingHistory: false);
+        if (!await TrySave(ct))
+        {
+            LogAppendRefusedConcurrent(logger, gameId, previous.Version);
+            return false;
+        }
+
+        LogStepAppended(logger, gameId, version);
+        if (writesSnapshot)
+            LogSnapshotWritten(logger, gameId, version);
+        return true;
     }
 
     private async Task<(StoredState<TState>? Stored, int? Head)> ReadBeginning(
@@ -254,50 +213,67 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
         CancellationToken ct = default
     )
     {
-        await using var transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
         var head = (await FindHistoryVersions(gameId, ct)).Head;
         if (head != 0)
             return (Stored: null, head);
 
-        var snapshot = await _db
+        var snapshot = await db
             .GameSnapshots.AsNoTracking()
             .SingleOrDefaultAsync(s => s.GameId == gameId && s.Version == 0, ct)
             ?? throw new InvalidOperationException("Version zero has no required snapshot.");
         return (new StoredState<TState>(0, Deserialize(gameId, snapshot.Version, snapshot.State)), head);
     }
 
-    private async Task<HistoryRead> ReadHistoryAt(Guid gameId, int version, CancellationToken ct = default)
+    private async Task<LoadedHistory> ReadHistoryAt(Guid gameId, int version, CancellationToken ct = default)
     {
         var head = (await FindHistoryVersions(gameId, ct)).Head;
         if (head is null)
-            return new HistoryRead(History: null, Barrier: null, LoadRefusal.NoHistory);
+        {
+            LogLoadRefusedNotBegun(logger, gameId);
+            throw new InvalidOperationException("Historical reads require initialized game history.");
+        }
         if (version > head)
-            return new HistoryRead(History: null, Barrier: null, LoadRefusal.InvalidVersion);
+        {
+            LogLoadAtRefusedInvalidVersion(logger, gameId, version);
+            throw new ArgumentOutOfRangeException(nameof(version), version, "The version is beyond the stored head.");
+        }
 
-        var barrier = await _db
+        var barrier = await db
             .GameSteps.Where(s => s.GameId == gameId && (s.IsIrreversible || s.IsBaseline))
             .MaxAsync(s => (int?)s.Version, ct);
         if (barrier > version)
-            return new HistoryRead(History: null, barrier, LoadRefusal.BehindBarrier);
+        {
+            LogLoadAtRefusedBehindBarrier(logger, gameId, version, barrier.Value);
+            throw new InvalidOperationException(
+                "The requested version is behind the irreversible or baseline barrier."
+            );
+        }
 
-        var snapshot = await _db
+        var snapshot = await db
             .GameSnapshots.AsNoTracking()
             .Where(s => s.GameId == gameId && s.Version <= version)
             .OrderByDescending(s => s.Version)
             .FirstOrDefaultAsync(ct);
         if (snapshot is null)
-            return new HistoryRead(History: null, Barrier: null, LoadRefusal.NoSnapshot);
+        {
+            LogLoadAtRefusedNoSnapshot(logger, gameId, version);
+            throw new InvalidOperationException("The requested version has no required snapshot.");
+        }
         if (snapshot.Version == version)
-            return new HistoryRead(new LoadedHistory(snapshot, []), Barrier: null, LoadRefusal.None);
+            return new LoadedHistory(snapshot, []);
 
-        var steps = await _db
+        var steps = await db
             .GameSteps.AsNoTracking()
             .Where(s => s.GameId == gameId && s.Version > snapshot.Version && s.Version <= version)
             .OrderBy(s => s.Version)
             .ToListAsync(ct);
         if (steps.Count != version - snapshot.Version)
-            return new HistoryRead(History: null, Barrier: null, LoadRefusal.Gap);
-        return new HistoryRead(new LoadedHistory(snapshot, steps), Barrier: null, LoadRefusal.None);
+        {
+            LogLoadAtRefusedGap(logger, gameId, version);
+            throw new InvalidOperationException("The patch chain to the requested version has a gap.");
+        }
+        return new LoadedHistory(snapshot, steps);
     }
 
     private StoredState<TState> Reconstruct(Guid gameId, LoadedHistory history)
@@ -316,24 +292,24 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
         {
             if (step.Version != expectedVersion++)
             {
-                LogLoadAtRefusedGap(_logger, gameId, step.Version);
+                LogLoadAtRefusedGap(logger, gameId, step.Version);
                 throw new InvalidOperationException("The stored patch chain has a gap.");
             }
             var patch = DeserializePatch(gameId, step);
             if (patch is null)
             {
-                LogLoadRefusedInvalidPatch(_logger, gameId, step.Version);
+                LogLoadRefusedInvalidPatch(logger, gameId, step.Version);
                 throw new InvalidOperationException("A stored step patch cannot be null.");
             }
 
             var result = patch.Apply(node);
             if (!result.IsSuccess)
             {
-                LogLoadRefusedInvalidPatch(_logger, gameId, step.Version);
+                LogLoadRefusedInvalidPatch(logger, gameId, step.Version);
                 throw new InvalidOperationException(
                     string.Create(
                         CultureInfo.InvariantCulture,
-                        $"Step {step.Version} of game {gameId} does not apply to the state before it."
+                        $"Step {step.Version} of game {gameId} does not apply to the state before it: {result.Error}"
                     )
                 );
             }
@@ -352,7 +328,7 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
         }
         catch (JsonException e)
         {
-            LogLoadRefusedInvalidPatch(_logger, gameId, step.Version);
+            LogLoadRefusedInvalidPatch(logger, gameId, step.Version);
             throw new InvalidOperationException(
                 string.Create(
                     CultureInfo.InvariantCulture,
@@ -367,7 +343,7 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     {
         try
         {
-            await _db.SaveChangesAsync(ct);
+            await db.SaveChangesAsync(ct);
             return true;
         }
         catch (DbUpdateException e) when (IsUniqueViolation(e))
@@ -376,7 +352,7 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
         }
         finally
         {
-            _db.ChangeTracker.Clear();
+            db.ChangeTracker.Clear();
         }
     }
 
@@ -385,8 +361,8 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
 
     private async Task<(int? Head, int? Snapshot)> FindHistoryVersions(Guid gameId, CancellationToken ct = default)
     {
-        var stepVersion = await _db.GameSteps.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
-        var snapshotVersion = await _db.GameSnapshots.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
+        var stepVersion = await db.GameSteps.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
+        var snapshotVersion = await db.GameSnapshots.Where(s => s.GameId == gameId).MaxAsync(s => (int?)s.Version, ct);
         if (stepVersion is null)
             return (snapshotVersion, snapshotVersion);
         if (snapshotVersion is null)
@@ -444,18 +420,6 @@ internal sealed partial class GameHistory<TState> : IGameHistory<TState>
     }
 
     private sealed record LoadedHistory(GameSnapshot Snapshot, List<GameStep> Steps);
-
-    private sealed record HistoryRead(LoadedHistory? History, int? Barrier, LoadRefusal Refusal);
-
-    private enum LoadRefusal
-    {
-        None,
-        NoHistory,
-        InvalidVersion,
-        BehindBarrier,
-        NoSnapshot,
-        Gap,
-    }
 
     [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: persisted steps have no snapshot")]
     private static partial void LogLoadRefusedNoSnapshot(ILogger logger, Guid gameId);

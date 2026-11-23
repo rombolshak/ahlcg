@@ -7,30 +7,15 @@ using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
 
-internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
+internal sealed partial class CachedGameHistory<TState>(
+    [FromKeyedServices("store")] IGameHistory<TState> inner,
+    IConnectionMultiplexer redis,
+    IOptions<GameHistoryCacheOptions> options,
+    TablierMetrics metrics,
+    ILogger<CachedGameHistory<TState>> logger
+) : IGameHistory<TState>
     where TState : ISchemaVersioned
 {
-    private readonly IGameHistory<TState> _inner;
-    private readonly IConnectionMultiplexer _redis;
-    private readonly IOptions<GameHistoryCacheOptions> _options;
-    private readonly TablierMetrics _metrics;
-    private readonly ILogger<CachedGameHistory<TState>> _logger;
-
-    public CachedGameHistory(
-        [FromKeyedServices("store")] IGameHistory<TState> inner,
-        IConnectionMultiplexer redis,
-        IOptions<GameHistoryCacheOptions> options,
-        TablierMetrics metrics,
-        ILogger<CachedGameHistory<TState>> logger
-    )
-    {
-        _inner = inner;
-        _redis = redis;
-        _options = options;
-        _metrics = metrics;
-        _logger = logger;
-    }
-
     private const string VersionField = "version";
     private const string StateField = "state";
 
@@ -46,7 +31,7 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
 
     public async Task<StoredState<TState>> Begin(Guid gameId, TState initial, CancellationToken ct = default)
     {
-        var begun = await _inner.Begin(gameId, initial, ct);
+        var begun = await inner.Begin(gameId, initial, ct);
         await WriteGuarded(gameId, begun);
 
         return begun;
@@ -60,23 +45,23 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
         CancellationToken ct = default
     )
     {
-        var appended = await _inner.Append(gameId, previous, result, choice, ct);
+        var appended = await inner.Append(gameId, previous, result, choice, ct);
         if (appended is not null)
         {
             await WriteGuarded(gameId, appended);
             return appended;
         }
 
-        var current = await _inner.LoadCurrent(gameId, ct);
+        var current = await inner.LoadCurrent(gameId, ct);
         if (current is not null && await WriteGuarded(gameId, current))
-            LogRefreshedAfterRefusedAppend(_logger, gameId, current.Version);
+            LogRefreshedAfterRefusedAppend(logger, gameId, current.Version);
 
         return null;
     }
 
     public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
     {
-        var fields = await _redis
+        var fields = await redis
             .GetDatabase()
             .HashGetAsync(CacheKeys.GetGameStateKey(gameId), [VersionField, StateField]);
         if (fields[0].HasValue && fields[1].HasValue)
@@ -84,13 +69,13 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
             var state = JsonSerializer.Deserialize<TState>(fields[1].ToString());
             if (state is not null)
             {
-                _metrics.RecordCacheLookup(hit: true);
+                metrics.RecordCacheLookup(hit: true);
                 return new StoredState<TState>((int)fields[0], state);
             }
         }
 
-        _metrics.RecordCacheLookup(hit: false);
-        var loaded = await _inner.LoadCurrent(gameId, ct);
+        metrics.RecordCacheLookup(hit: false);
+        var loaded = await inner.LoadCurrent(gameId, ct);
         if (loaded is not null)
             await WriteGuarded(gameId, loaded);
 
@@ -98,12 +83,12 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
     }
 
     public Task<StoredState<TState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
-        _inner.LoadAt(gameId, version, ct);
+        inner.LoadAt(gameId, version, ct);
 
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)
-            await _redis
+            await redis
                 .GetDatabase()
                 .ScriptEvaluateAsync(
                     GuardedWriteScript,
@@ -111,11 +96,11 @@ internal sealed partial class CachedGameHistory<TState> : IGameHistory<TState>
                     [
                         stored.Version.ToString(CultureInfo.InvariantCulture),
                         JsonSerializer.Serialize(stored.State),
-                        (long)_options.Value.Expiration.TotalMilliseconds,
+                        (long)options.Value.Expiration.TotalMilliseconds,
                     ]
                 );
         if (written == 0)
-            LogWriteSkippedNewerCached(_logger, gameId, stored.Version);
+            LogWriteSkippedNewerCached(logger, gameId, stored.Version);
 
         return written == 1;
     }
