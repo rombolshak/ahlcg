@@ -8,7 +8,7 @@ namespace Tablier.Engine.History.Cleanup;
 public sealed record GameHistoryCleanupResult(int Games, long Steps, long Snapshots);
 #pragma warning restore MA0048
 
-public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<GameHistoryCleanup> logger)
+internal sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<GameHistoryCleanup> logger)
     : IGameHistoryCleanup
 {
     public const long LockKey = 6770001;
@@ -35,7 +35,7 @@ public sealed partial class GameHistoryCleanup(ApplicationDbContext db, ILogger<
                (SELECT COUNT(*) FROM deleted_snapshots) AS "Snapshots"
         """;
 
-    public async Task<GameHistoryCleanupResult?> Run(CancellationToken ct)
+    public async Task<GameHistoryCleanupResult?> Run(CancellationToken ct = default)
     {
         var result = await db
             .Database.CreateExecutionStrategy()

@@ -13,7 +13,7 @@ using Tablier.Games;
 namespace Tablier.Engine;
 
 #pragma warning disable S2436
-public sealed partial class GameEngine<TConfiguration, TState, TView>(
+internal sealed partial class GameEngine<TConfiguration, TState, TView>(
     GameRules<TConfiguration, TState, TView> rules,
     IGameHistory<TState> history,
     ApplicationDbContext db,
@@ -30,31 +30,35 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
 
     private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
-    public bool IsConfigurationValid(JsonElement configuration) => TryRead(configuration) is not null;
-
-    public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct)
+    public bool IsConfigurationValid(JsonElement configuration)
     {
-        var read = TryRead(configuration)
-            ?? throw new ArgumentException("Configuration is not readable.", nameof(configuration));
+        var isValid = TryRead(configuration) is not null;
+        if (!isValid)
+            LogConfigurationRefusedUnreadable(logger);
+        return isValid;
+    }
+
+    public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default)
+    {
+        var read = TryRead(configuration);
+        if (read is null)
+        {
+            LogBeginRefusedUnreadableConfiguration(logger, gameId);
+            throw new ArgumentException("Configuration is not readable.", nameof(configuration));
+        }
 
         var seed = BitConverter.ToUInt64(RandomNumberGenerator.GetBytes(sizeof(ulong)));
         var initial = rules.Configurator.InitializeGame(read, [owner], seed);
 
-        var begun = await history.Begin(gameId, initial, ct);
-        if (begun is null)
-            LogBeginRefusedHistoryExists(logger, gameId);
-        else
-            LogHistoryBegun(logger, gameId);
+        await history.Begin(gameId, initial, ct);
     }
 
-    public async Task SyncMembers(Guid gameId, CancellationToken ct)
+    public async Task SyncMembers(Guid gameId, CancellationToken ct = default)
     {
         var conflicts = 0;
         while (conflicts < MaxAttempts)
         {
-            var stored = await history.LoadCurrent(gameId, ct);
-            if (stored is null)
-                return;
+            var stored = await LoadRequiredHistory(gameId, ct);
 
             var change = await FindNextMembershipChange(gameId, stored.State, ct);
             if (change is null)
@@ -86,16 +90,11 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         LogSyncAbandoned(logger, gameId, MaxAttempts);
     }
 
-    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct)
+    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct = default)
     {
         await SyncMembers(gameId, ct);
 
-        var stored = await history.LoadCurrent(gameId, ct);
-        if (stored is null)
-        {
-            LogStateRefusedNoHistory(logger, gameId);
-            return null;
-        }
+        var stored = await LoadRequiredHistory(gameId, ct);
 
         var state = stored.State;
         if (!rules.Processor.GetMembers(state).Contains(member))
@@ -111,13 +110,11 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         return new MemberState(stored.Version, view, actions);
     }
 
-    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct)
+    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct = default)
     {
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {
-            var stored = await history.LoadCurrent(gameId, ct);
-            if (stored is null)
-                return null;
+            var stored = await LoadRequiredHistory(gameId, ct);
 
             if (!IsOffered(stored.State, member, action))
             {
@@ -143,7 +140,23 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
         return null;
     }
 
-    private async Task<MembershipChange?> FindNextMembershipChange(Guid gameId, TState state, CancellationToken ct)
+    private async Task<StoredState<TState>> LoadRequiredHistory(Guid gameId, CancellationToken ct = default)
+    {
+        var stored = await history.LoadCurrent(gameId, ct);
+        if (stored is null)
+        {
+            LogStateRefusedNoHistory(logger, gameId);
+            throw new InvalidOperationException("The game engine requires initialized history.");
+        }
+
+        return stored;
+    }
+
+    private async Task<MembershipChange?> FindNextMembershipChange(
+        Guid gameId,
+        TState state,
+        CancellationToken ct = default
+    )
     {
         var rows = await db
             .GameMembers.AsNoTracking()
@@ -166,7 +179,7 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     private bool HoldsActions(TState state) =>
         rules.Processor.GetMembersActions(state).Values.Any(actions => actions.Count > 0);
 
-    private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct)
+    private async Task AdvanceNonPlayerSteps(Guid gameId, StoredState<TState> committed, CancellationToken ct = default)
     {
         var current = committed;
         while (!HoldsActions(current.State))
@@ -244,11 +257,11 @@ public sealed partial class GameEngine<TConfiguration, TState, TView>(
     [LoggerMessage(LogLevel.Warning, "Membership sync of game {GameId} was abandoned after {Attempts} conflicts")]
     private static partial void LogSyncAbandoned(ILogger logger, Guid gameId, int attempts);
 
-    [LoggerMessage(LogLevel.Information, "Game {GameId} began its history")]
-    private static partial void LogHistoryBegun(ILogger logger, Guid gameId);
+    [LoggerMessage(LogLevel.Information, "Configuration refused: it is not readable")]
+    private static partial void LogConfigurationRefusedUnreadable(ILogger logger);
 
-    [LoggerMessage(LogLevel.Debug, "Game {GameId} was not begun: its history already exists")]
-    private static partial void LogBeginRefusedHistoryExists(ILogger logger, Guid gameId);
+    [LoggerMessage(LogLevel.Information, "Begin refused for game {GameId}: configuration is not readable")]
+    private static partial void LogBeginRefusedUnreadableConfiguration(ILogger logger, Guid gameId);
 
     [LoggerMessage(LogLevel.Warning, "Game {GameId} has no history")]
     private static partial void LogStateRefusedNoHistory(ILogger logger, Guid gameId);

@@ -10,6 +10,7 @@ Read [architecture.md — What exists](architecture.md#what-exists) for the curr
 
 | Task | Read |
 | --- | --- |
+| Any code change or review, any language | [code-style.md](practice/code-style.md) — shared conventions for application code and tests |
 | Any code change, any language | [comments.md](practice/comments.md) — when a comment is warranted, which is rarely |
 | Add a file or folder, any language | [code-layout.md](practice/code-layout.md) — at most six entries per folder |
 | Any frontend code change | [frontend-conventions.md](frontend/frontend-conventions.md) — mandatory, then the relevant file below |

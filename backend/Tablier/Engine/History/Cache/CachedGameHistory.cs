@@ -7,7 +7,7 @@ using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
 
-public sealed partial class CachedGameHistory<TState>(
+internal sealed partial class CachedGameHistory<TState>(
     [FromKeyedServices("store")] IGameHistory<TState> inner,
     IConnectionMultiplexer redis,
     IOptions<GameHistoryCacheOptions> options,
@@ -29,11 +29,10 @@ public sealed partial class CachedGameHistory<TState>(
         return 1
         """;
 
-    public async Task<StoredState<TState>?> Begin(Guid gameId, TState initial, CancellationToken ct)
+    public async Task<StoredState<TState>> Begin(Guid gameId, TState initial, CancellationToken ct = default)
     {
         var begun = await inner.Begin(gameId, initial, ct);
-        if (begun is not null)
-            await WriteGuarded(gameId, begun);
+        await WriteGuarded(gameId, begun);
 
         return begun;
     }
@@ -43,7 +42,7 @@ public sealed partial class CachedGameHistory<TState>(
         StoredState<TState> previous,
         StepResult<TState> result,
         PlayerChoice? choice,
-        CancellationToken ct
+        CancellationToken ct = default
     )
     {
         var appended = await inner.Append(gameId, previous, result, choice, ct);
@@ -60,14 +59,14 @@ public sealed partial class CachedGameHistory<TState>(
         return null;
     }
 
-    public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct)
+    public async Task<StoredState<TState>?> LoadCurrent(Guid gameId, CancellationToken ct = default)
     {
         var fields = await redis
             .GetDatabase()
             .HashGetAsync(CacheKeys.GetGameStateKey(gameId), [VersionField, StateField]);
         if (fields[0].HasValue && fields[1].HasValue)
         {
-            var state = JsonSerializer.Deserialize<TState>((string)fields[1]!);
+            var state = JsonSerializer.Deserialize<TState>(fields[1].ToString());
             if (state is not null)
             {
                 metrics.RecordCacheLookup(hit: true);
@@ -83,7 +82,7 @@ public sealed partial class CachedGameHistory<TState>(
         return loaded;
     }
 
-    public Task<StoredState<TState>?> LoadAt(Guid gameId, int version, CancellationToken ct) =>
+    public Task<StoredState<TState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
         inner.LoadAt(gameId, version, ct);
 
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
