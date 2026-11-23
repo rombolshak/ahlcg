@@ -6,6 +6,5 @@ internal sealed record LiveStep(
     string? Actor,
     string? Action,
     string[] Checkpoints,
-    bool IsBaseline,
-    bool IsIrreversible
+    bool IsBarrier
 );

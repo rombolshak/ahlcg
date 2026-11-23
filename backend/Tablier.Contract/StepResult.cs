@@ -7,6 +7,8 @@ public sealed record StepResult<TState>(
     bool IsBaseline = false
 )
 {
+    public bool IsBarrier => IsBaseline || IsIrreversible;
+
     public StepResult(TState state)
         : this(state, []) { }
 }

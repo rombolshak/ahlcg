@@ -10,6 +10,24 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers;
 
 internal static class HistoryTestSetup
 {
+    internal static async Task<HistoryTestCase<TState>> Begin<TState>(
+        AppFixture fixture,
+        Func<int, TState> createState,
+        IGameHistory<TState>? history = null,
+        Guid? gameId = null,
+        CancellationToken ct = default
+    )
+        where TState : ISchemaVersioned
+    {
+        var seededGameId = gameId ?? await SeedGame(fixture, ct);
+        history ??= CreateHistory<TState>(fixture);
+        var initial = createState(0);
+        var head = await history.Begin(seededGameId, initial, ct);
+        Assert.Equal(0, head.Version);
+        Assert.Equal(JsonSerializer.Serialize(initial), JsonSerializer.Serialize(head.State));
+        return new HistoryTestCase<TState>(seededGameId, history, head, createState, fixture.CreateDbContext());
+    }
+
     internal static GameHistory<TState> CreateHistory<TState>(
         AppFixture fixture,
         ILogger<GameHistory<TState>>? logger = null

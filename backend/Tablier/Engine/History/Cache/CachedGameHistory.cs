@@ -93,10 +93,11 @@ internal sealed partial class CachedGameHistory<TState>(
         CancellationToken ct = default
     )
     {
-        StoredState<TState> restored;
         try
         {
-            restored = await inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+            var restored = await inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+            await WriteGuarded(gameId, restored);
+            return restored;
         }
         catch (GameHistoryRewindConflictException conflict)
         {
@@ -113,8 +114,6 @@ internal sealed partial class CachedGameHistory<TState>(
             }
             throw;
         }
-        await WriteGuarded(gameId, restored);
-        return restored;
     }
 
     public Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>

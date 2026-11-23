@@ -8,6 +8,8 @@ using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Engine.History.Cleanup;
 using Tablier.Engine.History.Live;
+using static Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers.LiveTestState;
+using TestState = Ahlcg.ApiService.IntegrationTests.Engine.History.Helpers.LiveTestState;
 
 namespace Ahlcg.ApiService.IntegrationTests.Engine.History.Live;
 
@@ -16,51 +18,10 @@ public class LiveHistoryTests(AppFixture fixture)
 {
     private static readonly string[] LegacyCheckpoints = ["undo", "phase"];
 
-    private sealed record TestState(int Counter, GameRandom Random, string[] Journal) : ISchemaVersioned
-    {
-        public int SchemaVersion => 1;
-    }
-
-    private sealed class Run(Guid gameId, GameHistory<TestState> history)
-    {
-        public Guid GameId { get; } = gameId;
-        public GameHistory<TestState> History { get; } = history;
-        public StoredState<TestState> Head { get; private set; } = new(0, CreateState(0));
-
-        public async Task Append(
-            int counter,
-            string? actor = null,
-            string[]? checkpoints = null,
-            bool baseline = false,
-            bool irreversible = false,
-            CancellationToken ct = default
-        ) =>
-            Head = Assert.IsType<StoredState<TestState>>(
-                await History.Append(
-                    GameId,
-                    Head,
-                    new StepResult<TestState>(
-                        CreateState(counter),
-                        checkpoints ?? [],
-                        IsIrreversible: irreversible,
-                        IsBaseline: baseline
-                    ),
-                    choice: actor is null ? null : new PlayerChoice(actor, "move"),
-                    ct
-                )
-            );
-
-        public async Task Rewind(int targetVersion, CancellationToken ct = default) =>
-            Head = Assert.IsType<StoredState<TestState>>(await History.Rewind(GameId, Head.Version, targetVersion, ct));
-
-        public async Task<HistorySummary> GetSummary(CancellationToken ct = default) =>
-            Assert.IsType<HistorySummary>(await History.GetHistorySummary(GameId, Head.Version, ct));
-    }
-
     [Fact]
     public async Task Rewind_NestedDestination_RestoresExactStateAndOriginalMetadataThroughActorlessTail()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, actor: "a", checkpoints: ["turn", "phase"]);
         var destination = run.Head.State;
@@ -109,7 +70,7 @@ public class LiveHistoryTests(AppFixture fixture)
         bool clean
     )
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, actor: "a", checkpoints: ["barrier"], baseline: baseline, irreversible: irreversible);
         await run.Append(3, actor: "b");
@@ -145,7 +106,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task GetActorsForRange_ReplacedRowsAndNumericCutoff_ReturnsOnlyNeutralLiveActors()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1, actor: "a");
         await run.Append(2, actor: "b");
         await run.Append(3, actor: "abandoned");
@@ -169,21 +130,23 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task GetHistorySummary_LivePredecessorsBeforeLatestSnapshot_RemainAvailableForFactsAndRewind()
     {
-        var run = await Begin();
-        await run.Append(1, actor: "early", checkpoints: ["early"]);
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
+        await run.Append(1, actor: "early", checkpoints: ["early", "repeated"]);
         await run.Append(2, actor: "latest");
-        await run.Append(3, checkpoints: ["saved"]);
+        await run.Append(3, checkpoints: ["saved", "repeated"]);
         await run.Append(4);
 
         var summary = await run.GetSummary();
 
         Assert.Equal(1, summary.Checkpoints["early"]);
         Assert.Equal(3, summary.Checkpoints["saved"]);
+        Assert.Equal(3, summary.Checkpoints["repeated"]);
         Assert.Equal(new HistoryAction(2, 2, "latest", "move"), summary.LastAction);
         Assert.True((await run.History.GetActorsForRange(run.GameId, 0, 4)).SetEquals(["early", "latest"]));
         await run.Rewind(1);
         AssertState(CreateState(1), run.Head.State);
         Assert.Equal(new HistoryAction(5, 1, "early", "move"), (await run.GetSummary()).LastAction);
+        Assert.Equal(5, (await run.GetSummary()).Checkpoints["repeated"]);
     }
 
     [Theory]
@@ -191,7 +154,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(true)]
     public async Task GetHistorySummary_SnapshotBeforeBarrier_RequiresPhysicalCoverageBelowBarrier(bool removePatch)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, irreversible: true);
         await run.Append(3);
@@ -220,7 +183,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(true)]
     public async Task GetHistorySummary_MissingPhysicalPatchOrLivePredecessor_IsRefused(bool exactSnapshot)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, checkpoints: exactSnapshot ? ["saved"] : []);
         await using var db = fixture.CreateDbContext();
@@ -241,7 +204,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task GetHistorySummary_VersionZeroSnapshot_ReturnsEmptySummaryAndActorRange()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
 
         var summary = await run.GetSummary();
 
@@ -261,7 +224,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(2)]
     public async Task GetHistorySummary_ReachableVersionZeroStep_IsRefused(int version)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         if (version > 0)
         {
             await run.Append(1);
@@ -291,7 +254,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task GetActorsForRange_ActorlessHistory_ReturnsEmptyUntilAnchorBecomesUnreconstructible()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
 
         var actors = await run.History.GetActorsForRange(run.GameId, 0, 1);
@@ -310,7 +273,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(4)]
     public async Task GetHistorySummary_InvalidLiveLink_IsRefusedEvenWithExactPhysicalSnapshot(int restoredVersion)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, baseline: true);
         await run.Append(3, checkpoints: ["saved"]);
@@ -328,7 +291,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Rewind_SkippedRowsNeededForPhysicalChain_SurviveCleanup()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1, baseline: true);
         await run.Append(2);
         await run.Append(3);
@@ -358,11 +321,11 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(true)]
     public async Task Rewind_CompetingAppendOrRewind_OnlyOneWriterCommitsAndStaleRetryIsRefused(bool competingRewind)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2);
         await run.Append(3);
-        var second = CreateHistory();
+        var second = HistoryTestSetup.CreateHistory<TestState>(fixture);
 
         var writers = await Task.WhenAll(
             TryRewind(run.History, run.GameId, 3, 1),
@@ -387,7 +350,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Rewind_LegacyReservedCheckpoint_CopiesRawMetadataWithoutOfferingConflictingTarget()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, actor: "a", checkpoints: ["phase"]);
         await using var db = fixture.CreateDbContext();
@@ -412,7 +375,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(4)]
     public async Task Rewind_NonEarlierPositiveTarget_IsRefused(int targetVersion)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2);
         await run.Append(3);
@@ -425,7 +388,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(int.MaxValue)]
     public async Task Rewind_HeadCannotBeIncremented_ThrowsArgumentOutOfRange(int expectedVersion)
     {
-        var history = CreateHistory();
+        var history = HistoryTestSetup.CreateHistory<TestState>(fixture);
 
         var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             history.Rewind(Guid.NewGuid(), expectedVersion, 1)
@@ -439,7 +402,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(1)]
     public async Task GetHistorySummary_VersionOutsideKnownHead_ThrowsArgumentOutOfRange(int version)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
 
         var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             run.History.GetHistorySummary(run.GameId, version)
@@ -455,7 +418,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [InlineData(0, 1, "upperInclusiveVersion")]
     public async Task GetActorsForRange_InvalidBounds_ThrowsForPublicParameter(int lower, int upper, string parameter)
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
 
         var error = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
             run.History.GetActorsForRange(run.GameId, lowerExclusiveVersion: lower, upperInclusiveVersion: upper)
@@ -467,7 +430,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task GetHistorySummary_MissingHeadStepWithExactSnapshot_ThrowsDespiteReconstructibleState()
     {
-        var run = await Begin();
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
         await run.Append(1);
         await run.Append(2, checkpoints: ["saved"]);
         await using var db = fixture.CreateDbContext();
@@ -483,7 +446,7 @@ public class LiveHistoryTests(AppFixture fixture)
     [Fact]
     public async Task Rewind_UninitializedHistory_ThrowsInvariantExceptionWithoutOptimisticConflict()
     {
-        var history = CreateHistory();
+        var history = HistoryTestSetup.CreateHistory<TestState>(fixture);
 
         var error = await Assert.ThrowsAsync<InvalidOperationException>(() => history.Rewind(Guid.NewGuid(), 2, 1));
 
@@ -491,7 +454,7 @@ public class LiveHistoryTests(AppFixture fixture)
     }
 
     private static async Task<StoredState<TestState>?> TryRewind(
-        GameHistory<TestState> history,
+        IGameHistory<TestState> history,
         Guid gameId,
         int expectedVersion,
         int targetVersion,
@@ -508,31 +471,8 @@ public class LiveHistoryTests(AppFixture fixture)
         }
     }
 
-    private GameHistory<TestState> CreateHistory() => HistoryTestSetup.CreateHistory<TestState>(fixture);
-
     private GameHistoryCleanup CreateCleanup() =>
         new(fixture.CreateDbContext(), NullLogger<GameHistoryCleanup>.Instance);
-
-    private async Task<Run> Begin(CancellationToken ct = default)
-    {
-        var gameId = await HistoryTestSetup.SeedGame(fixture, ct);
-        var history = CreateHistory();
-        Assert.NotNull(await history.Begin(gameId, CreateState(0), ct));
-        return new Run(gameId, history);
-    }
-
-    private static TestState CreateState(int counter)
-    {
-        var random = GameRandom.FromSeed(782);
-        for (var i = 0; i < counter; i++)
-            (_, random) = random.Next(0, 100);
-
-        return new TestState(
-            counter,
-            random,
-            ["saved", counter.ToString(System.Globalization.CultureInfo.InvariantCulture)]
-        );
-    }
 
     private static void AssertState(TestState expected, TestState actual)
     {

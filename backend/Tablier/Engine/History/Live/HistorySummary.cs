@@ -4,10 +4,10 @@ using Tablier.Contract;
 namespace Tablier.Engine.History.Live;
 
 #pragma warning disable MA0048
-public sealed record HistoryAction(int Version, int SourceVersion, string Actor, string Action);
+internal sealed record HistoryAction(int Version, int SourceVersion, string Actor, string Action);
 #pragma warning restore MA0048
 
-public sealed record HistorySummary(
+internal sealed record HistorySummary(
     int GameVersion,
     int BarrierVersion,
     IReadOnlyDictionary<string, int> Checkpoints,
@@ -22,15 +22,14 @@ public sealed record HistorySummary(
     internal HistorySummary ApplyStep<TState>(StepResult<TState> step, PlayerChoice? choice = null)
     {
         var version = GameVersion + 1;
-        var isBarrier = step.IsBaseline || step.IsIrreversible;
-        var checkpoints = isBarrier ? [] : new Dictionary<string, int>(Checkpoints);
+        var checkpoints = step.IsBarrier ? [] : new Dictionary<string, int>(Checkpoints);
         foreach (var tag in step.Checkpoints.Where(tag => !string.Equals(tag, "undo", StringComparison.Ordinal)))
             checkpoints[tag] = version;
 
-        var action = isBarrier ? null : LastAction;
+        var action = step.IsBarrier ? null : LastAction;
         if (choice is { } playerChoice)
             action = new HistoryAction(version, version, playerChoice.Member, playerChoice.Action);
-        return new HistorySummary(version, isBarrier ? version : BarrierVersion, checkpoints, action);
+        return new HistorySummary(version, step.IsBarrier ? version : BarrierVersion, checkpoints, action);
     }
 
     public HistorySummary ApplyRewind(HistorySummary destination)
