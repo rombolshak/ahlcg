@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
-using Tablier.Data;
 
 namespace Tablier.Engine.History.Live;
 
@@ -27,18 +27,18 @@ internal sealed record LiveHistory(bool IsValid, int BarrierVersion, IReadOnlyLi
             """;
 
     internal static async Task<LiveHistory> Read(
-        ApplicationDbContext db,
+        DatabaseFacade database,
         Guid gameId,
         int head,
         CancellationToken ct = default
     )
     {
-        var connection = (NpgsqlConnection)db.Database.GetDbConnection();
-        var transaction = db.Database.CurrentTransaction
+        var connection = (NpgsqlConnection)database.GetDbConnection();
+        var transaction = database.CurrentTransaction
             ?? throw new InvalidOperationException("Live history reads require an active transaction.");
         await using var batch = new NpgsqlBatch(connection, (NpgsqlTransaction)transaction.GetDbTransaction())
         {
-            Timeout = db.Database.GetCommandTimeout() ?? connection.CommandTimeout,
+            Timeout = database.GetCommandTimeout() ?? connection.CommandTimeout,
         };
         foreach (var sql in new[] { ReadBoundsSql, ReadStepsSql })
         {

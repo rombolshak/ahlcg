@@ -318,7 +318,7 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
                     IsolationLevel.RepeatableRead,
                     ct
                 );
-                var liveHistory = await LiveHistory.Read(db, gameId, head: version, ct);
+                var liveHistory = await LiveHistory.Read(db.Database, gameId, head: version, ct);
                 if (liveHistory.IsValid)
                     return liveHistory;
                 var head = (await FindHistoryVersions(gameId, ct)).Head;
@@ -349,7 +349,7 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "stale_head");
             throw new GameHistoryRewindConflictException(gameId, expectedVersion);
         }
-        var liveHistory = await LiveHistory.Read(db, gameId, head: expectedVersion, ct);
+        var liveHistory = await LiveHistory.Read(db.Database, gameId, head: expectedVersion, ct);
         if (!liveHistory.IsValid)
         {
             LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "invalid_history");
