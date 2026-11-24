@@ -6,10 +6,13 @@ public class GameStep
 {
     public Guid GameId { get; set; }
     public int Version { get; set; }
+    public int? RestoredVersion { get; set; }
     public string? Actor { get; set; }
     public string? Action { get; set; }
     public required JsonDocument Patch { get; set; }
     public string[] Checkpoints { get; set; } = [];
     public bool IsIrreversible { get; set; }
     public bool IsBaseline { get; set; }
+    public bool IsBarrier => IsBaseline || IsIrreversible;
+    public bool NeedsSnapshot => IsBarrier || Checkpoints.Length > 0;
 }

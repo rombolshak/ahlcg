@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 using Tablier.Contract;
+using Tablier.Engine.History.Live;
 using Tablier.Telemetry;
 
 namespace Tablier.Engine.History.Cache;
@@ -85,6 +86,46 @@ internal sealed partial class CachedGameHistory<TState>(
     public Task<StoredState<TState>> LoadAt(Guid gameId, int version, CancellationToken ct = default) =>
         inner.LoadAt(gameId, version, ct);
 
+    public async Task<StoredState<TState>> Rewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    )
+    {
+        try
+        {
+            var restored = await inner.Rewind(gameId, expectedVersion, targetVersion, ct);
+            await WriteGuarded(gameId, restored);
+            return restored;
+        }
+        catch (GameHistoryRewindConflictException conflict)
+        {
+            var current = await inner.LoadCurrent(gameId, ct)
+                ?? throw new InvalidOperationException("History is missing after a refused rewind.", conflict);
+            try
+            {
+                if (await WriteGuarded(gameId, current))
+                    LogRefreshedAfterRefusedRewind(logger, gameId, current.Version);
+            }
+            catch (RedisException)
+            {
+                LogRefreshFailedAfterRefusedRewind(logger, gameId, current.Version);
+            }
+            throw;
+        }
+    }
+
+    public Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default) =>
+        inner.GetHistorySummary(gameId, version, ct);
+
+    public Task<IReadOnlySet<string>> GetActorsForRange(
+        Guid gameId,
+        int lowerExclusiveVersion,
+        int upperInclusiveVersion,
+        CancellationToken ct = default
+    ) => inner.GetActorsForRange(gameId, lowerExclusiveVersion, upperInclusiveVersion, ct);
+
     private async Task<bool> WriteGuarded(Guid gameId, StoredState<TState> stored)
     {
         var written = (int)
@@ -104,6 +145,12 @@ internal sealed partial class CachedGameHistory<TState>(
 
         return written == 1;
     }
+
+    [LoggerMessage(LogLevel.Debug, "Rewind for game {GameId} refused; cached state refreshed to version {Version}")]
+    private static partial void LogRefreshedAfterRefusedRewind(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Warning, "Rewind for game {GameId} refused; cache refresh failed at version {Version}")]
+    private static partial void LogRefreshFailedAfterRefusedRewind(ILogger logger, Guid gameId, int version);
 
     [LoggerMessage(
         LogLevel.Debug,

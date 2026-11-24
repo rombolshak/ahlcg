@@ -20,7 +20,7 @@ namespace Tablier.Data.Migrations
             migrationBuilder.Sql(
                 """
                 UPDATE "GameSteps"
-                SET "Checkpoints" = CASE WHEN "Checkpoint" IS NULL THEN ARRAY[]::text[] ELSE ARRAY["Checkpoint"] END
+                SET "Checkpoints" = CASE WHEN "Checkpoint" IS NULL THEN ARRAY[]::text[] ELSE ARRAY["Checkpoint"] END;
                 """);
         }
 

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Tablier.Contract;
 using Tablier.Data;
+using Tablier.Engine.History.Live;
 
 namespace Tablier.Engine.History;
 
@@ -20,6 +21,15 @@ internal sealed class GameHistoryConflictException(Guid gameId, int version)
 {
     public Guid GameId { get; } = gameId;
     public int Version { get; } = version;
+}
+
+internal sealed class GameHistoryRewindConflictException(Guid gameId, int expectedVersion)
+    : InvalidOperationException(
+        "Rewind refused because the expected head is stale or a concurrent writer committed. Reload current history before retrying."
+    )
+{
+    public Guid GameId { get; } = gameId;
+    public int ExpectedVersion { get; } = expectedVersion;
 }
 #pragma warning restore MA0048
 
@@ -72,13 +82,22 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         CancellationToken ct = default
     )
     {
+        if (previous.Version < 0 || previous.Version == int.MaxValue)
+        {
+            LogAppendRefusedInvalidVersion(logger, gameId, previous.Version);
+            throw new ArgumentOutOfRangeException(
+                nameof(previous),
+                previous.Version,
+                "The previous version must be nonnegative and permit a positive increment."
+            );
+        }
         if (result.Checkpoints.Contains("undo", StringComparer.Ordinal))
         {
             LogAppendRefusedReservedCheckpoint(logger, gameId, previous.Version);
             throw new InvalidOperationException("Rules cannot append the reserved undo checkpoint.");
         }
 
-        var writesSnapshot = result.Checkpoints.Count > 0 || result.IsBaseline || result.IsIrreversible;
+        var writesSnapshot = result.Checkpoints.Count > 0 || result.IsBarrier;
         var appended = await db
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(() => TryAppend(gameId, previous, result, choice, writesSnapshot, ct));
@@ -147,11 +166,241 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
                     IsolationLevel.RepeatableRead,
                     ct
                 );
-                return await ReadHistoryAt(gameId, version, ct);
+                return await ReadHistoryAt(gameId, version, knownHead: null, ct);
             });
         var storedState = Reconstruct(gameId, history);
         LogStateLoadedAt(logger, gameId, version);
         return storedState;
+    }
+
+    public async Task<StoredState<TState>> Rewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    )
+    {
+        if (expectedVersion < 0 || expectedVersion == int.MaxValue)
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "invalid_head");
+            throw new ArgumentOutOfRangeException(
+                nameof(expectedVersion),
+                expectedVersion,
+                "The requested head must permit a positive increment."
+            );
+        }
+        if (targetVersion <= 0 || targetVersion >= expectedVersion)
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "invalid_target");
+            throw new ArgumentOutOfRangeException(
+                nameof(targetVersion),
+                targetVersion,
+                "The rewind target must be positive and earlier than the requested head."
+            );
+        }
+        var restored = await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                db.ChangeTracker.Clear();
+                await using var transaction = await db.Database.BeginTransactionAsync(
+                    IsolationLevel.RepeatableRead,
+                    ct
+                );
+                await CheckRewind(gameId, expectedVersion, targetVersion, ct);
+                var storedState = await WriteRewind(gameId, expectedVersion, targetVersion, ct);
+                if (!await TrySave(ct))
+                {
+                    LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "concurrent_write");
+                    throw new GameHistoryRewindConflictException(gameId, expectedVersion);
+                }
+                await transaction.CommitAsync(ct);
+                return storedState;
+            });
+        LogHistoryRewound(logger, gameId, restored.Version, targetVersion);
+        return restored;
+    }
+
+    public async Task<HistorySummary> GetHistorySummary(Guid gameId, int version, CancellationToken ct = default)
+    {
+        try
+        {
+            var liveHistory = await ReadLiveHistory(gameId, version, versionParameterName: nameof(version), ct);
+            var summary = liveHistory.GetSummary(version);
+            LogSummaryRead(logger, gameId, version, "loaded");
+            return summary;
+        }
+        catch (Exception e) when (e is ArgumentOutOfRangeException or InvalidOperationException)
+        {
+            LogSummaryRead(
+                logger,
+                gameId,
+                version,
+                e is ArgumentOutOfRangeException ? "invalid_version" : "invalid_history"
+            );
+            throw;
+        }
+    }
+
+    public async Task<IReadOnlySet<string>> GetActorsForRange(
+        Guid gameId,
+        int lowerExclusiveVersion,
+        int upperInclusiveVersion,
+        CancellationToken ct = default
+    )
+    {
+        if (upperInclusiveVersion < 0)
+        {
+            LogActorsRead(logger, gameId, lowerExclusiveVersion, upperInclusiveVersion, "invalid_upper");
+            throw new ArgumentOutOfRangeException(
+                nameof(upperInclusiveVersion),
+                upperInclusiveVersion,
+                "The upper version cannot be negative."
+            );
+        }
+        if (lowerExclusiveVersion < 0 || lowerExclusiveVersion > upperInclusiveVersion)
+        {
+            LogActorsRead(logger, gameId, lowerExclusiveVersion, upperInclusiveVersion, "invalid_range");
+            throw new ArgumentOutOfRangeException(
+                nameof(lowerExclusiveVersion),
+                lowerExclusiveVersion,
+                "The lower cutoff must be nonnegative and cannot exceed the upper version."
+            );
+        }
+        try
+        {
+            var liveHistory = await ReadLiveHistory(
+                gameId,
+                version: upperInclusiveVersion,
+                versionParameterName: nameof(upperInclusiveVersion),
+                ct
+            );
+            var actors = liveHistory
+                .Steps.Where(step => step.Version > lowerExclusiveVersion && step.Actor is not null)
+                .Select(step => step.Actor!)
+                .ToHashSet(StringComparer.Ordinal);
+            LogActorsRead(logger, gameId, lowerExclusiveVersion, upperInclusiveVersion, "loaded");
+            return actors;
+        }
+        catch (Exception e) when (e is ArgumentOutOfRangeException or InvalidOperationException)
+        {
+            LogActorsRead(
+                logger,
+                gameId,
+                lowerExclusiveVersion,
+                upperInclusiveVersion,
+                e is ArgumentOutOfRangeException ? "invalid_version" : "invalid_history"
+            );
+            throw;
+        }
+    }
+
+    private async Task<LiveHistory> ReadLiveHistory(
+        Guid gameId,
+        int version,
+        string versionParameterName,
+        CancellationToken ct = default
+    )
+    {
+        if (version < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                versionParameterName,
+                version,
+                "The requested fact version cannot be negative."
+            );
+        }
+        return await db
+            .Database.CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
+            {
+                await using var transaction = await db.Database.BeginTransactionAsync(
+                    IsolationLevel.RepeatableRead,
+                    ct
+                );
+                var liveHistory = await LiveHistory.Read(db.Database, gameId, head: version, ct);
+                if (liveHistory.IsValid)
+                    return liveHistory;
+                var head = (await FindHistoryVersions(gameId, ct)).Head;
+                if (head is not null && version > head)
+                    throw new ArgumentOutOfRangeException(
+                        versionParameterName,
+                        version,
+                        "The requested fact version is beyond the stored head."
+                    );
+                throw new InvalidOperationException(
+                    "Live facts require initialized history, a required snapshot, and complete physical and live chains at the requested version."
+                );
+            });
+    }
+
+    private async Task CheckRewind(Guid gameId, int expectedVersion, int targetVersion, CancellationToken ct = default)
+    {
+        var head = (await FindHistoryVersions(gameId, ct)).Head;
+        if (head is null)
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "not_begun");
+            throw new InvalidOperationException(
+                "Rewind requires complete live history and a reachable target at or after its barrier (not_begun)."
+            );
+        }
+        if (head != expectedVersion)
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "stale_head");
+            throw new GameHistoryRewindConflictException(gameId, expectedVersion);
+        }
+        var liveHistory = await LiveHistory.Read(db.Database, gameId, head: expectedVersion, ct);
+        if (!liveHistory.IsValid)
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "invalid_history");
+            throw new InvalidOperationException(
+                "Rewind requires complete live history and a reachable target at or after its barrier (invalid_history)."
+            );
+        }
+        if (!liveHistory.Steps.Any(step => step.Version == targetVersion))
+        {
+            LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "target_not_live");
+            throw new InvalidOperationException(
+                "Rewind requires complete live history and a reachable target at or after its barrier (target_not_live)."
+            );
+        }
+    }
+
+    private async Task<StoredState<TState>> WriteRewind(
+        Guid gameId,
+        int expectedVersion,
+        int targetVersion,
+        CancellationToken ct = default
+    )
+    {
+        var headRead = await ReadHistoryAt(gameId, expectedVersion, knownHead: expectedVersion, ct);
+        var destinationRead = await ReadHistoryAt(gameId, version: targetVersion, knownHead: expectedVersion, ct);
+        var head = Reconstruct(gameId, headRead);
+        var destination = Reconstruct(gameId, destinationRead);
+        var step = await db
+            .GameSteps.AsNoTracking()
+            .SingleAsync(s => s.GameId == gameId && s.Version == targetVersion, ct);
+        var version = expectedVersion + 1;
+        db.GameSteps.Add(
+            new GameStep
+            {
+                GameId = gameId,
+                Version = version,
+                RestoredVersion = step.RestoredVersion ?? step.Version,
+                Actor = step.Actor,
+                Action = step.Action,
+                Checkpoints = step.Checkpoints,
+                IsBaseline = step.IsBaseline,
+                IsIrreversible = step.IsIrreversible,
+                Patch = JsonSerializer.SerializeToDocument(
+                    SerializeToJson(head.State).CreatePatch(SerializeToJson(destination.State))
+                ),
+            }
+        );
+        if (step.NeedsSnapshot)
+            db.GameSnapshots.Add(CreateSnapshot(gameId, version, destination.State));
+
+        return new StoredState<TState>(version, destination.State);
     }
 
     private async Task<bool> TryAppend(
@@ -225,9 +474,14 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         return (new StoredState<TState>(0, Deserialize(gameId, snapshot.Version, snapshot.State)), head);
     }
 
-    private async Task<LoadedHistory> ReadHistoryAt(Guid gameId, int version, CancellationToken ct = default)
+    private async Task<LoadedHistory> ReadHistoryAt(
+        Guid gameId,
+        int version,
+        int? knownHead,
+        CancellationToken ct = default
+    )
     {
-        var head = (await FindHistoryVersions(gameId, ct)).Head;
+        var head = knownHead ?? (await FindHistoryVersions(gameId, ct)).Head;
         if (head is null)
         {
             LogLoadRefusedNotBegun(logger, gameId);
@@ -421,6 +675,9 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
 
     private sealed record LoadedHistory(GameSnapshot Snapshot, List<GameStep> Steps);
 
+    [LoggerMessage(LogLevel.Information, "Append refused for game {GameId}: version {Version} cannot be incremented")]
+    private static partial void LogAppendRefusedInvalidVersion(ILogger logger, Guid gameId, int version);
+
     [LoggerMessage(LogLevel.Warning, "Load refused for game {GameId}: persisted steps have no snapshot")]
     private static partial void LogLoadRefusedNoSnapshot(ILogger logger, Guid gameId);
 
@@ -480,4 +737,31 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
 
     [LoggerMessage(LogLevel.Debug, "State loaded at version {Version} of game {GameId}")]
     private static partial void LogStateLoadedAt(ILogger logger, Guid gameId, int version);
+
+    [LoggerMessage(LogLevel.Information, "Game {GameId} rewound at version {Version} to version {TargetVersion}")]
+    private static partial void LogHistoryRewound(ILogger logger, Guid gameId, int version, int targetVersion);
+
+    [LoggerMessage(
+        LogLevel.Information,
+        "Rewind refused for game {GameId} at version {Version} to {TargetVersion}: {Reason}"
+    )]
+    private static partial void LogRewindRefused(
+        ILogger logger,
+        Guid gameId,
+        int version,
+        int targetVersion,
+        string reason
+    );
+
+    [LoggerMessage(LogLevel.Debug, "Summary for game {GameId} at version {Version}: {Reason}")]
+    private static partial void LogSummaryRead(ILogger logger, Guid gameId, int version, string reason);
+
+    [LoggerMessage(LogLevel.Debug, "Actors for game {GameId} after {LowerVersion} through {UpperVersion}: {Reason}")]
+    private static partial void LogActorsRead(
+        ILogger logger,
+        Guid gameId,
+        int lowerVersion,
+        int upperVersion,
+        string reason
+    );
 }
