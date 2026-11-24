@@ -15,7 +15,7 @@ class AuthMockService {
   public readonly currentUser: Observable<User | undefined> = this._user.asObservable();
 }
 
-const anonUser: User = { isAnonymous: true, email: null, userName: 'anon-guid' };
+const anonUser: User = { userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' };
 
 const gameSummary = (id: string, lastPlayedAt: string, completedAt: string | null = null): GameSummary => ({
   id,

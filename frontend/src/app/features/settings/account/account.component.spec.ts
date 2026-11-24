@@ -55,7 +55,7 @@ describe('AccountComponent', () => {
   });
 
   it('should show the anonymous state with the drawn alias, not the raw userName, and an upgrade action', () => {
-    user$.next({ isAnonymous: true, email: null, userName: 'guid-123' });
+    user$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' });
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent;
@@ -67,7 +67,7 @@ describe('AccountComponent', () => {
   });
 
   it('should show the permanent state with the registered name and email', () => {
-    user$.next({ isAnonymous: false, email: 'a@example.com', userName: 'Alice' });
+    user$.next({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'Alice' });
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent;
@@ -79,7 +79,7 @@ describe('AccountComponent', () => {
   });
 
   it('should sign out immediately when permanent', () => {
-    user$.next({ isAnonymous: false, email: 'a@example.com', userName: 'Alice' });
+    user$.next({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'Alice' });
     fixture.detectChanges();
 
     click('sign_out');
@@ -90,7 +90,7 @@ describe('AccountComponent', () => {
 
   it('should confirm before signing out an anonymous account, and leave the session on cancel', () => {
     confirm.mockReturnValue(of(false));
-    user$.next({ isAnonymous: true, email: null, userName: 'guid-123' });
+    user$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' });
     fixture.detectChanges();
 
     click('sign_out');
@@ -102,7 +102,7 @@ describe('AccountComponent', () => {
 
   it('should sign out an anonymous account once the warning is confirmed', () => {
     confirm.mockReturnValue(of(true));
-    user$.next({ isAnonymous: true, email: null, userName: 'guid-123' });
+    user$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' });
     fixture.detectChanges();
 
     click('sign_out');
@@ -111,7 +111,7 @@ describe('AccountComponent', () => {
   });
 
   it('should open the credentials form to upgrade an anonymous account, and change nothing when it is dismissed', () => {
-    user$.next({ isAnonymous: true, email: null, userName: 'guid-123' });
+    user$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' });
     fixture.detectChanges();
 
     click('upgrade');
@@ -119,7 +119,7 @@ describe('AccountComponent', () => {
     expect(openDialog).toHaveBeenCalledWith(CredentialsFormComponent, CREDENTIALS_DIALOG_OPTIONS);
     // `EMPTY` from the mock stands in for a dismissal — nothing here subscribes to the result, and
     // `currentUser` is untouched, so the anonymous session is exactly as it was.
-    expect(user$.value).toEqual({ isAnonymous: true, email: null, userName: 'guid-123' } satisfies User);
+    expect(user$.value).toEqual({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' } satisfies User);
   });
 
   it('should open the credentials form to sign in when signed out', () => {
@@ -184,7 +184,7 @@ describe('AccountComponent through the real DialogService and ConfirmDialogServi
   });
 
   beforeEach(async () => {
-    hostUser$ = new BehaviorSubject<User | undefined>({ isAnonymous: true, email: null, userName: 'guid-123' });
+    hostUser$ = new BehaviorSubject<User | undefined>({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' });
     hostLogout = vi.fn(() => of(undefined));
 
     await TestBed.configureTestingModule({

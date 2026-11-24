@@ -17,7 +17,7 @@ public static partial class AuthEndpoints
     );
 
     [PublicAPI]
-    public record UserDto(string? Email, string? UserName, bool IsAnonymous);
+    public record UserDto(string UserId, string? Email, string? UserName, bool IsAnonymous);
 
     public static RouteGroupBuilder MapAuthEndpoints(this RouteGroupBuilder group)
     {
@@ -38,8 +38,8 @@ public static partial class AuthEndpoints
             .WithDescription(
                 "Returns information of the logged in user. Email is null for an anonymous account, and userName is "
                     + "set for every account — a raw GUID for anonymous ones, an opaque identifier rather than a name to "
-                    + "render; a client displays it by deriving something from it, not by printing it. The account id is "
-                    + "never returned."
+                    + "render; a client displays it by deriving something from it, not by printing it. userId is the required "
+                    + "opaque string id stored on the account, independent of userName and unchanged by an anonymous upgrade."
             )
             .Produces(StatusCodes.Status401Unauthorized);
 
@@ -59,7 +59,7 @@ public static partial class AuthEndpoints
                 "Signs in with an email and password, from a logged-out, anonymous or permanent session. "
                     + "If the email is already on record, the password is checked against that account and it is signed in. "
                     + "If it is not, and the caller holds an anonymous account, that account is upgraded in place — "
-                    + "it keeps its id and therefore its data, and its existing cookie stays valid. If it is not and the "
+                    + "it keeps its id and therefore its data, and its cookie is refreshed to keep the session valid. If it is not and the "
                     + "caller is logged out, a new permanent account is created. A permanent session cannot create a second "
                     + "account: log out first. "
                     + "A 403 means the email is on record and the password was wrong, or the account is locked out — the two "
@@ -153,7 +153,7 @@ public static partial class AuthEndpoints
             }
 
             return loggedInUser is { IsAnonymous: true }
-                ? await UpgradeUserToPermanentAsync(userManager, request, loggedInUser, logger)
+                ? await UpgradeUserToPermanent(userManager, signInManager, request, loggedInUser, logger)
                 : await CreatePermanentUserAsync(userManager, signInManager, limiter, httpContext, request, logger);
         }
 
@@ -187,13 +187,19 @@ public static partial class AuthEndpoints
 
     public static async Task<Results<Ok<UserDto>, UnauthorizedHttpResult>> GetCurrentUser(
         ClaimsPrincipal principal,
-        UserManager<AppUser> userManager
+        UserManager<AppUser> userManager,
+        ILogger<AppUser> logger
     )
     {
         var user = await userManager.GetUserAsync(principal);
-        return user is not null
-            ? TypedResults.Ok(new UserDto(user.Email, user.UserName, user.IsAnonymous))
-            : TypedResults.Unauthorized();
+        if (user is null)
+        {
+            LogCurrentUserRefused(logger);
+            return TypedResults.Unauthorized();
+        }
+
+        LogCurrentUserReturned(logger, user.Id);
+        return TypedResults.Ok(new UserDto(user.Id, user.Email, user.UserName, user.IsAnonymous));
     }
 
     public static async Task Logout(
@@ -221,12 +227,12 @@ public static partial class AuthEndpoints
         LogSignedOut(logger, user.Id);
     }
 
-    // Keeps the anonymous account's id, so everything hanging off it by OwnerId survives.
-    // The session cookie already names this user, so no re-sign-in is needed.
+    // AddPasswordAsync rotates the security stamp; refresh the same session after persisting the upgrade.
     private static async Task<
         Results<Ok, ForbidHttpResult, BadRequest<IdentityResult>, StatusCodeHttpResult>
-    > UpgradeUserToPermanentAsync(
+    > UpgradeUserToPermanent(
         UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager,
         RegisterRequest request,
         AppUser loggedInUser,
         ILogger logger
@@ -255,6 +261,7 @@ public static partial class AuthEndpoints
             return TypedResults.BadRequest(updateResult);
         }
 
+        await signInManager.RefreshSignInAsync(loggedInUser);
         LogAccountUpgraded(logger, loggedInUser.Id);
         return TypedResults.Ok();
     }
@@ -299,6 +306,12 @@ public static partial class AuthEndpoints
 
     private static string ErrorCodes(IdentityResult result) => string.Join(", ", result.Errors.Select(e => e.Code));
 
+    [LoggerMessage(LogLevel.Information, "Current user information returned for {UserId}")]
+    private static partial void LogCurrentUserReturned(ILogger logger, string userId);
+
+    [LoggerMessage(LogLevel.Information, "Current user information refused without a stored account")]
+    private static partial void LogCurrentUserRefused(ILogger logger);
+
     [LoggerMessage(LogLevel.Information, "User {UserId} asked for an anonymous account while signed in")]
     private static partial void LogAnonymousLoginRefused(ILogger logger, string userId);
 
@@ -329,7 +342,7 @@ public static partial class AuthEndpoints
     [LoggerMessage(LogLevel.Information, "User {UserId} signed in")]
     private static partial void LogSignedIn(ILogger logger, string userId);
 
-    [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} upgraded to permanent")]
+    [LoggerMessage(LogLevel.Information, "Anonymous account {UserId} upgraded to permanent and its session refreshed")]
     private static partial void LogAccountUpgraded(ILogger logger, string userId);
 
     [LoggerMessage(LogLevel.Warning, "Upgrade of anonymous account {UserId} failed: {ErrorCodes}")]

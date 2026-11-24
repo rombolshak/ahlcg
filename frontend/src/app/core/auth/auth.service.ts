@@ -1,12 +1,15 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
+import { ArkErrors, type } from 'arktype';
 import { BehaviorSubject, catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
-export interface User {
-  email: string | null;
-  userName: string | null;
-  isAnonymous: boolean;
-}
+const user = type({
+  userId: 'string',
+  email: 'string | null',
+  userName: 'string | null',
+  isAnonymous: 'boolean',
+});
+export type User = typeof user.infer;
 
 export interface Credentials {
   email: string;
@@ -51,7 +54,16 @@ export class AuthService {
   }
 
   public refreshCurrentUser(): Observable<User | undefined> {
-    return this.http.get<User | undefined>('/api/auth/info').pipe(
+    return this.http.get<unknown>('/api/auth/info').pipe(
+      map(response => {
+        const model = user(response);
+        if (model instanceof ArkErrors) {
+          console.error('Invalid auth info response', model.summary);
+          return model.throw();
+        }
+
+        return model;
+      }),
       catchError(err => {
         if (err instanceof HttpErrorResponse && err.status === 401) {
           return of(undefined);

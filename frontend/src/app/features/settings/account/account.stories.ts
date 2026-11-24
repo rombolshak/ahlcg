@@ -45,7 +45,7 @@ const withUser = (user: User | undefined, logout: ReturnType<typeof fn> = fn(() 
     ],
   });
 
-const anonymousUser: User = { isAnonymous: true, email: null, userName: '4139f1ea-4901-4253-a391-021faa001677' };
+const anonymousUser: User = { userId: 'account-id', isAnonymous: true, email: null, userName: '4139f1ea-4901-4253-a391-021faa001677' };
 
 /** Opens `<ah-account>` as its own dialog content — real `showModal()`, so the `AH_DIALOG_CONTENT`
  * provider `AccountComponent` registers is live and the input layer it pushes actually receives
@@ -106,11 +106,11 @@ export default meta;
 type Story = StoryObj<AccountComponent>;
 
 export const Anonymous: Story = {
-  decorators: [withUser({ isAnonymous: true, email: null, userName: '4139f1ea-4901-4253-a391-021faa001677' })],
+  decorators: [withUser({ userId: 'account-id', isAnonymous: true, email: null, userName: '4139f1ea-4901-4253-a391-021faa001677' })],
 };
 
 export const Permanent: Story = {
-  decorators: [withUser({ isAnonymous: false, email: 'a@example.com', userName: 'Alice' })],
+  decorators: [withUser({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'Alice' })],
 };
 
 export const SignedOut: Story = {

@@ -4,8 +4,8 @@ import { getTranslocoModule } from '@testing/transloco.testing';
 import { anonymousAlias, anonymousAliasKeys, ARCHETYPE_POOL_SIZE, QUIRK_POOL_SIZE } from './anonymous-alias';
 import { User } from './auth.service';
 
-const anonymousUser = (userName: string): User => ({ isAnonymous: true, email: null, userName });
-const permanentUser = (userName: string): User => ({ isAnonymous: false, email: 'a@example.com', userName });
+const anonymousUser = (userName: string): User => ({ userId: 'account-id', isAnonymous: true, email: null, userName });
+const permanentUser = (userName: string): User => ({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName });
 
 describe('anonymousAliasKeys', () => {
   it('should always derive the same keys from the same userName', () => {
