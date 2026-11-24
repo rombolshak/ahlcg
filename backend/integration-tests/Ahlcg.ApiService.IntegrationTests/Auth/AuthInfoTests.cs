@@ -69,7 +69,7 @@ public class AuthInfoTests(AppFixture fixture)
             .GetProperty("schema");
         var reference = responseSchema.GetProperty("$ref").GetString();
         Assert.NotNull(reference);
-        var schemaName = reference.Split('/').Last();
+        var schemaName = reference.Split('/')[^1];
         var schema = document.RootElement.GetProperty("components").GetProperty("schemas").GetProperty(schemaName);
 
         Assert.Contains(schema.GetProperty("required").EnumerateArray(), property => property.GetString() == "userId");
