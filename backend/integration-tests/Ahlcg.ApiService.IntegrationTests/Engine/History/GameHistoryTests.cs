@@ -12,6 +12,30 @@ namespace Ahlcg.ApiService.IntegrationTests.Engine.History;
 [Collection(AppCollection.Name)]
 public class GameHistoryTests(AppFixture fixture)
 {
+    [Fact]
+    public async Task Append_CallerTransaction_PreservesTrackedEntitiesAndRollsBackWithCaller()
+    {
+        var run = await HistoryTestSetup.Begin(fixture, CreateState);
+        await using var db = fixture.CreateDbContext();
+        var history = new GameHistory<TestState>(db, NullLogger<GameHistory<TestState>>.Instance);
+        var game = await db.Games.SingleAsync(g => g.Id == run.GameId);
+        var snapshot = await db.GameSnapshots.SingleAsync(s => s.GameId == run.GameId);
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        var stored = (await history.LoadCurrent(run.GameId))!;
+        game.IntendedPlayersCount = 4;
+
+        var appended = await history.Append(run.GameId, stored, CreateStep(1), choice: null);
+
+        Assert.NotNull(appended);
+        Assert.Same(transaction, db.Database.CurrentTransaction);
+        Assert.NotEqual(EntityState.Detached, db.Entry(game).State);
+        Assert.NotEqual(EntityState.Detached, db.Entry(snapshot).State);
+        await transaction.RollbackAsync();
+        await using var reader = fixture.CreateDbContext();
+        Assert.Equal(1, (await reader.Games.SingleAsync(g => g.Id == run.GameId)).IntendedPlayersCount);
+        Assert.False(await reader.GameSteps.AnyAsync(s => s.GameId == run.GameId));
+    }
+
     [Theory]
     [InlineData(-1)]
     [InlineData(int.MaxValue)]

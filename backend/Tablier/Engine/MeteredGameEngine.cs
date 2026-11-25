@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Tablier.Engine.Execution;
 using Tablier.Games;
 using Tablier.Telemetry;
 
@@ -8,11 +9,24 @@ internal sealed class MeteredGameEngine(IGameEngine inner, TablierMetrics metric
     : MeteredDecorator(metrics.EngineDuration, time),
         IGameEngine
 {
-    public bool IsConfigurationValid(JsonElement configuration) =>
-        Measure("is_configuration_valid", () => inner.IsConfigurationValid(configuration), OkOrRefused);
+    public Task<CreateGameResult> Create(
+        string owner,
+        string idempotencyKey,
+        JsonElement configuration,
+        CancellationToken ct = default
+    ) =>
+        MeasureAsync(
+            "create",
+            () => inner.Create(owner, idempotencyKey, configuration, ct),
+            result => result is CreateGameResult.Created ? OutcomeOk : OutcomeRefused
+        );
 
-    public Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default) =>
-        MeasureAsync("begin", () => inner.Begin(gameId, configuration, owner, ct));
+    public Task<JoinGameResult> Join(string member, string code, CancellationToken ct = default) =>
+        MeasureAsync(
+            "join",
+            () => inner.Join(member, code, ct),
+            result => result is JoinGameResult.Joined ? OutcomeOk : OutcomeRefused
+        );
 
     public Task SyncMembers(Guid gameId, CancellationToken ct = default) =>
         MeasureAsync("sync_members", () => inner.SyncMembers(gameId, ct));
@@ -30,6 +44,4 @@ internal sealed class MeteredGameEngine(IGameEngine inner, TablierMetrics metric
             () => inner.Execute(gameId, member, action, ct),
             version => version is null ? OutcomeRefused : OutcomeOk
         );
-
-    private static string OkOrRefused(bool accepted) => accepted ? OutcomeOk : OutcomeRefused;
 }

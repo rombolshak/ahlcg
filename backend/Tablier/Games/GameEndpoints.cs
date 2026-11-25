@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Tablier.Auth;
 using Tablier.Data;
 using Tablier.Engine;
-using Tablier.Engine.History;
+using Tablier.Engine.Execution;
 using Tablier.Games.Sessions;
 
 namespace Tablier.Games;
@@ -61,7 +61,7 @@ public static partial class GameEndpoints
                 "Creates a new game owned by the calling user. "
                     + "The configuration payload is stored in a jsonb column and handed back unchanged. The engine never "
                     + "inspects it, but the game's rules module reads it: omitting it, or sending one the rules cannot "
-                    + "read, yields a 400 and nothing is saved. Creation also begins the game's history at version 0. "
+                    + "read, yields a 400 with ConfigurationRequired or ConfigurationUnreadable in errors.Configuration and nothing is saved. Creation also begins the game's history at version 0. "
                     + "createdAt and lastPlayedAt are equal on creation. "
                     + "Requires an Idempotency-Key header; repeating the same key for the same user "
                     + "returns the game created the first time instead of creating a new one, while the same key from a "
@@ -83,15 +83,16 @@ public static partial class GameEndpoints
                     + "it, whether because it never existed, is malformed, or the session it belonged to has ended, reads "
                     + "as unknown. Idempotent: a caller who is already a member gets that game back unchanged rather than "
                     + "a duplicate row or an error, which is what lets the same code double as a resume link. Unknown, "
-                    + "malformed, expired and full all return an identical 404 with no distinguishing detail, so the "
-                    + "route cannot be used to enumerate codes. A join that fills the last seat clears the session's "
+                    + "malformed and expired codes return 404 with code UnusableInvite. A live invite for a full game "
+                    + "returns 409 with code GameFull. A join that fills the last seat clears the session's "
                     + "invite code in the same request — no reconnect or disconnect needed to notice. Throttled per "
                     + "account; exceeding it returns 429. A join that adds a membership also commits a step adding the member to "
                     + "the game's state, and connected members receive a StateChanged for it. Never reads or writes "
                     + "Configuration."
             )
             .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status429TooManyRequests);
     }
 
@@ -201,18 +202,12 @@ public static partial class GameEndpoints
             .Produces(StatusCodes.Status403Forbidden);
     }
 
-    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
-#pragma warning disable S107
     internal static async Task<Results<Ok<GameDto>, ValidationProblem, UnauthorizedHttpResult>> CreateGame(
-#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        ApplicationDbContext db,
-        TimeProvider timeProvider,
         [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
         CreateGameRequest request,
         IGameEngine engine,
-        ILogger<Game> logger,
         CancellationToken ct = default
     )
     {
@@ -220,50 +215,19 @@ public static partial class GameEndpoints
         if (user is null)
             return TypedResults.Unauthorized();
 
-        if (request.Configuration.ValueKind == JsonValueKind.Undefined)
+        var result = await engine.Create(user.Id, idempotencyKey, request.Configuration, ct);
+        if (result is CreateGameResult.InvalidConfiguration invalid)
             return TypedResults.ValidationProblem(
                 new Dictionary<string, string[]>
                 {
-                    [nameof(CreateGameRequest.Configuration)] = ["Configuration is required."],
+                    [nameof(CreateGameRequest.Configuration)] =
+                    [
+                        invalid.IsMissing ? "ConfigurationRequired" : "ConfigurationUnreadable",
+                    ],
                 }
             );
 
-        if (!engine.IsConfigurationValid(request.Configuration))
-            return TypedResults.ValidationProblem(
-                new Dictionary<string, string[]>
-                {
-                    [nameof(CreateGameRequest.Configuration)] = ["Configuration is not readable."],
-                }
-            );
-
-        var now = timeProvider.GetUtcNow();
-        var game = new Game
-        {
-            OwnerId = user.Id,
-            IdempotencyKey = idempotencyKey,
-            Configuration = JsonDocument.Parse(request.Configuration.GetRawText()),
-            CreatedAt = now,
-            LastPlayedAt = now,
-        };
-        var member = new GameMember
-        {
-            UserId = user.Id,
-            JoinedAt = now,
-            LastPlayedAt = now,
-        };
-        game.Members.Add(member);
-
-        game = await SaveOrFindReplayed(db, game, member, logger, ct);
-
-        try
-        {
-            await engine.Begin(game.Id, game.Configuration.RootElement, user.Id, ct);
-        }
-        catch (GameHistoryConflictException e) when (e.GameId == game.Id)
-        {
-            LogHistoryAlreadyAdvanced(logger, game.Id, e.Version);
-        }
-
+        var game = ((CreateGameResult.Created)result).Game;
         return TypedResults.Ok(
             new GameDto(
                 game.Id,
@@ -275,51 +239,11 @@ public static partial class GameEndpoints
         );
     }
 
-    private static async Task<Game> SaveOrFindReplayed(
-        ApplicationDbContext db,
-        Game game,
-        GameMember member,
-        ILogger logger,
-        CancellationToken ct
-    )
-    {
-        db.Games.Add(game);
-        try
-        {
-            await db.SaveChangesAsync(ct);
-            LogGameCreated(logger, game.Id, game.OwnerId);
-            return game;
-        }
-        catch (DbUpdateException)
-        {
-            db.Entry(member).State = EntityState.Detached;
-            db.Entry(game).State = EntityState.Detached;
-
-            var existing = await db.Games.FirstOrDefaultAsync(
-                g => g.OwnerId == game.OwnerId && g.IdempotencyKey == game.IdempotencyKey,
-                ct
-            );
-            if (existing is null)
-                throw;
-
-            LogGameCreationReplayed(logger, existing.Id, game.OwnerId);
-            return existing;
-        }
-    }
-
-    // Minimal API injects each service as a parameter; [AsParameters] would make validation walk the DbContext.
-#pragma warning disable S107
     internal static async Task<Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>> JoinGame(
-#pragma warning restore S107
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        ApplicationDbContext db,
-        GameSessions sessions,
-        IHubContext<GameHub, IGameClient> hub,
-        TimeProvider timeProvider,
         JoinGameRequest request,
         IGameEngine engine,
-        ILogger<Game> logger,
         CancellationToken ct = default
     )
     {
@@ -327,77 +251,21 @@ public static partial class GameEndpoints
         if (user is null)
             return TypedResults.Unauthorized();
 
-        var gameId = string.IsNullOrEmpty(request.Code)
-            ? null
-            : sessions.FindByInviteCode(request.Code.ToUpperInvariant());
-        if (gameId is null)
+        var result = await engine.Join(user.Id, request.Code, ct);
+        return result switch
         {
-            LogJoinRefusedUnknownCode(logger, user.Id);
-            return TypedResults.Problem(statusCode: StatusCodes.Status404NotFound);
-        }
-
-        var (result, game, added) = await AddMembership(db, gameId.Value, user.Id, timeProvider, logger);
-        if (game is not null)
-        {
-            var session = sessions.SyncInviteCode(game.Id, game.Members.Count, game.IntendedPlayersCount);
-            await GameHub.SendInviteCode(hub.Clients, game.Id, session);
-        }
-
-        if (added)
-        {
-            db.ChangeTracker.Clear();
-            await engine.SyncMembers(gameId.Value, ct);
-        }
-
-        return result;
+            JoinGameResult.Joined joined => TypedResults.Ok(ToDto(joined.Membership)),
+            JoinGameResult.UnusableInvite => TypedResults.Problem(
+                extensions: new Dictionary<string, object?> { ["code"] = "UnusableInvite" },
+                statusCode: StatusCodes.Status404NotFound
+            ),
+            JoinGameResult.GameFull => TypedResults.Problem(
+                extensions: new Dictionary<string, object?> { ["code"] = "GameFull" },
+                statusCode: StatusCodes.Status409Conflict
+            ),
+            _ => throw new InvalidOperationException("Unknown join result."),
+        };
     }
-
-    private static Task<(
-        Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult> Result,
-        Game? Updated,
-        bool Added
-    )> AddMembership(ApplicationDbContext db, Guid gameId, string userId, TimeProvider timeProvider, ILogger logger) =>
-        db
-            .Database.CreateExecutionStrategy()
-            .ExecuteAsync<(Results<Ok<GameDto>, ProblemHttpResult, UnauthorizedHttpResult>, Game?, bool)>(async () =>
-            {
-                db.ChangeTracker.Clear();
-                await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
-
-                var game = await db.Games.Include(g => g.Members).SingleOrDefaultAsync(g => g.Id == gameId);
-                if (game is null)
-                {
-                    LogJoinRefusedGameMissing(logger, gameId, userId);
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null, false);
-                }
-
-                var existing = game.Members.SingleOrDefault(m => m.UserId == userId);
-                if (existing is not null)
-                {
-                    LogJoinedAlreadyMember(logger, gameId, userId);
-                    return (TypedResults.Ok(ToDto(existing)), game, false);
-                }
-
-                if (game.Members.Count >= game.IntendedPlayersCount)
-                {
-                    LogJoinRefusedGameFull(logger, gameId, userId, game.IntendedPlayersCount);
-                    return (TypedResults.Problem(statusCode: StatusCodes.Status404NotFound), null, false);
-                }
-
-                var now = timeProvider.GetUtcNow();
-                var member = new GameMember
-                {
-                    UserId = userId,
-                    JoinedAt = now,
-                    LastPlayedAt = now,
-                };
-                game.Members.Add(member);
-                await db.SaveChangesAsync();
-                await transaction.CommitAsync();
-                LogMemberJoined(logger, gameId, userId);
-
-                return (TypedResults.Ok(ToDto(member)), game, true);
-            });
 
     public static async Task<Results<Ok<IReadOnlyList<GameDto>>, UnauthorizedHttpResult>> GetRecentGames(
         ClaimsPrincipal principal,
@@ -674,41 +542,6 @@ public static partial class GameEndpoints
             membership.Game.CompletedAt,
             membership.Game.Configuration.RootElement.Clone()
         );
-
-    [LoggerMessage(LogLevel.Debug, "Creation replay for game {GameId} preserved history at version {Version}")]
-    private static partial void LogHistoryAlreadyAdvanced(ILogger logger, Guid gameId, int version);
-
-    [LoggerMessage(LogLevel.Information, "User {UserId} created game {GameId}")]
-    private static partial void LogGameCreated(ILogger logger, Guid gameId, string userId);
-
-    [LoggerMessage(LogLevel.Debug, "User {UserId} repeated an idempotency key; returned existing game {GameId}")]
-    private static partial void LogGameCreationReplayed(ILogger logger, Guid gameId, string userId);
-
-    [LoggerMessage(LogLevel.Information, "User {UserId} could not join: invite code matches no live session")]
-    private static partial void LogJoinRefusedUnknownCode(ILogger logger, string userId);
-
-    [LoggerMessage(
-        LogLevel.Warning,
-        "User {UserId} could not join game {GameId}: the session is live but the game is gone"
-    )]
-    private static partial void LogJoinRefusedGameMissing(ILogger logger, Guid gameId, string userId);
-
-    [LoggerMessage(
-        LogLevel.Information,
-        "User {UserId} could not join game {GameId}: all {IntendedPlayersCount} seats are taken"
-    )]
-    private static partial void LogJoinRefusedGameFull(
-        ILogger logger,
-        Guid gameId,
-        string userId,
-        int intendedPlayersCount
-    );
-
-    [LoggerMessage(LogLevel.Debug, "User {UserId} redeemed a code for game {GameId} they already belong to")]
-    private static partial void LogJoinedAlreadyMember(ILogger logger, Guid gameId, string userId);
-
-    [LoggerMessage(LogLevel.Information, "User {UserId} joined game {GameId}")]
-    private static partial void LogMemberJoined(ILogger logger, Guid gameId, string userId);
 
     [LoggerMessage(LogLevel.Warning, "User {UserId} is not a member of game {GameId}")]
     private static partial void LogNotAMember(ILogger logger, Guid gameId, string userId);

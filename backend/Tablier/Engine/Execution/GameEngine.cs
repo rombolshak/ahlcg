@@ -9,6 +9,7 @@ using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Games;
+using Tablier.Games.Sessions;
 
 namespace Tablier.Engine.Execution;
 
@@ -19,26 +20,83 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView>(
     ApplicationDbContext db,
     IHubContext<GameHub, IGameClient> hub,
     IOptions<JsonHubProtocolOptions> hubOptions,
+    GameSessions sessions,
+    TimeProvider timeProvider,
     ILogger<GameEngine<TConfiguration, TState, TView>> logger
 ) : IGameEngine
 #pragma warning restore S2436
     where TState : ISchemaVersioned
 {
     private const int MaxAttempts = 3;
+    private static readonly Dictionary<Guid, MutationGate> _mutationGates = [];
+    private static readonly Lock _mutationGatesLock = new();
+
+    private sealed class MutationGate
+    {
+        public SemaphoreSlim Semaphore { get; } = new(1, 1);
+        public int Users { get; set; }
+    }
 
     private readonly record struct MembershipChange(string Member, bool Joined);
 
     private readonly JsonSerializerOptions _wireOptions = hubOptions.Value.PayloadSerializerOptions;
 
-    public bool IsConfigurationValid(JsonElement configuration)
+    public Task SyncMembers(Guid gameId, CancellationToken ct = default) =>
+        RunMutation(
+            gameId,
+            async () =>
+            {
+                await SyncMembersCore(gameId, ct);
+                return true;
+            },
+            ct
+        );
+
+    public Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct = default) =>
+        RunMutation(gameId, () => GetMemberStateCore(gameId, member, ct), ct);
+
+    public Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct = default) =>
+        RunMutation(gameId, () => ExecuteCore(gameId, member, action, ct), ct);
+
+    private static async Task<TResult> RunMutation<TResult>(
+        Guid gameId,
+        Func<Task<TResult>> operation,
+        CancellationToken ct = default
+    )
     {
-        var isValid = TryRead(configuration) is not null;
-        if (!isValid)
-            LogConfigurationRefusedUnreadable(logger);
-        return isValid;
+        MutationGate gate;
+        lock (_mutationGatesLock)
+        {
+            if (!_mutationGates.TryGetValue(gameId, out gate!))
+            {
+                gate = new MutationGate();
+                _mutationGates.Add(gameId, gate);
+            }
+            gate.Users++;
+        }
+        var entered = false;
+        try
+        {
+            await gate.Semaphore.WaitAsync(ct);
+            entered = true;
+            return await operation();
+        }
+        finally
+        {
+            lock (_mutationGatesLock)
+            {
+                if (entered)
+                    gate.Semaphore.Release();
+                if (--gate.Users == 0)
+                {
+                    _mutationGates.Remove(gameId);
+                    gate.Semaphore.Dispose();
+                }
+            }
+        }
     }
 
-    public async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default)
+    private async Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default)
     {
         var read = TryRead(configuration);
         if (read is null)
@@ -53,7 +111,7 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView>(
         await history.Begin(gameId, initial, ct);
     }
 
-    public async Task SyncMembers(Guid gameId, CancellationToken ct = default)
+    private async Task SyncMembersCore(Guid gameId, CancellationToken ct = default)
     {
         var conflicts = 0;
         while (conflicts < MaxAttempts)
@@ -90,9 +148,9 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView>(
         LogSyncAbandoned(logger, gameId, MaxAttempts);
     }
 
-    public async Task<MemberState?> GetMemberState(Guid gameId, string member, CancellationToken ct = default)
+    private async Task<MemberState?> GetMemberStateCore(Guid gameId, string member, CancellationToken ct = default)
     {
-        await SyncMembers(gameId, ct);
+        await SyncMembersCore(gameId, ct);
 
         var stored = await LoadRequiredHistory(gameId, ct);
 
@@ -110,7 +168,7 @@ internal sealed partial class GameEngine<TConfiguration, TState, TView>(
         return new MemberState(stored.Version, view, actions);
     }
 
-    public async Task<int?> Execute(Guid gameId, string member, string action, CancellationToken ct = default)
+    private async Task<int?> ExecuteCore(Guid gameId, string member, string action, CancellationToken ct = default)
     {
         for (var attempt = 1; attempt <= MaxAttempts; attempt++)
         {

@@ -1,13 +1,19 @@
 using System.Text.Json;
+using Tablier.Engine.Execution;
 using Tablier.Games;
 
 namespace Tablier.Engine;
 
 internal interface IGameEngine
 {
-    bool IsConfigurationValid(JsonElement configuration);
+    Task<CreateGameResult> Create(
+        string owner,
+        string idempotencyKey,
+        JsonElement configuration,
+        CancellationToken ct = default
+    );
 
-    Task Begin(Guid gameId, JsonElement configuration, string owner, CancellationToken ct = default);
+    Task<JoinGameResult> Join(string member, string code, CancellationToken ct = default);
 
     Task SyncMembers(Guid gameId, CancellationToken ct = default);
 
