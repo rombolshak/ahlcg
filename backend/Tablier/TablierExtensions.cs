@@ -7,7 +7,6 @@ using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Engine.Execution;
 using Tablier.Engine.History;
-using Tablier.Engine.History.Cache;
 using Tablier.Engine.History.Cleanup;
 using Tablier.Games;
 using Tablier.Games.Sessions;
@@ -26,7 +25,6 @@ public static class TablierExtensions
     {
         builder.AddNpgsqlDbContext<ApplicationDbContext>(connectionName);
         builder.AddRedisClient(cacheConnectionName);
-        builder.Services.AddOptions<GameHistoryCacheOptions>().BindConfiguration(GameHistoryCacheOptions.SectionName);
         builder
             .Services.AddOptions<GameHistoryCleanupOptions>()
             .BindConfiguration(GameHistoryCleanupOptions.SectionName)
@@ -43,7 +41,6 @@ public static class TablierExtensions
             .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         builder.Services.AddSingleton<GameSessions>();
         builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "store", typeof(GameHistory<>));
-        builder.Services.AddKeyedScoped(typeof(IGameHistory<>), "cached", typeof(CachedGameHistory<>));
         builder.Services.AddScoped(typeof(IGameHistory<>), typeof(MeteredGameHistory<>));
         builder.Services.AddSingleton<TablierMetrics>();
         builder

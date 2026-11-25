@@ -25,7 +25,7 @@ frontend/  Angular 22 SPA          →  /api/*  →  backend/Ahlcg.ApiService  �
 Local orchestration (`backend/Ahlcg.AppHost`, .NET Aspire), in dependency order:
 
 1. `postgresdb` (Postgres container) with PgAdmin, exposing database `ahlcg`
-2. `cache` (Valkey container) — the game-history cache
+2. `cache` (Valkey container) — wired into the API through its Redis client registration. Game history reads and writes go directly to PostgreSQL
 3. `migrator` — applies EF migrations, then exits (`WaitForCompletion`)
 4. `apiservice` — the API, health-checked on `/health`
 5. `webfrontend` — the Angular dev server, started via `AddViteApp(..., "start")`

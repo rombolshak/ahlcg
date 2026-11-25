@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Engine.Execution;
 using Tablier.Games;
 using Tablier.Games.Sessions;
 
@@ -21,187 +21,84 @@ namespace Tablier.Tests.Games;
 public class GameEndpointsTests
 {
     [Fact]
-    public async Task CreateGame_LoggedIn_PersistsGameOwnedByCaller()
+    public async Task CreateGame_UnknownUser_ReturnsUnauthorizedWithoutCallingEngine()
     {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
+        var engine = CreateEngine();
 
         var result = await GameEndpoints.CreateGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        Assert.NotNull(ok.Value);
-
-        var stored = Assert.Single(db.Games);
-        Assert.Equal(LoggedInUser, stored.OwnerId);
-        Assert.Equal(ok.Value!.Id, stored.Id);
-        Assert.Equal(FixedNow, stored.CreatedAt);
-        Assert.Equal(FixedNow, stored.LastPlayedAt);
-    }
-
-    [Fact]
-    public async Task CreateGame_LoggedIn_CreatesMembershipForCaller()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-
-        var result = await GameEndpoints.CreateGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        var stored = Assert.Single(db.Games);
-        var member = Assert.Single(db.GameMembers);
-        Assert.Equal(stored.Id, member.GameId);
-        Assert.Equal(LoggedInUser, member.UserId);
-        Assert.Equal(FixedNow, member.JoinedAt);
-        Assert.Equal(FixedNow, member.LastPlayedAt);
-        Assert.NotNull(ok.Value);
-    }
-
-    [Fact]
-    public async Task CreateGame_LoggedIn_DefaultsIntendedPlayersCountToOne()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-
-        await GameEndpoints.CreateGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}""")),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var stored = Assert.Single(db.Games);
-        Assert.Equal(1, stored.IntendedPlayersCount);
-    }
-
-    [Fact]
-    public async Task CreateGame_MissingConfiguration_ReturnsValidationProblem()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-
-        var result = await GameEndpoints.CreateGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
+            new ClaimsPrincipal(),
+            GetMockUserManager().Object,
+            "key",
             new GameEndpoints.CreateGameRequest(default),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
+            engine.Object
         );
 
-        Assert.IsType<ValidationProblem>(result.Result);
-        Assert.Empty(db.Games);
-        Assert.Empty(db.GameMembers);
+        Assert.IsType<UnauthorizedHttpResult>(result.Result);
+        engine.VerifyNoOtherCalls();
     }
 
     [Fact]
-    public async Task CreateGame_UnreadableConfiguration_ReturnsValidationProblemAndSavesNothing()
+    public async Task JoinGame_UnknownUser_ReturnsUnauthorizedWithoutCallingEngine()
     {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var engine = CreateEngine(readable: false);
+        var engine = CreateEngine();
+
+        var result = await GameEndpoints.JoinGame(
+            new ClaimsPrincipal(),
+            GetMockUserManager().Object,
+            new GameEndpoints.JoinGameRequest("ABCDEF"),
+            engine.Object
+        );
+
+        Assert.IsType<UnauthorizedHttpResult>(result.Result);
+        engine.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(true, "ConfigurationRequired")]
+    [InlineData(false, "ConfigurationUnreadable")]
+    public async Task CreateGame_InvalidConfiguration_ReturnsValidationProblem(bool missing, string code)
+    {
+        var engine = CreateEngine();
+        var configuration = ParseConfiguration("{}");
+        engine
+            .Setup(e => e.Create(LoggedInUser, "key", configuration, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CreateGameResult.InvalidConfiguration(IsMissing: missing));
 
         var result = await GameEndpoints.CreateGame(
             LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
-            new GameEndpoints.CreateGameRequest(ParseConfiguration("5")),
-            engine.Object,
-            NullLogger<Game>.Instance
+            GetMockUserManager().Object,
+            "key",
+            new GameEndpoints.CreateGameRequest(configuration),
+            engine.Object
         );
 
         var problem = Assert.IsType<ValidationProblem>(result.Result);
-        Assert.Contains(nameof(GameEndpoints.CreateGameRequest.Configuration), problem.ProblemDetails.Errors.Keys);
-        Assert.Empty(db.Games);
-        engine.Verify(
-            e => e.Begin(It.IsAny<Guid>(), It.IsAny<JsonElement>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
-            Times.Never
-        );
+        Assert.Equal([code], problem.ProblemDetails.Errors[nameof(GameEndpoints.CreateGameRequest.Configuration)]);
     }
 
     [Fact]
-    public async Task CreateGame_LoggedIn_BeginsHistoryOnceForTheNewGame()
+    public async Task CreateGame_Created_ReturnsOriginalGamePayload()
     {
-        var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
+        var game = await SeedGameAsync(db, LoggedInUser, FixedNow);
+        var configuration = ParseConfiguration("{}");
         var engine = CreateEngine();
-        var configuration = ParseConfiguration("""{"foo":"bar"}""");
+        engine
+            .Setup(e => e.Create(LoggedInUser, "key", configuration, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CreateGameResult.Created(game));
 
         var result = await GameEndpoints.CreateGame(
             LoggedInPrincipal,
-            userManager.Object,
-            db,
-            FixedTimeProvider,
-            "idempotency-key",
+            GetMockUserManager().Object,
+            "key",
             new GameEndpoints.CreateGameRequest(configuration),
-            engine.Object,
-            NullLogger<Game>.Instance
+            engine.Object
         );
 
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        engine.Verify(
-            e =>
-                e.Begin(
-                    ok.Value!.Id,
-                    It.Is<JsonElement>(c => c.GetRawText() == configuration.GetRawText()),
-                    LoggedInUser,
-                    It.IsAny<CancellationToken>()
-                ),
-            Times.Once
-        );
-    }
-
-    [Fact]
-    public async Task CreateGame_CalledTwiceWithSameKey_BeginsHistoryOnEachCall()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var engine = CreateEngine();
-        var request = new GameEndpoints.CreateGameRequest(ParseConfiguration("""{"foo":"bar"}"""));
-
-        for (var i = 0; i < 2; i++)
-        {
-            await GameEndpoints.CreateGame(
-                LoggedInPrincipal,
-                userManager.Object,
-                db,
-                FixedTimeProvider,
-                "idempotency-key",
-                request,
-                engine.Object,
-                NullLogger<Game>.Instance
-            );
-        }
-
-        engine.Verify(
-            e => e.Begin(It.IsAny<Guid>(), It.IsAny<JsonElement>(), LoggedInUser, It.IsAny<CancellationToken>()),
-            Times.Exactly(2)
-        );
+        var dto = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result).Value!;
+        Assert.Equal(game.Id, dto.Id);
+        Assert.Equal(FixedNow, dto.LastPlayedAt);
+        Assert.Equal(game.Configuration.RootElement.GetRawText(), dto.Configuration.GetRawText());
     }
 
     [Fact]
@@ -862,346 +759,51 @@ public class GameEndpointsTests
         Assert.Equal(StatusCodes.Status403Forbidden, problem.StatusCode);
     }
 
-    [Fact]
-    public async Task JoinGame_ValidCode_CreatesMembershipAndGameAppearsInRecentGames()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-
-        var result = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        Assert.Equal(game.Id, ok.Value!.Id);
-        Assert.True(await db.GameMembers.AnyAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
-
-        var recent = await GameEndpoints.GetRecentGames(LoggedInPrincipal, userManager.Object, db);
-        var recentOk = Assert.IsType<Ok<IReadOnlyList<GameEndpoints.GameDto>>>(recent.Result);
-        Assert.Contains(recentOk.Value!, g => g.Id == game.Id);
-    }
-
-    [Fact]
-    public async Task JoinGame_CalledTwice_CreatesOneRowAndBothResponsesNameTheSameGame()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 3);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3)!.InviteCode!;
-
-        var first = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-        var second = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var firstOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(first.Result);
-        var secondOk = Assert.IsType<Ok<GameEndpoints.GameDto>>(second.Result);
-        Assert.Equal(firstOk.Value!.Id, secondOk.Value!.Id);
-        Assert.Equal(1, await db.GameMembers.CountAsync(m => m.GameId == game.Id && m.UserId == LoggedInUser));
-    }
-
-    [Fact]
-    public async Task JoinGame_LowercaseCode_Redeems()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-
-        var result = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code.ToLowerInvariant()),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var ok = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result);
-        Assert.Equal(game.Id, ok.Value!.Id);
-    }
-
-    [Fact]
-    public async Task JoinGame_FillsLastSeat_ClearsCodeInTheSameRequest()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-
-        await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        Assert.Null(sessions.Find(game.Id)!.InviteCode);
-        Assert.Null(sessions.FindByInviteCode(code));
-    }
-
-    [Fact]
-    public async Task JoinGame_SessionEnded_ReturnsNotFoundWithNoCleanupPass()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-        sessions.Leave(game.Id, OtherUser, "conn-1", FixedNow);
-
-        var result = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var problem = Assert.IsType<ProblemHttpResult>(result.Result);
-        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
-    }
-
     [Theory]
-    [InlineData("K7Q")]
-    [InlineData("")]
-    [InlineData("UNKNOWN")]
-    [InlineData(null)]
-    public async Task JoinGame_UnknownOrMalformedCode_ReturnsSameResultAsAnyOtherUnredeemableCode(string? code)
+    [InlineData(false, 404, "UnusableInvite")]
+    [InlineData(true, 409, "GameFull")]
+    public async Task JoinGame_Refused_ReturnsReasonCode(bool full, int status, string code)
     {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
+        var engine = CreateEngine();
+        engine
+            .Setup(e => e.Join(LoggedInUser, "ABCDEF", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(full ? new JoinGameResult.GameFull() : new JoinGameResult.UnusableInvite());
 
         var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code!),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
+            GetMockUserManager().Object,
+            new GameEndpoints.JoinGameRequest("ABCDEF"),
+            engine.Object
         );
 
         var problem = Assert.IsType<ProblemHttpResult>(result.Result);
-        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
+        Assert.Equal(status, problem.StatusCode);
+        Assert.Equal(code, problem.ProblemDetails.Extensions["code"]);
+        Assert.Null(problem.ProblemDetails.Detail);
     }
 
     [Fact]
-    public async Task JoinGame_GameAlreadyFull_ReturnsNotFound()
+    public async Task JoinGame_Joined_ReturnsMembershipPayload()
     {
-        var userManager = GetMockUserManager();
         await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-
-        var result = await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            NullLogger<Game>.Instance
-        );
-
-        var problem = Assert.IsType<ProblemHttpResult>(result.Result);
-        Assert.Equal(StatusCodes.Status404NotFound, problem.StatusCode);
-    }
-
-    [Fact]
-    public async Task JoinGame_UnknownCode_LogsThatNoSessionMatched()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var logger = new FakeLogger<Game>();
-
-        await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            CreateSessions(),
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest("UNKNOWN"),
-            CreateEngine().Object,
-            logger
-        );
-
-        Assert.Equal("LogJoinRefusedUnknownCode", logger.LatestRecord.Id.Name);
-    }
-
-    [Fact]
-    public async Task JoinGame_GameAlreadyFull_LogsThatSeatsAreTaken()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-        var logger = new FakeLogger<Game>();
-
-        await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            CreateEngine().Object,
-            logger
-        );
-
-        Assert.Equal("LogJoinRefusedGameFull", logger.LatestRecord.Id.Name);
-    }
-
-    [Fact]
-    public async Task JoinGame_NewMembership_SyncsMembersOnce()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var engine = CreateEngine();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
-
-        await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            engine.Object,
-            NullLogger<Game>.Instance
-        );
-
-        engine.Verify(e => e.SyncMembers(game.Id, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task JoinGame_AlreadyMember_DoesNotSyncMembers()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
-        var engine = CreateEngine();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 3);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
+        var game = await SeedGameAsync(db, OtherUser, FixedNow);
         await AddMembershipAsync(db, game.Id, LoggedInUser, FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 3)!.InviteCode!;
-
-        await GameEndpoints.JoinGame(
-            LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            engine.Object,
-            NullLogger<Game>.Instance
-        );
-
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task JoinGame_GameAlreadyFull_DoesNotSyncMembers()
-    {
-        var userManager = GetMockUserManager();
-        await using var db = CreateInMemoryDb();
-        var sessions = CreateSessions();
+        var membership = await db.GameMembers.SingleAsync();
         var engine = CreateEngine();
-        var game = await SeedGameAsync(db, OtherUser, FixedNow, intendedPlayersCount: 2);
-        await AddMembershipAsync(db, game.Id, OtherUser, FixedNow);
-        await AddMembershipAsync(db, game.Id, "third-user", FixedNow);
-        sessions.Join(game.Id, OtherUser, "conn-1", FixedNow);
-        var code = sessions.SyncInviteCode(game.Id, memberCount: 1, intendedPlayersCount: 2)!.InviteCode!;
+        engine
+            .Setup(e => e.Join(LoggedInUser, "ABCDEF", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new JoinGameResult.Joined(membership));
 
-        await GameEndpoints.JoinGame(
+        var result = await GameEndpoints.JoinGame(
             LoggedInPrincipal,
-            userManager.Object,
-            db,
-            sessions,
-            CreateMockHub().Hub.Object,
-            FixedTimeProvider,
-            new GameEndpoints.JoinGameRequest(code),
-            engine.Object,
-            NullLogger<Game>.Instance
+            GetMockUserManager().Object,
+            new GameEndpoints.JoinGameRequest("ABCDEF"),
+            engine.Object
         );
 
-        engine.Verify(e => e.SyncMembers(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        var dto = Assert.IsType<Ok<GameEndpoints.GameDto>>(result.Result).Value!;
+        Assert.Equal(game.Id, dto.Id);
+        Assert.Equal(membership.LastPlayedAt, dto.LastPlayedAt);
     }
 
     [Fact]
@@ -1350,12 +952,7 @@ public class GameEndpointsTests
         Assert.Equal(["removed", "removed", "code:NEWCOD"], order);
     }
 
-    private static Mock<IGameEngine> CreateEngine(bool readable = true)
-    {
-        var engine = new Mock<IGameEngine>();
-        engine.Setup(e => e.IsConfigurationValid(It.IsAny<JsonElement>())).Returns(readable);
-        return engine;
-    }
+    private static Mock<IGameEngine> CreateEngine() => new();
 
     private static JsonElement ParseConfiguration(string json) => JsonDocument.Parse(json).RootElement.Clone();
 

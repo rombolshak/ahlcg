@@ -146,12 +146,12 @@ describe('JoinGameComponent', () => {
     });
   });
 
-  it('should keep the dialog open and show the rejected message on a 404', async () => {
+  it.each([404, 409])('should keep the dialog open and show the rejected message on a %s', async status => {
     typeCode('ABCDEF');
     submitButton().click();
     await fixture.whenStable();
 
-    flushJoin(null, { status: 404, statusText: 'Not Found' });
+    flushJoin(null, { status, statusText: 'Rejected' });
 
     const alert = await vi.waitFor(() => {
       fixture.detectChanges();
@@ -160,12 +160,12 @@ describe('JoinGameComponent', () => {
     expect(alert.textContent).toContain('Clearance refused');
   });
 
-  it('should mark the code red on a 404', async () => {
+  it.each([404, 409])('should mark the code red on a %s', async status => {
     typeCode('ABCDEF');
     submitButton().click();
     await fixture.whenStable();
 
-    flushJoin(null, { status: 404, statusText: 'Not Found' });
+    flushJoin(null, { status, statusText: 'Rejected' });
     await vi.waitFor(() => {
       fixture.detectChanges();
       return fixture.debugElement.query(By.css('[data-testId=join-game-error]')).nativeElement as HTMLElement;

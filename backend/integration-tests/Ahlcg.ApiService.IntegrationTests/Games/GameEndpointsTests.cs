@@ -181,9 +181,10 @@ public class GameEndpointsTests(AppFixture fixture)
 
         var first = await PostGameAsync(client, key, "{}");
         first.EnsureSuccessStatusCode();
-        var second = await PostGameAsync(client, key, "{}");
+        var second = await PostGameAsync(client, key, "{\"retry\":true}");
         second.EnsureSuccessStatusCode();
         var dto = await ReadGameAsync(second);
+        Assert.Equal("{}", dto.Configuration.GetRawText());
 
         await using var db = fixture.CreateDbContext();
         Assert.Equal(1, await db.GameSnapshots.CountAsync(s => s.GameId == dto.Id));
@@ -201,6 +202,46 @@ public class GameEndpointsTests(AppFixture fixture)
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await using var db = fixture.CreateDbContext();
         Assert.False(await db.Games.AnyAsync(g => g.IdempotencyKey == key));
+    }
+
+    [Fact]
+    public async Task PostJoin_FullGameAndUnknownInvite_ReturnOperationSpecificProblems()
+    {
+        var cookies = new CookieContainer();
+        using var owner = fixture.CreateClient(cookies);
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, owner);
+        var gameId = await HubTestSupport.CreateGameAsync(owner);
+        var count = await owner.PutAsJsonAsync(
+            $"/games/{gameId}/membersCount",
+            new GameEndpoints.SetMembersCountRequest(2)
+        );
+        count.EnsureSuccessStatusCode();
+        var invite = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using var connection = HubTestSupport.BuildConnection(fixture, cookies, $"gameId={gameId}");
+        connection.On<string?>(nameof(IGameClient.InviteCodeChanged), code =>
+        {
+            if (code is not null)
+                invite.TrySetResult(code);
+        });
+        await connection.StartAsync();
+        var code = await HubTestSupport.WithTimeoutAsync(invite.Task);
+        await using var db = fixture.CreateDbContext();
+        await db
+            .Games.Where(g => g.Id == gameId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(g => g.IntendedPlayersCount, 1));
+        using var joiner = fixture.CreateClient();
+        await HubTestSupport.LoginAnonymouslyAsync(fixture, joiner);
+
+        var full = await joiner.PostAsJsonAsync("/games/join", new GameEndpoints.JoinGameRequest(code));
+
+        Assert.Equal(HttpStatusCode.Conflict, full.StatusCode);
+        var fullProblem = await full.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("GameFull", fullProblem.GetProperty("code").GetString());
+        await connection.StopAsync();
+        var unusable = await joiner.PostAsJsonAsync("/games/join", new GameEndpoints.JoinGameRequest("UNKNOWN"));
+        Assert.Equal(HttpStatusCode.NotFound, unusable.StatusCode);
+        var unusableProblem = await unusable.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.Equal("UnusableInvite", unusableProblem.GetProperty("code").GetString());
     }
 
     [Fact]

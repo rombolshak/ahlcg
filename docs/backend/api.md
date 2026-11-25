@@ -53,9 +53,9 @@ A missing or unparseable `gameId`, or a missing user id, still throws `HubExcept
 
 **`Execute` is validated by action id, not by version.** An action is accepted when it is among the caller's currently offered ones; another member's step advancing the version does not reject it. A refused append is retried from a fresh load, up to three times, then `null`. Steps no member can take are advanced by the server and each emits its own `StateChanged`.
 
-These checks use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Cache failures can also surface after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
+These checks use persisted state, not a fresh membership query. Reloading state repairs version gaps but does not reliably resume interrupted automatic steps. Publication can fail after a committed mutation. See [the engine's failure boundaries](backend.md#the-step-loop).
 
-**There is no ordering guarantee between versions.** Steps are serialised only by the store's version check, so under contention `StateChanged` events can reach a client out of order; the version on each event is how a client notices and calls `GetState`.
+**Engine operations hold a private per-game gate through publication.** This orders their steps within the API process. Clients still use event versions to detect gaps and call `GetState`.
 
 **A hub method that answers the caller returns its answer; it does not push one.** `Ping()` is `Task<DateTime>`, so the client gets it as the result of `invoke('Ping')`. Pushing the answer through `IGameClient` instead would look equivalent and is not: a push carries no correlation id, so a client with two calls in flight cannot tell which reply belongs to which, and every caller has to register and tear down a handler. Keep request/response on the return value and reserve `IGameClient` for messages the server sends unprompted.
 

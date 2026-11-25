@@ -43,13 +43,13 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                db.ChangeTracker.Clear();
                 var existing = await ReadBeginning(gameId, ct);
                 if (existing.Head is not null)
                     return (existing.Stored, existing.Head, Created: false);
 
+                var previouslyTracked = GetTrackedEntities();
                 db.GameSnapshots.Add(CreateSnapshot(gameId, 0, initial));
-                if (await TrySave(ct))
+                if (await TrySave(previouslyTracked, ct))
                     return (
                         Stored: (StoredState<TState>?)new StoredState<TState>(0, initial),
                         Head: (int?)0,
@@ -113,10 +113,9 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    IsolationLevel.RepeatableRead,
-                    ct
-                );
+                await using var transaction = db.Database.CurrentTransaction is null
+                    ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+                    : null;
                 var snapshot = await db
                     .GameSnapshots.AsNoTracking()
                     .Where(s => s.GameId == gameId)
@@ -162,10 +161,9 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    IsolationLevel.RepeatableRead,
-                    ct
-                );
+                await using var transaction = db.Database.CurrentTransaction is null
+                    ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+                    : null;
                 return await ReadHistoryAt(gameId, version, knownHead: null, ct);
             });
         var storedState = Reconstruct(gameId, history);
@@ -202,19 +200,19 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                db.ChangeTracker.Clear();
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    IsolationLevel.RepeatableRead,
-                    ct
-                );
+                await using var transaction = db.Database.CurrentTransaction is null
+                    ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+                    : null;
                 await CheckRewind(gameId, expectedVersion, targetVersion, ct);
+                var previouslyTracked = GetTrackedEntities();
                 var storedState = await WriteRewind(gameId, expectedVersion, targetVersion, ct);
-                if (!await TrySave(ct))
+                if (!await TrySave(previouslyTracked, ct))
                 {
                     LogRewindRefused(logger, gameId, expectedVersion, targetVersion, "concurrent_write");
                     throw new GameHistoryRewindConflictException(gameId, expectedVersion);
                 }
-                await transaction.CommitAsync(ct);
+                if (transaction is not null)
+                    await transaction.CommitAsync(ct);
                 return storedState;
             });
         LogHistoryRewound(logger, gameId, restored.Version, targetVersion);
@@ -314,10 +312,9 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             .Database.CreateExecutionStrategy()
             .ExecuteAsync(async () =>
             {
-                await using var transaction = await db.Database.BeginTransactionAsync(
-                    IsolationLevel.RepeatableRead,
-                    ct
-                );
+                await using var transaction = db.Database.CurrentTransaction is null
+                    ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+                    : null;
                 var liveHistory = await LiveHistory.Read(db.Database, gameId, head: version, ct);
                 if (liveHistory.IsValid)
                     return liveHistory;
@@ -413,7 +410,6 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
     )
     {
         var version = previous.Version + 1;
-        db.ChangeTracker.Clear();
         var versions = await FindHistoryVersions(gameId, ct);
         var head = versions.Head;
         if (head is null || versions.Snapshot is null)
@@ -428,6 +424,7 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
             return false;
         }
 
+        var previouslyTracked = GetTrackedEntities();
         var patch = SerializeToJson(previous.State).CreatePatch(SerializeToJson(result.State));
         db.GameSteps.Add(
             new GameStep
@@ -445,7 +442,7 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         if (writesSnapshot)
             db.GameSnapshots.Add(CreateSnapshot(gameId, version, result.State));
 
-        if (!await TrySave(ct))
+        if (!await TrySave(previouslyTracked, ct))
         {
             LogAppendRefusedConcurrent(logger, gameId, previous.Version);
             return false;
@@ -462,7 +459,9 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         CancellationToken ct = default
     )
     {
-        await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct);
+        await using var transaction = db.Database.CurrentTransaction is null
+            ? await db.Database.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct)
+            : null;
         var head = (await FindHistoryVersions(gameId, ct)).Head;
         if (head != 0)
             return (Stored: null, head);
@@ -593,8 +592,19 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         }
     }
 
-    private async Task<bool> TrySave(CancellationToken ct = default)
+    private HashSet<object> GetTrackedEntities() =>
+        db.ChangeTracker.Entries().Select(entry => entry.Entity).ToHashSet(ReferenceEqualityComparer.Instance);
+
+    private async Task<bool> TrySave(HashSet<object> previouslyTracked, CancellationToken ct = default)
     {
+        var writes = db
+            .ChangeTracker.Entries()
+            .Where(e =>
+                !previouslyTracked.Contains(e.Entity)
+                && e.State == EntityState.Added
+                && e.Entity is GameStep or GameSnapshot
+            )
+            .ToList();
         try
         {
             await db.SaveChangesAsync(ct);
@@ -606,7 +616,8 @@ internal sealed partial class GameHistory<TState>(ApplicationDbContext db, ILogg
         }
         finally
         {
-            db.ChangeTracker.Clear();
+            foreach (var entry in writes)
+                entry.State = EntityState.Detached;
         }
     }
 
