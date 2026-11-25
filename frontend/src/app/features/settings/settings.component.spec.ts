@@ -190,7 +190,7 @@ describe('SettingsComponent projected inside a real DialogComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         // `ah-account` is rendered inside the account view, and needs AuthService to construct.
-        { provide: AuthService, useValue: { currentUser: of({ isAnonymous: true, email: null, userName: 'guid-123' }) } },
+        { provide: AuthService, useValue: { currentUser: of({ userId: 'account-id', isAnonymous: true, email: null, userName: 'guid-123' }) } },
       ],
     }).compileComponents();
 

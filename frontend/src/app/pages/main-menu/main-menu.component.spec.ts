@@ -91,14 +91,14 @@ describe('MainMenuComponent', () => {
   });
 
   it('should display continue button if authenticated', () => {
-    mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
     TestBed.tick();
 
     expect(fixture.debugElement.query(By.css('[data-testId=continue]'))).toBeTruthy();
   });
 
   it('should navigate to the case files screen when the load game button is clicked', () => {
-    mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
     TestBed.tick();
 
     (fixture.debugElement.query(By.css('[data-testId=load_game]')).nativeElement as HTMLButtonElement).click();
@@ -189,7 +189,7 @@ describe('MainMenuComponent', () => {
 
     const signIn = (game?: LatestGame) => {
       latestGame.mockReturnValue(of(game));
-      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
       TestBed.tick();
     };
 
@@ -226,7 +226,7 @@ describe('MainMenuComponent', () => {
     it('should enable itself when a slow request finally answers', async () => {
       const latest$ = new Subject<LatestGame | undefined>();
       latestGame.mockReturnValue(latest$);
-      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
       TestBed.tick();
 
       expect(continueButton().disabled).toBe(true);
@@ -239,7 +239,7 @@ describe('MainMenuComponent', () => {
 
     it('should be disabled and not alert when the request fails', () => {
       latestGame.mockReturnValue(throwError(() => new Error('boom')));
-      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
       TestBed.tick();
 
       expect(continueButton().disabled).toBe(true);
@@ -287,7 +287,7 @@ describe('MainMenuComponent', () => {
     const menuButton = (name: string) => fixture.debugElement.query(By.css(`ah-menu-items-list [data-testId=${name}]`)).nativeElement as HTMLButtonElement;
 
     it('should disable every other menu item while the request is in flight', () => {
-      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
       const create$ = new Subject<CreatedGame>();
       createGame.mockReturnValue(create$);
       TestBed.tick();
@@ -302,7 +302,7 @@ describe('MainMenuComponent', () => {
 
     it('should re-enable the other menu items once the request settles', () => {
       latestGame.mockReturnValue(of({ id: 'game-1', lastPlayedAt: new Date('2026-01-01T00:00:00Z') }));
-      mockAuthService._user.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+      mockAuthService._user.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
       const create$ = new Subject<CreatedGame>();
       createGame.mockReturnValue(create$);
       TestBed.tick();

@@ -6,7 +6,7 @@ import { NEVER, Observable, of, throwError } from 'rxjs';
 import { userEvent, within } from 'storybook/test';
 import { CaseFilesComponent } from './case-files.component';
 
-const user: User = { isAnonymous: true, email: null, userName: 'anon-guid' };
+const user: User = { userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' };
 
 const dayInMs = 24 * 60 * 60 * 1000;
 

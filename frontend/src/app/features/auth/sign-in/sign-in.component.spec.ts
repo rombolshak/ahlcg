@@ -69,9 +69,9 @@ describe('SignInComponent', () => {
     });
 
     click('anonymous');
-    loginAnonymously$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    loginAnonymously$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
 
-    expect(emitted).toEqual([{ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User]);
+    expect(emitted).toEqual([{ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User]);
   });
 
   it('should show a translated message in the choice view when travelling light fails', () => {
@@ -102,10 +102,10 @@ describe('SignInComponent', () => {
     // The credentials form's own signal-forms submission resolves over a couple of microtasks
     // beyond the click, and `result.emit` runs once that settles.
     await fixture.whenStable();
-    signIn$.next({ isAnonymous: false, email: 'a@example.com', userName: 'a' });
+    signIn$.next({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'a' });
     await fixture.whenStable();
 
-    expect(emitted).toEqual([{ isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User]);
+    expect(emitted).toEqual([{ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User]);
   });
 
   it('should go back to the choice view when the credentials form is dismissed', () => {
@@ -230,7 +230,7 @@ describe('SignInComponent', () => {
     });
 
     it('should close the dialog once anonymous sign-in resolves', () => {
-      loginAnonymously.mockReturnValue(of({ isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User));
+      loginAnonymously.mockReturnValue(of({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' } satisfies User));
 
       const dialogService = TestBed.inject(DialogService);
       dialogService.open(SignInComponent, SIGN_IN_DIALOG_OPTIONS).subscribe();

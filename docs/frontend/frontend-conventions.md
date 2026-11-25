@@ -159,7 +159,7 @@ Two things about the resource API are load-bearing and easy to get wrong:
 
 ## Validation
 
-Validate runtime data (HTTP, storage and fixtures) with arktype at the boundary, and surface failures via `ArkErrors`. This is the required convention; current coverage is incomplete ([#758](https://github.com/rombolshak/ahlcg/issues/758)). `AuthService` trusts HTTP generic types, and the board's `GameStateStore.setState` installs its input without validation. `GamesService` validates HTTP responses; `withGameSession` validates whole views and patched views.
+Validate runtime data (HTTP, storage and fixtures) with arktype at the boundary, and surface failures via `ArkErrors`. This is the required convention; current coverage is incomplete ([#758](https://github.com/rombolshak/ahlcg/issues/758)). The board's `GameStateStore.setState` installs its input without validation. `AuthService` validates the complete auth info response before publishing `currentUser`; `GamesService` validates HTTP responses; `withGameSession` validates whole views and patched views.
 
 ```typescript
 const model = cardDescription(raw);

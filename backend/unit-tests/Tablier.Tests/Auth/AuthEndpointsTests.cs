@@ -332,18 +332,18 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<Ok>(result.Result);
+        signInManager.Verify(
+            manager => manager.RefreshSignInAsync(It.Is<AppUser>(u => u.Id == AnonymousUser1)),
+            Times.Once
+        );
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
 
-        // Lockout matters only once the account has a password to guess, so the upgrade is where it
-        // gets switched on — AllowedForNewUsers does not reach a row that already exists.
         userManager.Verify(manager =>
             manager.UpdateAsync(
                 It.Is<AppUser>(u => u.Email == "email@contoso.co" && !u.IsAnonymous && u.LockoutEnabled)
             )
         );
 
-        // The account keeps its id, so anything hanging off OwnerId survives — and the existing
-        // session cookie already names it, so no re-sign-in.
         userManager.Verify(manager => manager.DeleteAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.CreateAsync(It.IsAny<AppUser>(), It.IsAny<string>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
@@ -366,6 +366,7 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
+        signInManager.Verify(manager => manager.RefreshSignInAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw"));
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()), Times.Never);
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
@@ -388,6 +389,7 @@ public class AuthEndpointsTests
         );
 
         Assert.IsType<BadRequest<IdentityResult>>(result.Result);
+        signInManager.Verify(manager => manager.RefreshSignInAsync(It.IsAny<AppUser>()), Times.Never);
         userManager.Verify(manager => manager.AddPasswordAsync(It.IsAny<AppUser>(), "P@ssw0rd"));
         userManager.Verify(manager => manager.UpdateAsync(It.IsAny<AppUser>()));
         signInManager.Verify(manager => manager.SignInAsync(It.IsAny<AppUser>(), isPersistent: true), Times.Never);
@@ -512,8 +514,13 @@ public class AuthEndpointsTests
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
         var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
-        Assert.True(user?.IsAnonymous);
-        Assert.False(string.IsNullOrEmpty(user?.UserName));
+        var storedUser = await userManager.Object.GetUserAsync(AnonymousPrincipal1);
+        Assert.NotNull(storedUser);
+        Assert.Equal(
+            new AuthEndpoints.UserDto(AnonymousUser1, Email: null, storedUser.UserName, IsAnonymous: true),
+            user
+        );
+        Assert.NotEqual(user?.UserId, user?.UserName);
     }
 
     [Fact]
@@ -528,8 +535,7 @@ public class AuthEndpointsTests
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
         var user = ((Ok<AuthEndpoints.UserDto>)result.Result).Value;
-        Assert.Equal("test@test.com", user?.Email);
-        Assert.Equal("test user", user?.UserName);
+        Assert.Equal(new AuthEndpoints.UserDto(PermanentUser, "test@test.com", "test user", IsAnonymous: false), user);
     }
 
     [Fact]

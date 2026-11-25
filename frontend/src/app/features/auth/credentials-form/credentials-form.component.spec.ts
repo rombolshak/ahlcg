@@ -73,13 +73,13 @@ describe('CredentialsFormComponent', () => {
     // `FormRoot` runs the submission through the forms package's own async `submit()`, which
     // resolves validity before calling `action` — a microtask beyond the click.
     await fixture.whenStable();
-    signIn$.next({ isAnonymous: false, email: 'a@example.com', userName: 'a' });
+    signIn$.next({ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'a' });
     // A second hop: `next()` resolves the promise `action` is awaiting, and `result.emit` runs
     // once that resumes, not synchronously with the call above.
     await fixture.whenStable();
 
     expect(signIn).toHaveBeenCalledWith({ email: 'a@example.com', username: 'a', password: 'P@ssw0rd' });
-    expect(emitted).toEqual([{ isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User]);
+    expect(emitted).toEqual([{ userId: 'account-id', isAnonymous: false, email: 'a@example.com', userName: 'a' } satisfies User]);
   });
 
   it('should show a translated message on 403', async () => {

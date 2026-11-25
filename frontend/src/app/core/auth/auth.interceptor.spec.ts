@@ -45,7 +45,7 @@ describe('authInterceptor', () => {
 
     expect(prompt).toHaveBeenCalledTimes(1);
 
-    promptResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    promptResult$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush({ id: '1' });
 
@@ -109,7 +109,7 @@ describe('authInterceptor', () => {
     });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
-    promptResult$.next({ isAnonymous: true, email: null, userName: 'anon-guid' });
+    promptResult$.next({ userId: 'account-id', isAnonymous: true, email: null, userName: 'anon-guid' });
 
     httpMock.expectOne('/api/games').flush(null, { status: 401, statusText: 'Unauthorized' });
 
