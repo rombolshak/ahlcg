@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.Metrics;
 using System.Security.Cryptography;
 
-namespace Tablier.Games;
+namespace Tablier.Games.Sessions;
 
 #pragma warning disable MA0048
 public readonly record struct SessionChange(GameSession? Session, bool MemberPresenceChanged);

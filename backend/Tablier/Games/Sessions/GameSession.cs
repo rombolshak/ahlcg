@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 
-namespace Tablier.Games;
+namespace Tablier.Games.Sessions;
 
 public sealed record GameSession(
     DateTimeOffset StartedAt,

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Tablier.Data;
 using Tablier.Games;
+using Tablier.Games.Sessions;
 
 namespace Tablier.Tests.Games;
 

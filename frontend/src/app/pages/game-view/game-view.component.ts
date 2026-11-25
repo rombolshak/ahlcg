@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, OnDestroy,
 import { DialogComponent } from '@core/dialog/dialog.component';
 import { InputManagerService } from '@core/input-manager.service';
 import { testGameState } from '@domain/testing/test-game-state';
-import { GameConnectionService } from '@features/games/game-connection.service';
+import { GameConnectionService } from '@features/games/session/game-connection.service';
 import { SettingsComponent } from '@features/settings/settings.component';
 import { CardsHandComponent } from './cards-hand/cards-hand.component';
 import { CurrentInvestigatorPanelComponent } from './current-investigator-panel/current-investigator-panel.component';

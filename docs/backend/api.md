@@ -69,7 +69,7 @@ One group per game, named by the game id. Both presence broadcasts go to the who
 
 **Sessions are in-memory and are not persisted** — see [backend.md](backend.md#signalr) for why, and for the single-replica ceiling that follows.
 
-The frontend client is `GameConnectionService` (`features/games/game-connection.service.ts`). It connects through **`/api/game?gameId=…`**, not `/game`: the hub path collides with the SPA's own `/game/:id` route, and the dev proxy already rewrites `^/api` → `` . That entry carries `ws: true`, without which the websocket upgrade is not proxied and SignalR quietly falls back to long polling.
+The frontend client is `GameConnectionService` (`features/games/session/game-connection.service.ts`). It connects through **`/api/game?gameId=…`**, not `/game`: the hub path collides with the SPA's own `/game/:id` route, and the dev proxy already rewrites `^/api` → `` . That entry carries `ws: true`, without which the websocket upgrade is not proxied and SignalR quietly falls back to long polling.
 
 It carries game state without knowing its shape: `memberStateEvents` emits `reset` (the `GetState` answer, possibly `null`, after the start and after every automatic reconnect) and `change` (a `StateChanged`). A `StateChanged` is held while a `GetState` is in flight, dropped when its version is at or below the last known, emitted when it is the next one, and otherwise triggers another `GetState`. The view stays `unknown` and the patches are RFC 6902 operations; the consumer interprets them.
 

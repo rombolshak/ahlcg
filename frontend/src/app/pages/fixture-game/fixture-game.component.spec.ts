@@ -1,13 +1,13 @@
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InputManagerService } from '@core/input-manager.service';
-import { GameConnectionService, GameConnectionState, MemberState, MemberStateEvent } from '@features/games/game-connection.service';
 import { GameMember, GamesService } from '@features/games/games.service';
+import { GameConnectionService, GameConnectionState, MemberState, MemberStateEvent } from '@features/games/session/game-connection.service';
 import { getTranslocoModule } from '@testing/transloco.testing';
 import { NEVER, of, Subject } from 'rxjs';
 import { vi } from 'vitest';
 import { FixtureGameComponent } from './fixture-game.component';
-import { FixtureView } from './fixture-view.model';
+import { FixtureView } from './state/fixture-view.model';
 
 const view: FixtureView = {
   shared: 3,

@@ -1,4 +1,4 @@
-import { withGameSession } from '@features/games/with-game-session';
+import { withGameSession } from '@features/games/session/with-game-session';
 import { signalStore } from '@ngrx/signals';
 import { fixtureView } from './fixture-view.model';
 

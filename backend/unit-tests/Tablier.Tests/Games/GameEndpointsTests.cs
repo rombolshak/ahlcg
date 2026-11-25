@@ -14,6 +14,7 @@ using Moq;
 using Tablier.Data;
 using Tablier.Engine;
 using Tablier.Games;
+using Tablier.Games.Sessions;
 
 namespace Tablier.Tests.Games;
 
