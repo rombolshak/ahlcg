@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
 using Tablier.Games;
 
-namespace Ahlcg.ApiService.IntegrationTests.Engine;
+namespace Ahlcg.ApiService.IntegrationTests.Engine.Execution;
 
 [Collection(AppCollection.Name)]
 public class GameStepLoopTests(AppFixture fixture)

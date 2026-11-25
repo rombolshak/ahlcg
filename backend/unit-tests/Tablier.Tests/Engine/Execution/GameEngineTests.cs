@@ -7,10 +7,11 @@ using Moq;
 using Tablier.Contract;
 using Tablier.Data;
 using Tablier.Engine;
+using Tablier.Engine.Execution;
 using Tablier.Engine.History;
 using Tablier.Games;
 
-namespace Tablier.Tests.Engine;
+namespace Tablier.Tests.Engine.Execution;
 
 public class GameEngineTests
 {

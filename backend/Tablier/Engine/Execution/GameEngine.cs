@@ -10,7 +10,7 @@ using Tablier.Data;
 using Tablier.Engine.History;
 using Tablier.Games;
 
-namespace Tablier.Engine;
+namespace Tablier.Engine.Execution;
 
 #pragma warning disable S2436
 internal sealed partial class GameEngine<TConfiguration, TState, TView>(

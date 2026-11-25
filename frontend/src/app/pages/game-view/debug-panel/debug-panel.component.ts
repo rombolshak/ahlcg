@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GameState, gameState } from '@domain/game-state';
-import { GameConnectionService } from '@features/games/game-connection.service';
+import { GameConnectionService } from '@features/games/session/game-connection.service';
 import { JsonEditorComponent } from '@ui/kit/json-editor/json-editor.component';
 import { ArkErrors } from 'arktype';
 import { createPatch } from 'rfc6902';

@@ -2,7 +2,7 @@
 
 ## Routed game session
 
-`frontend/src/app/features/games/with-game-session.ts` owns the active `/game/:id` fixture page's state through `FixtureGameStore`. It is separate from the Arkham board store below.
+`frontend/src/app/features/games/session/with-game-session.ts` owns the active `/game/:id` fixture page's state through `FixtureGameStore`. It is separate from the Arkham board store below.
 
 - `GameConnectionService` owns transport, state resets and version ordering. The feature subscribes to `memberStateEvents` before connecting and validates every full view and applied patch through the supplied schema.
 - `_confirmedView` and `_confirmedVersion` track server truth. `viewModel` is the displayed view, possibly with one optimistic action patch applied. `status` starts as `loading`; a null reset makes it `empty`, and a non-null reset makes it `ready`.
@@ -51,7 +51,7 @@ protected readonly cards = computed(() =>
 **`updateState(changes: Operation[])`** — applies RFC6902 patches. The sequence matters:
 
 1. `Flip.getState('ah-investigator-avatar')` captures DOM geometry **before** the state changes.
-2. `applyStatePatches` delegates to `applyJsonPatch` (`core/apply-json-patch.ts`, shared with `withGameSession` in `features/games/with-game-session.ts`), which mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
+2. `applyStatePatches` delegates to `applyJsonPatch` (`core/apply-json-patch.ts`, shared with `withGameSession` in `features/games/session/with-game-session.ts`), which mutates through `immer.produce`, so unchanged subtrees keep referential identity and dependent `computed`s do not recompute.
 3. `applyPatch` results are checked; any non-null result throws with the collected messages.
 4. `validateState` runs the full arktype schema on the result and calls `ArkErrors.throw()` on failure — an invalid patch aborts the update rather than corrupting the store.
 5. A `requestAnimationFrame` callback runs `Flip.from(...)` after Angular has rendered.
