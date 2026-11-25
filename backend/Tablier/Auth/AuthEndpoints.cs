@@ -187,19 +187,13 @@ public static partial class AuthEndpoints
 
     public static async Task<Results<Ok<UserDto>, UnauthorizedHttpResult>> GetCurrentUser(
         ClaimsPrincipal principal,
-        UserManager<AppUser> userManager,
-        ILogger<AppUser> logger
+        UserManager<AppUser> userManager
     )
     {
         var user = await userManager.GetUserAsync(principal);
-        if (user is null)
-        {
-            LogCurrentUserRefused(logger);
-            return TypedResults.Unauthorized();
-        }
-
-        LogCurrentUserReturned(logger, user.Id);
-        return TypedResults.Ok(new UserDto(user.Id, user.Email, user.UserName, user.IsAnonymous));
+        return user is not null
+            ? TypedResults.Ok(new UserDto(user.Id, user.Email, user.UserName, user.IsAnonymous))
+            : TypedResults.Unauthorized();
     }
 
     public static async Task Logout(
@@ -305,12 +299,6 @@ public static partial class AuthEndpoints
     }
 
     private static string ErrorCodes(IdentityResult result) => string.Join(", ", result.Errors.Select(e => e.Code));
-
-    [LoggerMessage(LogLevel.Information, "Current user information returned for {UserId}")]
-    private static partial void LogCurrentUserReturned(ILogger logger, string userId);
-
-    [LoggerMessage(LogLevel.Information, "Current user information refused without a stored account")]
-    private static partial void LogCurrentUserRefused(ILogger logger);
 
     [LoggerMessage(LogLevel.Information, "User {UserId} asked for an anonymous account while signed in")]
     private static partial void LogAnonymousLoginRefused(ILogger logger, string userId);

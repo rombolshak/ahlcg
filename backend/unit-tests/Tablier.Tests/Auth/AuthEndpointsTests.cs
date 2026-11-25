@@ -484,11 +484,7 @@ public class AuthEndpointsTests
     {
         var userManager = GetMockUserManager();
 
-        var result = await AuthEndpoints.GetCurrentUser(
-            new ClaimsPrincipal(new ClaimsIdentity()),
-            userManager.Object,
-            NullLogger<AppUser>.Instance
-        );
+        var result = await AuthEndpoints.GetCurrentUser(new ClaimsPrincipal(new ClaimsIdentity()), userManager.Object);
 
         Assert.IsType<UnauthorizedHttpResult>(result.Result);
     }
@@ -500,8 +496,7 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())])),
-            userManager.Object,
-            NullLogger<AppUser>.Instance
+            userManager.Object
         );
 
         Assert.IsType<UnauthorizedHttpResult>(result.Result);
@@ -514,8 +509,7 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, AnonymousUser1)])),
-            userManager.Object,
-            NullLogger<AppUser>.Instance
+            userManager.Object
         );
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
@@ -536,8 +530,7 @@ public class AuthEndpointsTests
 
         var result = await AuthEndpoints.GetCurrentUser(
             new ClaimsPrincipal(new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, PermanentUser)])),
-            userManager.Object,
-            NullLogger<AppUser>.Instance
+            userManager.Object
         );
 
         Assert.IsType<Ok<AuthEndpoints.UserDto>>(result.Result);
